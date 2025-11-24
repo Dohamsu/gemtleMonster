@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "seed:facilities": "tsx src/data/seedFacilities.ts"
+    "seed:facilities": "tsx src/data/seedFacilities.ts",
+    "seed:alchemy": "tsx src/data/seedAlchemy.ts"
   },
   "devDependencies": {
     "@types/react": "^19.2.6",

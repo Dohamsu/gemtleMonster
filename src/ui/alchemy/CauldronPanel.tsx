@@ -1,43 +1,57 @@
 import React, { useEffect, useRef } from 'react'
-import { useGameStore } from '../../store/useGameStore'
-import { RECIPES } from '../../data/recipes'
-import { MATERIALS, MONSTERS } from '../../data/alchemyData'
-import ResourceIcon from '../ResourceIcon'
+import { useAlchemyStore } from '../../store/useAlchemyStore'
 
 export default function CauldronPanel() {
-    const { alchemyState, startBrewing, completeBrewing, cancelBrewing } = useGameStore()
-    const { selectedRecipeId, selectedIngredients, isBrewing, brewStartTime } = alchemyState
+    const {
+        allMaterials,
+        allRecipes,
+        selectedRecipeId,
+        selectedIngredients,
+        isBrewing,
+        brewStartTime,
+        brewProgress,
+        brewResult,
+        canCraft,
+        startBrewing,
+        completeBrewing,
+        clearIngredients,
+        addIngredient,
+        removeIngredient
+    } = useAlchemyStore()
 
-    const recipe = selectedRecipeId ? RECIPES.find(r => r.id === selectedRecipeId) : null
-    const resultMonster = recipe ? MONSTERS[recipe.resultMonsterId] : null
+    const recipe = selectedRecipeId ? allRecipes.find(r => r.id === selectedRecipeId) : null
 
     const progressRef = useRef<HTMLDivElement>(null)
     const animationFrameRef = useRef<number>(0)
 
     // Check if requirements are met
-    const requirementsMet = React.useMemo(() => {
-        if (!recipe) return false
-        return recipe.materials.every(req => {
-            const added = selectedIngredients[req.materialId] || 0
-            return added >= req.count
-        })
-    }, [recipe, selectedIngredients])
+    const craftCheck = recipe ? canCraft(recipe.id) : { can: false, missingMaterials: [] }
+    const requirementsMet = craftCheck.can
 
-    // Calculate missing ingredients for display
-    const missingIngredients = React.useMemo(() => {
-        if (!recipe) return []
-        return recipe.materials.map(req => {
-            const added = selectedIngredients[req.materialId] || 0
-            const missing = Math.max(0, req.count - added)
-            return { ...req, missing, added }
+    // Calculate ingredients display info
+    const ingredientsDisplay = React.useMemo(() => {
+        if (!recipe || !recipe.ingredients) return []
+        return recipe.ingredients.map(ing => {
+            const material = allMaterials.find(m => m.id === ing.material_id)
+            const added = selectedIngredients[ing.material_id] || 0
+            const needed = ing.quantity
+            const isFulfilled = added >= needed
+            return {
+                material,
+                materialId: ing.material_id,
+                added,
+                needed,
+                isFulfilled,
+                isCatalyst: ing.is_catalyst
+            }
         })
-    }, [recipe, selectedIngredients])
+    }, [recipe, allMaterials, selectedIngredients])
 
     // Handle Brewing Animation & Logic
     useEffect(() => {
         if (!isBrewing || !recipe || !brewStartTime) return
 
-        const duration = recipe.craftTimeSec * 1000
+        const duration = recipe.craft_time_sec * 1000
 
         const animate = () => {
             const now = Date.now()
@@ -50,8 +64,13 @@ export default function CauldronPanel() {
 
             if (progress >= 1) {
                 // Complete!
-                completeBrewing(recipe.resultMonsterId, 1, selectedIngredients)
-                alert(`연금 성공! ${resultMonster?.name} 획득!`) // Simple feedback for now
+                const success = Math.random() * 100 < recipe.base_success_rate
+                completeBrewing(success)
+                if (success) {
+                    alert(`✅ 연금 성공! ${recipe.name} 획득!`)
+                } else {
+                    alert(`❌ 연금 실패...`)
+                }
             } else {
                 animationFrameRef.current = requestAnimationFrame(animate)
             }
@@ -62,9 +81,9 @@ export default function CauldronPanel() {
         return () => {
             if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
         }
-    }, [isBrewing, brewStartTime, recipe, completeBrewing, resultMonster, selectedIngredients])
+    }, [isBrewing, brewStartTime, recipe, completeBrewing])
 
-    if (!recipe || !resultMonster) {
+    if (!recipe) {
         return (
             <div style={{
                 flex: 1,
@@ -131,54 +150,89 @@ export default function CauldronPanel() {
             {/* Ingredients Slots */}
             <div style={{ width: '100%', marginBottom: '20px' }}>
                 <h4 style={{ margin: '0 0 10px 0', color: '#ddd', textAlign: 'center' }}>필요 재료</h4>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
-                    {missingIngredients.map((req, idx) => {
-                        const material = MATERIALS[req.materialId]
-                        const isFulfilled = req.added >= req.count
-                        return (
-                            <div key={idx} style={{
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                    {ingredientsDisplay.map((ing, idx) => (
+                        <div key={idx} style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            opacity: ing.isFulfilled ? 1 : 0.7
+                        }}>
+                            <div style={{
+                                width: '60px',
+                                height: '60px',
+                                background: '#1e293b',
+                                border: ing.isFulfilled ? '2px solid #22c55e' : '2px solid #ef4444',
+                                borderRadius: '8px',
                                 display: 'flex',
                                 flexDirection: 'column',
+                                justifyContent: 'center',
                                 alignItems: 'center',
-                                opacity: isFulfilled ? 1 : 0.7
-                            }}>
-                                <div style={{
-                                    width: '50px',
-                                    height: '50px',
-                                    background: '#2a2a2a',
-                                    border: isFulfilled ? '1px solid #22c55e' : '1px solid #ef4444',
-                                    borderRadius: '8px',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    marginBottom: '5px',
-                                    position: 'relative'
-                                }}>
-                                    <ResourceIcon resourceId={req.materialId} size={24} />
-                                    {isFulfilled && (
-                                        <div style={{
-                                            position: 'absolute',
-                                            bottom: '-5px',
-                                            right: '-5px',
-                                            background: '#22c55e',
-                                            borderRadius: '50%',
-                                            width: '16px',
-                                            height: '16px',
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            fontSize: '10px',
-                                            color: 'white'
-                                        }}>✓</div>
-                                    )}
-                                </div>
-                                <span style={{ fontSize: '0.8em', color: '#ccc' }}>{material.name}</span>
-                                <span style={{ fontSize: '0.8em', color: isFulfilled ? '#22c55e' : '#ef4444' }}>
-                                    {req.added} / {req.count}
+                                marginBottom: '5px',
+                                position: 'relative',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => {
+                                if (ing.added > 0) {
+                                    removeIngredient(ing.materialId, 1)
+                                }
+                            }}
+                            onContextMenu={(e) => {
+                                e.preventDefault()
+                                addIngredient(ing.materialId, 1)
+                            }}
+                            title="좌클릭: 제거, 우클릭: 추가"
+                            >
+                                <span style={{ fontSize: '24px' }}>
+                                    {ing.material?.family === 'PLANT' && '🌿'}
+                                    {ing.material?.family === 'MINERAL' && '💎'}
+                                    {ing.material?.family === 'BEAST' && '🦴'}
+                                    {ing.material?.family === 'SLIME' && '🟢'}
+                                    {ing.material?.family === 'SPIRIT' && '✨'}
                                 </span>
+                                {ing.isFulfilled && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-5px',
+                                        right: '-5px',
+                                        background: '#22c55e',
+                                        borderRadius: '50%',
+                                        width: '20px',
+                                        height: '20px',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        fontSize: '12px',
+                                        color: 'white',
+                                        fontWeight: 'bold'
+                                    }}>✓</div>
+                                )}
+                                {ing.isCatalyst && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-5px',
+                                        left: '-5px',
+                                        background: '#7c3aed',
+                                        borderRadius: '50%',
+                                        width: '20px',
+                                        height: '20px',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        fontSize: '10px',
+                                        color: 'white',
+                                        fontWeight: 'bold'
+                                    }}>⭐</div>
+                                )}
                             </div>
-                        )
-                    })}
+                            <span style={{ fontSize: '11px', color: '#cbd5e1', textAlign: 'center', maxWidth: '80px' }}>
+                                {ing.material?.name || ing.materialId}
+                            </span>
+                            <span style={{ fontSize: '12px', fontWeight: 'bold', color: ing.isFulfilled ? '#22c55e' : '#ef4444' }}>
+                                {ing.added} / {ing.needed}
+                            </span>
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -187,30 +241,44 @@ export default function CauldronPanel() {
                 display: 'flex',
                 gap: '20px',
                 marginBottom: '30px',
-                background: '#2a2a2a',
-                padding: '10px 20px',
-                borderRadius: '20px'
+                background: '#1e293b',
+                padding: '12px 24px',
+                borderRadius: '20px',
+                border: '1px solid #334155'
             }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.8em', color: '#888' }}>성공 확률</div>
-                    <div style={{ color: '#22c55e', fontWeight: 'bold' }}>{recipe.successRate}%</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>성공 확률</div>
+                    <div style={{ color: '#22c55e', fontWeight: 'bold', fontSize: '18px' }}>{recipe.base_success_rate}%</div>
                 </div>
+                <div style={{
+                    width: '1px',
+                    background: '#334155'
+                }} />
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.8em', color: '#888' }}>소요 시간</div>
-                    <div style={{ color: '#fff', fontWeight: 'bold' }}>{recipe.craftTimeSec}초</div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>소요 시간</div>
+                    <div style={{ color: '#f0e68c', fontWeight: 'bold', fontSize: '18px' }}>{recipe.craft_time_sec}초</div>
+                </div>
+                <div style={{
+                    width: '1px',
+                    background: '#334155'
+                }} />
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>필요 레벨</div>
+                    <div style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '18px' }}>Lv.{recipe.required_alchemy_level}</div>
                 </div>
             </div>
 
             {/* Action Button */}
             {isBrewing ? (
-                <div style={{ width: '100%', maxWidth: '300px' }}>
+                <div style={{ width: '100%', maxWidth: '400px' }}>
                     <div style={{
                         width: '100%',
-                        height: '10px',
-                        background: '#333',
-                        borderRadius: '5px',
+                        height: '12px',
+                        background: '#1e293b',
+                        borderRadius: '6px',
                         overflow: 'hidden',
-                        marginBottom: '10px'
+                        marginBottom: '12px',
+                        border: '1px solid #334155'
                     }}>
                         <div
                             ref={progressRef}
@@ -223,42 +291,71 @@ export default function CauldronPanel() {
                         />
                     </div>
                     <button
-                        onClick={cancelBrewing}
+                        onClick={clearIngredients}
                         style={{
                             width: '100%',
-                            padding: '12px',
+                            padding: '14px',
                             background: '#ef4444',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             cursor: 'pointer',
-                            fontWeight: 'bold'
+                            fontWeight: 'bold',
+                            fontSize: '15px'
                         }}
                     >
                         취소
                     </button>
                 </div>
             ) : (
-                <button
-                    disabled={!requirementsMet}
-                    onClick={startBrewing}
-                    style={{
-                        width: '100%',
-                        maxWidth: '300px',
-                        padding: '15px',
-                        background: requirementsMet ? 'linear-gradient(135deg, #8b5cf6, #6366f1)' : '#444',
-                        color: requirementsMet ? 'white' : '#888',
-                        border: 'none',
-                        borderRadius: '8px',
-                        cursor: requirementsMet ? 'pointer' : 'not-allowed',
-                        fontSize: '1.1em',
-                        fontWeight: 'bold',
-                        boxShadow: requirementsMet ? '0 4px 15px rgba(139, 92, 246, 0.4)' : 'none',
-                        transition: 'all 0.2s'
-                    }}
-                >
-                    {requirementsMet ? '연금술 시작' : '재료 부족'}
-                </button>
+                <div style={{ width: '100%', maxWidth: '400px' }}>
+                    {!requirementsMet && (
+                        <div style={{
+                            marginBottom: '12px',
+                            padding: '8px 12px',
+                            background: '#7f1d1d',
+                            color: '#fecaca',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            textAlign: 'center'
+                        }}>
+                            {craftCheck.missingMaterials[0] || '재료를 확인하세요'}
+                        </div>
+                    )}
+                    <button
+                        disabled={!requirementsMet}
+                        onClick={() => {
+                            if (recipe) startBrewing(recipe.id)
+                        }}
+                        style={{
+                            width: '100%',
+                            padding: '16px',
+                            background: requirementsMet ? 'linear-gradient(135deg, #8b5cf6, #6366f1)' : '#475569',
+                            color: requirementsMet ? 'white' : '#94a3b8',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: requirementsMet ? 'pointer' : 'not-allowed',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            boxShadow: requirementsMet ? '0 4px 15px rgba(139, 92, 246, 0.4)' : 'none',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (requirementsMet) {
+                                e.currentTarget.style.transform = 'translateY(-2px)'
+                                e.currentTarget.style.boxShadow = '0 6px 20px rgba(139, 92, 246, 0.6)'
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            if (requirementsMet) {
+                                e.currentTarget.style.transform = 'translateY(0)'
+                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.4)'
+                            }
+                        }}
+                    >
+                        {requirementsMet ? '🧪 연금술 시작!' : '재료 부족'}
+                    </button>
+                </div>
             )}
         </div>
     )

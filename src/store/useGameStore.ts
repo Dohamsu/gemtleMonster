@@ -9,6 +9,9 @@ interface ResourceAddition {
     facilityKey?: string // e.g., "herb_farm-1"
 }
 
+export type Tab = 'facilities' | 'shop' | 'alchemy'
+export type CanvasView = 'map' | 'alchemy_workshop'
+
 interface GameState {
     player: {
         x: number
@@ -20,6 +23,8 @@ interface GameState {
     facilities: Record<string, number>
     lastCollectedAt: Record<string, number>
     recentAdditions: ResourceAddition[]
+    activeTab: Tab
+    canvasView: CanvasView
 
     setPlayerPosition: (x: number, y: number) => void
     addItem: (item: string) => void
@@ -30,6 +35,8 @@ interface GameState {
     removeRecentAddition: (id: string) => void
     sellResource: (resourceId: string, amount: number, pricePerUnit: number) => void
     upgradeFacility: (facilityId: string, cost: Record<string, number>) => void
+    setActiveTab: (tab: Tab) => void
+    setCanvasView: (view: CanvasView) => void
 
     // Alchemy Actions
     alchemyState: AlchemyState
@@ -43,10 +50,19 @@ interface GameState {
 export const useGameStore = create<GameState>((set) => ({
     player: { x: 0, y: 0, health: 100 },
     inventory: [],
-    resources: { gold: 1000 }, // Initial gold for testing
+    resources: {
+        gold: 1000,
+        herb_common: 10,
+        slime_core: 5,
+        beast_fang: 3,
+        magic_ore: 2,
+        spirit_dust: 2
+    }, // Initial resources for testing
     facilities: { herb_farm: 1 }, // Initial facility
     lastCollectedAt: {},
     recentAdditions: [],
+    activeTab: 'facilities',
+    canvasView: 'map',
     alchemyState: {
         selectedRecipeId: null,
         selectedIngredients: {},
@@ -143,6 +159,9 @@ export const useGameStore = create<GameState>((set) => ({
             }
         };
     }),
+
+    setActiveTab: (tab) => set({ activeTab: tab }),
+    setCanvasView: (view) => set({ canvasView: view }),
 
     // Alchemy Actions Implementation
     selectRecipe: (recipeId) => set((state) => ({

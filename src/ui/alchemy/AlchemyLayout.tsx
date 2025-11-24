@@ -1,72 +1,95 @@
-
-import AlchemyHeader from './AlchemyHeader'
-import RecipeList from './RecipeList'
-import InventoryPanel from './InventoryPanel'
+import { useEffect } from 'react'
+import { useAuth } from '../../hooks/useAuth'
+import { useAlchemyStore } from '../../store/useAlchemyStore'
+import { RecipePanel } from '../RecipePanel'
+import { InventoryPanel } from '../InventoryPanel'
 import CauldronPanel from './CauldronPanel'
 
 export default function AlchemyLayout() {
+    const { user } = useAuth()
+    const { loadAllData, addTestMaterials } = useAlchemyStore()
+
+    useEffect(() => {
+        if (user) {
+            loadAllData(user.id)
+        }
+    }, [user])
+
+    const handleAddTestMaterials = async () => {
+        if (user) {
+            await addTestMaterials(user.id)
+        }
+    }
+
     return (
         <div style={{
             display: 'flex',
             flexDirection: 'column',
             width: '100%',
             height: '100%',
-            background: '#1a1a1a',
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
             color: '#eee',
             overflow: 'hidden'
         }}>
             {/* Header */}
-            <div style={{ flexShrink: 0 }}>
-                <AlchemyHeader />
+            <div style={{
+                padding: '16px',
+                borderBottom: '2px solid #4a5568',
+                background: 'linear-gradient(90deg, #1a1a2e 0%, #16213e 100%)'
+            }}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <h1 style={{
+                        margin: 0,
+                        fontSize: '28px',
+                        color: '#f0e68c',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                    }}>
+                        🧪 몬스터 연금술 공방
+                    </h1>
+                    <button
+                        onClick={handleAddTestMaterials}
+                        style={{
+                            padding: '8px 16px',
+                            background: '#10b981',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '13px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        테스트 재료 추가
+                    </button>
+                </div>
             </div>
 
             {/* Main Content Area (3 Columns) */}
             <div style={{
                 display: 'flex',
                 flex: 1,
-                overflow: 'hidden',
-                padding: '10px',
-                gap: '10px'
+                overflow: 'hidden'
             }}>
                 {/* Left Panel: Recipes */}
-                <div style={{
-                    width: '300px',
-                    background: '#252525',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                    border: '1px solid #333'
-                }}>
-                    <RecipeList />
-                </div>
+                <RecipePanel />
 
                 {/* Center Panel: Cauldron */}
                 <div style={{
                     flex: 1,
-                    background: '#222',
-                    borderRadius: '8px',
                     display: 'flex',
                     flexDirection: 'column',
                     overflow: 'hidden',
-                    border: '1px solid #333',
                     position: 'relative'
                 }}>
                     <CauldronPanel />
                 </div>
 
                 {/* Right Panel: Inventory */}
-                <div style={{
-                    width: '300px',
-                    background: '#252525',
-                    borderRadius: '8px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                    border: '1px solid #333'
-                }}>
-                    <InventoryPanel />
-                </div>
+                <InventoryPanel />
             </div>
         </div>
     )

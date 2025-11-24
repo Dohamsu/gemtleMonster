@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useGameStore } from '../store/useGameStore'
 import { useSaveGame } from '../hooks/useSaveGame'
@@ -9,9 +8,9 @@ import ResourceAnimation from './ResourceAnimation'
 
 const RESOURCE_NAMES: Record<string, string> = {
     gold: '골드',
-    herb_common: '일반 허브',
-    herb_rare: '희귀 허브',
-    herb_special: '특수 허브',
+    herb_common: '일반 약초',
+    herb_rare: '희귀 약초',
+    herb_special: '특수 약초',
     stone: '돌',
     ore_iron: '철광석',
     ore_magic: '마력석',
@@ -29,13 +28,10 @@ const RESOURCE_NAMES: Record<string, string> = {
     fire_core: '불 던전 코어'
 }
 
-type Tab = 'facilities' | 'shop' | 'alchemy'
-
 export default function UIOverlay() {
     const { user, loading: authLoading } = useAuth()
-    const { resources, recentAdditions, removeRecentAddition } = useGameStore()
+    const { resources, recentAdditions, removeRecentAddition, activeTab, setActiveTab } = useGameStore()
     const { saveGame, saving, lastSaved } = useSaveGame()
-    const [activeTab, setActiveTab] = useState<Tab>('facilities')
 
     if (authLoading) {
         return (
