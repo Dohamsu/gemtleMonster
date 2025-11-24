@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { AlchemyState } from '../types/alchemy'
 
 interface ResourceAddition {
     id: string
@@ -29,6 +30,14 @@ interface GameState {
     removeRecentAddition: (id: string) => void
     sellResource: (resourceId: string, amount: number, pricePerUnit: number) => void
     upgradeFacility: (facilityId: string, cost: Record<string, number>) => void
+
+    // Alchemy Actions
+    alchemyState: AlchemyState
+    selectRecipe: (recipeId: string | null) => void
+    addIngredient: (materialId: string, count: number) => void
+    startBrewing: () => void
+    completeBrewing: (resultMonsterId: string, count: number, materialsUsed: Record<string, number>) => void
+    cancelBrewing: () => void
 }
 
 export const useGameStore = create<GameState>((set) => ({
@@ -38,6 +47,13 @@ export const useGameStore = create<GameState>((set) => ({
     facilities: { herb_farm: 1 }, // Initial facility
     lastCollectedAt: {},
     recentAdditions: [],
+    alchemyState: {
+        selectedRecipeId: null,
+        selectedIngredients: {},
+        isBrewing: false,
+        brewStartTime: null,
+        brewProgress: 0
+    },
 
     setPlayerPosition: (x, y) => set((state) => ({ player: { ...state.player, x, y } })),
     addItem: (item) => set((state) => ({ inventory: [...state.inventory, item] })),
@@ -127,4 +143,70 @@ export const useGameStore = create<GameState>((set) => ({
             }
         };
     }),
+
+    // Alchemy Actions Implementation
+    selectRecipe: (recipeId) => set((state) => ({
+        alchemyState: {
+            ...state.alchemyState,
+            selectedRecipeId: recipeId,
+            selectedIngredients: {}, // Reset ingredients when selecting new recipe
+            isBrewing: false,
+            brewProgress: 0
+        }
+    })),
+
+    addIngredient: (materialId, count) => set((state) => {
+        const currentCount = state.alchemyState.selectedIngredients[materialId] || 0
+        const newCount = Math.max(0, currentCount + count)
+        return {
+            alchemyState: {
+                ...state.alchemyState,
+                selectedIngredients: {
+                    ...state.alchemyState.selectedIngredients,
+                    [materialId]: newCount
+                }
+            }
+        }
+    }),
+
+    startBrewing: () => set((state) => ({
+        alchemyState: {
+            ...state.alchemyState,
+            isBrewing: true,
+            brewStartTime: Date.now(),
+            brewProgress: 0
+        }
+    })),
+
+    completeBrewing: (resultMonsterId, count, materialsUsed) => set((state) => {
+        const newResources = { ...state.resources }
+
+        // Deduct materials
+        for (const [matId, amount] of Object.entries(materialsUsed)) {
+            newResources[matId] = Math.max(0, (newResources[matId] || 0) - amount)
+        }
+
+        // Add monster (stored as resource for now)
+        newResources[resultMonsterId] = (newResources[resultMonsterId] || 0) + count
+
+        return {
+            resources: newResources,
+            alchemyState: {
+                ...state.alchemyState,
+                isBrewing: false,
+                brewStartTime: null,
+                brewProgress: 0,
+                selectedIngredients: {} // Reset ingredients after brew
+            }
+        }
+    }),
+
+    cancelBrewing: () => set((state) => ({
+        alchemyState: {
+            ...state.alchemyState,
+            isBrewing: false,
+            brewStartTime: null,
+            brewProgress: 0
+        }
+    }))
 }))

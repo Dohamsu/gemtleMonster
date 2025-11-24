@@ -4,6 +4,7 @@ import { useGameStore } from '../store/useGameStore'
 import { useSaveGame } from '../hooks/useSaveGame'
 import IdleFacilityList from './idle/IdleFacilityList'
 import Shop from './shop/Shop'
+import AlchemyLayout from './alchemy/AlchemyLayout'
 import ResourceAnimation from './ResourceAnimation'
 
 const RESOURCE_NAMES: Record<string, string> = {
@@ -17,10 +18,18 @@ const RESOURCE_NAMES: Record<string, string> = {
     gem_fragment: '보석 파편',
     crack_stone_fragment: '균열석 파편',
     ancient_relic_fragment: '고대 유물 파편',
-    training_token: '훈련 토큰'
+
+    training_token: '훈련 토큰',
+    // Alchemy Materials
+    slime_core: '슬라임 코어',
+    beast_fang: '짐승 송곳니',
+    spirit_dust: '정령 가루',
+    dark_crystal: '어둠의 결정',
+    crown_shard: '왕관 파편',
+    fire_core: '불 던전 코어'
 }
 
-type Tab = 'facilities' | 'shop'
+type Tab = 'facilities' | 'shop' | 'alchemy'
 
 export default function UIOverlay() {
     const { user, loading: authLoading } = useAuth()
@@ -121,33 +130,48 @@ export default function UIOverlay() {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', marginBottom: '10px', gap: '5px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
                 <button
                     onClick={() => setActiveTab('facilities')}
                     style={{
                         flex: 1,
-                        padding: '8px',
-                        background: activeTab === 'facilities' ? '#4b5563' : '#1f2937',
-                        color: activeTab === 'facilities' ? 'white' : '#9ca3af',
+                        padding: '10px',
+                        background: activeTab === 'facilities' ? '#444' : '#2a2a2a',
+                        color: 'white',
                         border: 'none',
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
-                        fontWeight: 'bold'
+                        fontWeight: activeTab === 'facilities' ? 'bold' : 'normal'
                     }}
                 >
-                    시설
+                    시설 관리
+                </button>
+                <button
+                    onClick={() => setActiveTab('alchemy')}
+                    style={{
+                        flex: 1,
+                        padding: '10px',
+                        background: activeTab === 'alchemy' ? '#444' : '#2a2a2a',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontWeight: activeTab === 'alchemy' ? 'bold' : 'normal'
+                    }}
+                >
+                    연금술 공방
                 </button>
                 <button
                     onClick={() => setActiveTab('shop')}
                     style={{
                         flex: 1,
-                        padding: '8px',
-                        background: activeTab === 'shop' ? '#4b5563' : '#1f2937',
-                        color: activeTab === 'shop' ? 'white' : '#9ca3af',
+                        padding: '10px',
+                        background: activeTab === 'shop' ? '#444' : '#2a2a2a',
+                        color: 'white',
                         border: 'none',
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         cursor: 'pointer',
-                        fontWeight: 'bold'
+                        fontWeight: activeTab === 'shop' ? 'bold' : 'normal'
                     }}
                 >
                     상점
@@ -156,7 +180,9 @@ export default function UIOverlay() {
 
             {/* Content Area */}
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                {activeTab === 'facilities' ? <IdleFacilityList /> : <Shop />}
+                {activeTab === 'facilities' && <IdleFacilityList />}
+                {activeTab === 'alchemy' && <AlchemyLayout />}
+                {activeTab === 'shop' && <Shop />}
             </div>
         </div>
     )
