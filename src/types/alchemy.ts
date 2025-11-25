@@ -8,6 +8,7 @@ export interface Material {
     type: 'PLANT' | 'MINERAL' | 'BEAST' | 'SLIME' | 'SPIRIT' | 'SPECIAL'
     description: string
     rarity: RarityType
+    iconUrl?: string
 }
 
 export interface Monster {
@@ -17,6 +18,7 @@ export interface Monster {
     element: ElementType
     rarity: RarityType
     description: string
+    iconUrl?: string
     baseStats: {
         hp: number
         atk: number

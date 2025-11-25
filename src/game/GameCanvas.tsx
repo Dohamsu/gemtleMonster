@@ -1,7 +1,8 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useGameStore } from '../store/useGameStore'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { useAuth } from '../hooks/useAuth'
+import { AlchemyResultModal } from '../ui/alchemy/AlchemyResultModal'
 
 export default function GameCanvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -20,8 +21,28 @@ export default function GameCanvas() {
         startBrewing,
         completeBrewing,
         autoFillIngredients,
-        loadAllData
+        loadAllData,
+        playerAlchemy,
+        brewResult
     } = useAlchemyStore()
+
+    const [showResultModal, setShowResultModal] = useState(false)
+    const [lastBrewResult, setLastBrewResult] = useState<{ success: boolean, monsterId?: string }>({ success: false })
+
+    // Material grid UI state
+    const [materialScrollOffset, setMaterialScrollOffset] = useState(0)
+    const [hoveredMaterial, setHoveredMaterial] = useState<string | null>(null)
+
+    // Show modal when brewing completes
+    useEffect(() => {
+        if (brewResult.type !== 'idle') {
+            setLastBrewResult({
+                success: brewResult.type === 'success',
+                monsterId: brewResult.monsterId
+            })
+            setShowResultModal(true)
+        }
+    }, [brewResult])
 
     // Load alchemy data on mount
     useEffect(() => {
@@ -35,11 +56,13 @@ export default function GameCanvas() {
         herb_farm: HTMLImageElement | null
         mine: HTMLImageElement | null
         alchemy_workshop: HTMLImageElement | null
+        cauldron_pixel: HTMLImageElement | null
     }>({
         background: null,
         herb_farm: null,
         mine: null,
-        alchemy_workshop: null
+        alchemy_workshop: null,
+        cauldron_pixel: null
     })
 
     useEffect(() => {
@@ -55,16 +78,44 @@ export default function GameCanvas() {
             loadImage('/assets/background.png'),
             loadImage('/assets/herb_farm.png'),
             loadImage('/assets/mine.png'),
-            loadImage('/assets/alchemy_workshop.png')
-        ]).then(([bg, herbFarm, mine, alchemyWorkshop]) => {
+            loadImage('/assets/alchemy_workshop.png'),
+            loadImage('/assets/cauldron_pixel.png')
+        ]).then(([bg, herbFarm, mine, alchemyWorkshop, cauldronPixel]) => {
             imagesRef.current = {
                 background: bg,
                 herb_farm: herbFarm,
                 mine: mine,
-                alchemy_workshop: alchemyWorkshop
+                alchemy_workshop: alchemyWorkshop,
+                cauldron_pixel: cauldronPixel
             }
         }).catch(err => console.error('Failed to load images:', err))
     }, [])
+
+    // Add wheel event listener with passive: false to allow preventDefault
+    useEffect(() => {
+        const canvas = canvasRef.current
+        if (!canvas) return
+
+        const handleWheel = (event: WheelEvent) => {
+            if (canvasView !== 'alchemy_workshop') return
+
+            const rect = canvas.getBoundingClientRect()
+            const scaleX = canvas.width / rect.width
+            const x = (event.clientX - rect.left) * scaleX
+
+            // Check if mouse is over material grid area
+            const gridX = canvas.width - 260
+            const gridW = 220
+
+            if (x >= gridX && x <= gridX + gridW) {
+                event.preventDefault()
+                setMaterialScrollOffset(prev => Math.max(0, prev + event.deltaY * 0.5))
+            }
+        }
+
+        canvas.addEventListener('wheel', handleWheel, { passive: false })
+        return () => canvas.removeEventListener('wheel', handleWheel)
+    }, [canvasView])
 
     const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current
@@ -99,33 +150,45 @@ export default function GameCanvas() {
             const recipeX = 40
             const recipeY = 120
             const recipeW = 220
-            const recipeItemH = 60
-            const recipePadding = 5
 
             const visibleRecipes = allRecipes.filter(r => !r.is_hidden)
+            let currentY = recipeY + 40
+            const recipePadding = 5
+
             for (let i = 0; i < visibleRecipes.length; i++) {
-                const itemY = recipeY + 40 + (i * (recipeItemH + recipePadding))
+                const recipe = visibleRecipes[i]
+                // Dynamic height: Title(20) + Ingredients(15 * count) + Padding(10)
+                const itemHeight = 30 + (recipe.ingredients?.length || 0) * 15 + 10
+
                 if (x >= recipeX && x <= recipeX + recipeW &&
-                    y >= itemY && y <= itemY + recipeItemH) {
-                    selectRecipe(visibleRecipes[i].id)
-                    console.log('Selected recipe:', visibleRecipes[i].name)
+                    y >= currentY && y <= currentY + itemHeight) {
+                    selectRecipe(recipe.id)
+                    console.log('Selected recipe:', recipe.name)
                     return
                 }
+                currentY += itemHeight + recipePadding
             }
 
-            // Inventory clicks (right side) - add ingredient
-            const invX = canvas.width - 260
-            const invY = 120
-            const invW = 220
-            const invItemH = 40
-            const invPadding = 3
+            // Material grid clicks (right side)
+            const gridX = canvas.width - 260
+            const gridY = 120
+            const gridW = 220
+            const gridCellSize = 50
+            const gridPadding = 5
+            const gridCols = Math.floor(gridW / (gridCellSize + gridPadding))
 
-            const materialsList = allMaterials.filter(m => (playerMaterials[m.id] || 0) > 0)
-            for (let i = 0; i < materialsList.length; i++) {
-                const itemY = invY + 40 + (i * (invItemH + invPadding))
-                if (x >= invX && x <= invX + invW &&
-                    y >= itemY && y <= itemY + invItemH) {
-                    const material = materialsList[i]
+            //Grid area click detection
+            if (x >= gridX && x <= gridX + gridW &&
+                y >= gridY + 40 && y < gridY + canvas.height - 160) {
+                const relX = x - gridX
+                const relY = y - (gridY + 40) + materialScrollOffset
+
+                const col = Math.floor(relX / (gridCellSize + gridPadding))
+                const row = Math.floor(relY / (gridCellSize + gridPadding))
+                const index = row * gridCols + col
+
+                if (index >= 0 && index < allMaterials.length) {
+                    const material = allMaterials[index]
                     addIngredient(material.id, 1)
                     console.log('Added ingredient:', material.name)
                     return
@@ -137,18 +200,20 @@ export default function GameCanvas() {
                 const brewBtnW = 180
                 const brewBtnH = 50
                 const brewBtnX = canvas.width / 2 - brewBtnW / 2
-                const brewBtnY = canvas.height - 80
+                const brewBtnY = canvas.height - 140
                 if (x >= brewBtnX && x <= brewBtnX + brewBtnW &&
                     y >= brewBtnY && y <= brewBtnY + brewBtnH) {
                     if (selectedRecipeId) {
                         const recipe = allRecipes.find(r => r.id === selectedRecipeId)
                         if (recipe && recipe.ingredients) {
                             // Check if we have enough materials in inventory
-                            const hasEnough = recipe.ingredients.every(ing =>
+                            const hasMaterials = recipe.ingredients.every(ing =>
                                 (playerMaterials[ing.material_id] || 0) >= ing.quantity
                             )
+                            // Check alchemy level
+                            const hasLevel = (playerAlchemy?.level || 1) >= recipe.required_alchemy_level
 
-                            if (hasEnough) {
+                            if (hasMaterials && hasLevel) {
                                 // Must fill ingredients into selectedIngredients for startBrewing to work
                                 autoFillIngredients(selectedRecipeId)
                                 startBrewing(selectedRecipeId)
@@ -161,7 +226,8 @@ export default function GameCanvas() {
                                     console.log(success ? '✅ Brewing success!' : '❌ Brewing failed!')
                                 }, recipe.craft_time_sec * 1000)
                             } else {
-                                console.log('❌ Not enough materials in inventory!')
+                                if (!hasMaterials) console.log('❌ Not enough materials in inventory!')
+                                if (!hasLevel) console.log(`❌ Alchemy level too low! Required: ${recipe.required_alchemy_level}`)
                             }
                         }
                     }
@@ -263,10 +329,77 @@ export default function GameCanvas() {
                 ctx.lineWidth = 4
                 ctx.stroke()
 
-                ctx.font = 'bold 80px Arial'
-                ctx.textAlign = 'center'
-                ctx.textBaseline = 'middle'
-                ctx.fillText('🍯', cauldronX + cauldronSize / 2, cauldronY + cauldronSize / 2)
+                if (imgs.cauldron_pixel) {
+                    const imgSize = 128
+                    ctx.drawImage(imgs.cauldron_pixel,
+                        cauldronX + cauldronSize / 2 - imgSize / 2,
+                        cauldronY + cauldronSize / 2 - imgSize / 2,
+                        imgSize, imgSize
+                    )
+                } else {
+                    ctx.font = 'bold 80px Arial'
+                    ctx.textAlign = 'center'
+                    ctx.textBaseline = 'middle'
+                    ctx.fillText('🍯', cauldronX + cauldronSize / 2, cauldronY + cauldronSize / 2)
+                }
+
+                // Ingredient Slots (below cauldron)
+                const slotSize = 60
+                const slotGap = 10
+                const maxSlots = 4
+                const totalSlotsWidth = (slotSize * maxSlots) + (slotGap * (maxSlots - 1))
+                const slotsX = canvas.width / 2 - totalSlotsWidth / 2
+                const slotsY = cauldronY + cauldronSize + 20
+
+                // Get selected ingredients from store
+                const ingredientEntries = Object.entries(selectedIngredients)
+
+                for (let i = 0; i < maxSlots; i++) {
+                    const slotX = slotsX + i * (slotSize + slotGap)
+
+                    // Draw slot background
+                    ctx.fillStyle = '#2a2520'
+                    ctx.fillRect(slotX, slotsY, slotSize, slotSize)
+                    ctx.strokeStyle = '#7a5040'
+                    ctx.lineWidth = 2
+                    ctx.strokeRect(slotX, slotsY, slotSize, slotSize)
+
+                    // If slot has ingredient, render it
+                    if (i < ingredientEntries.length) {
+                        const [materialId, quantity] = ingredientEntries[i]
+                        const material = allMaterials.find(m => m.id === materialId)
+
+                        if (material) {
+                            // Draw material icon  
+                            ctx.fillStyle = '#f0d090'
+                            ctx.font = '32px Arial'
+                            ctx.textAlign = 'center'
+                            ctx.textBaseline = 'middle'
+                            const iconMap: Record<string, string> = {
+                                'PLANT': '🌿',
+                                'MINERAL': '💎',
+                                'BEAST': '🦴',
+                                'SLIME': '🟢',
+                                'SPIRIT': '✨'
+                            }
+                            ctx.fillText(iconMap[material.family] || '❓', slotX + slotSize / 2, slotsY + slotSize / 2 - 5)
+
+                            // Draw quantity
+                            ctx.fillStyle = '#1a1a1a'
+                            ctx.fillRect(slotX + slotSize - 18, slotsY + slotSize - 14, 16, 12)
+                            ctx.fillStyle = '#facc15'
+                            ctx.font = 'bold 9px Arial'
+                            ctx.fillText(quantity.toString(), slotX + slotSize - 10, slotsY + slotSize - 6)
+                        }
+                    } else {
+                        // Empty slot indicator
+                        ctx.fillStyle = '#666'
+                        ctx.font = '24px Arial'
+                        ctx.textAlign = 'center'
+                        ctx.textBaseline = 'middle'
+                        ctx.fillText('+', slotX + slotSize / 2, slotsY + slotSize / 2)
+                    }
+                }
 
                 // Recipe List (Left Side)
                 const recipeX = 40
@@ -288,20 +421,31 @@ export default function GameCanvas() {
 
                 // Render recipe items
                 const visibleRecipes = allRecipes.filter(r => !r.is_hidden)
-                const recipeItemH = 60
                 const recipePadding = 5
+                let currentY = recipeY + 40
 
-                visibleRecipes.forEach((recipe, i) => {
-                    const itemY = recipeY + 40 + (i * (recipeItemH + recipePadding))
+                visibleRecipes.forEach((recipe) => {
+                    const itemHeight = 30 + (recipe.ingredients?.length || 0) * 15 + 10
+                    const itemY = currentY
                     const isSelected = selectedRecipeId === recipe.id
 
+                    // Check materials for dimming
+                    const hasAllMaterials = recipe.ingredients?.every(ing =>
+                        (playerMaterials[ing.material_id] || 0) >= ing.quantity
+                    ) ?? true
+
+                    // Apply dimming if insufficient materials
+                    if (!hasAllMaterials) {
+                        ctx.globalAlpha = 0.5
+                    }
+
                     ctx.fillStyle = isSelected ? '#5a4030' : '#4a3020'
-                    ctx.fillRect(recipeX + 5, itemY, recipeW - 10, recipeItemH)
+                    ctx.fillRect(recipeX + 5, itemY, recipeW - 10, itemHeight)
 
                     if (isSelected) {
                         ctx.strokeStyle = '#facc15'
                         ctx.lineWidth = 2
-                        ctx.strokeRect(recipeX + 5, itemY, recipeW - 10, recipeItemH)
+                        ctx.strokeRect(recipeX + 5, itemY, recipeW - 10, itemHeight)
                     }
 
                     ctx.fillStyle = '#f0d090'
@@ -314,13 +458,18 @@ export default function GameCanvas() {
                             const mat = allMaterials.find(m => m.id === ing.material_id)
                             const owned = playerMaterials[ing.material_id] || 0
                             const hasEnough = owned >= ing.quantity
-                            const yPos = itemY + 28 + (idx * 14)
+                            const yPos = itemY + 28 + (idx * 15)
 
                             ctx.fillStyle = hasEnough ? '#aaa' : '#ff6666'
                             ctx.font = '11px Arial'
                             ctx.fillText(`${mat?.name || ing.material_id} ${owned}/${ing.quantity}`, recipeX + 10, yPos, recipeW - 20)
                         })
                     }
+
+                    // Reset alpha
+                    ctx.globalAlpha = 1.0
+
+                    currentY += itemHeight + recipePadding
                 })
 
                 // Inventory (Right Side)
@@ -340,32 +489,86 @@ export default function GameCanvas() {
                 ctx.textAlign = 'left'
                 ctx.fillText('🎒 보유 재료', invX + 10, invY + 10)
 
-                // Render inventory items
-                const materialsList = allMaterials.filter(m => (playerMaterials[m.id] || 0) > 0)
-                const invItemH = 40
-                const invPadding = 3
+                const gridCellSize = 50
+                const gridPadding = 5
+                const gridCols = Math.floor(invW / (gridCellSize + gridPadding))
 
-                materialsList.forEach((material, i) => {
+                // Helper function for rarity colors
+                const getRarityColor = (rarity: string) => {
+                    switch (rarity.toUpperCase()) {
+                        case 'COMMON': return '#9ca3af'
+                        case 'UNCOMMON': return '#22c55e'
+                        case 'RARE': return '#3b82f6'
+                        case 'EPIC': return '#a855f7'
+                        case 'LEGENDARY': return '#eab308'
+                        default: return '#9ca3af'
+                    }
+                }
+
+                // Save canvas state and setup clipping region
+                ctx.save()
+                ctx.beginPath()
+                ctx.rect(invX, invY, invW, invH)
+                ctx.clip()
+
+                // Render material grid
+                let gridStartY = invY + 40 - materialScrollOffset
+                allMaterials.forEach((material, index) => {
+                    const col = index % gridCols
+                    const row = Math.floor(index / gridCols)
+
+                    const cellX = invX + col * (gridCellSize + gridPadding) + gridPadding
+                    const cellY = gridStartY + row * (gridCellSize + gridPadding) + gridPadding
+
+                    // Only render if in visible area
+                    if (cellY + gridCellSize < invY + 40 || cellY > invY + invH) return
+
                     const count = playerMaterials[material.id] || 0
-                    const itemY = invY + 40 + (i * (invItemH + invPadding))
+                    const rarityColor = getRarityColor(material.rarity)
 
-                    ctx.fillStyle = '#4a3020'
-                    ctx.fillRect(invX + 5, itemY, invW - 10, invItemH)
+                    // Draw cell background
+                    ctx.fillStyle = '#2a2520'
+                    ctx.fillRect(cellX, cellY, gridCellSize, gridCellSize)
 
-                    ctx.fillStyle = count > 0 ? '#f0d090' : '#666'
-                    ctx.font = 'bold 13px Arial'
-                    ctx.fillText(material.name, invX + 10, itemY + 12)
+                    // Draw rarity border
+                    ctx.strokeStyle = rarityColor
+                    ctx.lineWidth = 2
+                    ctx.strokeRect(cellX, cellY, gridCellSize, gridCellSize)
 
-                    ctx.fillStyle = count > 0 ? '#aaa' : '#555'
-                    ctx.font = '12px Arial'
-                    ctx.fillText(`보유: ${count}개`, invX + 10, itemY + 28)
+                    // Draw material icon (placeholder - will use actual icons later)
+                    ctx.fillStyle = '#f0d090'
+                    ctx.font = '24px Arial'
+                    ctx.textAlign = 'center'
+                    ctx.textBaseline = 'middle'
+                    const iconMap: Record<string, string> = {
+                        'PLANT': '🌿',
+                        'MINERAL': '💎',
+                        'BEAST': '🦴',
+                        'SLIME': '🟢',
+                        'SPIRIT': '✨'
+                    }
+                    ctx.fillText(iconMap[material.family] || '❓', cellX + gridCellSize / 2, cellY + gridCellSize / 2 - 5)
+
+                    // Draw quantity badge
+                    if (count > 0) {
+                        ctx.fillStyle = '#1a1a1a'
+                        ctx.fillRect(cellX + gridCellSize - 18, cellY + gridCellSize - 14, 16, 12)
+
+                        ctx.fillStyle = '#facc15'
+                        ctx.font = 'bold 9px Arial'
+                        ctx.textAlign = 'center'
+                        ctx.fillText(count.toString(), cellX + gridCellSize - 10, cellY + gridCellSize - 6)
+                    }
                 })
+
+                // Restore canvas state (remove clipping)
+                ctx.restore()
 
                 // Brew Button
                 const brewBtnW = 180
                 const brewBtnH = 50
                 const brewBtnX = canvas.width / 2 - brewBtnW / 2
-                const brewBtnY = canvas.height - 80
+                const brewBtnY = canvas.height - 140 // Moved higher to make room for XP bar
 
                 if (isBrewing) {
                     // Progress bar
@@ -393,24 +596,68 @@ export default function GameCanvas() {
                 } else {
                     const canBrew = selectedRecipeId !== null
                     const selectedRecipe = allRecipes.find(r => r.id === selectedRecipeId)
-                    let hasEnough = false
+                    let hasMaterials = false
+                    let hasLevel = false
+
                     if (selectedRecipe && selectedRecipe.ingredients) {
-                        hasEnough = selectedRecipe.ingredients.every(ing =>
+                        hasMaterials = selectedRecipe.ingredients.every(ing =>
                             (playerMaterials[ing.material_id] || 0) >= ing.quantity
                         )
+                        hasLevel = (playerAlchemy?.level || 1) >= selectedRecipe.required_alchemy_level
                     }
 
-                    ctx.fillStyle = (canBrew && hasEnough) ? '#5a3a20' : '#3a2520'
+                    const isEnabled = canBrew && hasMaterials && hasLevel
+
+                    ctx.fillStyle = isEnabled ? '#5a3a20' : '#3a2520'
                     ctx.fillRect(brewBtnX, brewBtnY, brewBtnW, brewBtnH)
-                    ctx.strokeStyle = (canBrew && hasEnough) ? '#9a6a40' : '#5a4030'
+                    ctx.strokeStyle = isEnabled ? '#9a6a40' : '#5a4030'
                     ctx.lineWidth = 3
                     ctx.strokeRect(brewBtnX, brewBtnY, brewBtnW, brewBtnH)
 
-                    ctx.fillStyle = (canBrew && hasEnough) ? '#f0d090' : '#666'
+                    ctx.fillStyle = isEnabled ? '#f0d090' : '#666'
                     ctx.font = 'bold 20px Arial'
                     ctx.textAlign = 'center'
                     ctx.textBaseline = 'middle'
-                    ctx.fillText('⚗️ 연금술 시작', brewBtnX + brewBtnW / 2, brewBtnY + brewBtnH / 2)
+
+                    let btnText = '⚗️ 연금술 시작'
+                    if (selectedRecipe && !hasLevel) btnText = `Lv.${selectedRecipe.required_alchemy_level} 필요`
+                    else if (selectedRecipe && !hasMaterials) btnText = '재료 부족'
+
+                    ctx.fillText(btnText, brewBtnX + brewBtnW / 2, brewBtnY + brewBtnH / 2)
+                }
+
+                // XP Bar (Below Brew Button)
+                if (playerAlchemy) {
+                    const xpBarY = brewBtnY + brewBtnH + 15
+                    const xpBarW = 300
+                    const xpBarH = 30
+                    const xpBarX = canvas.width / 2 - xpBarW / 2
+
+                    // Background
+                    ctx.fillStyle = '#2a1a10'
+                    ctx.fillRect(xpBarX, xpBarY, xpBarW, xpBarH)
+                    ctx.strokeStyle = '#6a4a30'
+                    ctx.lineWidth = 2
+                    ctx.strokeRect(xpBarX, xpBarY, xpBarW, xpBarH)
+
+                    // XP Progress
+                    const currentLevelExp = playerAlchemy.experience % 100
+                    const expProgress = currentLevelExp / 100
+                    const progressWidth = (xpBarW - 6) * expProgress
+
+                    ctx.fillStyle = '#facc15'
+                    ctx.fillRect(xpBarX + 3, xpBarY + 3, progressWidth, xpBarH - 6)
+
+                    // Text
+                    ctx.fillStyle = '#f0d090'
+                    ctx.font = 'bold 14px Arial'
+                    ctx.textAlign = 'center'
+                    ctx.textBaseline = 'middle'
+                    ctx.fillText(
+                        `연금술 Lv.${playerAlchemy.level} [${currentLevelExp}/100 XP]`,
+                        xpBarX + xpBarW / 2,
+                        xpBarY + xpBarH / 2
+                    )
                 }
 
                 ctx.textAlign = 'left'
@@ -423,13 +670,21 @@ export default function GameCanvas() {
         return () => {
             cancelAnimationFrame(animationFrameId)
         }
-    }, [facilities, canvasView, allRecipes, allMaterials, playerMaterials, selectedRecipeId, selectedIngredients, isBrewing, brewStartTime])
+    }, [facilities, canvasView, allRecipes, allMaterials, playerMaterials, selectedRecipeId, selectedIngredients, isBrewing, brewStartTime, playerAlchemy, materialScrollOffset])
 
     return (
-        <canvas
-            ref={canvasRef}
-            onClick={handleCanvasClick}
-            style={{ width: '100%', height: '100%', display: 'block', cursor: 'pointer' }}
-        />
+        <>
+            <canvas
+                ref={canvasRef}
+                onClick={handleCanvasClick}
+                style={{ width: '100%', height: '100%', display: 'block', cursor: 'pointer' }}
+            />
+            <AlchemyResultModal
+                isOpen={showResultModal}
+                success={lastBrewResult.success}
+                monsterId={lastBrewResult.monsterId}
+                onClose={() => setShowResultModal(false)}
+            />
+        </>
     )
 }

@@ -15,9 +15,9 @@ interface Props {
 
 const RESOURCE_NAMES: Record<string, string> = {
     gold: '골드',
-    herb_common: '일반 허브',
-    herb_rare: '희귀 허브',
-    herb_special: '특수 허브',
+    herb_common: '일반 약초',
+    herb_rare: '희귀 약초',
+    herb_special: '특수 약초',
     stone: '돌',
     ore_iron: '철광석',
     ore_magic: '마력석',

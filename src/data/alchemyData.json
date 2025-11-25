@@ -9,10 +9,45 @@
       "rarity": "COMMON",
       "iconUrl": "/assets/materials/herb_common.png",
       "sourceInfo": {
-        "dungeonDrop": ["forest_1", "plains_1"],
-        "factoryProduction": ["herb_farm"]
+        "dungeonDrop": [
+          "forest_1",
+          "plains_1"
+        ],
+        "factoryProduction": [
+          "herb_farm"
+        ]
       },
       "isSpecial": false
+    },
+    {
+      "id": "herb_rare",
+      "name": "희귀 약초",
+      "description": "희귀하게 자라는 약초",
+      "family": "PLANT",
+      "rarity": "RARE",
+      "iconUrl": "/assets/materials/herb_rare.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": [
+          "herb_farm"
+        ]
+      },
+      "isSpecial": false
+    },
+    {
+      "id": "herb_special",
+      "name": "특수 약초",
+      "description": "특별한 효과를 지닌 약초",
+      "family": "PLANT",
+      "rarity": "EPIC",
+      "iconUrl": "/assets/materials/herb_special.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": [
+          "herb_farm"
+        ]
+      },
+      "isSpecial": true
     },
     {
       "id": "mushroom_blue",
@@ -22,8 +57,13 @@
       "rarity": "UNCOMMON",
       "iconUrl": "/assets/materials/mushroom_blue.png",
       "sourceInfo": {
-        "dungeonDrop": ["forest_2", "cave_1"],
-        "factoryProduction": ["mushroom_farm"]
+        "dungeonDrop": [
+          "forest_2",
+          "cave_1"
+        ],
+        "factoryProduction": [
+          "mushroom_farm"
+        ]
       },
       "isSpecial": false
     },
@@ -35,7 +75,9 @@
       "rarity": "RARE",
       "iconUrl": "/assets/materials/seed_ancient.png",
       "sourceInfo": {
-        "dungeonDrop": ["ancient_forest"],
+        "dungeonDrop": [
+          "ancient_forest"
+        ],
         "factoryProduction": []
       },
       "isSpecial": true
@@ -48,8 +90,13 @@
       "rarity": "COMMON",
       "iconUrl": "/assets/materials/ore_iron.png",
       "sourceInfo": {
-        "dungeonDrop": ["mountain_1", "cave_1"],
-        "factoryProduction": ["mine"]
+        "dungeonDrop": [
+          "mountain_1",
+          "cave_1"
+        ],
+        "factoryProduction": [
+          "mine"
+        ]
       },
       "isSpecial": false
     },
@@ -61,8 +108,13 @@
       "rarity": "UNCOMMON",
       "iconUrl": "/assets/materials/crystal_mana.png",
       "sourceInfo": {
-        "dungeonDrop": ["mana_cave", "crystal_mine"],
-        "factoryProduction": ["crystal_refinery"]
+        "dungeonDrop": [
+          "mana_cave",
+          "crystal_mine"
+        ],
+        "factoryProduction": [
+          "crystal_refinery"
+        ]
       },
       "isSpecial": false
     },
@@ -74,8 +126,12 @@
       "rarity": "RARE",
       "iconUrl": "/assets/materials/ore_mythril.png",
       "sourceInfo": {
-        "dungeonDrop": ["deep_mine"],
-        "factoryProduction": ["mine_advanced"]
+        "dungeonDrop": [
+          "deep_mine"
+        ],
+        "factoryProduction": [
+          "mine_advanced"
+        ]
       },
       "isSpecial": false
     },
@@ -87,21 +143,28 @@
       "rarity": "EPIC",
       "iconUrl": "/assets/materials/gem_dark.png",
       "sourceInfo": {
-        "dungeonDrop": ["shadow_dungeon"],
+        "dungeonDrop": [
+          "shadow_dungeon"
+        ],
         "factoryProduction": []
       },
       "isSpecial": true
     },
     {
-      "id": "fang_beast",
+      "id": "beast_fang",
       "name": "짐승 송곳니",
       "description": "날카로운 야수의 송곳니",
       "family": "BEAST",
       "rarity": "COMMON",
-      "iconUrl": "/assets/materials/fang_beast.png",
+      "iconUrl": "/assets/materials/beast_fang.png",
       "sourceInfo": {
-        "dungeonDrop": ["forest_1", "plains_2"],
-        "factoryProduction": ["hunting_camp"]
+        "dungeonDrop": [
+          "forest_1",
+          "plains_2"
+        ],
+        "factoryProduction": [
+          "hunting_camp"
+        ]
       },
       "isSpecial": false
     },
@@ -113,8 +176,13 @@
       "rarity": "UNCOMMON",
       "iconUrl": "/assets/materials/claw_sharp.png",
       "sourceInfo": {
-        "dungeonDrop": ["mountain_2", "beast_den"],
-        "factoryProduction": ["hunting_camp"]
+        "dungeonDrop": [
+          "mountain_2",
+          "beast_den"
+        ],
+        "factoryProduction": [
+          "hunting_camp"
+        ]
       },
       "isSpecial": false
     },
@@ -126,8 +194,13 @@
       "rarity": "UNCOMMON",
       "iconUrl": "/assets/materials/hide_tough.png",
       "sourceInfo": {
-        "dungeonDrop": ["plains_2", "forest_3"],
-        "factoryProduction": ["hunting_camp"]
+        "dungeonDrop": [
+          "plains_2",
+          "forest_3"
+        ],
+        "factoryProduction": [
+          "hunting_camp"
+        ]
       },
       "isSpecial": false
     },
@@ -139,7 +212,9 @@
       "rarity": "LEGENDARY",
       "iconUrl": "/assets/materials/bone_dragon.png",
       "sourceInfo": {
-        "dungeonDrop": ["dragon_lair"],
+        "dungeonDrop": [
+          "dragon_lair"
+        ],
         "factoryProduction": []
       },
       "isSpecial": true
@@ -152,8 +227,13 @@
       "rarity": "COMMON",
       "iconUrl": "/assets/materials/slime_core.png",
       "sourceInfo": {
-        "dungeonDrop": ["plains_1", "forest_1"],
-        "factoryProduction": ["slime_ranch"]
+        "dungeonDrop": [
+          "plains_1",
+          "forest_1"
+        ],
+        "factoryProduction": [
+          "slime_ranch"
+        ]
       },
       "isSpecial": false
     },
@@ -165,8 +245,13 @@
       "rarity": "COMMON",
       "iconUrl": "/assets/materials/slime_gel.png",
       "sourceInfo": {
-        "dungeonDrop": ["plains_1", "swamp_1"],
-        "factoryProduction": ["slime_ranch"]
+        "dungeonDrop": [
+          "plains_1",
+          "swamp_1"
+        ],
+        "factoryProduction": [
+          "slime_ranch"
+        ]
       },
       "isSpecial": false
     },
@@ -178,8 +263,12 @@
       "rarity": "RARE",
       "iconUrl": "/assets/materials/slime_mutant.png",
       "sourceInfo": {
-        "dungeonDrop": ["toxic_swamp"],
-        "factoryProduction": ["slime_lab"]
+        "dungeonDrop": [
+          "toxic_swamp"
+        ],
+        "factoryProduction": [
+          "slime_lab"
+        ]
       },
       "isSpecial": true
     },
@@ -191,7 +280,9 @@
       "rarity": "EPIC",
       "iconUrl": "/assets/materials/crown_fragment.png",
       "sourceInfo": {
-        "dungeonDrop": ["boss_dungeon_1"],
+        "dungeonDrop": [
+          "boss_dungeon_1"
+        ],
         "factoryProduction": []
       },
       "isSpecial": true
@@ -204,8 +295,13 @@
       "rarity": "UNCOMMON",
       "iconUrl": "/assets/materials/spirit_dust.png",
       "sourceInfo": {
-        "dungeonDrop": ["spirit_forest", "fairy_glen"],
-        "factoryProduction": ["spirit_grove"]
+        "dungeonDrop": [
+          "spirit_forest",
+          "fairy_glen"
+        ],
+        "factoryProduction": [
+          "spirit_grove"
+        ]
       },
       "isSpecial": false
     },
@@ -217,7 +313,9 @@
       "rarity": "RARE",
       "iconUrl": "/assets/materials/soul_fragment.png",
       "sourceInfo": {
-        "dungeonDrop": ["haunted_ruins"],
+        "dungeonDrop": [
+          "haunted_ruins"
+        ],
         "factoryProduction": []
       },
       "isSpecial": true
@@ -230,7 +328,9 @@
       "rarity": "EPIC",
       "iconUrl": "/assets/materials/essence_light.png",
       "sourceInfo": {
-        "dungeonDrop": ["light_temple"],
+        "dungeonDrop": [
+          "light_temple"
+        ],
         "factoryProduction": []
       },
       "isSpecial": true
@@ -243,7 +343,9 @@
       "rarity": "LEGENDARY",
       "iconUrl": "/assets/materials/rune_world.png",
       "sourceInfo": {
-        "dungeonDrop": ["world_tree"],
+        "dungeonDrop": [
+          "world_tree"
+        ],
         "factoryProduction": []
       },
       "isSpecial": true
@@ -256,7 +358,9 @@
       "rarity": "EPIC",
       "iconUrl": "/assets/materials/core_fire.png",
       "sourceInfo": {
-        "dungeonDrop": ["fire_dungeon_boss"],
+        "dungeonDrop": [
+          "fire_dungeon_boss"
+        ],
         "factoryProduction": []
       },
       "isSpecial": true
@@ -269,8 +373,12 @@
       "rarity": "RARE",
       "iconUrl": "/assets/materials/flower_moonlight.png",
       "sourceInfo": {
-        "dungeonDrop": ["night_garden"],
-        "factoryProduction": ["moonlight_garden"]
+        "dungeonDrop": [
+          "night_garden"
+        ],
+        "factoryProduction": [
+          "moonlight_garden"
+        ]
       },
       "isSpecial": true
     },
@@ -282,8 +390,13 @@
       "rarity": "UNCOMMON",
       "iconUrl": "/assets/materials/scale_serpent.png",
       "sourceInfo": {
-        "dungeonDrop": ["swamp_2", "snake_den"],
-        "factoryProduction": ["hunting_camp"]
+        "dungeonDrop": [
+          "swamp_2",
+          "snake_den"
+        ],
+        "factoryProduction": [
+          "hunting_camp"
+        ]
       },
       "isSpecial": false
     },
@@ -295,7 +408,9 @@
       "rarity": "LEGENDARY",
       "iconUrl": "/assets/materials/catalyst_time.png",
       "sourceInfo": {
-        "dungeonDrop": ["time_rift"],
+        "dungeonDrop": [
+          "time_rift"
+        ],
         "factoryProduction": []
       },
       "isSpecial": true
@@ -316,8 +431,16 @@
       "isHidden": false,
       "priority": 100,
       "ingredients": [
-        { "materialId": "slime_core", "quantity": 1, "isCatalyst": false },
-        { "materialId": "herb_common", "quantity": 2, "isCatalyst": false }
+        {
+          "materialId": "slime_core",
+          "quantity": 1,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "herb_common",
+          "quantity": 2,
+          "isCatalyst": false
+        }
       ],
       "conditions": []
     },
@@ -335,8 +458,16 @@
       "isHidden": false,
       "priority": 90,
       "ingredients": [
-        { "materialId": "fang_beast", "quantity": 3, "isCatalyst": false },
-        { "materialId": "herb_common", "quantity": 1, "isCatalyst": false }
+        {
+          "materialId": "beast_fang",
+          "quantity": 3,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "herb_common",
+          "quantity": 1,
+          "isCatalyst": false
+        }
       ],
       "conditions": []
     },
@@ -354,9 +485,21 @@
       "isHidden": false,
       "priority": 85,
       "ingredients": [
-        { "materialId": "ore_iron", "quantity": 5, "isCatalyst": false },
-        { "materialId": "slime_core", "quantity": 2, "isCatalyst": false },
-        { "materialId": "crystal_mana", "quantity": 1, "isCatalyst": false }
+        {
+          "materialId": "ore_iron",
+          "quantity": 5,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "slime_core",
+          "quantity": 2,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "crystal_mana",
+          "quantity": 1,
+          "isCatalyst": false
+        }
       ],
       "conditions": []
     },
@@ -374,9 +517,21 @@
       "isHidden": false,
       "priority": 88,
       "ingredients": [
-        { "materialId": "spirit_dust", "quantity": 3, "isCatalyst": false },
-        { "materialId": "herb_common", "quantity": 2, "isCatalyst": false },
-        { "materialId": "mushroom_blue", "quantity": 1, "isCatalyst": false }
+        {
+          "materialId": "spirit_dust",
+          "quantity": 3,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "herb_common",
+          "quantity": 2,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "mushroom_blue",
+          "quantity": 1,
+          "isCatalyst": false
+        }
       ],
       "conditions": []
     },
@@ -394,9 +549,21 @@
       "isHidden": false,
       "priority": 82,
       "ingredients": [
-        { "materialId": "fang_beast", "quantity": 4, "isCatalyst": false },
-        { "materialId": "gem_dark", "quantity": 1, "isCatalyst": false },
-        { "materialId": "claw_sharp", "quantity": 2, "isCatalyst": false }
+        {
+          "materialId": "beast_fang",
+          "quantity": 4,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "gem_dark",
+          "quantity": 1,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "claw_sharp",
+          "quantity": 2,
+          "isCatalyst": false
+        }
       ],
       "conditions": []
     },
@@ -414,9 +581,21 @@
       "isHidden": false,
       "priority": 75,
       "ingredients": [
-        { "materialId": "slime_core", "quantity": 5, "isCatalyst": false },
-        { "materialId": "slime_gel", "quantity": 10, "isCatalyst": false },
-        { "materialId": "crown_fragment", "quantity": 1, "isCatalyst": true }
+        {
+          "materialId": "slime_core",
+          "quantity": 5,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "slime_gel",
+          "quantity": 10,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "crown_fragment",
+          "quantity": 1,
+          "isCatalyst": true
+        }
       ],
       "conditions": []
     },
@@ -434,9 +613,21 @@
       "isHidden": false,
       "priority": 70,
       "ingredients": [
-        { "materialId": "ore_iron", "quantity": 8, "isCatalyst": false },
-        { "materialId": "crystal_mana", "quantity": 3, "isCatalyst": false },
-        { "materialId": "core_fire", "quantity": 1, "isCatalyst": true }
+        {
+          "materialId": "ore_iron",
+          "quantity": 8,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "crystal_mana",
+          "quantity": 3,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "core_fire",
+          "quantity": 1,
+          "isCatalyst": true
+        }
       ],
       "conditions": []
     },
@@ -454,9 +645,21 @@
       "isHidden": true,
       "priority": 65,
       "ingredients": [
-        { "materialId": "slime_core", "quantity": 3, "isCatalyst": false },
-        { "materialId": "gem_dark", "quantity": 2, "isCatalyst": false },
-        { "materialId": "flower_moonlight", "quantity": 1, "isCatalyst": false }
+        {
+          "materialId": "slime_core",
+          "quantity": 3,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "gem_dark",
+          "quantity": 2,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "flower_moonlight",
+          "quantity": 1,
+          "isCatalyst": false
+        }
       ],
       "conditions": [
         {
@@ -480,9 +683,21 @@
       "isHidden": true,
       "priority": 68,
       "ingredients": [
-        { "materialId": "spirit_dust", "quantity": 4, "isCatalyst": false },
-        { "materialId": "essence_light", "quantity": 1, "isCatalyst": false },
-        { "materialId": "herb_common", "quantity": 3, "isCatalyst": false }
+        {
+          "materialId": "spirit_dust",
+          "quantity": 4,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "essence_light",
+          "quantity": 1,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "herb_common",
+          "quantity": 3,
+          "isCatalyst": false
+        }
       ],
       "conditions": [
         {
@@ -506,9 +721,21 @@
       "isHidden": true,
       "priority": 60,
       "ingredients": [
-        { "materialId": "spirit_dust", "quantity": 5, "isCatalyst": false },
-        { "materialId": "crystal_mana", "quantity": 3, "isCatalyst": false },
-        { "materialId": "rune_world", "quantity": 1, "isCatalyst": true }
+        {
+          "materialId": "spirit_dust",
+          "quantity": 5,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "crystal_mana",
+          "quantity": 3,
+          "isCatalyst": false
+        },
+        {
+          "materialId": "rune_world",
+          "quantity": 1,
+          "isCatalyst": true
+        }
       ],
       "conditions": [
         {

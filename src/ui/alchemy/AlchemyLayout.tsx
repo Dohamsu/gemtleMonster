@@ -36,7 +36,7 @@ export default function AlchemyLayout() {
                     textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                     textAlign: 'center'
                 }}>
-                    🏭 공장 배치 & 몬스터 관리
+                    인벤토리
                 </h1>
             </div>
 

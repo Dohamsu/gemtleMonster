@@ -40,38 +40,93 @@ export default function IdleFacilityList() {
             borderRadius: '8px',
             boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)'
         }}>
-            <h2 style={{ color: 'white', marginTop: 0, fontSize: '1.1em', borderBottom: '1px solid #444', paddingBottom: '10px' }}>
-                시설 목록
-            </h2>
-            <button
-                onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                style={{
-                    marginBottom: '10px',
-                    padding: '6px 12px',
-                    background: '#444',
+            {/* Header with View Toggle */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '15px',
+                borderBottom: '1px solid #444',
+                paddingBottom: '10px'
+            }}>
+                <h2 style={{
                     color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                }}
-            >
-                {viewMode === 'list' ? '그리드 보기' : '리스트 보기'}
-            </button>
-            <button
-                onClick={() => setAllCollapsed(!allCollapsed)}
-                style={{
-                    marginBottom: '10px',
-                    marginLeft: '8px',
-                    padding: '6px 12px',
-                    background: '#555',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                }}
-            >
-                {allCollapsed ? '전체 펼치기' : '전체 접기'}
-            </button>
+                    margin: 0,
+                    fontSize: '1.1em'
+                }}>
+                    시설 목록
+                </h2>
+
+                {/* View Mode Toggle */}
+                <div style={{
+                    display: 'flex',
+                    gap: '4px',
+                    background: '#1a1a1a',
+                    borderRadius: '6px',
+                    padding: '4px'
+                }}>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        style={{
+                            width: '32px',
+                            height: '32px',
+                            background: viewMode === 'list' ? '#444' : 'transparent',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            color: viewMode === 'list' ? '#facc15' : '#888',
+                            fontSize: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s'
+                        }}
+                        title="리스트 뷰"
+                    >
+                        ☰
+                    </button>
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        style={{
+                            width: '32px',
+                            height: '32px',
+                            background: viewMode === 'grid' ? '#444' : 'transparent',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            color: viewMode === 'grid' ? '#facc15' : '#888',
+                            fontSize: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s'
+                        }}
+                        title="썸네일 뷰"
+                    >
+                        ⊞
+                    </button>
+                </div>
+            </div>
+
+            {/* Collapse All Button (only for list view) */}
+            {viewMode === 'list' && (
+                <button
+                    onClick={() => setAllCollapsed(!allCollapsed)}
+                    style={{
+                        marginBottom: '10px',
+                        padding: '6px 12px',
+                        background: '#555',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                    }}
+                >
+                    {allCollapsed ? '전체 펼치기' : '전체 접기'}
+                </button>
+            )}
+
             {viewMode === 'list' ? (
                 visibleFacilities.length === 0 ? (
                     <p style={{ color: '#aaa', textAlign: 'center', marginTop: '20px' }}>시설이 없습니다.</p>

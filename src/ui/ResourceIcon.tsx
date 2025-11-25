@@ -4,10 +4,14 @@ interface Props {
 }
 
 const RESOURCE_ICONS: Record<string, string> = {
-    // 허브류
-    herb_common: '🌿',
-    herb_rare: '🌺',
-    herb_special: '✨',
+    // 약초류
+    herb_common: '/assets/materials/herb_common.png',
+    herb_rare: '/assets/materials/herb_rare.png',
+    herb_special: '/assets/materials/herb_special.png',
+
+    // 몬스터 소재
+    slime_core: '/assets/materials/slime_core.png',
+    beast_fang: '/assets/materials/beast_fang.png',
 
     // 광석류
     ore_iron: '⚙️',
@@ -27,11 +31,29 @@ const RESOURCE_ICONS: Record<string, string> = {
 export default function ResourceIcon({ resourceId, size = 20 }: Props) {
     const icon = RESOURCE_ICONS[resourceId] || '❓'
 
+    // Check if icon is an image path
+    if (icon.startsWith('/')) {
+        return (
+            <img
+                src={icon}
+                alt={resourceId}
+                style={{
+                    width: size,
+                    height: size,
+                    objectFit: 'contain',
+                    display: 'inline-block',
+                    verticalAlign: 'middle'
+                }}
+            />
+        )
+    }
+
     return (
         <span style={{
             fontSize: `${size}px`,
             display: 'inline-block',
-            lineHeight: 1
+            lineHeight: 1,
+            verticalAlign: 'middle'
         }}>
             {icon}
         </span>

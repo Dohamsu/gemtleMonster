@@ -10,12 +10,15 @@ const SELL_PRICES: Record<string, number> = {
 }
 
 const RESOURCE_NAMES: Record<string, string> = {
-    'herb_common': '일반 허브',
-    'herb_rare': '희귀 허브',
-    'herb_special': '특수 허브',
-    'ore_iron': '철광석',
-    'ore_magic': '마력석',
-    'gem_fragment': '보석 파편'
+    gold: '골드',
+    herb_common: '일반 약초',
+    herb_rare: '희귀 약초',
+    herb_special: '특수 약초',
+    stone: '돌',
+    ore_iron: '철광석',
+    ore_magic: '마력석',
+    gem_fragment: '보석 파편',
+    training_token: '훈련 토큰'
 }
 
 export default function Shop() {

@@ -393,3 +393,59 @@ export async function addAlchemyExperience(userId: string, exp: number): Promise
     throw error
   }
 }
+
+/**
+ * 몬스터를 플레이어 인벤토리에 추가
+ */
+export async function addMonsterToPlayer(
+  userId: string,
+  monsterId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('player_monster')
+    .insert({
+      user_id: userId,
+      monster_id: monsterId,
+      level: 1,
+      exp: 0,
+      created_at: new Date().toISOString()
+    })
+
+  if (error) {
+    console.error('❌ 몬스터 추가 실패:', error)
+    console.error('상세 정보:', {
+      userId,
+      monsterId,
+      errorMessage: error.message,
+      errorDetails: error.details,
+      errorHint: error.hint
+    })
+    throw error
+  }
+
+  console.log(`✅ 몬스터 추가 완료: ${monsterId}`)
+}
+
+/**
+ * 플레이어의 몬스터 목록 가져오기
+ */
+export async function getPlayerMonsters(userId: string): Promise<Array<{
+  id: string
+  monster_id: string
+  level: number
+  exp: number
+  created_at: string
+}>> {
+  const { data, error } = await supabase
+    .from('player_monster')
+    .select('id, monster_id, level, exp, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('몬스터 목록 로드 실패:', error)
+    throw error
+  }
+
+  return data || []
+}

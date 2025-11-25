@@ -8,9 +8,17 @@ interface AlchemyState {
   allRecipes: Recipe[]
 
   // 플레이어 데이터
+  userId: string | null
   playerMaterials: Record<string, number> // materialId -> quantity
   playerRecipes: Record<string, PlayerRecipe> // recipeId -> PlayerRecipe
   playerAlchemy: PlayerAlchemy | null
+  playerMonsters: Array<{
+    id: string
+    monster_id: string
+    level: number
+    exp: number
+    created_at: string
+  }>
 
   // UI 상태
   selectedRecipeId: string | null
@@ -38,6 +46,7 @@ interface AlchemyState {
   loadMaterials: () => Promise<void>
   loadRecipes: () => Promise<void>
   loadPlayerData: (userId: string) => Promise<void>
+  loadPlayerMonsters: (userId: string) => Promise<void>
 
   // Actions - 레시피 선택
   selectRecipe: (recipeId: string | null) => void
@@ -68,6 +77,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   playerMaterials: {},
   playerRecipes: {},
   playerAlchemy: null,
+  playerMonsters: [],
   selectedRecipeId: null,
   selectedIngredients: {},
   selectedTab: 'recipes',
@@ -78,13 +88,14 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   brewResult: { type: 'idle' },
   isLoading: false,
   error: null,
+  userId: null, // Initialize userId
 
   // ============================================
   // 데이터 로딩
   // ============================================
 
   loadAllData: async (userId: string) => {
-    set({ isLoading: true, error: null })
+    set({ userId, isLoading: true, error: null }) // Set userId here
     try {
       await get().loadMaterials()
       await get().loadRecipes()
@@ -143,6 +154,16 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       })
     } catch (error) {
       console.error('플레이어 데이터 로딩 실패:', error)
+      throw error
+    }
+  },
+
+  loadPlayerMonsters: async (userId: string) => {
+    try {
+      const monsters = await alchemyApi.getPlayerMonsters(userId)
+      set({ playerMonsters: monsters })
+    } catch (error) {
+      console.error('몬스터 목록 로딩 실패:', error)
       throw error
     }
   },
@@ -337,9 +358,9 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   updateBrewProgress: (progress) => set({ brewProgress: progress }),
 
   completeBrewing: async (success) => {
-    const { selectedRecipeId, allRecipes, selectedIngredients, playerMaterials } = get()
+    const { userId, selectedRecipeId, allRecipes, selectedIngredients, playerMaterials, playerAlchemy } = get()
 
-    if (!selectedRecipeId) return
+    if (!selectedRecipeId || !userId) return
 
     const recipe = allRecipes.find(r => r.id === selectedRecipeId)
     if (!recipe) return
@@ -370,9 +391,57 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       selectedIngredients: {}
     })
 
-    // TODO: 서버에 조합 기록 저장
-    // TODO: 경험치 추가
-    // TODO: 몬스터 인벤토리에 추가
+    // 서버에 데이터 저장
+    try {
+      // 1. 조합 기록 저장
+      await alchemyApi.recordAlchemyHistory(
+        userId,
+        selectedRecipeId,
+        success,
+        recipe.base_success_rate,
+        materialsUsed,
+        success ? recipe.result_monster_id : undefined
+      )
+
+      // 2. 레시피 카운트 업데이트
+      await alchemyApi.updateRecipeCraftCount(userId, selectedRecipeId, success)
+
+      // 3. 성공 시 추가 처리
+      if (success) {
+        // 경험치 추가
+        await alchemyApi.addAlchemyExperience(userId, recipe.exp_gain)
+
+        // 몬스터 인벤토리에 추가
+        for (let i = 0; i < recipe.result_count; i++) {
+          await alchemyApi.addMonsterToPlayer(userId, recipe.result_monster_id)
+        }
+
+        // 로컬 상태 업데이트 (XP)
+        if (playerAlchemy) {
+          const newExp = playerAlchemy.experience + recipe.exp_gain
+          const newLevel = Math.floor(newExp / 100) + 1
+          set({
+            playerAlchemy: {
+              ...playerAlchemy,
+              experience: newExp,
+              level: newLevel
+            }
+          })
+        }
+
+        console.log(`✅ 연금술 성공! +${recipe.exp_gain} XP`)
+      }
+
+      // 4. 재료 소모 DB 반영
+      await alchemyApi.consumeMaterials(userId, materialsUsed)
+
+      // 5. 성공 시 몬스터 목록 새로고침
+      if (success) {
+        await get().loadPlayerMonsters(userId)
+      }
+    } catch (error) {
+      console.error('연금술 결과 저장 실패:', error)
+    }
   },
 
   // ============================================

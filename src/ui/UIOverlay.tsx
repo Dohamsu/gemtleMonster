@@ -4,33 +4,10 @@ import { useSaveGame } from '../hooks/useSaveGame'
 import IdleFacilityList from './idle/IdleFacilityList'
 import Shop from './shop/Shop'
 import AlchemyLayout from './alchemy/AlchemyLayout'
-import ResourceAnimation from './ResourceAnimation'
-
-const RESOURCE_NAMES: Record<string, string> = {
-    gold: '골드',
-    herb_common: '일반 약초',
-    herb_rare: '희귀 약초',
-    herb_special: '특수 약초',
-    stone: '돌',
-    ore_iron: '철광석',
-    ore_magic: '마력석',
-    gem_fragment: '보석 파편',
-    crack_stone_fragment: '균열석 파편',
-    ancient_relic_fragment: '고대 유물 파편',
-
-    training_token: '훈련 토큰',
-    // Alchemy Materials
-    slime_core: '슬라임 코어',
-    beast_fang: '짐승 송곳니',
-    spirit_dust: '정령 가루',
-    dark_crystal: '어둠의 결정',
-    crown_shard: '왕관 파편',
-    fire_core: '불 던전 코어'
-}
 
 export default function UIOverlay() {
     const { user, loading: authLoading } = useAuth()
-    const { resources, recentAdditions, removeRecentAddition, activeTab, setActiveTab } = useGameStore()
+    const { activeTab, setActiveTab } = useGameStore()
     const { saveGame, saving, lastSaved } = useSaveGame()
 
     if (authLoading) {
@@ -56,50 +33,7 @@ export default function UIOverlay() {
                     ID: {user?.id.slice(0, 8)}...
                 </div>
 
-                <div style={{ borderTop: '1px solid #444', paddingTop: '10px' }}>
-                    <p style={{ margin: '5px 0', color: '#facc15', fontWeight: 'bold' }}>
-                        💰 {RESOURCE_NAMES['gold']}: {resources.gold || 0}
-                        {(() => {
-                            const goldAdditions = recentAdditions.filter(a => a.resourceId === 'gold')
-                            if (goldAdditions.length === 0) return null
-                            const totalAmount = goldAdditions.reduce((sum, a) => sum + a.amount, 0)
-                            const firstId = goldAdditions[0].id
-                            return (
-                                <ResourceAnimation
-                                    key={firstId}
-                                    amount={totalAmount}
-                                    onComplete={() => {
-                                        goldAdditions.forEach(a => removeRecentAddition(a.id))
-                                    }}
-                                />
-                            )
-                        })()}
-                    </p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
-                        {Object.entries(resources).filter(([k]) => k !== 'gold').map(([key, value]) => (
-                            <p key={key} style={{ margin: '0', fontSize: '0.8em', color: '#ddd' }}>
-                                {RESOURCE_NAMES[key] || key}: {value}
-                                {(() => {
-                                    const additions = recentAdditions.filter(a => a.resourceId === key)
-                                    if (additions.length === 0) return null
-                                    const totalAmount = additions.reduce((sum, a) => sum + a.amount, 0)
-                                    const firstId = additions[0].id
-                                    return (
-                                        <ResourceAnimation
-                                            key={firstId}
-                                            amount={totalAmount}
-                                            onComplete={() => {
-                                                additions.forEach(a => removeRecentAddition(a.id))
-                                            }}
-                                        />
-                                    )
-                                })()}
-                            </p>
-                        ))}
-                    </div>
-                </div>
-
-                <div style={{ marginTop: '15px' }}>
+                <div>
                     <button
                         onClick={saveGame}
                         disabled={saving}
@@ -155,7 +89,7 @@ export default function UIOverlay() {
                         fontWeight: activeTab === 'alchemy' ? 'bold' : 'normal'
                     }}
                 >
-                    연금술 공방
+                    인벤토리
                 </button>
                 <button
                     onClick={() => setActiveTab('shop')}

@@ -3,7 +3,7 @@
     "facilities": [
         {
             "id": "herb_farm",
-            "name": "허브 농장",
+            "name": "약초 농장",
             "category": "resource_production",
             "unlockConditions": [
                 {
