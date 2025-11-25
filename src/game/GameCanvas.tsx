@@ -19,6 +19,7 @@ export default function GameCanvas() {
         addIngredient,
         startBrewing,
         completeBrewing,
+        autoFillIngredients,
         loadAllData
     } = useAlchemyStore()
 
@@ -148,6 +149,8 @@ export default function GameCanvas() {
                             )
 
                             if (hasEnough) {
+                                // Must fill ingredients into selectedIngredients for startBrewing to work
+                                autoFillIngredients(selectedRecipeId)
                                 startBrewing(selectedRecipeId)
                                 console.log('🧪 Brewing started!')
 
@@ -303,7 +306,7 @@ export default function GameCanvas() {
 
                     ctx.fillStyle = '#f0d090'
                     ctx.font = 'bold 14px Arial'
-                    ctx.fillText(recipe.name, recipeX + 10, itemY + 8)
+                    ctx.fillText(`${recipe.name} (${recipe.craft_time_sec}s)`, recipeX + 10, itemY + 8)
 
                     // Materials required
                     if (recipe.ingredients) {
@@ -311,17 +314,13 @@ export default function GameCanvas() {
                             const mat = allMaterials.find(m => m.id === ing.material_id)
                             const owned = playerMaterials[ing.material_id] || 0
                             const hasEnough = owned >= ing.quantity
-                            const yPos = itemY + 28 + (idx * 12)
+                            const yPos = itemY + 28 + (idx * 14)
 
                             ctx.fillStyle = hasEnough ? '#aaa' : '#ff6666'
                             ctx.font = '11px Arial'
                             ctx.fillText(`${mat?.name || ing.material_id} ${owned}/${ing.quantity}`, recipeX + 10, yPos, recipeW - 20)
                         })
                     }
-
-                    ctx.fillStyle = '#888'
-                    ctx.font = '10px Arial'
-                    ctx.fillText(`⏱️ ${recipe.craft_time_sec}초`, recipeX + 10, itemY + 45)
                 })
 
                 // Inventory (Right Side)
