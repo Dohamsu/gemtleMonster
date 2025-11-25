@@ -142,9 +142,9 @@ export default function GameCanvas() {
                     if (selectedRecipeId) {
                         const recipe = allRecipes.find(r => r.id === selectedRecipeId)
                         if (recipe && recipe.ingredients) {
-                            // Check if we have enough selected ingredients
+                            // Check if we have enough materials in inventory
                             const hasEnough = recipe.ingredients.every(ing =>
-                                (selectedIngredients[ing.material_id] || 0) >= ing.quantity
+                                (playerMaterials[ing.material_id] || 0) >= ing.quantity
                             )
 
                             if (hasEnough) {
@@ -158,7 +158,7 @@ export default function GameCanvas() {
                                     console.log(success ? '✅ Brewing success!' : '❌ Brewing failed!')
                                 }, recipe.craft_time_sec * 1000)
                             } else {
-                                console.log('❌ Not enough selected ingredients!')
+                                console.log('❌ Not enough materials in inventory!')
                             }
                         }
                     }
@@ -306,17 +306,17 @@ export default function GameCanvas() {
                     ctx.fillText(recipe.name, recipeX + 10, itemY + 8)
 
                     // Materials required
-                    ctx.fillStyle = '#aaa'
-                    ctx.font = '11px Arial'
                     if (recipe.ingredients) {
-                        const materialsText = recipe.ingredients
-                            .map(ing => {
-                                const mat = allMaterials.find(m => m.id === ing.material_id)
-                                const selected = selectedIngredients[ing.material_id] || 0
-                                return `${mat?.name || ing.material_id} ${selected}/${ing.quantity}`
-                            })
-                            .join(', ')
-                        ctx.fillText(materialsText, recipeX + 10, itemY + 28, recipeW - 20)
+                        recipe.ingredients.forEach((ing, idx) => {
+                            const mat = allMaterials.find(m => m.id === ing.material_id)
+                            const owned = playerMaterials[ing.material_id] || 0
+                            const hasEnough = owned >= ing.quantity
+                            const yPos = itemY + 28 + (idx * 12)
+
+                            ctx.fillStyle = hasEnough ? '#aaa' : '#ff6666'
+                            ctx.font = '11px Arial'
+                            ctx.fillText(`${mat?.name || ing.material_id} ${owned}/${ing.quantity}`, recipeX + 10, yPos, recipeW - 20)
+                        })
                     }
 
                     ctx.fillStyle = '#888'
@@ -397,7 +397,7 @@ export default function GameCanvas() {
                     let hasEnough = false
                     if (selectedRecipe && selectedRecipe.ingredients) {
                         hasEnough = selectedRecipe.ingredients.every(ing =>
-                            (selectedIngredients[ing.material_id] || 0) >= ing.quantity
+                            (playerMaterials[ing.material_id] || 0) >= ing.quantity
                         )
                     }
 
