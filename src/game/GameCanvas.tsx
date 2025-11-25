@@ -17,7 +17,6 @@ export default function GameCanvas() {
         brewStartTime,
         selectRecipe,
         addIngredient,
-        removeIngredient,
         startBrewing,
         completeBrewing,
         loadAllData

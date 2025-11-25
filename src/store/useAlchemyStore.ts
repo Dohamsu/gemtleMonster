@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Material, Recipe, PlayerMaterial, PlayerRecipe, PlayerAlchemy } from '../lib/alchemyApi'
+import type { Material, Recipe, PlayerRecipe, PlayerAlchemy } from '../lib/alchemyApi'
 import * as alchemyApi from '../lib/alchemyApi'
 
 interface AlchemyState {
@@ -337,7 +337,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   updateBrewProgress: (progress) => set({ brewProgress: progress }),
 
   completeBrewing: async (success) => {
-    const { selectedRecipeId, allRecipes, selectedIngredients, playerMaterials, playerAlchemy } = get()
+    const { selectedRecipeId, allRecipes, selectedIngredients, playerMaterials } = get()
 
     if (!selectedRecipeId) return
 

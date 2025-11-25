@@ -13,7 +13,6 @@ export const RecipePanel: React.FC = () => {
     selectRecipe,
     setSelectedTab,
     autoFillIngredients,
-    canCraft,
     canCraftWithMaterials
   } = useAlchemyStore()
 
@@ -35,18 +34,6 @@ export const RecipePanel: React.FC = () => {
   }
 
   const filteredRecipes = getFilteredRecipes()
-
-  // 등급별 색상
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'COMMON': return '#9ca3af'
-      case 'UNCOMMON': return '#22c55e'
-      case 'RARE': return '#3b82f6'
-      case 'EPIC': return '#a855f7'
-      case 'LEGENDARY': return '#f59e0b'
-      default: return '#fff'
-    }
-  }
 
   // 재료 이름 가져오기
   const getMaterialName = (materialId: string) => {

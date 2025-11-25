@@ -9,8 +9,6 @@ export default function CauldronPanel() {
         selectedIngredients,
         isBrewing,
         brewStartTime,
-        brewProgress,
-        brewResult,
         canCraft,
         startBrewing,
         completeBrewing,
@@ -172,16 +170,16 @@ export default function CauldronPanel() {
                                 position: 'relative',
                                 cursor: 'pointer'
                             }}
-                            onClick={() => {
-                                if (ing.added > 0) {
-                                    removeIngredient(ing.materialId, 1)
-                                }
-                            }}
-                            onContextMenu={(e) => {
-                                e.preventDefault()
-                                addIngredient(ing.materialId, 1)
-                            }}
-                            title="좌클릭: 제거, 우클릭: 추가"
+                                onClick={() => {
+                                    if (ing.added > 0) {
+                                        removeIngredient(ing.materialId, 1)
+                                    }
+                                }}
+                                onContextMenu={(e) => {
+                                    e.preventDefault()
+                                    addIngredient(ing.materialId, 1)
+                                }}
+                                title="좌클릭: 제거, 우클릭: 추가"
                             >
                                 <span style={{ fontSize: '24px' }}>
                                     {ing.material?.family === 'PLANT' && '🌿'}
