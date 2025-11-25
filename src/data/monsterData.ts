@@ -38,7 +38,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         hp: 250,
         attack: 25,
         defense: 60,
-        emoji: '🗿'
+        emoji: '🗿',
+        iconUrl: '/assets/stoneGolem.png'
     },
     'monster_fairy_spirit': {
         name: '정령 요정',
@@ -74,7 +75,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         hp: 200,
         attack: 70,
         defense: 40,
-        emoji: '🔥'
+        emoji: '🔥',
+        iconUrl: '/assets/ironGolem.png'
     },
     'monster_slime_nightmare': {
         name: '악몽 슬라임',
@@ -102,6 +104,16 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 85,
         defense: 50,
         emoji: '🐯'
+    },
+    'monster_golem_wood': {
+        name: '나무 골렘',
+        description: '숲의 정령이 깃든 골렘. 자연의 힘으로 아군을 보호합니다.',
+        role: '서포터',
+        hp: 180,
+        attack: 30,
+        defense: 45,
+        emoji: '🌳',
+        iconUrl: '/assets/woodGolem.png'
     }
 }
 

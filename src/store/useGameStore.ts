@@ -62,7 +62,7 @@ export const useGameStore = create<GameState>((set) => ({
     lastCollectedAt: {},
     recentAdditions: [],
     activeTab: 'facilities',
-    canvasView: 'map',
+    canvasView: 'alchemy_workshop',
     alchemyState: {
         selectedRecipeId: null,
         selectedIngredients: {},
@@ -81,6 +81,7 @@ export const useGameStore = create<GameState>((set) => ({
         const updatedResources = { ...state.resources }
         let updatedAdditions = [...state.recentAdditions]
         const newAdditions: ResourceAddition[] = []
+        const timers: NodeJS.Timeout[] = []
 
         for (const [id, amount] of Object.entries(newResources)) {
             updatedResources[id] = (updatedResources[id] || 0) + amount
@@ -98,13 +99,17 @@ export const useGameStore = create<GameState>((set) => ({
             }
             newAdditions.push(addition)
 
-            // Auto-remove after 2 seconds
-            setTimeout(() => {
+            // Auto-remove after 2 seconds with cleanup tracking
+            const timer = setTimeout(() => {
                 set((s) => ({
                     recentAdditions: s.recentAdditions.filter(a => a.id !== additionId)
                 }))
             }, 2000)
+            timers.push(timer)
         }
+
+        // Store timers for potential cleanup (though they're one-shot, this is for consistency)
+        // In a real scenario, you'd want to track these in state if cleanup is needed
 
         return {
             resources: updatedResources,

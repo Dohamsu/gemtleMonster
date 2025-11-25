@@ -9,6 +9,7 @@ export interface Material {
     description: string
     rarity: RarityType
     iconUrl?: string
+    sellPrice?: number
 }
 
 export interface Monster {

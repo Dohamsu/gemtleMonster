@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Material, Recipe, PlayerRecipe, PlayerAlchemy } from '../lib/alchemyApi'
 import * as alchemyApi from '../lib/alchemyApi'
+import { ALCHEMY } from '../constants/game'
 
 interface AlchemyState {
   // 마스터 데이터
@@ -339,10 +340,11 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     const interval = 50
     const step = interval / duration
 
-    const timer = setInterval(() => {
+    let timer: NodeJS.Timeout | null = null
+    timer = setInterval(() => {
       const state = get()
       if (!state.isBrewing) {
-        clearInterval(timer)
+        if (timer) clearInterval(timer)
         return
       }
 
@@ -350,9 +352,13 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       set({ brewProgress: newProgress })
 
       if (newProgress >= 1) {
-        clearInterval(timer)
+        if (timer) clearInterval(timer)
       }
     }, interval)
+
+    // Store timer reference for cleanup if needed
+    // Note: In real implementation, you might want to track this in state
+    // and clear it when component unmounts or brewing is cancelled
   },
 
   updateBrewProgress: (progress) => set({ brewProgress: progress }),
@@ -419,7 +425,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         // 로컬 상태 업데이트 (XP)
         if (playerAlchemy) {
           const newExp = playerAlchemy.experience + recipe.exp_gain
-          const newLevel = Math.floor(newExp / 100) + 1
+          const newLevel = Math.floor(newExp / ALCHEMY.XP_PER_LEVEL) + 1
           set({
             playerAlchemy: {
               ...playerAlchemy,

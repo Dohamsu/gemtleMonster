@@ -1,3 +1,9 @@
+export interface UnlockCondition {
+    type: 'level' | 'resource' | 'facility' | 'quest'
+    value: number | string
+    operator?: 'gte' | 'lte' | 'eq'
+}
+
 export interface FacilityLevel {
     level: number
     stats: {
@@ -12,6 +18,6 @@ export interface FacilityData {
     id: string
     name: string
     category: string
-    unlockConditions: any[] // We can define this more strictly later
+    unlockConditions: UnlockCondition[]
     levels: FacilityLevel[]
 }

@@ -13,6 +13,7 @@ export interface Material {
   icon_url?: string
   source_info?: any
   is_special: boolean
+  sell_price: number
 }
 
 export interface RecipeIngredient {
