@@ -150,3 +150,26 @@ export function findMatchingRecipes(
     // 2. Filter by conditions
     return candidates.filter(recipe => isRecipeValid(recipe, context))
 }
+
+/**
+ * Finds a single matching recipe for given ingredient counts.
+ * Used for free-form crafting where players add materials without selecting a recipe.
+ */
+export function findMatchingRecipe(
+    ingredientCounts: Record<string, number>,
+    context: AlchemyContext,
+    allRecipes: Recipe[]
+): Recipe | null {
+    // Convert ingredient counts to array of material IDs
+    const materials: string[] = []
+    for (const [materialId, count] of Object.entries(ingredientCounts)) {
+        for (let i = 0; i < count; i++) {
+            materials.push(materialId)
+        }
+    }
+
+    const matches = findMatchingRecipes(materials, context, allRecipes)
+
+    // Return the first match (could be extended to prioritize by rarity, level, etc.)
+    return matches.length > 0 ? matches[0] : null
+}

@@ -30,6 +30,11 @@ dist-ssr
 .claude/
 .vercel
 
+# Backup files
+*.backup
+*.bak
+*.tmp
+
 # Supabase
 .supabase/
 supabase/.branches

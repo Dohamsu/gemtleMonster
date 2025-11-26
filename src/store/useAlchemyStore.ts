@@ -2,8 +2,9 @@ import { create } from 'zustand'
 import type { Material, Recipe, PlayerRecipe, PlayerAlchemy } from '../lib/alchemyApi'
 import type { AlchemyContext } from '../types/alchemy'
 import * as alchemyApi from '../lib/alchemyApi'
-import { isRecipeValid } from '../lib/alchemyLogic'
+import { isRecipeValid, findMatchingRecipe } from '../lib/alchemyLogic'
 import { ALCHEMY } from '../constants/game'
+import { useGameStore } from './useGameStore'
 
 interface AlchemyState {
   // 마스터 데이터
@@ -65,9 +66,11 @@ interface AlchemyState {
   // Actions - 조합
   canCraft: (recipeId: string) => { can: boolean; missingMaterials: string[] }
   canCraftWithMaterials: (recipeId: string) => boolean
+  canStartBrewing: () => boolean
+  startFreeFormBrewing: () => Promise<void>
   startBrewing: (recipeId: string) => Promise<void>
   updateBrewProgress: (progress: number) => void
-  completeBrewing: (success: boolean) => Promise<void>
+  completeBrewing: (success: boolean, matchedRecipe?: Recipe | null) => Promise<void>
 
   // Actions - 테스트용
   addTestMaterials: (userId: string) => Promise<void>
@@ -165,6 +168,10 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         playerRecipes: recipesMap,
         playerAlchemy: alchemyInfo
       })
+
+      // gameStore의 resources도 동기화
+      const gameStore = useGameStore.getState()
+      gameStore.setResources({ ...gameStore.resources, ...materialsMap })
     } catch (error) {
       console.error('플레이어 데이터 로딩 실패:', error)
       throw error
@@ -202,16 +209,31 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   addIngredient: (materialId, quantity) => {
     const { selectedIngredients, playerMaterials } = get()
+    const gameStore = useGameStore.getState()
+
+    // 두 스토어의 재료 병합 (gameStore.resources + alchemyStore.playerMaterials)
+    const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
+
     const currentAmount = selectedIngredients[materialId] || 0
-    const availableAmount = playerMaterials[materialId] || 0
+    const availableAmount = mergedMaterials[materialId] || 0
     const newAmount = Math.min(currentAmount + quantity, availableAmount)
 
-    set({
-      selectedIngredients: {
-        ...selectedIngredients,
-        [materialId]: newAmount
-      }
-    })
+    console.log(`🔵 재료 추가: ${materialId}, 보유: ${availableAmount}, 현재: ${currentAmount}, 새로운: ${newAmount}`)
+
+    // 값이 0이면 키를 추가하지 않음
+    if (newAmount === 0) {
+      console.log(`⚠️ 재료 추가 실패: ${materialId} - 보유량 부족`)
+      return
+    }
+
+    const newIngredients = {
+      ...selectedIngredients,
+      [materialId]: newAmount
+    }
+
+    console.log(`✅ 재료 추가 완료. 현재 슬롯:`, newIngredients)
+
+    set({ selectedIngredients: newIngredients })
   },
 
   removeIngredient: (materialId, quantity) => {
@@ -237,6 +259,9 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   autoFillIngredients: (recipeId) => {
     const { allRecipes, playerMaterials } = get()
+    const gameStore = useGameStore.getState()
+    const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
+
     const recipe = allRecipes.find(r => r.id === recipeId)
     if (!recipe || !recipe.ingredients) {
       console.log('❌ 레시피를 찾을 수 없음:', recipeId)
@@ -244,12 +269,12 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     }
 
     console.log('🔄 자동 배치 시도:', recipe.name)
-    console.log('📦 현재 보유 재료:', playerMaterials)
+    console.log('📦 현재 보유 재료:', mergedMaterials)
 
     const newIngredients: Record<string, number> = {}
 
     for (const ing of recipe.ingredients) {
-      const available = playerMaterials[ing.material_id] || 0
+      const available = mergedMaterials[ing.material_id] || 0
       console.log(`  - ${ing.material_id}: ${available} / ${ing.quantity} 필요`)
       if (available < ing.quantity) {
         // 재료 부족
@@ -303,6 +328,9 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   canCraftWithMaterials: (recipeId) => {
     const { allRecipes, playerMaterials, playerAlchemy } = get()
+    const gameStore = useGameStore.getState()
+    const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
+
     const recipe = allRecipes.find(r => r.id === recipeId)
 
     if (!recipe) return false
@@ -315,7 +343,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     // 보유 재료가 충분한지 체크
     if (recipe.ingredients) {
       for (const ing of recipe.ingredients) {
-        const available = playerMaterials[ing.material_id] || 0
+        const available = mergedMaterials[ing.material_id] || 0
         if (available < ing.quantity) {
           return false
         }
@@ -323,6 +351,72 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     }
 
     return true
+  },
+
+  canStartBrewing: () => {
+    const { selectedIngredients } = get()
+    // 값이 0보다 큰 재료가 1개 이상 있으면 조합 시작 가능
+    const validIngredients = Object.entries(selectedIngredients).filter(([_, count]) => count > 0)
+    console.log(`🔍 조합 가능 여부 체크: ${validIngredients.length}개 재료`, selectedIngredients)
+    return validIngredients.length > 0
+  },
+
+  startFreeFormBrewing: async () => {
+    const { selectedIngredients, allRecipes, alchemyContext } = get()
+
+    if (Object.keys(selectedIngredients).length === 0) {
+      console.error('재료를 먼저 추가해주세요')
+      return
+    }
+
+    // 재료 조합으로 레시피 찾기
+    const matchedRecipe = alchemyContext
+      ? findMatchingRecipe(selectedIngredients, alchemyContext, allRecipes)
+      : null
+
+    const duration = matchedRecipe ? matchedRecipe.craft_time_sec * 1000 : 3000 // 실패시 3초
+
+    console.log('🧪 자유 조합 시작:', {
+      재료: selectedIngredients,
+      매칭된레시피: matchedRecipe?.name || '없음',
+      소요시간: duration / 1000 + '초'
+    })
+
+    set({
+      isBrewing: true,
+      brewStartTime: Date.now(),
+      brewProgress: 0,
+      brewResult: { type: 'idle' },
+      selectedRecipeId: matchedRecipe?.id || null // 매칭된 레시피 설정
+    })
+
+    // 진행 바 시뮬레이션
+    const interval = 50
+    const step = interval / duration
+
+    let timer: NodeJS.Timeout | null = null
+    timer = setInterval(() => {
+      const state = get()
+      if (!state.isBrewing) {
+        if (timer) clearInterval(timer)
+        return
+      }
+
+      const newProgress = Math.min(1, state.brewProgress + step)
+      set({ brewProgress: newProgress })
+
+      if (newProgress >= 1) {
+        if (timer) clearInterval(timer)
+        // 조합 완료
+        if (matchedRecipe) {
+          const success = Math.random() * 100 < matchedRecipe.base_success_rate
+          get().completeBrewing(success, matchedRecipe)
+        } else {
+          // 레시피 없으면 실패
+          get().completeBrewing(false, null)
+        }
+      }
+    }, interval)
   },
 
   startBrewing: async (recipeId) => {
@@ -386,28 +480,31 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   updateBrewProgress: (progress) => set({ brewProgress: progress }),
 
-  completeBrewing: async (success) => {
+  completeBrewing: async (success, matchedRecipe) => {
     const { userId, selectedRecipeId, allRecipes, selectedIngredients, playerMaterials, playerAlchemy } = get()
+    const gameStore = useGameStore.getState()
 
-    if (!selectedRecipeId || !userId) return
+    if (!userId) return
 
-    const recipe = allRecipes.find(r => r.id === selectedRecipeId)
-    if (!recipe) return
+    // 매칭된 레시피 또는 선택된 레시피 사용
+    const recipe = matchedRecipe || (selectedRecipeId ? allRecipes.find(r => r.id === selectedRecipeId) : null)
 
-    // 재료 소모
+    // 두 스토어 모두에서 재료 소모 (성공/실패 관계없이 소모)
     const newPlayerMaterials = { ...playerMaterials }
+    const newGameResources = { ...gameStore.resources }
     const materialsUsed: Record<string, number> = {}
 
-    if (recipe.ingredients) {
-      for (const ing of recipe.ingredients) {
-        const used = selectedIngredients[ing.material_id] || ing.quantity
-        newPlayerMaterials[ing.material_id] = Math.max(0, (newPlayerMaterials[ing.material_id] || 0) - used)
-        materialsUsed[ing.material_id] = used
-      }
+    // 실제 사용한 재료 소모
+    for (const [materialId, count] of Object.entries(selectedIngredients)) {
+      // alchemyStore에서 소모
+      newPlayerMaterials[materialId] = Math.max(0, (newPlayerMaterials[materialId] || 0) - count)
+      // gameStore에서도 소모
+      newGameResources[materialId] = Math.max(0, (newGameResources[materialId] || 0) - count)
+      materialsUsed[materialId] = count
     }
 
     // 결과 설정
-    const brewResult = success
+    const brewResult = recipe && success
       ? { type: 'success' as const, monsterId: recipe.result_monster_id, count: recipe.result_count }
       : { type: 'fail' as const, lostMaterials: materialsUsed }
 
@@ -420,32 +517,39 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       selectedIngredients: {}
     })
 
+    // gameStore의 resources도 업데이트
+    gameStore.setResources(newGameResources)
+
+    console.log(recipe && success ? `✅ 연금술 성공! ${recipe.name} 획득!` : '❌ 연금술 실패... 재료를 잃었습니다.')
+
     // 서버에 데이터 저장
     try {
-      // 1. 조합 기록 저장
-      await alchemyApi.recordAlchemyHistory(
-        userId,
-        selectedRecipeId,
-        success,
-        recipe.base_success_rate,
-        materialsUsed,
-        success ? recipe.result_monster_id : undefined
-      )
+      // 재료 소모 DB 반영 (항상 실행)
+      await alchemyApi.consumeMaterials(userId, materialsUsed)
 
-      // 2. 레시피 카운트 업데이트
-      await alchemyApi.updateRecipeCraftCount(userId, selectedRecipeId, success)
+      if (recipe && success) {
+        // 1. 조합 기록 저장
+        await alchemyApi.recordAlchemyHistory(
+          userId,
+          recipe.id,
+          success,
+          recipe.base_success_rate,
+          materialsUsed,
+          recipe.result_monster_id
+        )
 
-      // 3. 성공 시 추가 처리
-      if (success) {
-        // 경험치 추가
+        // 2. 레시피 카운트 업데이트
+        await alchemyApi.updateRecipeCraftCount(userId, recipe.id, success)
+
+        // 3. 경험치 추가
         await alchemyApi.addAlchemyExperience(userId, recipe.exp_gain)
 
-        // 몬스터 인벤토리에 추가
+        // 4. 몬스터 인벤토리에 추가
         for (let i = 0; i < recipe.result_count; i++) {
           await alchemyApi.addMonsterToPlayer(userId, recipe.result_monster_id)
         }
 
-        // 로컬 상태 업데이트 (XP)
+        // 5. 로컬 상태 업데이트 (XP)
         if (playerAlchemy) {
           const newExp = playerAlchemy.experience + recipe.exp_gain
           const newLevel = Math.floor(newExp / ALCHEMY.XP_PER_LEVEL) + 1
@@ -458,16 +562,23 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
           })
         }
 
-        console.log(`✅ 연금술 성공! +${recipe.exp_gain} XP`)
-      }
-
-      // 4. 재료 소모 DB 반영
-      await alchemyApi.consumeMaterials(userId, materialsUsed)
-
-      // 5. 성공 시 몬스터 목록 새로고침
-      if (success) {
+        // 6. 몬스터 목록 새로고침
         await get().loadPlayerMonsters(userId)
+
+        console.log(`✅ 연금술 성공! +${recipe.exp_gain} XP`)
+      } else if (recipe) {
+        // 실패했지만 레시피는 있는 경우 (조합 실패)
+        await alchemyApi.recordAlchemyHistory(
+          userId,
+          recipe.id,
+          false,
+          recipe.base_success_rate,
+          materialsUsed,
+          undefined
+        )
+        await alchemyApi.updateRecipeCraftCount(userId, recipe.id, false)
       }
+      // recipe가 null인 경우 = 잘못된 조합 (DB 기록 안함)
     } catch (error) {
       console.error('연금술 결과 저장 실패:', error)
     }
@@ -523,12 +634,17 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
       if (success) {
         // 로컬 상태 업데이트
-        set({
-          playerMaterials: {
-            ...playerMaterials,
-            [materialId]: currentAmount - quantity
-          }
-        })
+        const newPlayerMaterials = {
+          ...playerMaterials,
+          [materialId]: currentAmount - quantity
+        }
+
+        set({ playerMaterials: newPlayerMaterials })
+
+        // gameStore의 resources도 동기화
+        const gameStore = useGameStore.getState()
+        gameStore.setResources({ ...gameStore.resources, ...newPlayerMaterials })
+
         return true
       }
       return false
@@ -552,12 +668,16 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
       // 로컬 상태 업데이트
       const currentAmount = playerMaterials[materialId] || 0
-      set({
-        playerMaterials: {
-          ...playerMaterials,
-          [materialId]: currentAmount + quantity
-        }
-      })
+      const newPlayerMaterials = {
+        ...playerMaterials,
+        [materialId]: currentAmount + quantity
+      }
+
+      set({ playerMaterials: newPlayerMaterials })
+
+      // gameStore의 resources도 동기화
+      const gameStore = useGameStore.getState()
+      gameStore.setResources({ ...gameStore.resources, ...newPlayerMaterials })
     } catch (error) {
       console.error('재료 획득 실패:', error)
     }

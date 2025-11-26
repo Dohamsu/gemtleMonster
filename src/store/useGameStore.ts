@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { AlchemyState } from '../types/alchemy'
+import { useAlchemyStore } from './useAlchemyStore'
 
 interface ResourceAddition {
     id: string
@@ -77,45 +78,59 @@ export const useGameStore = create<GameState>((set) => ({
     setResources: (resources) => set({ resources }),
     setFacilities: (facilities) => set({ facilities }),
 
-    addResources: (newResources, facilityKey) => set((state) => {
-        const updatedResources = { ...state.resources }
-        let updatedAdditions = [...state.recentAdditions]
-        const newAdditions: ResourceAddition[] = []
-        const timers: NodeJS.Timeout[] = []
+    addResources: (newResources, facilityKey) => {
+        set((state) => {
+            const updatedResources = { ...state.resources }
+            let updatedAdditions = [...state.recentAdditions]
+            const newAdditions: ResourceAddition[] = []
+            const timers: NodeJS.Timeout[] = []
+
+            for (const [id, amount] of Object.entries(newResources)) {
+                updatedResources[id] = (updatedResources[id] || 0) + amount
+
+                // Remove any existing addition for this resource (overwrite)
+                updatedAdditions = updatedAdditions.filter(a => a.resourceId !== id)
+
+                const additionId = `${id}-${Date.now()}-${Math.random()}`
+                const addition: ResourceAddition = {
+                    id: additionId,
+                    resourceId: id,
+                    amount,
+                    timestamp: Date.now(),
+                    facilityKey,
+                }
+                newAdditions.push(addition)
+
+                // Auto-remove after 2 seconds with cleanup tracking
+                const timer = setTimeout(() => {
+                    set((s) => ({
+                        recentAdditions: s.recentAdditions.filter(a => a.id !== additionId)
+                    }))
+                }, 2000)
+                timers.push(timer)
+            }
+
+            // Store timers for potential cleanup (though they're one-shot, this is for consistency)
+            // In a real scenario, you'd want to track these in state if cleanup is needed
+
+            return {
+                resources: updatedResources,
+                recentAdditions: [...updatedAdditions, ...newAdditions]
+            }
+        })
+
+        // alchemyStore의 playerMaterials도 동기화 (resources를 참조)
+        const alchemyStore = useAlchemyStore.getState()
+        const currentPlayerMaterials = alchemyStore.playerMaterials
+        const updatedPlayerMaterials = { ...currentPlayerMaterials }
 
         for (const [id, amount] of Object.entries(newResources)) {
-            updatedResources[id] = (updatedResources[id] || 0) + amount
-
-            // Remove any existing addition for this resource (overwrite)
-            updatedAdditions = updatedAdditions.filter(a => a.resourceId !== id)
-
-            const additionId = `${id}-${Date.now()}-${Math.random()}`
-            const addition: ResourceAddition = {
-                id: additionId,
-                resourceId: id,
-                amount,
-                timestamp: Date.now(),
-                facilityKey,
-            }
-            newAdditions.push(addition)
-
-            // Auto-remove after 2 seconds with cleanup tracking
-            const timer = setTimeout(() => {
-                set((s) => ({
-                    recentAdditions: s.recentAdditions.filter(a => a.id !== additionId)
-                }))
-            }, 2000)
-            timers.push(timer)
+            updatedPlayerMaterials[id] = (updatedPlayerMaterials[id] || 0) + amount
         }
 
-        // Store timers for potential cleanup (though they're one-shot, this is for consistency)
-        // In a real scenario, you'd want to track these in state if cleanup is needed
-
-        return {
-            resources: updatedResources,
-            recentAdditions: [...updatedAdditions, ...newAdditions]
-        }
-    }),
+        // alchemyStore 업데이트는 내부적으로만 (DB 저장 없이)
+        useAlchemyStore.setState({ playerMaterials: updatedPlayerMaterials })
+    },
 
     removeRecentAddition: (id) => set((state) => ({
         recentAdditions: state.recentAdditions.filter(a => a.id !== id)

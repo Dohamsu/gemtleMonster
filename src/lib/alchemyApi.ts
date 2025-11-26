@@ -164,7 +164,7 @@ export async function getAllRecipes(): Promise<Recipe[]> {
     .select(`
       *,
       ingredients:recipe_ingredient(material_id, quantity, is_catalyst),
-      conditions:recipe_condition(condition_type, time_start, time_end, language_code, required_catalyst_id, event_flag, min_alchemy_level)
+      conditions:recipe_condition(condition_type, value_int, value_float, value_text, value_json, value_bool, description)
     `)
     .order('priority', { ascending: false })
 
@@ -185,7 +185,7 @@ export async function getRecipeById(recipeId: string): Promise<Recipe | null> {
     .select(`
       *,
       ingredients:recipe_ingredient(material_id, quantity, is_catalyst),
-      conditions:recipe_condition(condition_type, time_start, time_end, language_code, required_catalyst_id, event_flag, min_alchemy_level)
+      conditions:recipe_condition(condition_type, value_int, value_float, value_text, value_json, value_bool, description)
     `)
     .eq('id', recipeId)
     .single()

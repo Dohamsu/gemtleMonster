@@ -87,9 +87,13 @@ export const RECIPES: Recipe[] = [
         successRate: 50,
         requiredAlchemyLevel: 5,
         isHidden: true,
-        conditions: {
-            requiredCatalystId: 'crown_shard'
-        }
+        conditions: [
+            {
+                type: 'EVENT_FLAG',
+                value: { requiredCatalystId: 'crown_shard' },
+                description: '왕관 파편 필요'
+            }
+        ]
     },
     {
         id: 'recipe_golem_magma',
@@ -104,8 +108,12 @@ export const RECIPES: Recipe[] = [
         successRate: 40,
         requiredAlchemyLevel: 5,
         isHidden: true,
-        conditions: {
-            requiredCatalystId: 'fire_core'
-        }
+        conditions: [
+            {
+                type: 'EVENT_FLAG',
+                value: { requiredCatalystId: 'fire_core' },
+                description: '화염 코어 필요'
+            }
+        ]
     }
 ]
