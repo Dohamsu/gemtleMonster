@@ -31,10 +31,12 @@ export default function GameCanvas() {
         selectedIngredients,
         isBrewing,
         brewStartTime,
+        brewProgress,
         selectRecipe,
         addIngredient,
         removeIngredient,
         startBrewing,
+        startFreeFormBrewing,
         completeBrewing,
         autoFillIngredients,
         loadAllData,
@@ -74,6 +76,7 @@ export default function GameCanvas() {
         addIngredient,
         removeIngredient,
         startBrewing,
+        startFreeFormBrewing,
         completeBrewing,
         autoFillIngredients
     })
@@ -154,6 +157,7 @@ export default function GameCanvas() {
                 selectedIngredients,
                 isBrewing,
                 brewStartTime,
+                brewProgress,
                 playerAlchemy,
                 materialScrollOffset,
                 MATERIAL_CELL_SIZE: UI.MATERIAL_CELL_SIZE,
@@ -171,6 +175,7 @@ export default function GameCanvas() {
         selectedIngredients,
         isBrewing,
         brewStartTime,
+        brewProgress,
         playerAlchemy,
         materialScrollOffset
     ])

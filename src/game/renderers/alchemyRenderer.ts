@@ -13,6 +13,7 @@ interface AlchemyRendererProps {
     selectedIngredients: Record<string, number>
     isBrewing: boolean
     brewStartTime: number | null
+    brewProgress: number
     playerAlchemy: PlayerAlchemy | null
     materialScrollOffset: number
     MATERIAL_CELL_SIZE: number
@@ -438,7 +439,7 @@ function renderBrewButton(
     canvas: HTMLCanvasElement,
     props: AlchemyRendererProps
 ) {
-    const { allRecipes, playerMaterials, selectedRecipeId, isBrewing, brewStartTime, playerAlchemy } = props
+    const { allRecipes, playerMaterials, selectedRecipeId, selectedIngredients, isBrewing, brewProgress, playerAlchemy } = props
 
     const brewBtnW = 180
     const brewBtnH = 50
@@ -453,33 +454,31 @@ function renderBrewButton(
         ctx.lineWidth = 3
         ctx.strokeRect(brewBtnX, brewBtnY, brewBtnW, brewBtnH)
 
-        const selectedRecipe = allRecipes.find((r) => r.id === selectedRecipeId)
-        if (selectedRecipe && brewStartTime) {
-            const elapsed = Date.now() - brewStartTime
-            const progress = Math.min(elapsed / (selectedRecipe.craft_time_sec * 1000), 1)
+        // Use brewProgress from store (works for both recipe and free-form brewing)
+        const progressW = (brewBtnW - 10) * brewProgress
+        ctx.fillStyle = '#facc15'
+        ctx.fillRect(brewBtnX + 5, brewBtnY + 5, progressW, brewBtnH - 10)
 
-            const progressW = (brewBtnW - 10) * progress
-            ctx.fillStyle = '#facc15'
-            ctx.fillRect(brewBtnX + 5, brewBtnY + 5, progressW, brewBtnH - 10)
-
-            ctx.fillStyle = '#fff'
-            ctx.font = 'bold 18px Arial'
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText(`⚗️ 제조 중... ${Math.floor(progress * 100)}%`, brewBtnX + brewBtnW / 2, brewBtnY + brewBtnH / 2)
-        }
+        ctx.fillStyle = '#fff'
+        ctx.font = 'bold 18px Arial'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(`⚗️ 제조 중... ${Math.floor(brewProgress * 100)}%`, brewBtnX + brewBtnW / 2, brewBtnY + brewBtnH / 2)
     } else {
-        const canBrew = selectedRecipeId !== null
+        // 자유 조합 모드 지원: 재료가 있으면 조합 가능
+        const hasIngredients = Object.values(selectedIngredients).some(count => count > 0)
         const selectedRecipe = allRecipes.find((r) => r.id === selectedRecipeId)
         let hasMaterials = false
-        let hasLevel = false
+        let hasLevel = true // 자유 조합은 레벨 제한 없음
 
+        // 레시피가 선택된 경우 기존 검증 로직 사용
         if (selectedRecipe && selectedRecipe.ingredients) {
             hasMaterials = selectedRecipe.ingredients.every((ing) => (playerMaterials[ing.material_id] || 0) >= ing.quantity)
             hasLevel = (playerAlchemy?.level || 1) >= selectedRecipe.required_alchemy_level
         }
 
-        const isEnabled = canBrew && hasMaterials && hasLevel
+        // 레시피 선택 OR 재료 추가 시 활성화
+        const isEnabled = (selectedRecipe && hasMaterials && hasLevel) || (!selectedRecipe && hasIngredients)
 
         ctx.fillStyle = isEnabled ? '#5a3a20' : '#3a2520'
         ctx.fillRect(brewBtnX, brewBtnY, brewBtnW, brewBtnH)
@@ -492,9 +491,10 @@ function renderBrewButton(
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
 
-        let btnText = '⚗️ 연금술 시작'
+        let btnText = '🧪 연금술 시작'
         if (selectedRecipe && !hasLevel) btnText = `Lv.${selectedRecipe.required_alchemy_level} 필요`
         else if (selectedRecipe && !hasMaterials) btnText = '재료 부족'
+        else if (!selectedRecipe && !hasIngredients) btnText = '재료를 추가하세요'
 
         ctx.fillText(btnText, brewBtnX + brewBtnW / 2, brewBtnY + brewBtnH / 2)
     }

@@ -18,6 +18,7 @@ interface ClickHandlerProps {
     addIngredient: (materialId: string, quantity: number) => void
     removeIngredient: (materialId: string, quantity: number) => void
     startBrewing: (recipeId: string) => Promise<void>
+    startFreeFormBrewing: () => Promise<void>
     completeBrewing: (success: boolean) => Promise<void>
     autoFillIngredients: (recipeId: string) => boolean
 }
@@ -42,6 +43,7 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
         addIngredient,
         removeIngredient,
         startBrewing,
+        startFreeFormBrewing,
         completeBrewing,
         autoFillIngredients
     } = props
@@ -75,6 +77,7 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
                     addIngredient,
                     removeIngredient,
                     startBrewing,
+                    startFreeFormBrewing,
                     completeBrewing,
                     autoFillIngredients
                 )
@@ -95,6 +98,7 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
             addIngredient,
             removeIngredient,
             startBrewing,
+            startFreeFormBrewing,
             completeBrewing,
             autoFillIngredients
         ]
@@ -128,6 +132,7 @@ function handleAlchemyWorkshopClick(
     addIngredient: (materialId: string, quantity: number) => void,
     removeIngredient: (materialId: string, quantity: number) => void,
     startBrewing: (recipeId: string) => Promise<void>,
+    startFreeFormBrewing: () => Promise<void>,
     completeBrewing: (success: boolean) => Promise<void>,
     autoFillIngredients: (recipeId: string) => boolean
 ) {
@@ -173,12 +178,14 @@ function handleAlchemyWorkshopClick(
         x,
         y,
         selectedRecipeId,
+        selectedIngredients,
         isBrewing,
         allRecipes,
         playerMaterials,
         playerAlchemy,
         autoFillIngredients,
         startBrewing,
+        startFreeFormBrewing,
         completeBrewing
     )
 }
@@ -320,12 +327,14 @@ function handleBrewButtonClick(
     x: number,
     y: number,
     selectedRecipeId: string | null,
+    selectedIngredients: Record<string, number>,
     isBrewing: boolean,
     allRecipes: Recipe[],
     playerMaterials: Record<string, number>,
     playerAlchemy: PlayerAlchemy | null,
     autoFillIngredients: (recipeId: string) => boolean,
     startBrewing: (recipeId: string) => Promise<void>,
+    startFreeFormBrewing: () => Promise<void>,
     completeBrewing: (success: boolean) => Promise<void>
 ) {
     if (isBrewing) return
@@ -337,6 +346,7 @@ function handleBrewButtonClick(
 
     if (x >= brewBtnX && x <= brewBtnX + brewBtnW && y >= brewBtnY && y <= brewBtnY + brewBtnH) {
         if (selectedRecipeId) {
+            // 레시피 기반 조합
             const recipe = allRecipes.find((r) => r.id === selectedRecipeId)
             if (recipe && recipe.ingredients) {
                 const hasMaterials = recipe.ingredients.every((ing) => (playerMaterials[ing.material_id] || 0) >= ing.quantity)
@@ -357,6 +367,15 @@ function handleBrewButtonClick(
                     if (!hasMaterials) console.log('❌ Not enough materials in inventory!')
                     if (!hasLevel) console.log(`❌ Alchemy level too low! Required: ${recipe.required_alchemy_level}`)
                 }
+            }
+        } else {
+            // 자유 조합 모드
+            const hasIngredients = Object.values(selectedIngredients).some(count => count > 0)
+            if (hasIngredients) {
+                console.log('🧪 Free-form brewing started!')
+                startFreeFormBrewing()
+            } else {
+                console.log('❌ Please add ingredients first!')
             }
         }
     }
