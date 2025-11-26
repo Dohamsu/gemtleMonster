@@ -45,7 +45,18 @@ export default function CollectionAnimation({ resourceId, onComplete }: Props) {
                 filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.8))',
             }}
         >
-            <ResourceIcon resourceId={resourceId} size={32} />
+            {resourceId === 'empty' ? (
+                <div style={{
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    color: '#888',
+                    textShadow: '0 0 8px rgba(255,255,255,0.8)'
+                }}>
+                    꽝
+                </div>
+            ) : (
+                <ResourceIcon resourceId={resourceId} size={32} />
+            )}
         </div>
     )
 }

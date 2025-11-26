@@ -48,7 +48,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         hp: 80,
         attack: 15,
         defense: 20,
-        emoji: '🧚'
+        emoji: '🧚',
+        iconUrl: '/assets/monsters/fairySpirit.png'
     },
     'monster_wolf_dark': {
         name: '어둠 늑대',

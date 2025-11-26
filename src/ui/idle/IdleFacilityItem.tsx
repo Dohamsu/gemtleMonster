@@ -152,6 +152,8 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                     onComplete={() => {
                         setCollectedResources(prev => prev.filter((_, i) => i !== index))
                     }}
+                // Optional: Pass custom text/icon for 'empty' if CollectionAnimation supports it
+                // If not, we might need to modify CollectionAnimation or handle it here
                 />
             ))}
         </div>

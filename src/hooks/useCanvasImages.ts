@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { MATERIALS } from '../data/alchemyData'
 
 export interface CanvasImages {
     background: HTMLImageElement | null
@@ -6,6 +7,7 @@ export interface CanvasImages {
     mine: HTMLImageElement | null
     alchemy_workshop: HTMLImageElement | null
     cauldron_pixel: HTMLImageElement | null
+    materials: Record<string, HTMLImageElement>
 }
 
 /**
@@ -18,7 +20,8 @@ export function useCanvasImages() {
         herb_farm: null,
         mine: null,
         alchemy_workshop: null,
-        cauldron_pixel: null
+        cauldron_pixel: null,
+        materials: {}
     })
 
     useEffect(() => {
@@ -31,20 +34,38 @@ export function useCanvasImages() {
             })
         }
 
+        const loadMaterialImages = async () => {
+            const materialImages: Record<string, HTMLImageElement> = {}
+            const promises = Object.values(MATERIALS).map(async (material) => {
+                if (material.iconUrl && material.iconUrl.startsWith('/')) {
+                    try {
+                        const img = await loadImage(material.iconUrl)
+                        materialImages[material.id] = img
+                    } catch (e) {
+                        console.error(`Failed to load image for ${material.id}`, e)
+                    }
+                }
+            })
+            await Promise.all(promises)
+            return materialImages
+        }
+
         Promise.all([
             loadImage('/assets/background.png'),
             loadImage('/assets/herb_farm.png'),
             loadImage('/assets/mine.png'),
             loadImage('/assets/alchemy_workshop.png'),
-            loadImage('/assets/cauldron_pixel.png')
+            loadImage('/assets/cauldron_pixel.png'),
+            loadMaterialImages()
         ])
-            .then(([bg, herbFarm, mine, alchemyWorkshop, cauldronPixel]) => {
+            .then(([bg, herbFarm, mine, alchemyWorkshop, cauldronPixel, materials]) => {
                 imagesRef.current = {
                     background: bg,
                     herb_farm: herbFarm,
                     mine: mine,
                     alchemy_workshop: alchemyWorkshop,
-                    cauldron_pixel: cauldronPixel
+                    cauldron_pixel: cauldronPixel,
+                    materials: materials
                 }
             })
             .catch((err) => console.error('Failed to load images:', err))

@@ -14,14 +14,20 @@ const RESOURCE_ICONS: Record<string, string> = {
     beast_fang: '/assets/materials/beast_fang.png',
 
     // 광석류
-    ore_iron: '⚙️',
-    ore_magic: '💎',
+    ore_iron: '/assets/materials/ore_iron.png',
+    ore_magic: '/assets/materials/ore_magic.png',
     stone: '🪨',
 
     // 보석류
-    gem_fragment: '💠',
-    crack_stone_fragment: '🔮',
-    ancient_relic_fragment: '🏺',
+    gem_fragment: '/assets/materials/gem_fragment.png',
+    crack_stone_fragment: '/assets/materials/crack_stone_fragment.png',
+    ancient_relic_fragment: '/assets/materials/ancient_relic_fragment.png',
+
+    // 정령/특수
+    spirit_dust: '✨',
+    dark_crystal: '🔮',
+    crown_shard: '👑',
+    fire_core: '🔥',
 
     // 기타
     gold: '💰',

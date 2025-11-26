@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
+import ResourceIcon from '../ResourceIcon'
 
 export default function CauldronPanel() {
     const {
@@ -179,15 +180,8 @@ export default function CauldronPanel() {
                                     e.preventDefault()
                                     addIngredient(ing.materialId, 1)
                                 }}
-                                title="좌클릭: 제거, 우클릭: 추가"
                             >
-                                <span style={{ fontSize: '24px' }}>
-                                    {ing.material?.family === 'PLANT' && '🌿'}
-                                    {ing.material?.family === 'MINERAL' && '💎'}
-                                    {ing.material?.family === 'BEAST' && '🦴'}
-                                    {ing.material?.family === 'SLIME' && '🟢'}
-                                    {ing.material?.family === 'SPIRIT' && '✨'}
-                                </span>
+                                <ResourceIcon resourceId={ing.materialId} size={28} />
                                 {ing.isFulfilled && (
                                     <div style={{
                                         position: 'absolute',

@@ -29,3 +29,12 @@ dist-ssr
 *.sw?
 .claude/
 .vercel
+
+# Supabase
+.supabase/
+supabase/.branches
+supabase/.temp
+
+# Keep generated types in source control
+# Uncomment below if you want to gitignore them instead
+# src/types/database.types.ts

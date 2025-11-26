@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import type { Material, Recipe, PlayerRecipe, PlayerAlchemy } from '../lib/alchemyApi'
+import type { AlchemyContext } from '../types/alchemy'
 import * as alchemyApi from '../lib/alchemyApi'
+import { isRecipeValid } from '../lib/alchemyLogic'
 import { ALCHEMY } from '../constants/game'
 
 interface AlchemyState {
@@ -69,6 +71,16 @@ interface AlchemyState {
 
   // Actions - 테스트용
   addTestMaterials: (userId: string) => Promise<void>
+
+  // Actions - 상점
+  sellMaterial: (materialId: string, quantity: number) => Promise<boolean>
+
+  // Actions - 시설 생산
+  addMaterial: (materialId: string, quantity: number) => Promise<void>
+
+  // Actions - Advanced Alchemy Context
+  alchemyContext: AlchemyContext | null
+  setAlchemyContext: (context: AlchemyContext) => void
 }
 
 export const useAlchemyStore = create<AlchemyState>((set, get) => ({
@@ -314,7 +326,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   },
 
   startBrewing: async (recipeId) => {
-    const { allRecipes, canCraft } = get()
+    const { allRecipes, canCraft, alchemyContext } = get()
     const recipe = allRecipes.find(r => r.id === recipeId)
 
     if (!recipe) {
@@ -322,10 +334,21 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       return
     }
 
+    // 1. Check material and level requirements
     const craftCheck = canCraft(recipeId)
     if (!craftCheck.can) {
       console.error('조합 불가:', craftCheck.missingMaterials)
       return
+    }
+
+    // 2. Check context-based conditions
+    if (alchemyContext && recipe.conditions && recipe.conditions.length > 0) {
+      if (!isRecipeValid(recipe, alchemyContext)) {
+        console.error('⚠️ 조합 조건이 충족되지 않았습니다.')
+        console.log('현재 컨텍스트:', alchemyContext)
+        console.log('필요 조건:', recipe.conditions)
+        return
+      }
     }
 
     set({
@@ -475,5 +498,76 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     } catch (error) {
       console.error('❌ 테스트 재료 추가 실패:', error)
     }
-  }
+  },
+
+  // ============================================
+  // 상점 관련
+  // ============================================
+
+  sellMaterial: async (materialId, quantity) => {
+    const { userId, playerMaterials } = get()
+    if (!userId) {
+      console.error('로그인이 필요합니다.')
+      return false
+    }
+
+    const currentAmount = playerMaterials[materialId] || 0
+    if (currentAmount < quantity) {
+      console.error('재료가 부족합니다.')
+      return false
+    }
+
+    try {
+      // DB 업데이트
+      const success = await alchemyApi.consumeMaterials(userId, { [materialId]: quantity })
+
+      if (success) {
+        // 로컬 상태 업데이트
+        set({
+          playerMaterials: {
+            ...playerMaterials,
+            [materialId]: currentAmount - quantity
+          }
+        })
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('재료 판매 실패:', error)
+      return false
+    }
+  },
+
+  // ============================================
+  // 시설 생산 관련
+  // ============================================
+
+  addMaterial: async (materialId, quantity) => {
+    const { userId, playerMaterials } = get()
+    if (!userId) return
+
+    try {
+      // DB 업데이트
+      await alchemyApi.addMaterialToPlayer(userId, materialId, quantity)
+
+      // 로컬 상태 업데이트
+      const currentAmount = playerMaterials[materialId] || 0
+      set({
+        playerMaterials: {
+          ...playerMaterials,
+          [materialId]: currentAmount + quantity
+        }
+      })
+    } catch (error) {
+      console.error('재료 획득 실패:', error)
+    }
+  },
+
+  // ============================================
+  // Advanced Alchemy Context
+  // ============================================
+
+  alchemyContext: null,
+
+  setAlchemyContext: (context) => set({ alchemyContext: context })
 }))

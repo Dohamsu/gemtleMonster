@@ -1,6 +1,19 @@
 # 📋 변경 이력
 
 모든 주요 변경사항은 이 파일에 문서화됩니다.
+## [0.2.1] - 2025-11-25
+
+### ✨ New Features
+- Added game constants file `src/constants/game.ts`.
+- Updated material sell price field in `src/lib/alchemyApi.ts`.
+- Added new UI assets for monsters.
+- Refactored alchemy store and UI components.
+- Updated linting and formatting configurations.
+
+### 🐛 Bug Fixes
+- Fixed ingredient removal logic.
+- Fixed UI text inconsistencies.
+
 
 ## [0.2.0] - 2025-01-XX
 

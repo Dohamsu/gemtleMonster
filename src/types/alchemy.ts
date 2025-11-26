@@ -45,11 +45,7 @@ export interface Recipe {
     successRate: number // 0-100
     requiredAlchemyLevel: number
     isHidden: boolean
-    conditions?: {
-        timeRange?: [number, number] // start hour, end hour (0-24)
-        requiredCatalystId?: string
-        requiredLanguage?: string[]
-    }
+    conditions?: RecipeCondition[]
 }
 
 export interface AlchemyState {
@@ -58,4 +54,47 @@ export interface AlchemyState {
     isBrewing: boolean
     brewStartTime: number | null
     brewProgress: number // 0-100
+}
+
+// ==========================================
+// Advanced Alchemy Types
+// ==========================================
+
+export interface AlchemyContext {
+    time: {
+        gameTime: number // 0-24
+        realTime: number // 0-24
+        realDayOfWeek: number // 0-6 (Sun-Sat)
+        realDateStr: string // "MM-DD"
+    }
+    env: {
+        weather: 'SUNNY' | 'RAIN' | 'SNOW' | 'STORM' | 'CLOUDY'
+        temperature: number
+        language: string
+        country: string
+    }
+    device: {
+        type: 'MOBILE' | 'DESKTOP'
+        os: string
+        isDarkMode: boolean
+    }
+    session: {
+        idleTimeSec: number
+        loginStreak: number
+        dailyPlayTimeMin: number
+        recentFailCount: number
+    }
+}
+
+export type RecipeConditionType =
+    | 'TIME_RANGE' | 'REAL_TIME_RANGE' | 'REAL_DATE' | 'WEEKDAY'
+    | 'REAL_WEATHER' | 'REAL_TEMPERATURE' | 'GEO_COUNTRY'
+    | 'DEVICE_TYPE' | 'PLATFORM' | 'UI_PREFERENCE'
+    | 'TAB_IDLE' | 'LOGIN_STREAK' | 'DAILY_PLAYTIME' | 'RECENT_FAIL_COUNT'
+    | 'EVENT_FLAG'
+
+export interface RecipeCondition {
+    type: RecipeConditionType
+    value: any // Specific value based on type (e.g., [22, 4] for TIME_RANGE)
+    description?: string // For UI hint (e.g., "비 오는 날")
 }

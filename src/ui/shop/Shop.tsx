@@ -12,8 +12,8 @@ const LEGACY_RESOURCE_NAMES: Record<string, string> = {
 }
 
 export default function Shop() {
-    const { resources, sellResource } = useGameStore()
-    const { playerMaterials } = useAlchemyStore()
+    const { resources, sellResource, addResources } = useGameStore()
+    const { playerMaterials, sellMaterial } = useAlchemyStore()
     const [materials, setMaterials] = useState<Material[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -31,14 +31,28 @@ export default function Shop() {
         loadMaterials()
     }, [])
 
-    const handleSellMaterial = (materialId: string, sellPrice: number) => {
+    const [sellingItems, setSellingItems] = useState<Record<string, boolean>>({})
+
+    const handleSellMaterial = async (materialId: string, sellPrice: number) => {
         const amount = playerMaterials[materialId] || 0
         if (amount > 0) {
-            // 연금술 재료는 useAlchemyStore에서 관리하므로 별도 처리 필요
-            // 임시로 useGameStore의 sellResource 사용 (추후 통합 필요)
-            const totalValue = amount * sellPrice
-            sellResource(materialId, amount, sellPrice)
-            console.log(`${materialId} ${amount}개 판매: +${totalValue}G`)
+            setSellingItems(prev => ({ ...prev, [materialId]: true }))
+            try {
+                // 연금술 재료는 useAlchemyStore에서 차감 (DB 반영)
+                const success = await sellMaterial(materialId, amount)
+
+                if (success) {
+                    // 골드는 useGameStore에서 지급
+                    const totalValue = amount * sellPrice
+                    // addResources는 내부적으로 기존 자원에 더해주는 로직이므로 gold만 넘기면 됨
+                    addResources({ gold: totalValue })
+                    console.log(`${materialId} ${amount}개 판매: +${totalValue}G`)
+                } else {
+                    console.error('판매 실패')
+                }
+            } finally {
+                setSellingItems(prev => ({ ...prev, [materialId]: false }))
+            }
         }
     }
 
@@ -100,6 +114,7 @@ export default function Shop() {
                         const count = playerMaterials[material.id] || 0
                         const price = material.sell_price
                         const totalValue = count * price
+                        const isSelling = sellingItems[material.id]
 
                         return (
                             <div key={material.id} style={{
@@ -131,18 +146,20 @@ export default function Shop() {
                                 </div>
                                 <button
                                     onClick={() => handleSellMaterial(material.id, price)}
+                                    disabled={isSelling}
                                     style={{
-                                        background: '#eab308',
-                                        color: 'black',
+                                        background: isSelling ? '#666' : '#eab308',
+                                        color: isSelling ? '#aaa' : 'black',
                                         border: 'none',
                                         padding: '5px 10px',
                                         borderRadius: '4px',
-                                        cursor: 'pointer',
+                                        cursor: isSelling ? 'not-allowed' : 'pointer',
                                         fontWeight: 'bold',
-                                        fontSize: '0.9em'
+                                        fontSize: '0.9em',
+                                        minWidth: '100px'
                                     }}
                                 >
-                                    모두 판매 (+{totalValue}G)
+                                    {isSelling ? '판매 중...' : `모두 판매 (+${totalValue}G)`}
                                 </button>
                             </div>
                         )

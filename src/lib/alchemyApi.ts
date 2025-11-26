@@ -22,14 +22,18 @@ export interface RecipeIngredient {
   is_catalyst: boolean
 }
 
+// Extended RecipeCondition matching new DB schema
 export interface RecipeCondition {
-  condition_type: 'time_range' | 'language' | 'catalyst' | 'event' | 'alchemy_level'
-  time_start?: string
-  time_end?: string
-  language_code?: string
-  required_catalyst_id?: string
-  event_flag?: string
-  min_alchemy_level?: number
+  id?: number
+  recipe_id?: string
+  condition_type: string // All condition types from unionRule.md
+  value_int?: number
+  value_float?: number
+  value_text?: string
+  value_json?: any
+  value_bool?: boolean
+  description?: string
+  created_at?: string
 }
 
 export interface Recipe {

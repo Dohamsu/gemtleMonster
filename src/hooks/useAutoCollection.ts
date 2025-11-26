@@ -3,6 +3,8 @@ import { useGameStore } from '../store/useGameStore'
 import { supabase } from '../lib/supabase'
 
 
+import { useAlchemyStore } from '../store/useAlchemyStore'
+
 interface FacilityLevelStats {
     intervalSeconds: number
     bundlesPerTick: number
@@ -58,14 +60,27 @@ export function useAutoCollection(userId: string | undefined) {
                             }
                         }
 
+                        const now = Date.now()
+                        const facilityKey = `${facilityId}-${level}`
+
                         if (hasDrops) {
-                            const now = Date.now()
-                            const facilityKey = `${facilityId}-${level}`
+                            // 1. Update Legacy GameStore (for UI animations)
                             addResources(drops, facilityKey)
-                            // Use unique key for each level
-                            setLastCollectedAt(facilityKey, now)
+
+                            // 2. Update AlchemyStore (for DB & Inventory)
+                            Object.entries(drops).forEach(([materialId, amount]) => {
+                                useAlchemyStore.getState().addMaterial(materialId, amount)
+                            })
+
                             console.log(`⛏️ Collected from ${facilityId} Lv.${level}:`, drops)
+                        } else {
+                            // Missed drop - trigger empty animation
+                            addResources({ 'empty': 1 }, facilityKey)
+                            console.log(`💨 Missed drop from ${facilityId} Lv.${level}`)
                         }
+
+                        // Always update last collected time to keep progress bar synced
+                        setLastCollectedAt(facilityKey, now)
                     }, collectionInterval * 1000)
 
                     intervals.push(interval)

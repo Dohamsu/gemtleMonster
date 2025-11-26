@@ -178,11 +178,23 @@ function renderIngredientSlots(
 
             if (material) {
                 // Material icon
-                ctx.fillStyle = '#f0d090'
-                ctx.font = '32px Arial'
-                ctx.textAlign = 'center'
-                ctx.textBaseline = 'middle'
-                ctx.fillText(ICON_MAP[material.family] || '❓', slotX + slotSize / 2, slotsY + slotSize / 2 - 5)
+                const materialImage = props.images.materials[material.id]
+                if (materialImage) {
+                    const iconSize = slotSize * 0.6
+                    ctx.drawImage(
+                        materialImage,
+                        slotX + slotSize / 2 - iconSize / 2,
+                        slotsY + slotSize / 2 - iconSize / 2 - 5,
+                        iconSize,
+                        iconSize
+                    )
+                } else {
+                    ctx.fillStyle = '#f0d090'
+                    ctx.font = '32px Arial'
+                    ctx.textAlign = 'center'
+                    ctx.textBaseline = 'middle'
+                    ctx.fillText(ICON_MAP[material.family] || '❓', slotX + slotSize / 2, slotsY + slotSize / 2 - 5)
+                }
 
                 // Quantity badge
                 ctx.fillStyle = '#1a1a1a'
@@ -376,11 +388,23 @@ function renderMaterialGrid(
         ctx.strokeRect(cellX, cellY, gridCellSize, gridCellSize)
 
         // Material icon
-        ctx.fillStyle = '#f0d090'
-        ctx.font = '24px Arial'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(ICON_MAP[material.family] || '❓', cellX + gridCellSize / 2, cellY + gridCellSize / 2 - 5)
+        const materialImage = props.images.materials[material.id]
+        if (materialImage) {
+            const iconSize = gridCellSize * 0.6
+            ctx.drawImage(
+                materialImage,
+                cellX + gridCellSize / 2 - iconSize / 2,
+                cellY + gridCellSize / 2 - iconSize / 2 - 5,
+                iconSize,
+                iconSize
+            )
+        } else {
+            ctx.fillStyle = '#f0d090'
+            ctx.font = '24px Arial'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillText(ICON_MAP[material.family] || '❓', cellX + gridCellSize / 2, cellY + gridCellSize / 2 - 5)
+        }
 
         // Quantity badge
         if (count > 0) {

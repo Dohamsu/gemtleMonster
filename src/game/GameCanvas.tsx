@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { AlchemyResultModal } from '../ui/alchemy/AlchemyResultModal'
 import { useCanvasImages } from '../hooks/useCanvasImages'
 import { useCanvasClickHandler } from '../hooks/useCanvasClickHandler'
+import { useAlchemyContext } from '../hooks/useAlchemyContext'
 import { renderMapView } from './renderers/mapRenderer'
 import { renderAlchemyWorkshop } from './renderers/alchemyRenderer'
 import { UI } from '../constants/game'
@@ -38,8 +39,12 @@ export default function GameCanvas() {
         autoFillIngredients,
         loadAllData,
         playerAlchemy,
-        brewResult
+        brewResult,
+        setAlchemyContext
     } = useAlchemyStore()
+
+    // Advanced Alchemy: Context hook
+    const alchemyContext = useAlchemyContext()
 
     const [showResultModal, setShowResultModal] = useState(false)
     const [lastBrewResult, setLastBrewResult] = useState<{ success: boolean; monsterId?: string }>({
@@ -47,7 +52,10 @@ export default function GameCanvas() {
     })
     const [materialScrollOffset, setMaterialScrollOffset] = useState(0)
 
-    // Load images (cached)
+    // Update alchemy context in store
+    useEffect(() => {
+        setAlchemyContext(alchemyContext)
+    }, [alchemyContext, setAlchemyContext])
     const images = useCanvasImages()
 
     // Optimized click handler

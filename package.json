@@ -8,7 +8,11 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "seed:facilities": "tsx src/data/seedFacilities.ts",
-    "seed:alchemy": "tsx src/data/seedAlchemy.ts"
+    "seed:alchemy": "tsx src/data/seedAlchemy.ts",
+    "types:generate": "supabase gen types typescript --project-id zcqejdvtwubaodfpjvbm --schema public > src/types/database.types.ts",
+    "types:local": "supabase gen types typescript --local --schema public > src/types/database.types.ts",
+    "db:pull": "supabase db pull",
+    "db:push": "supabase db push"
   },
   "devDependencies": {
     "@types/react": "^19.2.6",
