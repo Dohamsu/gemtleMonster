@@ -34,7 +34,7 @@ interface GameState {
     addResources: (resources: Record<string, number>, facilityKey?: string) => void
     setLastCollectedAt: (facilityId: string, timestamp: number) => void
     removeRecentAddition: (id: string) => void
-    sellResource: (resourceId: string, amount: number, pricePerUnit: number) => void
+    sellResource: (resourceId: string, amount: number, pricePerUnit: number) => Promise<boolean>
     upgradeFacility: (facilityId: string, cost: Record<string, number>) => void
     setActiveTab: (tab: Tab) => void
     setCanvasView: (view: CanvasView) => void
@@ -48,7 +48,7 @@ interface GameState {
     cancelBrewing: () => void
 }
 
-export const useGameStore = create<GameState>((set) => ({
+export const useGameStore = create<GameState>((set, get) => ({
     player: { x: 0, y: 0, health: 100 },
     inventory: [],
     resources: {
@@ -129,11 +129,13 @@ export const useGameStore = create<GameState>((set) => ({
         }
     })),
 
-    sellResource: (resourceId, amount, pricePerUnit) => set((state) => {
-        const currentAmount = state.resources[resourceId] || 0
+    sellResource: async (resourceId, amount, pricePerUnit) => {
+        const currentState = get()
+        const currentAmount = currentState.resources[resourceId] || 0
+
         if (currentAmount < amount) {
             console.warn(`Not enough ${resourceId} to sell`)
-            return state
+            return false
         }
 
         const goldEarned = amount * pricePerUnit
@@ -142,34 +144,39 @@ export const useGameStore = create<GameState>((set) => ({
         const shouldSyncToDb = ['ore_magic', 'gem_fragment'].includes(resourceId)
 
         if (shouldSyncToDb) {
-            // DB 동기화 (비동기 처리)
-            const alchemyStore = useAlchemyStore.getState()
-            const userId = alchemyStore.userId
+            const { userId } = useAlchemyStore.getState()
 
             if (userId) {
-                // consumeMaterials API 호출 (비동기)
-                import('../lib/alchemyApi').then(api => {
-                    api.consumeMaterials(userId, { [resourceId]: amount })
-                        .then(success => {
-                            if (success) {
-                                console.log(`✅ ${resourceId} DB 판매 완료: -${amount}`)
-                            } else {
-                                console.warn(`⚠️ ${resourceId} DB 판매 실패 (재료가 DB에 없음)`)
-                            }
-                        })
-                        .catch(err => console.error(`❌ ${resourceId} DB 판매 에러:`, err))
-                })
+                try {
+                    const api = await import('../lib/alchemyApi')
+                    const success = await api.consumeMaterials(userId, { [resourceId]: amount })
+
+                    if (!success) {
+                        console.warn(`⚠️ ${resourceId} DB 판매 실패 (재료가 DB에 없음)`)
+                        return false
+                    }
+                } catch (error) {
+                    console.error(`❌ ${resourceId} DB 판매 에러:`, error)
+                    return false
+                }
             }
         }
 
-        return {
-            resources: {
-                ...state.resources,
-                [resourceId]: currentAmount - amount,
-                gold: (state.resources.gold || 0) + goldEarned
+        set((state) => {
+            const availableAmount = state.resources[resourceId] || 0
+            if (availableAmount < amount) return state
+
+            return {
+                resources: {
+                    ...state.resources,
+                    [resourceId]: availableAmount - amount,
+                    gold: (state.resources.gold || 0) + goldEarned
+                }
             }
-        }
-    }),
+        })
+
+        return true
+    },
 
     upgradeFacility: (facilityId, cost) => set((state) => {
         // Check if affordable
