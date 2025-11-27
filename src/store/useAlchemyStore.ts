@@ -80,6 +80,8 @@ interface AlchemyState {
 
   // Actions - 시설 생산
   addMaterial: (materialId: string, quantity: number) => Promise<void>
+  setBatchSyncCallback: (callback: ((materialId: string, quantity: number) => void) | null) => void
+  setForceSyncCallback: (callback: (() => Promise<void>) | null) => void
 
   // Actions - Advanced Alchemy Context
   alchemyContext: AlchemyContext | null
@@ -106,19 +108,29 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   error: null,
   userId: null, // Initialize userId
 
+  // 배치 동기화 콜백 (useBatchMaterialSync에서 설정)
+  batchSyncCallback: null as ((materialId: string, quantity: number) => void) | null,
+  forceSyncCallback: null as (() => Promise<void>) | null,
+
   // ============================================
   // 데이터 로딩
   // ============================================
 
   loadAllData: async (userId: string) => {
-    set({ userId, isLoading: true, error: null }) // Set userId here
+    console.log(`🔄 [AlchemyStore] loadAllData 시작:`, userId)
+    set({ isLoading: true, error: null, userId })
     try {
-      await get().loadMaterials()
-      await get().loadRecipes()
-      await get().loadPlayerData(userId)
+      await Promise.all([
+        get().loadMaterials(),
+        get().loadRecipes(),
+        get().loadPlayerData(userId),
+        get().loadPlayerMonsters(userId)
+      ])
+      console.log(`✅ [AlchemyStore] loadAllData 완료`)
+      console.log(`📦 playerMaterials:`, get().playerMaterials)
     } catch (error) {
-      console.error('데이터 로딩 실패:', error)
-      set({ error: '데이터를 불러오는데 실패했습니다.' })
+      console.error(`❌ [AlchemyStore] loadAllData 실패:`, error)
+      set({ error: error instanceof Error ? error.message : 'Unknown error' })
     } finally {
       set({ isLoading: false })
     }
@@ -145,9 +157,11 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   },
 
   loadPlayerData: async (userId: string) => {
+    console.log(`🔄 [AlchemyStore] loadPlayerData 시작:`, userId)
     try {
       // 플레이어 재료
       const playerMats = await alchemyApi.getPlayerMaterials(userId)
+      console.log(`📦 DB에서 로드한 재료:`, playerMats.length, '개')
       const materialsMap: Record<string, number> = {}
       playerMats.forEach(m => {
         materialsMap[m.material_id] = m.quantity
@@ -169,11 +183,20 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         playerAlchemy: alchemyInfo
       })
 
+      console.log(`✅ [AlchemyStore] playerMaterials 업데이트:`, Object.keys(materialsMap).length, '종류')
+      console.log(`📊 주요 재료:`, {
+        ore_iron: materialsMap['ore_iron'] || 0,
+        ore_magic: materialsMap['ore_magic'] || 0,
+        gem_fragment: materialsMap['gem_fragment'] || 0
+      })
+
       // gameStore의 resources도 동기화
       const gameStore = useGameStore.getState()
-      gameStore.setResources({ ...gameStore.resources, ...materialsMap })
+      const currentResources = gameStore.resources
+      gameStore.setResources({ ...currentResources, ...materialsMap })
+      console.log(`✅ [AlchemyStore] resources 동기화 완료`)
     } catch (error) {
-      console.error('플레이어 데이터 로딩 실패:', error)
+      console.error('❌ [AlchemyStore] 플레이어 데이터 로딩 실패:', error)
       throw error
     }
   },
@@ -362,11 +385,17 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   },
 
   startFreeFormBrewing: async () => {
-    const { selectedIngredients, allRecipes, alchemyContext } = get()
+    const { selectedIngredients, allRecipes, alchemyContext, forceSyncCallback } = get()
 
     if (Object.keys(selectedIngredients).length === 0) {
       console.error('재료를 먼저 추가해주세요')
       return
+    }
+
+    // Phase 2: 조합 전 배치된 변경사항 먼저 동기화
+    if (forceSyncCallback) {
+      console.log('⚡ [startFreeFormBrewing] 배치 동기화 먼저 실행...')
+      await forceSyncCallback()
     }
 
     // 재료 조합으로 레시피 찾기
@@ -420,12 +449,18 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   },
 
   startBrewing: async (recipeId) => {
-    const { allRecipes, canCraft, alchemyContext } = get()
+    const { allRecipes, canCraft, alchemyContext, forceSyncCallback } = get()
     const recipe = allRecipes.find(r => r.id === recipeId)
 
     if (!recipe) {
       console.error('레시피를 찾을 수 없습니다')
       return
+    }
+
+    // Phase 2: 조합 전 배치된 변경사항 먼저 동기화
+    if (forceSyncCallback) {
+      console.log('⚡ [startBrewing] 배치 동기화 먼저 실행...')
+      await forceSyncCallback()
     }
 
     // 1. Check material and level requirements
@@ -616,40 +651,58 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   // ============================================
 
   sellMaterial: async (materialId, quantity) => {
-    const { userId, playerMaterials } = get()
+    const { userId, playerMaterials, forceSyncCallback } = get()
+
+    console.log(`[Store Debug] sellMaterial called:`, { materialId, quantity, userId })
+
     if (!userId) {
-      console.error('로그인이 필요합니다.')
+      console.error('[Store Debug] 로그인이 필요합니다.')
       return false
+    }
+
+    // Phase 2: 판매 전 배치된 변경사항 먼저 동기화
+    if (forceSyncCallback) {
+      console.log('⚡ [sellMaterial] 배치 동기화 먼저 실행...')
+      await forceSyncCallback()
     }
 
     const currentAmount = playerMaterials[materialId] || 0
     if (currentAmount < quantity) {
-      console.error('재료가 부족합니다.')
+      console.error(`[Store Debug] 재료 부족: 보유(${currentAmount}) < 판매(${quantity})`)
       return false
     }
 
     try {
       // DB 업데이트
+      console.log(`[Store Debug] DB 업데이트 시도...`)
       const success = await alchemyApi.consumeMaterials(userId, { [materialId]: quantity })
+      console.log(`[Store Debug] DB 업데이트 결과:`, success)
 
       if (success) {
         // 로컬 상태 업데이트
         const newPlayerMaterials = {
           ...playerMaterials,
-          [materialId]: currentAmount - quantity
+          [materialId]: Math.max(0, currentAmount - quantity)
         }
 
         set({ playerMaterials: newPlayerMaterials })
 
-        // gameStore의 resources도 동기화
+        // gameStore의 resources도 동기화 (개별 차감)
         const gameStore = useGameStore.getState()
-        gameStore.setResources({ ...gameStore.resources, ...newPlayerMaterials })
+        const currentResources = gameStore.resources
+        gameStore.setResources({
+          ...currentResources,
+          [materialId]: Math.max(0, (currentResources[materialId] || 0) - quantity)
+        })
 
+        console.log(`[Store Debug] 로컬 상태 업데이트 완료`)
         return true
+      } else {
+        console.error(`[Store Debug] DB 업데이트 실패 - 재료가 DB에 없을 수 있습니다.`)
+        return false
       }
-      return false
     } catch (error) {
-      console.error('재료 판매 실패:', error)
+      console.error('[Store Debug] 재료 판매 실패 (Exception):', error)
       return false
     }
   },
@@ -659,28 +712,50 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   // ============================================
 
   addMaterial: async (materialId, quantity) => {
-    const { userId, playerMaterials } = get()
+    const { userId, playerMaterials, batchSyncCallback } = get()
     if (!userId) return
 
-    try {
-      // DB 업데이트
-      await alchemyApi.addMaterialToPlayer(userId, materialId, quantity)
-
-      // 로컬 상태 업데이트
-      const currentAmount = playerMaterials[materialId] || 0
-      const newPlayerMaterials = {
-        ...playerMaterials,
-        [materialId]: currentAmount + quantity
-      }
-
-      set({ playerMaterials: newPlayerMaterials })
-
-      // gameStore의 resources도 동기화
-      const gameStore = useGameStore.getState()
-      gameStore.setResources({ ...gameStore.resources, ...newPlayerMaterials })
-    } catch (error) {
-      console.error('재료 획득 실패:', error)
+    // 로컬 상태 먼저 업데이트 (즉시 반영)
+    const currentAmount = playerMaterials[materialId] || 0
+    const newPlayerMaterials = {
+      ...playerMaterials,
+      [materialId]: currentAmount + quantity
     }
+
+    set({ playerMaterials: newPlayerMaterials })
+
+    // gameStore의 resources도 동기화 (개별 증가)
+    const gameStore = useGameStore.getState()
+    const currentResources = gameStore.resources
+    gameStore.setResources({
+      ...currentResources,
+      [materialId]: (currentResources[materialId] || 0) + quantity
+    })
+
+    console.log(`✅ 재료 추가 완료 (로컬): ${materialId} +${quantity}`)
+
+    // 배치 동기화 콜백이 있으면 큐에 추가 (Phase 1)
+    if (batchSyncCallback) {
+      batchSyncCallback(materialId, quantity)
+    } else {
+      // 배치 시스템이 없으면 기존 방식으로 즉시 저장 (하위 호환성)
+      try {
+        await alchemyApi.addMaterialToPlayer(userId, materialId, quantity)
+        console.log(`✅ 재료 추가 완료 (DB - 즉시): ${materialId} +${quantity}`)
+      } catch (error) {
+        console.error(`❌ 재료 DB 저장 실패 (로컬은 유지):`, materialId, error)
+      }
+    }
+  },
+
+  setBatchSyncCallback: (callback) => {
+    set({ batchSyncCallback: callback })
+    console.log(`🔗 [AlchemyStore] 배치 동기화 콜백 ${callback ? '설정' : '해제'}`)
+  },
+
+  setForceSyncCallback: (callback) => {
+    set({ forceSyncCallback: callback })
+    console.log(`🔗 [AlchemyStore] 즉시 동기화 콜백 ${callback ? '설정' : '해제'}`)
   },
 
   // ============================================

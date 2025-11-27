@@ -454,3 +454,72 @@ export async function getPlayerMonsters(userId: string): Promise<Array<{
 
   return data || []
 }
+
+// ============================================
+// 오프라인 보상 시스템 (Phase 3)
+// ============================================
+
+/**
+ * 마지막 수집 시간 가져오기
+ */
+export async function getLastCollectedAt(userId: string): Promise<Date | null> {
+  const { data, error } = await supabase
+    .from('player_alchemy')
+    .select('last_collected_at')
+    .eq('user_id', userId)
+    .single()
+
+  if (error || !data) {
+    console.error('마지막 수집 시간 조회 실패:', error)
+    return null
+  }
+
+  return data.last_collected_at ? new Date(data.last_collected_at) : null
+}
+
+/**
+ * 마지막 수집 시간 업데이트
+ */
+export async function updateLastCollectedAt(userId: string, timestamp?: Date): Promise<void> {
+  const { error } = await supabase
+    .from('player_alchemy')
+    .update({
+      last_collected_at: timestamp || new Date()
+    })
+    .eq('user_id', userId)
+
+  if (error) {
+    console.error('마지막 수집 시간 업데이트 실패:', error)
+    throw error
+  }
+
+  console.log(`✅ 마지막 수집 시간 업데이트: ${timestamp || new Date()}`)
+}
+
+/**
+ * 배치로 여러 재료를 한 번에 추가 (오프라인 보상용)
+ */
+export async function batchAddMaterials(
+  userId: string,
+  materials: Record<string, number>
+): Promise<void> {
+  console.log(`🎁 [batchAddMaterials] 시작:`, materials)
+
+  const promises = Object.entries(materials).map(([materialId, quantity]) => {
+    if (quantity <= 0) return Promise.resolve()
+
+    return supabase.rpc('add_materials', {
+      p_user_id: userId,
+      p_material_id: materialId,
+      p_quantity: quantity
+    })
+  })
+
+  try {
+    await Promise.all(promises)
+    console.log(`✅ [batchAddMaterials] 완료: ${Object.keys(materials).length}종류`)
+  } catch (error) {
+    console.error('❌ [batchAddMaterials] 실패:', error)
+    throw error
+  }
+}
