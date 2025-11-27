@@ -48,7 +48,7 @@ interface GameState {
     cancelBrewing: () => void
 }
 
-export const useGameStore = create<GameState>((set) => ({
+export const useGameStore = create<GameState>((set, get) => ({
     player: { x: 0, y: 0, health: 100 },
     inventory: [],
     resources: {
@@ -130,6 +130,14 @@ export const useGameStore = create<GameState>((set) => ({
     })),
 
     sellResource: async (resourceId, amount, pricePerUnit) => {
+        const currentState = get()
+        const currentAmount = currentState.resources[resourceId] || 0
+
+        if (currentAmount < amount) {
+            console.warn(`Not enough ${resourceId} to sell`)
+            return false
+        }
+
         const goldEarned = amount * pricePerUnit
 
         // ore_magic과 gem_fragment는 DB에도 동기화 (비동기)
@@ -139,16 +147,7 @@ export const useGameStore = create<GameState>((set) => ({
 
         // DB 연동 대상은 플레이어 재료 수량과 동기화 상태를 우선 확인
         if (shouldSyncToDb) {
-            const dbAmount = playerMaterials[resourceId] || 0
-            if (dbAmount < amount) {
-                console.warn(`⚠️ ${resourceId} DB 수량 부족: 보유(${dbAmount}) < 판매(${amount})`)
-                return false
-            }
-
-            // 배치 생산분이 남아있으면 우선 강제 동기화
-            if (forceSyncCallback) {
-                await forceSyncCallback()
-            }
+            const { userId } = useAlchemyStore.getState()
 
             if (userId) {
                 try {
@@ -170,24 +169,12 @@ export const useGameStore = create<GameState>((set) => ({
             const availableAmount = state.resources[resourceId] || 0
             if (availableAmount < amount) return state
 
-            const updatedResources = {
-                ...state.resources,
-                [resourceId]: availableAmount - amount,
-                gold: (state.resources.gold || 0) + goldEarned
-            }
-
-            // DB 연동 대상은 alchemyStore의 playerMaterials도 함께 갱신해 상태 불일치 방지
-            if (shouldSyncToDb) {
-                const alchemyState = useAlchemyStore.getState()
-                const newPlayerMaterials = {
-                    ...alchemyState.playerMaterials,
-                    [resourceId]: Math.max(0, (alchemyState.playerMaterials[resourceId] || 0) - amount)
-                }
-                useAlchemyStore.setState({ playerMaterials: newPlayerMaterials })
-            }
-
             return {
-                resources: updatedResources,
+                resources: {
+                    ...state.resources,
+                    [resourceId]: availableAmount - amount,
+                    gold: (state.resources.gold || 0) + goldEarned
+                }
             }
         })
 
