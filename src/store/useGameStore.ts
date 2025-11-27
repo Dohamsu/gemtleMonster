@@ -135,8 +135,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         // ore_magic과 gem_fragment는 DB에도 동기화 (비동기)
         const shouldSyncToDb = ['ore_magic', 'gem_fragment'].includes(resourceId)
 
-        const { userId, playerMaterials, forceSyncCallback } = useAlchemyStore.getState()
-
         // DB 연동 대상은 플레이어 재료 수량과 동기화 상태를 우선 확인
         if (shouldSyncToDb) {
             const dbAmount = playerMaterials[resourceId] || 0
