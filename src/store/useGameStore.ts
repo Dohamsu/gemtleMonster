@@ -130,6 +130,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     })),
 
     sellResource: async (resourceId, amount, pricePerUnit) => {
+        const currentState = get()
+        const currentAmount = currentState.resources[resourceId] || 0
+
+        if (currentAmount < amount) {
+            console.warn(`Not enough ${resourceId} to sell`)
+            return false
+        }
+
         const goldEarned = amount * pricePerUnit
 
         // ore_magic과 gem_fragment는 DB에도 동기화 (비동기)
@@ -137,6 +145,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         // DB 연동 대상은 플레이어 재료 수량과 동기화 상태를 우선 확인
         if (shouldSyncToDb) {
+            const { userId, playerMaterials, forceSyncCallback } = useAlchemyStore.getState()
+
             const dbAmount = playerMaterials[resourceId] || 0
             if (dbAmount < amount) {
                 console.warn(`⚠️ ${resourceId} DB 수량 부족: 보유(${dbAmount}) < 판매(${amount})`)
