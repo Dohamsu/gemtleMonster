@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { AlchemyState } from '../types/alchemy'
 import { useAlchemyStore } from './useAlchemyStore'
+import { DUNGEONS } from '../data/dungeonData'
 
 interface ResourceAddition {
     id: string
@@ -45,7 +46,23 @@ interface GameState {
     addIngredient: (materialId: string, count: number) => void
     startBrewing: () => void
     completeBrewing: (resultMonsterId: string, count: number, materialsUsed: Record<string, number>) => void
-    cancelBrewing: () => void
+    // Battle Actions
+    activeDungeon: string | null
+    battleState: {
+        isBattling: boolean
+        playerHp: number
+        playerMaxHp: number
+        enemyId: string | null
+        enemyHp: number
+        enemyMaxHp: number
+        turn: number
+        logs: string[]
+        result: 'victory' | 'defeat' | null
+        rewards: Record<string, number>
+    } | null
+    startBattle: (dungeonId: string, enemyId: string) => void
+    processTurn: () => void
+    endBattle: () => void
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -71,6 +88,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         brewStartTime: null,
         brewProgress: 0
     },
+
+    // Battle Initial State
+    activeDungeon: null,
+    battleState: null,
 
     setPlayerPosition: (x, y) => set((state) => ({ player: { ...state.player, x, y } })),
     addItem: (item) => set((state) => ({ inventory: [...state.inventory, item] })),
@@ -292,5 +313,108 @@ export const useGameStore = create<GameState>((set, get) => ({
             brewStartTime: null,
             brewProgress: 0
         }
-    }))
+    })),
+
+    // Battle Actions Implementation
+    startBattle: (dungeonId, enemyId) => {
+        // Find the dungeon and enemy from data
+        const dungeon = DUNGEONS.find(d => d.id === dungeonId)
+        if (!dungeon) {
+            console.error('Dungeon not found:', dungeonId)
+            return
+        }
+
+        const enemy = dungeon.enemies.find(e => e.id === enemyId)
+        if (!enemy) {
+            console.error('Enemy not found:', enemyId)
+            return
+        }
+
+        set({
+            activeDungeon: dungeonId,
+            battleState: {
+                isBattling: true,
+                playerHp: 100, // TODO: Get from actual player stats
+                playerMaxHp: 100,
+                enemyId,
+                enemyHp: enemy.hp,
+                enemyMaxHp: enemy.hp,
+                turn: 1,
+                logs: [`${enemy.name}과(와)의 전투가 시작되었습니다!`],
+                result: null,
+                rewards: {}
+            }
+        })
+    },
+
+    processTurn: () => set((state) => {
+        if (!state.battleState || state.battleState.result) return state
+
+        const { playerHp, enemyHp, logs, enemyId } = state.battleState
+        const playerDmg = Math.floor(Math.random() * 10) + 5
+        const enemyDmg = Math.floor(Math.random() * 8) + 3
+
+        const newEnemyHp = Math.max(0, enemyHp - playerDmg)
+        const newPlayerHp = Math.max(0, playerHp - enemyDmg)
+        const newLogs = [...logs, `플레이어가 ${playerDmg}의 피해를 입혔습니다!`, `적이 ${enemyDmg}의 피해를 입혔습니다!`]
+
+        let result: 'victory' | 'defeat' | null = null
+        let rewards: Record<string, number> = {}
+
+        if (newEnemyHp === 0) {
+            result = 'victory'
+
+            // Calculate drops on victory
+            const dungeon = DUNGEONS.find(d => d.id === state.activeDungeon)
+            const enemy = dungeon?.enemies.find(e => e.id === enemyId)
+
+            if (enemy) {
+                for (const drop of enemy.drops) {
+                    const roll = Math.random() * 100
+                    if (roll < drop.chance) {
+                        const quantity = Math.floor(
+                            Math.random() * (drop.maxQuantity - drop.minQuantity + 1) + drop.minQuantity
+                        )
+                        rewards[drop.materialId] = (rewards[drop.materialId] || 0) + quantity
+                    }
+                }
+
+                // Add drop messages to logs
+                if (Object.keys(rewards).length > 0) {
+                    const dropMessages = Object.entries(rewards)
+                        .map(([id, qty]) => `${id} x${qty}`)
+                        .join(', ')
+                    newLogs.push(`전리품: ${dropMessages}`)
+                }
+            }
+        } else if (newPlayerHp === 0) {
+            result = 'defeat'
+        }
+
+        if (result) {
+            newLogs.push(result === 'victory' ? '승리했습니다!' : '패배했습니다...')
+        }
+
+        return {
+            battleState: {
+                ...state.battleState,
+                playerHp: newPlayerHp,
+                enemyHp: newEnemyHp,
+                logs: newLogs.slice(-6), // Keep last 6 logs to show drops
+                turn: state.battleState.turn + 1,
+                result,
+                rewards
+            }
+        }
+    }),
+
+    endBattle: () => set((state) => {
+        // Add rewards to inventory before clearing battle state
+        if (state.battleState?.rewards && Object.keys(state.battleState.rewards).length > 0) {
+            const addResources = useGameStore.getState().addResources
+            addResources(state.battleState.rewards, 'dungeon')
+        }
+
+        return { activeDungeon: null, battleState: null }
+    })
 }))

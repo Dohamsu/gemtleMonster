@@ -12,15 +12,10 @@ import { renderMapView } from './renderers/mapRenderer'
 import { renderAlchemyWorkshop } from './renderers/alchemyRenderer'
 import { renderShopView } from './renderers/shopRenderer'
 import { UI } from '../constants/game'
+import DungeonModal from '../ui/dungeon/DungeonModal'
 
 /**
  * Optimized GameCanvas Component
- *
- * Performance improvements:
- * - Separated rendering logic into modular renderers
- * - Extracted click handlers to custom hook
- * - Memoized callbacks to prevent re-creation
- * - Reduced from 812 lines to ~150 lines
  */
 export default function GameCanvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -71,6 +66,8 @@ export default function GameCanvas() {
     }, [alchemyContext, setAlchemyContext])
     const images = useCanvasImages()
 
+    const [showDungeonModal, setShowDungeonModal] = useState(false)
+
     // Optimized click handler
     const handleCanvasClick = useCanvasClickHandler({
         canvasView,
@@ -89,7 +86,8 @@ export default function GameCanvas() {
         startBrewing,
         startFreeFormBrewing,
         completeBrewing,
-        autoFillIngredients
+        autoFillIngredients,
+        setDungeonModalOpen: setShowDungeonModal // Pass setter
     })
 
     // Show modal when brewing completes
@@ -238,7 +236,7 @@ export default function GameCanvas() {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    pointerEvents: 'none' // Let clicks pass through to canvas if needed, but Shop UI will capture them
+                    pointerEvents: 'none'
                 }}>
                     <div style={{ pointerEvents: 'auto', width: '100%', height: '100%' }}>
                         <Shop />
@@ -251,6 +249,11 @@ export default function GameCanvas() {
                 success={lastBrewResult.success}
                 monsterId={lastBrewResult.monsterId}
                 onClose={() => setShowResultModal(false)}
+            />
+
+            <DungeonModal
+                isOpen={showDungeonModal}
+                onClose={() => setShowDungeonModal(false)}
             />
 
             {/* Offline Rewards Modal */}

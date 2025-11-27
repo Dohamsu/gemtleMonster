@@ -22,6 +22,7 @@ interface ClickHandlerProps {
     startFreeFormBrewing: () => Promise<void>
     completeBrewing: (success: boolean) => Promise<void>
     autoFillIngredients: (recipeId: string) => boolean
+    setDungeonModalOpen: (isOpen: boolean) => void
 }
 
 /**
@@ -46,7 +47,8 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
         startBrewing,
         startFreeFormBrewing,
         completeBrewing,
-        autoFillIngredients
+        autoFillIngredients,
+        setDungeonModalOpen
     } = props
 
     return useCallback(
@@ -59,7 +61,7 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
             const y = (event.clientY - rect.top) * scaleY
 
             if (canvasView === 'map') {
-                handleMapClick(canvas, x, y, setCanvasView)
+                handleMapClick(canvas, x, y, setCanvasView, setDungeonModalOpen)
             } else if (canvasView === 'alchemy_workshop') {
                 handleAlchemyWorkshopClick(
                     canvas,
@@ -103,7 +105,8 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
             completeBrewing,
             completeBrewing,
             autoFillIngredients,
-            autoFillIngredients
+            autoFillIngredients,
+            setDungeonModalOpen
         ]
     )
 }
@@ -112,7 +115,8 @@ function handleMapClick(
     canvas: HTMLCanvasElement,
     x: number,
     y: number,
-    setCanvasView: (view: CanvasView) => void
+    setCanvasView: (view: CanvasView) => void,
+    setDungeonModalOpen: (isOpen: boolean) => void
 ) {
     // Check if clicking on alchemy workshop
     const workshopX = canvas.width * 0.5 - 64
@@ -129,6 +133,16 @@ function handleMapClick(
 
     if (x >= shopX && x <= shopX + 128 && y >= shopY && y <= shopY + 128) {
         setCanvasView('shop')
+        return
+    }
+
+    // Check if clicking on slime dungeon
+    const dungeonX = canvas.width * 0.15 - 64
+    const dungeonY = canvas.height * 0.7 - 64
+
+    if (x >= dungeonX && x <= dungeonX + 128 && y >= dungeonY && y <= dungeonY + 128) {
+        setDungeonModalOpen(true)
+        return
     }
 }
 

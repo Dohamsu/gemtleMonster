@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { MATERIALS } from '../data/alchemyData'
 
 export interface CanvasImages {
@@ -9,6 +9,7 @@ export interface CanvasImages {
     shop_building: HTMLImageElement | null
     shop_interior: HTMLImageElement | null
     cauldron_pixel: HTMLImageElement | null
+    dungeon_forest: HTMLImageElement | null
     materials: Record<string, HTMLImageElement>
 }
 
@@ -17,7 +18,7 @@ export interface CanvasImages {
  * Images are loaded once and cached for the lifetime of the component
  */
 export function useCanvasImages() {
-    const imagesRef = useRef<CanvasImages>({
+    const [images, setImages] = useState<CanvasImages>({
         background: null,
         herb_farm: null,
         mine: null,
@@ -25,6 +26,7 @@ export function useCanvasImages() {
         shop_building: null,
         shop_interior: null,
         cauldron_pixel: null,
+        dungeon_forest: null,
         materials: {}
     })
 
@@ -62,10 +64,11 @@ export function useCanvasImages() {
             loadImage('/assets/shop_building.png'),
             loadImage('/assets/shop_interior.png'),
             loadImage('/assets/cauldron_pixel.png'),
+            loadImage('/assets/facility/dungeon_forest.png'),
             loadMaterialImages()
         ])
-            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, materials]) => {
-                imagesRef.current = {
+            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, dungeonForest, materials]) => {
+                setImages({
                     background: bg as HTMLImageElement,
                     herb_farm: herbFarm as HTMLImageElement,
                     mine: mine as HTMLImageElement,
@@ -73,11 +76,12 @@ export function useCanvasImages() {
                     shop_building: shopBuilding as HTMLImageElement,
                     shop_interior: shopInterior as HTMLImageElement,
                     cauldron_pixel: cauldronPixel as HTMLImageElement,
+                    dungeon_forest: dungeonForest as HTMLImageElement,
                     materials: materials as Record<string, HTMLImageElement>
-                }
+                })
             })
             .catch((err) => console.error('Failed to load images:', err))
     }, []) // Empty deps - load once on mount
 
-    return imagesRef.current
+    return images
 }
