@@ -149,9 +149,11 @@ export default function Shop() {
                         successCount++
                     }
                 } else {
-                    sellResource(item.id, quantity, price)
-                    totalGoldEarned += quantity * price
-                    successCount++
+                    const success = await sellResource(item.id, quantity, price)
+                    if (success) {
+                        totalGoldEarned += quantity * price
+                        successCount++
+                    }
                 }
             }
 
