@@ -12,11 +12,15 @@ interface FacilityLevelStats {
 }
 
 export function useAutoCollection(userId: string | undefined) {
-    const { facilities, addResources, setLastCollectedAt } = useGameStore()
+    const { facilities, addResources, setLastCollectedAt, canvasView } = useGameStore()
 
     useEffect(() => {
         if (!userId) return
 
+        // 상점이 열려있을 때는 자동 생산 중단 (판매 시 수량 오류 방지)
+        if (canvasView === 'shop') return
+
+        let isCancelled = false
         const intervals: number[] = []
 
         const setupAutoCollection = async () => {
@@ -26,11 +30,13 @@ export function useAutoCollection(userId: string | undefined) {
                 .from('facility')
                 .select('id, name, category')
 
+            if (isCancelled) return
+
             const { data: levelsData } = await supabase
                 .from('facility_level')
                 .select('facility_id, level, stats')
 
-            if (!facilitiesData || !levelsData) return
+            if (isCancelled || !facilitiesData || !levelsData) return
 
             // For each facility player owns
             for (const [facilityId, currentLevel] of Object.entries(facilities)) {
@@ -48,6 +54,8 @@ export function useAutoCollection(userId: string | undefined) {
 
                     // Set up interval for this specific level
                     const interval = window.setInterval(() => {
+                        if (isCancelled) return // Double check inside interval
+
                         // Calculate drops based on dropRates
                         const drops: Record<string, number> = {}
                         let hasDrops = false
@@ -72,11 +80,11 @@ export function useAutoCollection(userId: string | undefined) {
                                 useAlchemyStore.getState().addMaterial(materialId, amount)
                             })
 
-                            console.log(`⛏️ Collected from ${facilityId} Lv.${level}:`, drops)
+                            // console.log(`⛏️ Collected from ${facilityId} Lv.${level}:`, drops)
                         } else {
                             // Missed drop - trigger empty animation
                             addResources({ 'empty': 1 }, facilityKey)
-                            console.log(`💨 Missed drop from ${facilityId} Lv.${level}`)
+                            // console.log(`💨 Missed drop from ${facilityId} Lv.${level}`)
                         }
 
                         // Always update last collected time to keep progress bar synced
@@ -91,7 +99,8 @@ export function useAutoCollection(userId: string | undefined) {
         setupAutoCollection()
 
         return () => {
+            isCancelled = true
             intervals.forEach(clearInterval)
         }
-    }, [userId, facilities]) // Re-run when facilities change (upgrade)
+    }, [userId, facilities, canvasView]) // Re-run when facilities change or tab changes
 }

@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react'
 
-export function useCollectionProgress(facilityId: string, intervalSeconds: number, lastCollectedAt: number = 0) {
+export function useCollectionProgress(
+    facilityId: string,
+    intervalSeconds: number,
+    lastCollectedAt: number = 0,
+    isPaused: boolean = false
+) {
     const [progress, setProgress] = useState(0)
 
     useEffect(() => {
+        // 일시정지 상태일 때는 업데이트를 중단
+        if (isPaused) {
+            return
+        }
+
         const duration = intervalSeconds * 1000
 
         const updateProgress = () => {
@@ -31,7 +41,7 @@ export function useCollectionProgress(facilityId: string, intervalSeconds: numbe
         updateProgress() // Initial call
 
         return () => clearInterval(interval)
-    }, [facilityId, intervalSeconds, lastCollectedAt])
+    }, [facilityId, intervalSeconds, lastCollectedAt, isPaused])
 
     return progress
 }

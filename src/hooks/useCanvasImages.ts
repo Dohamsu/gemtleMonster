@@ -6,6 +6,8 @@ export interface CanvasImages {
     herb_farm: HTMLImageElement | null
     mine: HTMLImageElement | null
     alchemy_workshop: HTMLImageElement | null
+    shop_building: HTMLImageElement | null
+    shop_interior: HTMLImageElement | null
     cauldron_pixel: HTMLImageElement | null
     materials: Record<string, HTMLImageElement>
 }
@@ -20,6 +22,8 @@ export function useCanvasImages() {
         herb_farm: null,
         mine: null,
         alchemy_workshop: null,
+        shop_building: null,
+        shop_interior: null,
         cauldron_pixel: null,
         materials: {}
     })
@@ -55,17 +59,21 @@ export function useCanvasImages() {
             loadImage('/assets/herb_farm.png'),
             loadImage('/assets/mine.png'),
             loadImage('/assets/alchemy_workshop.png'),
+            loadImage('/assets/shop_building.png'),
+            loadImage('/assets/shop_interior.png'),
             loadImage('/assets/cauldron_pixel.png'),
             loadMaterialImages()
         ])
-            .then(([bg, herbFarm, mine, alchemyWorkshop, cauldronPixel, materials]) => {
+            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, materials]) => {
                 imagesRef.current = {
-                    background: bg,
-                    herb_farm: herbFarm,
-                    mine: mine,
-                    alchemy_workshop: alchemyWorkshop,
-                    cauldron_pixel: cauldronPixel,
-                    materials: materials
+                    background: bg as HTMLImageElement,
+                    herb_farm: herbFarm as HTMLImageElement,
+                    mine: mine as HTMLImageElement,
+                    alchemy_workshop: alchemyWorkshop as HTMLImageElement,
+                    shop_building: shopBuilding as HTMLImageElement,
+                    shop_interior: shopInterior as HTMLImageElement,
+                    cauldron_pixel: cauldronPixel as HTMLImageElement,
+                    materials: materials as Record<string, HTMLImageElement>
                 }
             })
             .catch((err) => console.error('Failed to load images:', err))

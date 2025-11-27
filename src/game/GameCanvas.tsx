@@ -28,8 +28,7 @@ export default function GameCanvas() {
     const {
         canvasView,
         setCanvasView,
-        facilities,
-        alchemyState
+        facilities
     } = useGameStore()
     const {
         allRecipes,
@@ -38,6 +37,8 @@ export default function GameCanvas() {
         selectedRecipeId,
         selectedIngredients,
         isBrewing,
+        brewStartTime,
+        brewProgress,
         selectRecipe,
         addIngredient,
         removeIngredient,
@@ -174,11 +175,11 @@ export default function GameCanvas() {
                 allRecipes,
                 allMaterials,
                 playerMaterials: mergedMaterials,
-                selectedRecipeId: alchemyState.selectedRecipeId,
-                selectedIngredients: alchemyState.selectedIngredients,
-                isBrewing: alchemyState.isBrewing,
-                brewStartTime: alchemyState.brewStartTime,
-                brewProgress: alchemyState.brewProgress,
+                selectedRecipeId,
+                selectedIngredients,
+                isBrewing,
+                brewStartTime,
+                brewProgress,
                 playerAlchemy,
                 materialScrollOffset,
                 MATERIAL_CELL_SIZE: UI.MATERIAL_CELL_SIZE,
@@ -194,7 +195,11 @@ export default function GameCanvas() {
         allRecipes,
         allMaterials,
         playerMaterials,
-        alchemyState, // Use grouped alchemyState
+        selectedRecipeId,
+        selectedIngredients,
+        isBrewing,
+        brewStartTime,
+        brewProgress,
         playerAlchemy,
         materialScrollOffset
     ])

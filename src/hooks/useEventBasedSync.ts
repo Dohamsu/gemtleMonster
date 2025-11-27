@@ -55,24 +55,20 @@ export function useEventBasedSync(options: EventBasedSyncOptions = {}) {
     // 이벤트 리스너 등록
     if (enableBeforeUnload && onBeforeUnload) {
       window.addEventListener('beforeunload', handleBeforeUnload)
-      console.log('✅ [EventSync] beforeunload 리스너 등록')
     }
 
     if (enableVisibilityChange && onVisibilityChange) {
       document.addEventListener('visibilitychange', handleVisibilityChange)
-      console.log('✅ [EventSync] visibilitychange 리스너 등록')
     }
 
     // 클린업
     return () => {
       if (enableBeforeUnload && onBeforeUnload) {
         window.removeEventListener('beforeunload', handleBeforeUnload)
-        console.log('🔌 [EventSync] beforeunload 리스너 해제')
       }
 
       if (enableVisibilityChange && onVisibilityChange) {
         document.removeEventListener('visibilitychange', handleVisibilityChange)
-        console.log('🔌 [EventSync] visibilitychange 리스너 해제')
       }
     }
   }, [onBeforeUnload, onVisibilityChange, enableBeforeUnload, enableVisibilityChange])

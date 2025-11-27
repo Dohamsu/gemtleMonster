@@ -40,13 +40,11 @@ export default function UIOverlay() {
         if (user?.id) {
             useAlchemyStore.getState().setBatchSyncCallback(queueUpdate)
             useAlchemyStore.getState().setForceSyncCallback(forceSyncNow)
-            console.log('🔗 배치 동기화 콜백 연결 완료')
         }
 
         return () => {
             useAlchemyStore.getState().setBatchSyncCallback(null)
             useAlchemyStore.getState().setForceSyncCallback(null)
-            console.log('🔌 배치 동기화 콜백 해제')
         }
     }, [user?.id, queueUpdate, forceSyncNow])
 

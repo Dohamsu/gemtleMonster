@@ -9,9 +9,12 @@ import { useAuth } from '../../hooks/useAuth'
 export default function IdleFacilityList() {
     const { user } = useAuth();
     const { facilities, loading: facilitiesLoading } = useFacilities(user?.id);
-    const { facilities: playerFacilities, resources, upgradeFacility } = useGameStore();
+    const { facilities: playerFacilities, resources, upgradeFacility, canvasView } = useGameStore();
     const [viewMode, setViewMode] = React.useState<'list' | 'grid'>('list');
     const [allCollapsed, setAllCollapsed] = React.useState(false);
+
+    // Check if production is paused (when shop is open)
+    const isPaused = canvasView === 'shop';
 
     // Filter facilities that player owns
     const visibleFacilities = facilities.filter(f => playerFacilities[f.id] && playerFacilities[f.id] > 0)
@@ -38,8 +41,32 @@ export default function IdleFacilityList() {
             background: '#2a2a2a',
             padding: '15px',
             borderRadius: '8px',
-            boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)'
+            boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)',
+            position: 'relative', // For overlay positioning if needed
+            opacity: isPaused ? 0.6 : 1, // Dim the entire list
+            transition: 'opacity 0.3s ease',
+            pointerEvents: isPaused ? 'none' : 'auto' // Disable interaction
         }}>
+            {/* Paused Indicator Overlay (Optional, but good for clarity) */}
+            {isPaused && (
+                <div style={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 10,
+                    background: 'rgba(251, 191, 36, 0.2)',
+                    color: '#fbbf24',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    marginBottom: '10px',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '0.9em',
+                    backdropFilter: 'blur(2px)',
+                    border: '1px solid rgba(251, 191, 36, 0.4)'
+                }}>
+                    ⏸️ 상점 이용 중에는 생산이 일시 중지됩니다
+                </div>
+            )}
             {/* Header with View Toggle */}
             <div style={{
                 display: 'flex',
@@ -148,6 +175,7 @@ export default function IdleFacilityList() {
                                                 isHighestLevel={level === currentLevel}
                                                 resources={resources}
                                                 onUpgrade={async (fid, cost) => upgradeFacility(fid, cost)}
+                                                isPaused={isPaused}
                                             />
                                         </details>
                                     ))}
@@ -171,6 +199,7 @@ export default function IdleFacilityList() {
                                     setViewMode('list');
                                     // Optional: Scroll to item or expand specific details
                                 }}
+                                isPaused={isPaused}
                             />
                         ));
                     })}

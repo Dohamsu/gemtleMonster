@@ -37,8 +37,8 @@ export function useBatchMaterialSync(
     pendingUpdates.current[materialId] =
       (pendingUpdates.current[materialId] || 0) + quantity
 
-    console.log(`📦 [BatchSync] 큐에 추가: ${materialId} +${quantity}`)
-    console.log(`📊 [BatchSync] 현재 큐:`, pendingUpdates.current)
+    // console.log(`📦 [BatchSync] 큐에 추가: ${materialId} +${quantity}`)
+    // console.log(`📊 [BatchSync] 현재 큐:`, pendingUpdates.current)
   }, [])
 
   /**
@@ -51,12 +51,12 @@ export function useBatchMaterialSync(
     const updateCount = Object.keys(updates).length
 
     if (updateCount === 0) {
-      console.log('📭 [BatchSync] 저장할 변경사항 없음')
+      // console.log('📭 [BatchSync] 저장할 변경사항 없음')
       return
     }
 
     isSyncing.current = true
-    console.log(`🔄 [BatchSync] DB 동기화 시작... (${updateCount}개 재료)`)
+    // console.log(`🔄 [BatchSync] DB 동기화 시작... (${updateCount}개 재료)`)
     onSyncStart?.()
 
     try {
@@ -75,7 +75,7 @@ export function useBatchMaterialSync(
 
       // 성공 시 큐 초기화
       pendingUpdates.current = {}
-      console.log(`✅ [BatchSync] DB 동기화 완료!`, updates)
+      // console.log(`✅ [BatchSync] DB 동기화 완료!`, updates)
       onSyncComplete?.(true, updates)
     } catch (error) {
       console.error('❌ [BatchSync] DB 동기화 실패:', error)
@@ -91,7 +91,7 @@ export function useBatchMaterialSync(
    * 즉시 동기화 (이벤트 기반 저장용)
    */
   const forceSyncNow = useCallback(async () => {
-    console.log('⚡ [BatchSync] 즉시 동기화 요청')
+    // console.log('⚡ [BatchSync] 즉시 동기화 요청')
     await syncToDatabase()
   }, [syncToDatabase])
 
@@ -101,14 +101,14 @@ export function useBatchMaterialSync(
   useEffect(() => {
     if (!userId) return
 
-    console.log(`⏰ [BatchSync] 배치 동기화 시작 (${batchInterval / 1000}초 간격)`)
+    // console.log(`⏰ [BatchSync] 배치 동기화 시작 (${batchInterval / 1000}초 간격)`)
 
     const interval = setInterval(() => {
       syncToDatabase()
     }, batchInterval)
 
     return () => {
-      console.log('🛑 [BatchSync] 배치 동기화 중단')
+      // console.log('🛑 [BatchSync] 배치 동기화 중단')
       clearInterval(interval)
       // 컴포넌트 언마운트 시 마지막 동기화
       syncToDatabase()

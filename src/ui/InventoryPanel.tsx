@@ -15,6 +15,8 @@ export const InventoryPanel: React.FC = () => {
     inventoryTab,
     setInventoryTab,
     addIngredient,
+    removeIngredient,
+    selectedIngredients,
     loadPlayerMonsters
   } = useAlchemyStore()
 
@@ -85,7 +87,12 @@ export const InventoryPanel: React.FC = () => {
   }
 
   const handleAddToSlot = (materialId: string) => {
-    addIngredient(materialId, 1)
+    const currentQty = selectedIngredients[materialId] || 0
+    if (currentQty > 0) {
+      removeIngredient(materialId, currentQty)
+    } else {
+      addIngredient(materialId, 1)
+    }
   }
 
   return (
@@ -229,7 +236,7 @@ export const InventoryPanel: React.FC = () => {
                       style={{
                         padding: '12px 8px',
                         background: '#1e293b',
-                        border: `2px solid ${getRarityColor(material.rarity)}40`,
+                        border: selectedIngredients[material.id] ? '2px solid #ffd700' : `2px solid ${getRarityColor(material.rarity)}40`,
                         borderRadius: '8px',
                         cursor: 'pointer',
                         transition: 'all 0.15s',
@@ -349,7 +356,7 @@ export const InventoryPanel: React.FC = () => {
                           marginBottom: '6px',
                           padding: '10px',
                           background: '#1e293b',
-                          border: `1px solid ${getRarityColor(material.rarity)}40`,
+                          border: selectedIngredients[material.id] ? '2px solid #ffd700' : `1px solid ${getRarityColor(material.rarity)}40`,
                           borderRadius: '6px',
                           cursor: 'pointer',
                           transition: 'all 0.15s',

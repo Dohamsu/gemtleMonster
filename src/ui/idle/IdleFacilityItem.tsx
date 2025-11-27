@@ -11,6 +11,7 @@ interface Props {
     isHighestLevel: boolean
     resources: Record<string, number>
     onUpgrade: (facilityId: string, cost: Record<string, number>) => Promise<void>
+    isPaused?: boolean
 }
 
 const RESOURCE_NAMES: Record<string, string> = {
@@ -27,7 +28,7 @@ const RESOURCE_NAMES: Record<string, string> = {
 
 import FacilityIcon from '../FacilityIcon'
 
-export default function IdleFacilityItem({ facility, currentLevel, isHighestLevel, resources, onUpgrade }: Props) {
+export default function IdleFacilityItem({ facility, currentLevel, isHighestLevel, resources, onUpgrade, isPaused = false }: Props) {
     const { lastCollectedAt, recentAdditions } = useGameStore()
     const levelData = facility.levels.find(l => l.level === currentLevel)
     const nextLevelData = facility.levels.find(l => l.level === currentLevel + 1)
@@ -36,7 +37,12 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
     // Collection progress
     const intervalSeconds = (levelData?.stats as any)?.intervalSeconds || 1
     // Use unique key for each level
-    const progress = useCollectionProgress(facility.id, intervalSeconds, lastCollectedAt[`${facility.id}-${currentLevel}`])
+    const progress = useCollectionProgress(
+        facility.id,
+        intervalSeconds,
+        lastCollectedAt[`${facility.id}-${currentLevel}`],
+        isPaused
+    )
 
     const facilityKey = `${facility.id}-${currentLevel}`
 
@@ -94,15 +100,18 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                     <div style={{
                         width: `${progress}%`,
                         height: '100%',
-                        background: facility.id === 'mine'
-                            ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' // Gold/Orange for Mine
-                            : 'linear-gradient(90deg, #4a90e2, #63b3ed)', // Blue for others
-                        transition: 'width 0.05s linear',
-                        boxShadow: progress > 90 ? '0 0 8px rgba(255,255,255,0.5)' : 'none'
+                        background: isPaused
+                            ? '#888' // 일시정지 시 회색
+                            : facility.id === 'mine'
+                                ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
+                                : 'linear-gradient(90deg, #4a90e2, #63b3ed)',
+                        transition: isPaused ? 'none' : 'width 0.05s linear', // 일시정지 시 애니메이션 제거
+                        boxShadow: !isPaused && progress > 90 ? '0 0 8px rgba(255,255,255,0.5)' : 'none',
+                        opacity: isPaused ? 0.5 : 1 // 일시정지 시 투명도 낮춤
                     }} />
                 </div>
                 <div style={{ fontSize: '0.75em', color: '#888', marginTop: '2px', textAlign: 'center' }}>
-                    채집 중... {Math.floor(progress)}%
+                    {isPaused ? '⏸️ 일시정지' : `채집 중... ${Math.floor(progress)}%`}
                 </div>
             </div>
 

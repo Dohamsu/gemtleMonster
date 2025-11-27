@@ -321,8 +321,8 @@ function handleIngredientSlotClick(
 ) {
     if (isBrewing) return
 
-    const cauldronSize = 120
-    const cauldronY = 100
+    const cauldronSize = 200
+    const cauldronY = canvas.height / 2 - 100
     const slotSize = 60
     const slotGap = 10
     const totalSlotsWidth = slotSize * ALCHEMY.MAX_INGREDIENT_SLOTS + slotGap * (ALCHEMY.MAX_INGREDIENT_SLOTS - 1)

@@ -7,9 +7,10 @@ interface Props {
     facility: FacilityData
     level: number
     onClick: () => void
+    isPaused?: boolean
 }
 
-export default function IdleFacilityGridItem({ facility, level, onClick }: Props) {
+export default function IdleFacilityGridItem({ facility, level, onClick, isPaused = false }: Props) {
     const { lastCollectedAt } = useGameStore()
 
     // Calculate progress
@@ -22,6 +23,14 @@ export default function IdleFacilityGridItem({ facility, level, onClick }: Props
     const animationRef = React.useRef<number>(0)
 
     React.useEffect(() => {
+        // isPaused일 때는 애니메이션을 실행하지 않음
+        if (isPaused) {
+            if (animationRef.current) {
+                cancelAnimationFrame(animationRef.current)
+            }
+            return
+        }
+
         const duration = intervalSeconds * 1000
 
         const animate = () => {
@@ -51,7 +60,7 @@ export default function IdleFacilityGridItem({ facility, level, onClick }: Props
         return () => {
             if (animationRef.current) cancelAnimationFrame(animationRef.current)
         }
-    }, [intervalSeconds, lastCollected])
+    }, [intervalSeconds, lastCollected, isPaused])
 
     return (
         <div

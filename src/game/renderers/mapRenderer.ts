@@ -58,4 +58,18 @@ export function renderMapView({ ctx, canvas, images, facilities }: MapRendererPr
         ctx.fillText('연금술 공방', workshopX + 20, workshopY + 140)
         ctx.shadowBlur = 0
     }
+
+    // Render shop
+    if (images.shop_building) {
+        const shopX = canvas.width * 0.8 - 64
+        const shopY = canvas.height * 0.7 - 64
+        ctx.drawImage(images.shop_building, shopX, shopY, 128, 128)
+
+        ctx.fillStyle = 'white'
+        ctx.font = 'bold 14px Arial'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 4
+        ctx.fillText('상점', shopX + 45, shopY + 140)
+        ctx.shadowBlur = 0
+    }
 }

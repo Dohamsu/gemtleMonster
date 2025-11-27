@@ -11,7 +11,7 @@ interface ResourceAddition {
 }
 
 export type Tab = 'facilities' | 'shop' | 'alchemy'
-export type CanvasView = 'map' | 'alchemy_workshop'
+export type CanvasView = 'map' | 'alchemy_workshop' | 'shop'
 
 interface GameState {
     player: {
@@ -78,20 +78,18 @@ export const useGameStore = create<GameState>((set) => ({
     setResources: (resources) => set({ resources }),
     setFacilities: (facilities) => set({ facilities }),
 
-    addResources: (newResources, facilityKey) => {
-        set((state) => {
-            const updatedResources = { ...state.resources }
-            let updatedAdditions = [...state.recentAdditions]
-            const newAdditions: ResourceAddition[] = []
-            const timers: NodeJS.Timeout[] = []
+    addResources: (newResources, facilityKey) => set((state) => {
+        const updatedResources = { ...state.resources }
+        const updatedAdditions = [...state.recentAdditions]
+        const timers: NodeJS.Timeout[] = []
+        const newAdditions: ResourceAddition[] = []
 
-            for (const [id, amount] of Object.entries(newResources)) {
-                updatedResources[id] = (updatedResources[id] || 0) + amount
+        for (const [id, amount] of Object.entries(newResources)) {
+            updatedResources[id] = (updatedResources[id] || 0) + amount
 
-                // Remove any existing addition for this resource (overwrite)
-                updatedAdditions = updatedAdditions.filter(a => a.resourceId !== id)
-
-                const additionId = `${id}-${Date.now()}-${Math.random()}`
+            // Add recent addition visual feedback
+            if (amount > 0 && id !== 'empty') {
+                const additionId = `${facilityKey}-${id}-${Date.now()}-${Math.random()}`
                 const addition: ResourceAddition = {
                     id: additionId,
                     resourceId: id,
@@ -112,25 +110,13 @@ export const useGameStore = create<GameState>((set) => ({
 
             // Store timers for potential cleanup (though they're one-shot, this is for consistency)
             // In a real scenario, you'd want to track these in state if cleanup is needed
-
-            return {
-                resources: updatedResources,
-                recentAdditions: [...updatedAdditions, ...newAdditions]
-            }
-        })
-
-        // alchemyStore의 playerMaterials도 동기화 (resources를 참조)
-        const alchemyStore = useAlchemyStore.getState()
-        const currentPlayerMaterials = alchemyStore.playerMaterials
-        const updatedPlayerMaterials = { ...currentPlayerMaterials }
-
-        for (const [id, amount] of Object.entries(newResources)) {
-            updatedPlayerMaterials[id] = (updatedPlayerMaterials[id] || 0) + amount
         }
 
-        // alchemyStore 업데이트는 내부적으로만 (DB 저장 없이)
-        useAlchemyStore.setState({ playerMaterials: updatedPlayerMaterials })
-    },
+        return {
+            resources: updatedResources,
+            recentAdditions: [...updatedAdditions, ...newAdditions]
+        }
+    }),
 
     removeRecentAddition: (id) => set((state) => ({
         recentAdditions: state.recentAdditions.filter(a => a.id !== id)
@@ -143,16 +129,44 @@ export const useGameStore = create<GameState>((set) => ({
         }
     })),
 
-    sellResource: (resourceId: string, amount: number, pricePerUnit: number) => set((state) => {
+    sellResource: (resourceId, amount, pricePerUnit) => set((state) => {
         const currentAmount = state.resources[resourceId] || 0
-        if (currentAmount < amount) return state // Not enough resources
+        if (currentAmount < amount) {
+            console.warn(`Not enough ${resourceId} to sell`)
+            return state
+        }
 
-        const earnings = amount * pricePerUnit
+        const goldEarned = amount * pricePerUnit
+
+        // ore_magic과 gem_fragment는 DB에도 동기화 (비동기)
+        const shouldSyncToDb = ['ore_magic', 'gem_fragment'].includes(resourceId)
+
+        if (shouldSyncToDb) {
+            // DB 동기화 (비동기 처리)
+            const alchemyStore = useAlchemyStore.getState()
+            const userId = alchemyStore.userId
+
+            if (userId) {
+                // consumeMaterials API 호출 (비동기)
+                import('../lib/alchemyApi').then(api => {
+                    api.consumeMaterials(userId, { [resourceId]: amount })
+                        .then(success => {
+                            if (success) {
+                                console.log(`✅ ${resourceId} DB 판매 완료: -${amount}`)
+                            } else {
+                                console.warn(`⚠️ ${resourceId} DB 판매 실패 (재료가 DB에 없음)`)
+                            }
+                        })
+                        .catch(err => console.error(`❌ ${resourceId} DB 판매 에러:`, err))
+                })
+            }
+        }
+
         return {
             resources: {
                 ...state.resources,
                 [resourceId]: currentAmount - amount,
-                gold: (state.resources.gold || 0) + earnings
+                gold: (state.resources.gold || 0) + goldEarned
             }
         }
     }),
