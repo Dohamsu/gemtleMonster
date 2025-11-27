@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
-import { getAllMaterials, type Material } from '../../lib/alchemyApi'
+import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
 
 const LEGACY_RESOURCE_NAMES: Record<string, string> = {
     gold: '골드',
@@ -33,9 +33,14 @@ interface ShopItem {
 
 export default function Shop() {
     const { resources, sellResource, setCanvasView, addResources } = useGameStore()
-    const { playerMaterials, sellMaterial } = useAlchemyStore()
-    const [materials, setMaterials] = useState<Material[]>([])
-    const [loading, setLoading] = useState(true)
+    const { sellMaterial } = useAlchemyStore()
+    const {
+        materials,
+        materialCounts,
+        legacyResources,
+        refreshInventory,
+        loading,
+    } = useUnifiedInventory()
 
     // 개별 아이템의 판매 수량을 관리하는 상태
     const [sellQuantities, setSellQuantities] = useState<Record<string, number>>({})
@@ -44,27 +49,13 @@ export default function Shop() {
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
     const [isBulkSelling, setIsBulkSelling] = useState(false)
 
-    useEffect(() => {
-        async function loadMaterials() {
-            try {
-                const allMaterials = await getAllMaterials()
-                setMaterials(allMaterials)
-            } catch (error) {
-                console.error('재료 목록 로드 실패:', error)
-            } finally {
-                setLoading(false)
-            }
-        }
-        loadMaterials()
-    }, [])
-
     // 통합된 아이템 리스트 생성
     const shopItems: ShopItem[] = useMemo(() => {
         const items: ShopItem[] = []
 
         // 연금술 재료
         materials.forEach(m => {
-            const count = playerMaterials[m.id] || 0
+            const count = materialCounts[m.id] || 0
             if (count > 0 && m.sell_price > 0) {
                 items.push({
                     id: m.id,
@@ -78,7 +69,7 @@ export default function Shop() {
         })
 
         // 레거시 자원
-        Object.entries(resources).forEach(([id, count]) => {
+        Object.entries(legacyResources).forEach(([id, count]) => {
             if (id !== 'gold' && count > 0 && LEGACY_RESOURCE_NAMES[id]) {
                 const legacyPrices: Record<string, number> = {
                     'stone': 5,
@@ -97,7 +88,7 @@ export default function Shop() {
         })
 
         return items
-    }, [materials, playerMaterials, resources])
+    }, [materialCounts, materials, legacyResources])
 
     // 수량 변경 핸들러
     const handleQuantityChange = (id: string, value: number, max: number) => {
@@ -149,9 +140,11 @@ export default function Shop() {
                         successCount++
                     }
                 } else {
-                    sellResource(item.id, quantity, price)
-                    totalGoldEarned += quantity * price
-                    successCount++
+                    const success = await sellResource(item.id, quantity, price)
+                    if (success) {
+                        totalGoldEarned += quantity * price
+                        successCount++
+                    }
                 }
             }
 
@@ -181,6 +174,8 @@ export default function Shop() {
 
                 console.log(`일괄 판매 완료: ${successCount}건, +${totalGoldEarned}G`)
             }
+
+            await refreshInventory()
         } catch (error) {
             console.error('일괄 판매 중 오류:', error)
         } finally {

@@ -1,7 +1,7 @@
 import { useAlchemyStore } from '../../store/useAlchemyStore'
-import { useGameStore } from '../../store/useGameStore'
 import ResourceIcon from '../ResourceIcon'
 import { useShallow } from 'zustand/react/shallow'
+import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
 
 /**
  * 인벤토리 조회 UI
@@ -10,20 +10,14 @@ import { useShallow } from 'zustand/react/shallow'
 export default function FreeFormCauldron() {
     const {
         allMaterials,
-        playerMaterials: alchemyMaterials,
         selectedIngredients
     } = useAlchemyStore(
         useShallow(state => ({
             allMaterials: state.allMaterials,
-            playerMaterials: state.playerMaterials,
             selectedIngredients: state.selectedIngredients
         }))
     )
-
-    const { resources } = useGameStore()
-
-    // 두 스토어의 재료 병합 (gameStore의 resources가 실시간 업데이트됨)
-    const playerMaterials = { ...alchemyMaterials, ...resources }
+    const { materialCounts: playerMaterials } = useUnifiedInventory()
 
     // 재료의 총 개수를 계산 (종류가 아닌 실제 개수)
     const ingredientCount = Object.values(selectedIngredients).reduce((sum, count) => sum + count, 0)
