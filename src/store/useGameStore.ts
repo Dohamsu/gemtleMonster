@@ -48,7 +48,7 @@ interface GameState {
     cancelBrewing: () => void
 }
 
-export const useGameStore = create<GameState>((set) => ({
+export const useGameStore = create<GameState>((set, get) => ({
     player: { x: 0, y: 0, health: 100 },
     inventory: [],
     resources: {
