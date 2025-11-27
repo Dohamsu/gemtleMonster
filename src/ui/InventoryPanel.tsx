@@ -5,12 +5,12 @@ import { getMonsterData } from '../data/monsterData'
 import { useGameStore } from '../store/useGameStore'
 import ResourceAnimation from './ResourceAnimation'
 import ResourceIcon from './ResourceIcon'
+import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 
 export const InventoryPanel: React.FC = () => {
   const { user } = useAuth()
   const {
     allMaterials,
-    playerMaterials: alchemyMaterials,
     playerMonsters,
     inventoryTab,
     setInventoryTab,
@@ -20,11 +20,8 @@ export const InventoryPanel: React.FC = () => {
     loadPlayerMonsters
   } = useAlchemyStore()
 
-  const { recentAdditions, removeRecentAddition, resources } = useGameStore()
-
-  // Merge playerMaterials from alchemy store and resources from game store
-  // Resources are updated in real-time from facilities
-  const playerMaterials = { ...alchemyMaterials, ...resources }
+  const { recentAdditions, removeRecentAddition } = useGameStore()
+  const { materialCounts: playerMaterials } = useUnifiedInventory()
 
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())

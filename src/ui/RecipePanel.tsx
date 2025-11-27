@@ -1,11 +1,11 @@
 import React from 'react'
 import { useAlchemyStore } from '../store/useAlchemyStore'
+import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 
 export const RecipePanel: React.FC = () => {
   const {
     allRecipes,
     allMaterials,
-    playerMaterials,
     playerRecipes,
     playerAlchemy,
     selectedRecipeId,
@@ -15,6 +15,7 @@ export const RecipePanel: React.FC = () => {
     autoFillIngredients,
     canCraftWithMaterials
   } = useAlchemyStore()
+  const { materialCounts: playerMaterials } = useUnifiedInventory()
 
   // 탭별 레시피 필터링
   const getFilteredRecipes = () => {
