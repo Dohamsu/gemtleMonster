@@ -34,7 +34,7 @@ interface GameState {
     addResources: (resources: Record<string, number>, facilityKey?: string) => void
     setLastCollectedAt: (facilityId: string, timestamp: number) => void
     removeRecentAddition: (id: string) => void
-    sellResource: (resourceId: string, amount: number, pricePerUnit: number) => void
+    sellResource: (resourceId: string, amount: number, pricePerUnit: number) => Promise<boolean>
     upgradeFacility: (facilityId: string, cost: Record<string, number>) => void
     setActiveTab: (tab: Tab) => void
     setCanvasView: (view: CanvasView) => void
@@ -129,47 +129,70 @@ export const useGameStore = create<GameState>((set) => ({
         }
     })),
 
-    sellResource: (resourceId, amount, pricePerUnit) => set((state) => {
-        const currentAmount = state.resources[resourceId] || 0
-        if (currentAmount < amount) {
-            console.warn(`Not enough ${resourceId} to sell`)
-            return state
-        }
-
+    sellResource: async (resourceId, amount, pricePerUnit) => {
         const goldEarned = amount * pricePerUnit
 
         // ore_magic과 gem_fragment는 DB에도 동기화 (비동기)
         const shouldSyncToDb = ['ore_magic', 'gem_fragment'].includes(resourceId)
 
+        const { userId, playerMaterials, forceSyncCallback } = useAlchemyStore.getState()
+
+        // DB 연동 대상은 플레이어 재료 수량과 동기화 상태를 우선 확인
         if (shouldSyncToDb) {
-            // DB 동기화 (비동기 처리)
-            const alchemyStore = useAlchemyStore.getState()
-            const userId = alchemyStore.userId
+            const dbAmount = playerMaterials[resourceId] || 0
+            if (dbAmount < amount) {
+                console.warn(`⚠️ ${resourceId} DB 수량 부족: 보유(${dbAmount}) < 판매(${amount})`)
+                return false
+            }
+
+            // 배치 생산분이 남아있으면 우선 강제 동기화
+            if (forceSyncCallback) {
+                await forceSyncCallback()
+            }
 
             if (userId) {
-                // consumeMaterials API 호출 (비동기)
-                import('../lib/alchemyApi').then(api => {
-                    api.consumeMaterials(userId, { [resourceId]: amount })
-                        .then(success => {
-                            if (success) {
-                                console.log(`✅ ${resourceId} DB 판매 완료: -${amount}`)
-                            } else {
-                                console.warn(`⚠️ ${resourceId} DB 판매 실패 (재료가 DB에 없음)`)
-                            }
-                        })
-                        .catch(err => console.error(`❌ ${resourceId} DB 판매 에러:`, err))
-                })
+                try {
+                    const api = await import('../lib/alchemyApi')
+                    const success = await api.consumeMaterials(userId, { [resourceId]: amount })
+
+                    if (!success) {
+                        console.warn(`⚠️ ${resourceId} DB 판매 실패 (재료가 DB에 없음)`)
+                        return false
+                    }
+                } catch (error) {
+                    console.error(`❌ ${resourceId} DB 판매 에러:`, error)
+                    return false
+                }
             }
         }
 
-        return {
-            resources: {
+        set((state) => {
+            const availableAmount = state.resources[resourceId] || 0
+            if (availableAmount < amount) return state
+
+            const updatedResources = {
                 ...state.resources,
-                [resourceId]: currentAmount - amount,
+                [resourceId]: availableAmount - amount,
                 gold: (state.resources.gold || 0) + goldEarned
             }
-        }
-    }),
+
+            // DB 연동 대상은 alchemyStore의 playerMaterials도 함께 갱신해 상태 불일치 방지
+            if (shouldSyncToDb) {
+                const alchemyState = useAlchemyStore.getState()
+                const newPlayerMaterials = {
+                    ...alchemyState.playerMaterials,
+                    [resourceId]: Math.max(0, (alchemyState.playerMaterials[resourceId] || 0) - amount)
+                }
+                useAlchemyStore.setState({ playerMaterials: newPlayerMaterials })
+            }
+
+            return {
+                resources: updatedResources,
+            }
+        })
+
+        return true
+    },
 
     upgradeFacility: (facilityId, cost) => set((state) => {
         // Check if affordable
