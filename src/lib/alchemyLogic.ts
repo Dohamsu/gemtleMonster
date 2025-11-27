@@ -19,9 +19,12 @@ export function generateMaterialKey(materials: string[]): string {
 // ==========================================
 
 export function checkCondition(condition: RecipeCondition, context: AlchemyContext): boolean {
-    const { condition_type } = condition
+    const rawType = condition.condition_type ?? (condition as any).type ?? (condition as any).conditionType
+    const typeKey = typeof rawType === 'string' ? rawType.toUpperCase() : undefined
 
-    switch (condition_type) {
+    if (!typeKey) return false
+
+    switch (typeKey) {
         // 1. Game World Conditions
         case 'TIME_RANGE': {
             // value_json: [startHour, endHour] e.g., [22, 4] for 22:00 ~ 04:00
@@ -67,6 +70,13 @@ export function checkCondition(condition: RecipeCondition, context: AlchemyConte
             if (!weathers) return false
             return weathers.includes(context.env.weather)
         }
+        case 'LANGUAGE': {
+            // value_json: ['ko', 'en'], value_text: 'ko'
+            const languageList = (condition.value_json as string[]) || (condition.value_text ? [condition.value_text] : [])
+            if (!languageList.length) return false
+            const userLanguage = (context.env.language || '').toLowerCase()
+            return languageList.some(lang => userLanguage.startsWith(lang.toLowerCase()))
+        }
         case 'REAL_TEMPERATURE': {
             // value_json: { min: 30 } or { max: 0 }
             const tempCondition = condition.value_json as { min?: number, max?: number }
@@ -110,6 +120,24 @@ export function checkCondition(condition: RecipeCondition, context: AlchemyConte
         }
         case 'RECENT_FAIL_COUNT': {
             return condition.value_int ? context.session.recentFailCount >= condition.value_int : false
+        }
+        case 'EVENT_FLAG': {
+            const flags = (condition.value_json as string[]) || (condition.value_text ? [condition.value_text] : [])
+            if (!flags.length) return false
+            const activeFlags = context.player?.eventFlags || []
+            return flags.some(flag => activeFlags.includes(flag))
+        }
+        case 'CATALYST': {
+            const requiredCatalysts = (condition.value_json as string[]) || (condition.value_text ? [condition.value_text] : [])
+            if (!requiredCatalysts.length) return false
+            const ownedCatalysts = context.player?.catalysts || []
+            return requiredCatalysts.some(id => ownedCatalysts.includes(id))
+        }
+        case 'ALCHEMY_LEVEL': {
+            const requiredLevel = condition.value_int ?? (typeof condition.value_json === 'number' ? condition.value_json : undefined)
+            const currentLevel = context.player?.alchemyLevel
+            if (requiredLevel === undefined || currentLevel === undefined) return false
+            return currentLevel >= requiredLevel
         }
 
         default:

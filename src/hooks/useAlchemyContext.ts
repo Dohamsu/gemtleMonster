@@ -55,6 +55,11 @@ function getInitialContext(): AlchemyContext {
             loginStreak: 1,      // Mock
             dailyPlayTimeMin: 0, // Mock
             recentFailCount: 0   // Mock
+        },
+        player: {
+            alchemyLevel: 1,
+            catalysts: [],
+            eventFlags: []
         }
     }
 }
