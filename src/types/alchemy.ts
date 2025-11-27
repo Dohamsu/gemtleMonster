@@ -84,17 +84,29 @@ export interface AlchemyContext {
         dailyPlayTimeMin: number
         recentFailCount: number
     }
+    player?: {
+        alchemyLevel?: number
+        catalysts?: string[]
+        eventFlags?: string[]
+    }
 }
 
 export type RecipeConditionType =
     | 'TIME_RANGE' | 'REAL_TIME_RANGE' | 'REAL_DATE' | 'WEEKDAY'
-    | 'REAL_WEATHER' | 'REAL_TEMPERATURE' | 'GEO_COUNTRY'
+    | 'REAL_WEATHER' | 'LANGUAGE' | 'REAL_TEMPERATURE' | 'GEO_COUNTRY'
     | 'DEVICE_TYPE' | 'PLATFORM' | 'UI_PREFERENCE'
     | 'TAB_IDLE' | 'LOGIN_STREAK' | 'DAILY_PLAYTIME' | 'RECENT_FAIL_COUNT'
-    | 'EVENT_FLAG'
+    | 'EVENT_FLAG' | 'CATALYST' | 'ALCHEMY_LEVEL'
 
 export interface RecipeCondition {
-    type: RecipeConditionType
-    value: any // Specific value based on type (e.g., [22, 4] for TIME_RANGE)
+    condition_type?: RecipeConditionType | string
+    type?: RecipeConditionType // Legacy client format
+    conditionType?: RecipeConditionType // Seed data format
+    value?: any // Legacy single-field payloads
+    value_int?: number
+    value_float?: number
+    value_text?: string
+    value_json?: any
+    value_bool?: boolean
     description?: string // For UI hint (e.g., "비 오는 날")
 }
