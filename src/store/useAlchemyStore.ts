@@ -80,6 +80,8 @@ interface AlchemyState {
 
   // Actions - 시설 생산
   addMaterial: (materialId: string, quantity: number) => Promise<void>
+  batchSyncCallback: ((materialId: string, quantity: number) => void) | null
+  forceSyncCallback: (() => Promise<void>) | null
   setBatchSyncCallback: (callback: ((materialId: string, quantity: number) => void) | null) => void
   setForceSyncCallback: (callback: (() => Promise<void>) | null) => void
 

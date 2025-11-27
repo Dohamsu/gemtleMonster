@@ -1,8 +1,6 @@
-import { useEffect, useRef } from 'react'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useGameStore } from '../../store/useGameStore'
 import ResourceIcon from '../ResourceIcon'
-import { ALCHEMY } from '../../constants/game'
 import { useShallow } from 'zustand/react/shallow'
 
 /**
@@ -29,7 +27,6 @@ export default function FreeFormCauldron() {
 
     // 재료의 총 개수를 계산 (종류가 아닌 실제 개수)
     const ingredientCount = Object.values(selectedIngredients).reduce((sum, count) => sum + count, 0)
-    const maxSlots = ALCHEMY.MAX_INGREDIENT_SLOTS
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '20px', alignItems: 'center' }}>

@@ -10,12 +10,6 @@ interface FacilityLevelStats {
   dropRates: Record<string, number>
 }
 
-interface OfflineRewardsResult {
-  elapsedSeconds: number
-  rewards: Record<string, number>
-  cappedSeconds: number
-}
-
 const MAX_OFFLINE_HOURS = 8 // 최대 8시간 보상
 
 /**

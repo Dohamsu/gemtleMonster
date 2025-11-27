@@ -38,8 +38,6 @@ export default function GameCanvas() {
         selectedRecipeId,
         selectedIngredients,
         isBrewing,
-        brewStartTime,
-        brewProgress,
         selectRecipe,
         addIngredient,
         removeIngredient,
@@ -161,6 +159,10 @@ export default function GameCanvas() {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+        // 재료 병합: playerMaterials + gameStore.resources
+        const gameStoreState = useGameStore.getState()
+        const mergedMaterials = { ...playerMaterials, ...gameStoreState.resources }
+
         // Render based on view
         if (canvasView === 'map') {
             renderMapView({ ctx, canvas, images, facilities })
@@ -171,7 +173,7 @@ export default function GameCanvas() {
                 images,
                 allRecipes,
                 allMaterials,
-                playerMaterials,
+                playerMaterials: mergedMaterials,
                 selectedRecipeId: alchemyState.selectedRecipeId,
                 selectedIngredients: alchemyState.selectedIngredients,
                 isBrewing: alchemyState.isBrewing,

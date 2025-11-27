@@ -25,7 +25,7 @@ export function useEventBasedSync(options: EventBasedSyncOptions = {}) {
 
   useEffect(() => {
     // beforeunload: 브라우저 닫기/새로고침 시
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    const handleBeforeUnload = (_event: BeforeUnloadEvent) => {
       console.log('🚪 [EventSync] beforeunload 감지 - 동기화 실행')
 
       if (onBeforeUnload) {
@@ -34,8 +34,8 @@ export function useEventBasedSync(options: EventBasedSyncOptions = {}) {
       }
 
       // 사용자에게 경고 메시지를 표시하지 않음
-      // event.preventDefault()
-      // event.returnValue = ''
+      // _event.preventDefault()
+      // _event.returnValue = ''
     }
 
     // visibilitychange: 탭 전환 시

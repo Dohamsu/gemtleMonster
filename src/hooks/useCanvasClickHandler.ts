@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import type { Recipe, Material, PlayerAlchemy } from '../lib/alchemyApi'
 import type { CanvasView } from '../store/useGameStore'
+import { useGameStore } from '../store/useGameStore'
 import { ALCHEMY, UI } from '../constants/game'
 
 interface ClickHandlerProps {
@@ -100,18 +101,34 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
             startBrewing,
             startFreeFormBrewing,
             completeBrewing,
+            completeBrewing,
+            autoFillIngredients,
             autoFillIngredients
         ]
     )
 }
 
-function handleMapClick(canvas: HTMLCanvasElement, x: number, y: number, setCanvasView: (view: CanvasView) => void) {
+function handleMapClick(
+    canvas: HTMLCanvasElement,
+    x: number,
+    y: number,
+    setCanvasView: (view: CanvasView) => void
+) {
     // Check if clicking on alchemy workshop
     const workshopX = canvas.width * 0.5 - 64
     const workshopY = canvas.height * 0.7 - 64
 
     if (x >= workshopX && x <= workshopX + 128 && y >= workshopY && y <= workshopY + 128) {
         setCanvasView('alchemy_workshop')
+        return
+    }
+
+    // Check if clicking on shop
+    const shopX = canvas.width * 0.8 - 64
+    const shopY = canvas.height * 0.7 - 64
+
+    if (x >= shopX && x <= shopX + 128 && y >= shopY && y <= shopY + 128) {
+        setCanvasView('shop')
     }
 }
 
@@ -261,7 +278,12 @@ function handleMaterialGridClick(
 
         if (index >= 0 && index < allMaterials.length) {
             const material = allMaterials[index]
-            const available = playerMaterials[material.id] || 0
+
+            // 두 스토어의 재료 병합 (addIngredient와 동일한 로직)
+            const gameStore = useGameStore.getState()
+            const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
+
+            const available = mergedMaterials[material.id] || 0
             const currentlySelected = selectedIngredients[material.id] || 0
 
             // Toggle off if already selected

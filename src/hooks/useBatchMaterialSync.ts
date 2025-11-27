@@ -1,11 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 
-interface MaterialUpdate {
-  materialId: string
-  quantity: number
-}
-
 interface BatchSyncOptions {
   batchInterval?: number // 배치 저장 간격 (ms)
   onSyncStart?: () => void
