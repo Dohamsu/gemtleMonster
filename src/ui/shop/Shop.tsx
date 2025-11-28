@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
@@ -41,6 +41,11 @@ export default function Shop() {
         refreshInventory,
         loading,
     } = useUnifiedInventory()
+
+    // 상점 진입 시 최신 인벤토리 동기화
+    useEffect(() => {
+        refreshInventory()
+    }, [refreshInventory])
 
     // 개별 아이템의 판매 수량을 관리하는 상태
     const [sellQuantities, setSellQuantities] = useState<Record<string, number>>({})
