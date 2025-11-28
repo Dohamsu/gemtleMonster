@@ -302,11 +302,8 @@ function handleMaterialGridClick(
         if (index >= 0 && index < allMaterials.length) {
             const material = allMaterials[index]
 
-            // 두 스토어의 재료 병합 (addIngredient와 동일한 로직)
-            const gameStore = useGameStore.getState()
-            const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
-
-            const available = mergedMaterials[material.id] || 0
+            // playerMaterials는 이미 useUnifiedInventory에서 병합된 materialCounts (Single Source of Truth)
+            const available = playerMaterials[material.id] || 0
             const currentlySelected = selectedIngredients[material.id] || 0
 
             // Toggle off if already selected

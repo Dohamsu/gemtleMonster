@@ -207,11 +207,11 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       })
       */
 
-      // gameStore의 resources도 동기화
+      // gameStore.resources를 읽기 전용 캐시로 동기화 (UI 애니메이션용)
       const gameStore = useGameStore.getState()
       const currentResources = gameStore.resources
       gameStore.setResources({ ...currentResources, ...materialsMap })
-      // console.log(`✅ [AlchemyStore] resources 동기화 완료`)
+      // console.log(`✅ [AlchemyStore] resources 캐시 동기화 완료`)
     } catch (error) {
       console.error('❌ [AlchemyStore] 플레이어 데이터 로딩 실패:', error)
       throw error
@@ -715,7 +715,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
         set({ playerMaterials: newPlayerMaterials })
 
-        // gameStore의 resources도 동기화 (개별 차감)
+        // gameStore.resources를 읽기 전용 캐시로 동기화 (UI 애니메이션용)
         const gameStore = useGameStore.getState()
         const currentResources = gameStore.resources
         gameStore.setResources({
@@ -752,7 +752,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     set({ playerMaterials: newPlayerMaterials })
 
-    // gameStore의 resources도 동기화 (개별 증가)
+    // gameStore.resources를 읽기 전용 캐시로 동기화 (UI 애니메이션용)
     const gameStore = useGameStore.getState()
     const currentResources = gameStore.resources
     gameStore.setResources({

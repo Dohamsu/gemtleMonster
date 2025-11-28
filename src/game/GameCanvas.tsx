@@ -3,6 +3,7 @@ import { useGameStore } from '../store/useGameStore'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { useAuth } from '../hooks/useAuth'
 import { useOfflineRewards } from '../hooks/useOfflineRewards'
+import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 import { AlchemyResultModal } from '../ui/alchemy/AlchemyResultModal'
 import Shop from '../ui/shop/Shop'
 import MonsterFarm from '../ui/monster/MonsterFarm'
@@ -14,7 +15,6 @@ import { renderAlchemyWorkshop } from './renderers/alchemyRenderer'
 import { renderShopView } from './renderers/shopRenderer'
 import { UI } from '../constants/game'
 import DungeonModal from '../ui/dungeon/DungeonModal'
-import { MATERIALS } from '../data/alchemyData'
 
 /**
  * Optimized GameCanvas Component
@@ -30,7 +30,6 @@ export default function GameCanvas() {
     const {
         allRecipes,
         allMaterials,
-        playerMaterials,
         selectedRecipeId,
         selectedIngredients,
         isBrewing,
@@ -48,6 +47,9 @@ export default function GameCanvas() {
         brewResult,
         setAlchemyContext
     } = useAlchemyStore()
+
+    // 통합 인벤토리 사용 (Single Source of Truth)
+    const { materialCounts } = useUnifiedInventory()
 
     // Advanced Alchemy: Context hook
     const alchemyContext = useAlchemyContext()
@@ -76,7 +78,7 @@ export default function GameCanvas() {
         setCanvasView,
         allRecipes,
         allMaterials,
-        playerMaterials,
+        playerMaterials: materialCounts, // useUnifiedInventory의 materialCounts 사용
         selectedRecipeId,
         selectedIngredients,
         isBrewing,
@@ -160,10 +162,6 @@ export default function GameCanvas() {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-        // 재료 병합: playerMaterials + gameStore.resources
-        const gameStoreState = useGameStore.getState()
-        const mergedMaterials = { ...playerMaterials, ...gameStoreState.resources }
-
         // Render based on view
         if (canvasView === 'map') {
             renderMapView({ ctx, canvas, images, facilities })
@@ -174,7 +172,7 @@ export default function GameCanvas() {
                 images,
                 allRecipes,
                 allMaterials,
-                playerMaterials: mergedMaterials,
+                playerMaterials: materialCounts, // useUnifiedInventory의 materialCounts 사용
                 selectedRecipeId,
                 selectedIngredients,
                 isBrewing,
@@ -194,7 +192,7 @@ export default function GameCanvas() {
         facilities,
         allRecipes,
         allMaterials,
-        playerMaterials,
+        materialCounts, // playerMaterials 대신 materialCounts 사용
         selectedRecipeId,
         selectedIngredients,
         isBrewing,

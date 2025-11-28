@@ -1,8 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { getAlchemyDataForDB } from './alchemyData'
 
 // Load environment variables
 dotenv.config()
@@ -17,61 +15,12 @@ if (!supabaseUrl || !supabaseServiceKey) {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const alchemyDataPath = path.join(__dirname, 'alchemyData.json')
-
-interface Material {
-    id: string
-    name: string
-    description?: string
-    family: string
-    rarity: string
-    iconUrl?: string
-    sourceInfo?: any
-    isSpecial: boolean
-}
-
-interface RecipeIngredient {
-    materialId: string
-    quantity: number
-    isCatalyst: boolean
-}
-
-interface RecipeCondition {
-    conditionType: string
-    timeStart?: string
-    timeEnd?: string
-    languageCode?: string
-}
-
-interface Recipe {
-    id: string
-    name: string
-    description?: string
-    resultMonsterId: string
-    resultCount: number
-    baseSuccessRate: number
-    craftTimeSec: number
-    costGold: number
-    requiredAlchemyLevel: number
-    expGain: number
-    isHidden: boolean
-    priority: number
-    ingredients: RecipeIngredient[]
-    conditions: RecipeCondition[]
-}
-
-interface AlchemyData {
-    version: string
-    materials: Material[]
-    recipes: Recipe[]
-}
+// 타입은 alchemyData.ts에서 가져온 데이터를 사용하므로 별도 정의 불필요
 
 async function seedAlchemy() {
     try {
-        const rawData = fs.readFileSync(alchemyDataPath, 'utf-8')
-        const data: AlchemyData = JSON.parse(rawData)
+        // TypeScript 파일에서 직접 데이터 가져오기
+        const data = getAlchemyDataForDB()
 
         console.log('🧪 연금술 시스템 데이터 시딩 시작...')
         console.log(`버전: ${data.version}`)

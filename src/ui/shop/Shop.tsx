@@ -32,7 +32,7 @@ interface ShopItem {
 }
 
 export default function Shop() {
-    const { resources, sellResource, setCanvasView, addResources } = useGameStore()
+    const { sellResource, setCanvasView, addResources } = useGameStore()
     const { sellMaterial } = useAlchemyStore()
     const {
         materials,
@@ -41,6 +41,9 @@ export default function Shop() {
         refreshInventory,
         loading,
     } = useUnifiedInventory()
+    
+    // 골드는 materialCounts에서 가져옴 (Single Source of Truth)
+    const gold = materialCounts['gold'] || 0
 
     // 상점 진입 시 최신 인벤토리 동기화
     useEffect(() => {
@@ -255,7 +258,7 @@ export default function Shop() {
                     <h2 style={{ margin: 0, fontSize: '1.5em', color: '#f0d090' }}>🏪 상점</h2>
                 </div>
                 <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#facc15' }}>
-                    💰 {formatNumber(resources.gold)} G
+                    💰 {formatNumber(gold)} G
                 </div>
             </div>
 

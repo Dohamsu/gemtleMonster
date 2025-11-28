@@ -41,6 +41,17 @@ export function useBatchMaterialSync(
     // console.log(`📊 [BatchSync] 현재 큐:`, pendingUpdates.current)
   }, [])
 
+  // 콜백을 ref로 저장하여 안정적인 참조 유지
+  const onSyncStartRef = useRef(onSyncStart)
+  const onSyncCompleteRef = useRef(onSyncComplete)
+  const onSyncErrorRef = useRef(onSyncError)
+
+  useEffect(() => {
+    onSyncStartRef.current = onSyncStart
+    onSyncCompleteRef.current = onSyncComplete
+    onSyncErrorRef.current = onSyncError
+  }, [onSyncStart, onSyncComplete, onSyncError])
+
   /**
    * 누적된 변경사항을 DB에 저장
    */
@@ -57,7 +68,7 @@ export function useBatchMaterialSync(
 
     isSyncing.current = true
     // console.log(`🔄 [BatchSync] DB 동기화 시작... (${updateCount}개 재료)`)
-    onSyncStart?.()
+    onSyncStartRef.current?.()
 
     try {
       // 각 재료별로 add_materials RPC 호출 (순차 처리로 변경하여 충돌 방지)
@@ -74,16 +85,16 @@ export function useBatchMaterialSync(
       // 성공 시 큐 초기화
       pendingUpdates.current = {}
       // console.log(`✅ [BatchSync] DB 동기화 완료!`, updates)
-      onSyncComplete?.(true, updates)
+      onSyncCompleteRef.current?.(true, updates)
     } catch (error) {
       console.error('❌ [BatchSync] DB 동기화 실패:', error)
-      onSyncError?.(error as Error)
-      onSyncComplete?.(false, updates)
+      onSyncErrorRef.current?.(error as Error)
+      onSyncCompleteRef.current?.(false, updates)
       // 실패 시에도 큐를 유지해서 다음 배치에 재시도
     } finally {
       isSyncing.current = false
     }
-  }, [userId, onSyncStart, onSyncComplete, onSyncError])
+  }, [userId]) // 콜백 의존성 제거
 
   /**
    * 즉시 동기화 (이벤트 기반 저장용)

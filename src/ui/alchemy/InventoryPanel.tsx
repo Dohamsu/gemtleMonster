@@ -1,13 +1,15 @@
 import { useGameStore } from '../../store/useGameStore'
-import { MATERIALS } from '../../data/alchemyData'
+import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
 import ResourceIcon from '../ResourceIcon'
 
 export default function InventoryPanel() {
-    const { resources, addIngredient } = useGameStore()
+    const { addIngredient } = useGameStore()
+    const { materials, materialCounts } = useUnifiedInventory()
 
-    // Filter resources to find materials
-    const ownedMaterials = Object.entries(resources).filter(([id, count]) => {
-        return MATERIALS[id] && count > 0
+    // 보유한 재료만 필터링 (수량 > 0)
+    const ownedMaterials = materials.filter(m => {
+        const count = materialCounts[m.id] || 0
+        return count > 0
     })
 
     return (
@@ -19,12 +21,12 @@ export default function InventoryPanel() {
             {/* Content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                    {ownedMaterials.map(([id, count]) => {
-                        const material = MATERIALS[id]
+                    {ownedMaterials.map((material) => {
+                        const count = materialCounts[material.id] || 0
                         return (
                             <div
-                                key={id}
-                                onClick={() => addIngredient(id, 1)}
+                                key={material.id}
+                                onClick={() => addIngredient(material.id, 1)}
                                 style={{
                                     background: '#2a2a2a',
                                     border: '1px solid #333',
@@ -37,7 +39,7 @@ export default function InventoryPanel() {
                                     position: 'relative'
                                 }}
                             >
-                                <ResourceIcon resourceId={id} size={24} />
+                                <ResourceIcon resourceId={material.id} size={24} />
                                 <span style={{ fontSize: '0.8em', marginTop: '4px', textAlign: 'center', wordBreak: 'break-word' }}>
                                     {material.name}
                                 </span>

@@ -12,11 +12,15 @@ function App() {
     const { user } = useAuth()
     const { setResources, setFacilities } = useGameStore()
 
-    // Fetch initial data from DB
+    /**
+     * 레거시 시스템: player_resource 테이블에서 데이터 로드
+     * 주의: 실제 데이터는 useAlchemyStore.loadPlayerData()에서 player_material 테이블로 로드됨
+     * TODO: 레거시 시스템 제거 시 이 부분도 제거 필요
+     */
     const { resources: dbResources } = useResources(user?.id)
     const { playerFacilities: dbFacilities } = useFacilities(user?.id)
 
-    // Sync DB data to local store when loaded
+    // Sync DB data to local store when loaded (레거시 호환성)
     useEffect(() => {
         if (Object.keys(dbResources).length > 0) {
             setResources(dbResources)
@@ -47,8 +51,8 @@ function App() {
             }
 
             const { supabase } = await import('./lib/supabase')
-            const alchemyData = await import('./data/alchemyData.json')
-            const materials = alchemyData.materials
+            const { getMaterialsForDB } = await import('./data/alchemyData')
+            const materials = getMaterialsForDB()
 
             console.log(`🔄 Syncing ${materials.length} materials...`)
 
@@ -61,8 +65,8 @@ function App() {
                         family: material.family,
                         description: material.description,
                         rarity: material.rarity,
-                        icon_url: material.iconUrl,
-                        is_special: material.isSpecial,
+                        icon_url: material.icon_url,
+                        is_special: material.is_special,
                         sell_price: 0
                     }, { onConflict: 'id' })
 

@@ -4,12 +4,14 @@ import IdleFacilityGridItem from './IdleFacilityGridItem'
 import { useFacilities } from '../../hooks/useFacilities'
 import { useGameStore } from '../../store/useGameStore'
 import { useAuth } from '../../hooks/useAuth'
+import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
 
 
 export default function IdleFacilityList() {
     const { user } = useAuth();
     const { facilities, loading: facilitiesLoading } = useFacilities(user?.id);
-    const { facilities: playerFacilities, resources, upgradeFacility, canvasView } = useGameStore();
+    const { facilities: playerFacilities, upgradeFacility, canvasView } = useGameStore();
+    const { materialCounts } = useUnifiedInventory();
     const [viewMode, setViewMode] = React.useState<'list' | 'grid'>('list');
     const [allCollapsed, setAllCollapsed] = React.useState(false);
 
@@ -173,7 +175,7 @@ export default function IdleFacilityList() {
                                                 facility={facility}
                                                 currentLevel={level}
                                                 isHighestLevel={level === currentLevel}
-                                                resources={resources}
+                                                resources={materialCounts}
                                                 onUpgrade={async (fid, cost) => upgradeFacility(fid, cost)}
                                                 isPaused={isPaused}
                                             />

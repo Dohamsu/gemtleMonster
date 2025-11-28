@@ -21,6 +21,7 @@ interface GameState {
         health: number
     }
     inventory: string[]
+    /** UI 애니메이션용 읽기 전용 캐시. 실제 데이터는 useAlchemyStore.playerMaterials에 저장됨. 컴포넌트에서는 useUnifiedInventory.materialCounts를 사용하세요. */
     resources: Record<string, number>
     facilities: Record<string, number>
     lastCollectedAt: Record<string, number>
@@ -68,6 +69,11 @@ interface GameState {
 export const useGameStore = create<GameState>((set, get) => ({
     player: { x: 0, y: 0, health: 100 },
     inventory: [],
+    /**
+     * resources: UI 애니메이션용 읽기 전용 캐시
+     * 실제 데이터는 useAlchemyStore.playerMaterials에 저장됩니다.
+     * 이 값은 useAlchemyStore.loadPlayerData() 호출 시 자동으로 동기화됩니다.
+     */
     resources: {
         gold: 1000,
         herb_common: 10,
@@ -75,7 +81,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         beast_fang: 3,
         magic_ore: 2,
         spirit_dust: 2
-    }, // Initial resources for testing
+    }, // Initial resources for testing (DB 로드 후 덮어씌워짐)
     facilities: { herb_farm: 1, monster_farm: 1 }, // Initial facility
     lastCollectedAt: {},
     recentAdditions: [],
@@ -96,18 +102,29 @@ export const useGameStore = create<GameState>((set, get) => ({
     setPlayerPosition: (x, y) => set((state) => ({ player: { ...state.player, x, y } })),
     addItem: (item) => set((state) => ({ inventory: [...state.inventory, item] })),
 
+    /**
+     * resources는 UI 애니메이션용 읽기 전용 캐시입니다.
+     * 실제 데이터는 useAlchemyStore.playerMaterials에 저장됩니다.
+     * 이 함수는 useAlchemyStore에서 playerMaterials 변경 시 자동 동기화용으로만 사용됩니다.
+     */
     setResources: (resources) => set({ resources }),
     setFacilities: (facilities) => set({ facilities }),
 
     addResources: (newResources, facilityKey) => {
-        // 1. AlchemyStore와 동기화 (DB 저장용)
+        /**
+         * Single Source of Truth 패턴:
+         * 1. AlchemyStore.playerMaterials 업데이트 (실제 데이터, DB 저장용)
+         * 2. GameStore.resources 업데이트 (UI 애니메이션용 읽기 전용 캐시)
+         */
+        
+        // 1. AlchemyStore 업데이트 (실제 데이터 소스)
         const { batchSyncCallback, playerMaterials } = useAlchemyStore.getState()
         const alchemyUpdates: Record<string, number> = {}
 
         for (const [id, amount] of Object.entries(newResources)) {
             // 'empty'는 유효한 재료가 아니므로 제외
             if (amount > 0 && id !== 'empty') {
-                // AlchemyStore 로컬 상태 업데이트 준비
+                // AlchemyStore 로컬 상태 업데이트 (Single Source of Truth)
                 alchemyUpdates[id] = (playerMaterials[id] || 0) + amount
 
                 // 배치 동기화 큐에 추가 (DB 저장)
@@ -117,7 +134,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             }
         }
 
-        // AlchemyStore 상태 업데이트 (UI 동기화)
+        // AlchemyStore 상태 업데이트 (실제 데이터)
         if (Object.keys(alchemyUpdates).length > 0) {
             useAlchemyStore.setState(state => ({
                 playerMaterials: {
@@ -127,7 +144,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             }))
         }
 
-        // 2. GameStore 상태 업데이트 (기존 로직)
+        // 2. GameStore.resources 업데이트 (UI 애니메이션용 읽기 전용 캐시)
         set((state) => {
             const updatedResources = { ...state.resources }
             const updatedAdditions = [...state.recentAdditions]
@@ -177,8 +194,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     })),
 
+    /**
+     * 레거시 함수: 상점에서 레거시 자원 판매용
+     * 주의: resources는 읽기 전용 캐시이므로, 실제 검증은 playerMaterials를 사용해야 함
+     * TODO: useAlchemyStore.sellMaterial을 사용하도록 마이그레이션 권장
+     */
     sellResource: async (resourceId, amount, pricePerUnit) => {
         const currentState = get()
+        // 주의: resources는 UI 캐시이므로, 실제 검증은 playerMaterials를 사용해야 함
         const currentAmount = currentState.resources[resourceId] || 0
 
         if (currentAmount < amount) {
@@ -250,7 +273,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         return true
     },
 
+    /**
+     * 레거시 함수: 시설 업그레이드용
+     * 주의: resources는 읽기 전용 캐시이므로, 실제 검증은 playerMaterials를 사용해야 함
+     * TODO: useUnifiedInventory.materialCounts를 사용하도록 마이그레이션 권장
+     */
     upgradeFacility: (facilityId, cost) => set((state) => {
+        // 주의: resources는 UI 캐시이므로, 실제 검증은 playerMaterials를 사용해야 함
         // Check if affordable
         for (const [res, amount] of Object.entries(cost)) {
             if ((state.resources[res] || 0) < amount) {
@@ -258,7 +287,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             }
         }
 
-        // Deduct resources
+        // Deduct resources (UI 캐시 업데이트)
         const newResources = { ...state.resources };
         for (const [res, amount] of Object.entries(cost)) {
             newResources[res] -= amount;
@@ -310,15 +339,21 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
     })),
 
+    /**
+     * 레거시 함수: 연금술 완료 처리용
+     * 주의: resources는 읽기 전용 캐시이므로, 실제 데이터는 useAlchemyStore.completeBrewing을 사용해야 함
+     * TODO: useAlchemyStore.completeBrewing을 사용하도록 마이그레이션 권장
+     */
     completeBrewing: (resultMonsterId, count, materialsUsed) => set((state) => {
+        // 주의: resources는 UI 캐시이므로, 실제 데이터는 useAlchemyStore에서 관리됨
         const newResources = { ...state.resources }
 
-        // Deduct materials
+        // Deduct materials (UI 캐시 업데이트)
         for (const [matId, amount] of Object.entries(materialsUsed)) {
             newResources[matId] = Math.max(0, (newResources[matId] || 0) - amount)
         }
 
-        // Add monster (stored as resource for now)
+        // Add monster (stored as resource for now) (UI 캐시 업데이트)
         newResources[resultMonsterId] = (newResources[resultMonsterId] || 0) + count
 
         return {

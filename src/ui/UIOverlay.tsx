@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useGameStore } from '../store/useGameStore'
 import { useSaveGame } from '../hooks/useSaveGame'
@@ -13,14 +13,17 @@ export default function UIOverlay() {
     const { activeTab, setActiveTab } = useGameStore()
     const { saveGame, saving, lastSaved } = useSaveGame()
 
+    // onSyncComplete를 useCallback으로 고정하여 무한 루프 방지
+    const onSyncComplete = useCallback((success: boolean, updates: Record<string, number>) => {
+        if (success) {
+            console.log('✅ 배치 동기화 완료:', Object.keys(updates).length, '종류')
+        }
+    }, [])
+
     // Phase 1: 배치 동기화 시스템
     const { queueUpdate, forceSyncNow } = useBatchMaterialSync(user?.id, {
         batchInterval: 30000, // 30초마다 자동 저장
-        onSyncComplete: (success, updates) => {
-            if (success) {
-                console.log('✅ 배치 동기화 완료:', Object.keys(updates).length, '종류')
-            }
-        }
+        onSyncComplete
     })
 
     // Phase 2: 이벤트 기반 동기화
@@ -36,17 +39,32 @@ export default function UIOverlay() {
     })
 
     // AlchemyStore에 배치 콜백 연결
+    // ref를 사용하여 콜백 참조를 안정적으로 유지
+    const queueUpdateRef = useRef(queueUpdate)
+    const forceSyncNowRef = useRef(forceSyncNow)
+    
+    // ref 업데이트
+    useEffect(() => {
+        queueUpdateRef.current = queueUpdate
+        forceSyncNowRef.current = forceSyncNow
+    }, [queueUpdate, forceSyncNow])
+
+    // 콜백 등록 (user?.id 변경 시에만)
     useEffect(() => {
         if (user?.id) {
-            useAlchemyStore.getState().setBatchSyncCallback(queueUpdate)
-            useAlchemyStore.getState().setForceSyncCallback(forceSyncNow)
+            useAlchemyStore.getState().setBatchSyncCallback((materialId: string, quantity: number) => {
+                queueUpdateRef.current(materialId, quantity)
+            })
+            useAlchemyStore.getState().setForceSyncCallback(async () => {
+                await forceSyncNowRef.current()
+            })
         }
 
         return () => {
             useAlchemyStore.getState().setBatchSyncCallback(null)
             useAlchemyStore.getState().setForceSyncCallback(null)
         }
-    }, [user?.id, queueUpdate, forceSyncNow])
+    }, [user?.id]) // queueUpdate, forceSyncNow 의존성 제거
 
     if (authLoading) {
         return (

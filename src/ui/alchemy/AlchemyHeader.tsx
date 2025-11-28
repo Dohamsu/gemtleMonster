@@ -1,8 +1,9 @@
 
-import { useGameStore } from '../../store/useGameStore'
+import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
 
 export default function AlchemyHeader() {
-    const { resources } = useGameStore()
+    const { materialCounts } = useUnifiedInventory()
+    const gold = materialCounts['gold'] || 0
 
     return (
         <div style={{
@@ -31,7 +32,7 @@ export default function AlchemyHeader() {
             <div style={{ display: 'flex', gap: '20px', fontSize: '0.95em' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <span style={{ color: '#ffd700' }}>💰 Gold:</span>
-                    <span>{resources['gold']?.toLocaleString() || 0}</span>
+                    <span>{gold.toLocaleString()}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#aaa' }}>
                     <span>✨ 성공률 +0%</span>
