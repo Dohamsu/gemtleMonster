@@ -60,18 +60,16 @@ export function useBatchMaterialSync(
     onSyncStart?.()
 
     try {
-      // 각 재료별로 add_materials RPC 호출
-      const promises = Object.entries(updates).map(([materialId, quantity]) => {
-        if (quantity === 0) return Promise.resolve()
+      // 각 재료별로 add_materials RPC 호출 (순차 처리로 변경하여 충돌 방지)
+      for (const [materialId, quantity] of Object.entries(updates)) {
+        if (quantity === 0) continue
 
-        return supabase.rpc('add_materials', {
+        await supabase.rpc('add_materials', {
           p_user_id: userId,
           p_material_id: materialId,
           p_quantity: quantity
         })
-      })
-
-      await Promise.all(promises)
+      }
 
       // 성공 시 큐 초기화
       pendingUpdates.current = {}
