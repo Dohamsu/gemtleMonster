@@ -39,7 +39,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 25,
         defense: 60,
         emoji: '🗿',
-        iconUrl: '/assets/stoneGolem.png'
+        iconUrl: '/assets/monsters/stoneGolem.png'
     },
     'monster_fairy_spirit': {
         name: '정령 요정',
@@ -77,7 +77,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 70,
         defense: 40,
         emoji: '🔥',
-        iconUrl: '/assets/ironGolem.png'
+        iconUrl: '/assets/monsters/ironGolem.png'
     },
     'monster_slime_nightmare': {
         name: '악몽 슬라임',
@@ -114,7 +114,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 30,
         defense: 45,
         emoji: '🌳',
-        iconUrl: '/assets/woodGolem.png'
+        iconUrl: '/assets/monsters/woodGolem.png'
     }
 }
 

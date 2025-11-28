@@ -64,7 +64,7 @@ export function useCanvasImages() {
             loadImage('/assets/shop_building.png'),
             loadImage('/assets/shop_interior.png'),
             loadImage('/assets/cauldron_pixel.png'),
-            loadImage('/assets/facility/dungeon_forest.png'),
+            loadImage('/assets/dungeon_forest.png'),
             loadMaterialImages()
         ])
             .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, dungeonForest, materials]) => {

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import * as alchemyApi from '../lib/alchemyApi'
@@ -45,8 +46,8 @@ export function useOfflineRewards(userId: string | undefined) {
         const elapsedMs = now.getTime() - lastCollectedAt.getTime()
         const elapsedSeconds = Math.floor(elapsedMs / 1000)
 
-        // 최소 시간 체크 (10초 미만이면 보상 없음)
-        if (elapsedSeconds < 10) {
+        // 최소 시간 체크 (5분 미만이면 보상 없음)
+        if (elapsedSeconds < 60 * 5) {
           console.log('ℹ️ [OfflineRewards] 경과 시간 너무 짧음:', elapsedSeconds, '초')
           setClaimed(true)
           return
