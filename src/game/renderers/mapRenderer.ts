@@ -86,4 +86,22 @@ export function renderMapView({ ctx, canvas, images, facilities }: MapRendererPr
         ctx.fillText('슬라임 숲', dungeonX + 35, dungeonY + 140)
         ctx.shadowBlur = 0
     }
+
+    // Render monster farm
+    if (images.shop_building && facilities['monster_farm']) {
+        const farmX = canvas.width * 0.5 - 64
+        const farmY = canvas.height * 0.4 - 64
+
+        // Use filter to distinguish from shop (slightly reddish tint)
+        ctx.filter = 'hue-rotate(-30deg) sepia(0.3)'
+        ctx.drawImage(images.shop_building, farmX, farmY, 128, 128)
+        ctx.filter = 'none'
+
+        ctx.fillStyle = 'white'
+        ctx.font = 'bold 14px Arial'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 4
+        ctx.fillText('몬스터 농장', farmX + 30, farmY + 140)
+        ctx.shadowBlur = 0
+    }
 }

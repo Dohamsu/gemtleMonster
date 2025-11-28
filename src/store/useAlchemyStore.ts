@@ -22,6 +22,7 @@ interface AlchemyState {
     level: number
     exp: number
     created_at: string
+    is_locked: boolean
   }>
 
   // UI 상태
@@ -89,6 +90,15 @@ interface AlchemyState {
   // Actions - Advanced Alchemy Context
   alchemyContext: AlchemyContext | null
   setAlchemyContext: (context: AlchemyContext) => void
+
+  // Actions - Monster Decompose
+  decomposeMonsters: (monsterIds: string[]) => Promise<{
+    success: boolean
+    deleted_count: number
+    rewards: Record<string, number>
+    error?: string
+  }>
+  toggleMonsterLock: (monsterId: string, isLocked: boolean) => Promise<void>
 }
 
 export const useAlchemyStore = create<AlchemyState>((set, get) => ({
@@ -782,5 +792,76 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   alchemyContext: null,
 
-  setAlchemyContext: (context) => set({ alchemyContext: context })
+  setAlchemyContext: (context) => set({ alchemyContext: context }),
+
+  // ============================================
+  // Monster Decompose
+  // ============================================
+
+  decomposeMonsters: async (monsterIds) => {
+    const { userId } = get()
+    if (!userId) {
+      console.error('사용자가 로그인하지 않았습니다')
+      return { success: false, deleted_count: 0, rewards: {}, error: 'User not logged in' }
+    }
+
+    try {
+      const result = await alchemyApi.decomposeMonsters(userId, monsterIds)
+
+      if (result.success) {
+        // Update playerMonsters by removing decomposed monsters
+        const currentMonsters = get().playerMonsters
+        const updatedMonsters = currentMonsters.filter(
+          m => !monsterIds.includes(m.id)
+        )
+        set({ playerMonsters: updatedMonsters })
+
+        // Update playerMaterials with rewards
+        const currentMaterials = get().playerMaterials
+        const updatedMaterials = { ...currentMaterials }
+
+        Object.entries(result.rewards).forEach(([materialId, amount]) => {
+          updatedMaterials[materialId] = (updatedMaterials[materialId] || 0) + amount
+        })
+
+        set({ playerMaterials: updatedMaterials })
+
+        // Sync to gameStore resources
+        const gameStore = useGameStore.getState()
+        const currentResources = gameStore.resources
+        gameStore.setResources({ ...currentResources, ...updatedMaterials })
+
+        console.log(`✅ 몬스터 분해 완료: ${result.deleted_count}마리`)
+      }
+
+      return result
+    } catch (error: any) {
+      console.error('몬스터 분해 실패:', error)
+      return { success: false, deleted_count: 0, rewards: {}, error: error.message || 'Unknown error' }
+    }
+  },
+
+  toggleMonsterLock: async (monsterId, isLocked) => {
+    const { userId } = get()
+    if (!userId) {
+      console.error('사용자가 로그인하지 않았습니다')
+      return
+    }
+
+    try {
+      await alchemyApi.toggleMonsterLock(userId, monsterId, isLocked)
+
+      // Update local state
+      const currentMonsters = get().playerMonsters
+      const updatedMonsters = currentMonsters.map(m =>
+        m.id === monsterId ? { ...m, is_locked: isLocked } : m
+      )
+      set({ playerMonsters: updatedMonsters as any })
+
+      console.log(`✅ 몬스터 잠금 상태 변경: ${monsterId} -> ${isLocked}`)
+    } catch (error) {
+      console.error('몬스터 잠금 상태 변경 실패:', error)
+      throw error
+    }
+  }
 }))

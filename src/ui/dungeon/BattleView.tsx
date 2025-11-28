@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { SLIME_DUNGEON } from '../../data/dungeonData'
+import { MATERIALS } from '../../data/alchemyData'
 
 export default function BattleView() {
     const { battleState, processTurn, endBattle } = useGameStore()
@@ -135,7 +136,7 @@ export default function BattleView() {
                                         background: 'rgba(0,0,0,0.2)',
                                         borderRadius: '4px'
                                     }}>
-                                        <span style={{ color: '#e5e7eb' }}>{materialId}</span>
+                                        <span style={{ color: '#e5e7eb' }}>{MATERIALS[materialId]?.name || materialId}</span>
                                         <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>x{quantity}</span>
                                     </div>
                                 ))}

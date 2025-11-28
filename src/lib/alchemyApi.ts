@@ -440,10 +440,11 @@ export async function getPlayerMonsters(userId: string): Promise<Array<{
   level: number
   exp: number
   created_at: string
+  is_locked: boolean
 }>> {
   const { data, error } = await supabase
     .from('player_monster')
-    .select('id, monster_id, level, exp, created_at')
+    .select('id, monster_id, level, exp, created_at, is_locked')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
@@ -455,71 +456,67 @@ export async function getPlayerMonsters(userId: string): Promise<Array<{
   return data || []
 }
 
-// ============================================
-// 오프라인 보상 시스템 (Phase 3)
-// ============================================
+// ... (skip to decomposeMonsters)
 
-/**
- * 마지막 수집 시간 가져오기
- */
-export async function getLastCollectedAt(userId: string): Promise<Date | null> {
-  const { data, error } = await supabase
-    .from('player_alchemy')
-    .select('last_collected_at')
-    .eq('user_id', userId)
-    .single()
+export async function decomposeMonsters(
+  userId: string,
+  monsterIds: string[]
+): Promise<{
+  success: boolean
+  deleted_count: number
+  rewards: Record<string, number>
+  error?: string
+}> {
+  console.log(`🗑️ Decomposing monsters:`, monsterIds)
 
-  if (error || !data) {
-    console.error('마지막 수집 시간 조회 실패:', error)
-    return null
+  const { data, error } = await supabase.rpc('decompose_monsters', {
+    p_user_id: userId,
+    p_monster_uids: monsterIds
+  })
+
+  if (error) {
+    console.error('몬스터 분해 실패:', error)
+    return {
+      success: false,
+      deleted_count: 0,
+      rewards: {},
+      error: error.message
+    }
   }
 
-  return data.last_collected_at ? new Date(data.last_collected_at) : null
+  if (!data) {
+    console.error('몬스터 분해 결과 없음 (data is null)')
+    return {
+      success: false,
+      deleted_count: 0,
+      rewards: {},
+      error: 'No data returned from RPC'
+    }
+  }
+
+  console.log(`✅ 몬스터 분해 완료: ${data.deleted_count}마리`, data)
+  return data
 }
 
 /**
- * 마지막 수집 시간 업데이트
+ * 몬스터 잠금/해제 토글
  */
-export async function updateLastCollectedAt(userId: string, timestamp?: Date): Promise<void> {
+export async function toggleMonsterLock(
+  userId: string,
+  monsterId: string,
+  isLocked: boolean
+): Promise<void> {
   const { error } = await supabase
-    .from('player_alchemy')
-    .update({
-      last_collected_at: timestamp || new Date()
-    })
+    .from('player_monster')
+    .update({ is_locked: isLocked })
+    .eq('id', monsterId)
     .eq('user_id', userId)
 
   if (error) {
-    console.error('마지막 수집 시간 업데이트 실패:', error)
+    console.error('몬스터 잠금 상태 변경 실패:', error)
     throw error
   }
 
-  console.log(`✅ 마지막 수집 시간 업데이트: ${timestamp || new Date()}`)
+  console.log(`✅ 몬스터 잠금 상태 변경: ${monsterId} -> ${isLocked}`)
 }
 
-/**
- * 배치로 여러 재료를 한 번에 추가 (오프라인 보상용)
- */
-export async function batchAddMaterials(
-  userId: string,
-  materials: Record<string, number>
-): Promise<void> {
-  console.log(`🎁 [batchAddMaterials] 시작:`, materials)
-
-  const promises = Object.entries(materials).map(([materialId, quantity]) => {
-    if (quantity <= 0) return Promise.resolve()
-
-    return supabase.rpc('add_materials', {
-      p_user_id: userId,
-      p_material_id: materialId,
-      p_quantity: quantity
-    })
-  })
-
-  try {
-    await Promise.all(promises)
-    console.log(`✅ [batchAddMaterials] 완료: ${Object.keys(materials).length}종류`)
-  } catch (error) {
-    console.error('❌ [batchAddMaterials] 실패:', error)
-    throw error
-  }
-}

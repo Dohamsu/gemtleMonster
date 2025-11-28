@@ -89,38 +89,49 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
             </div>
 
             {/* Collection Progress Bar */}
-            <div style={{ marginTop: '8px', marginBottom: '8px' }}>
-                <div style={{
-                    width: '100%',
-                    height: '6px',
-                    background: '#333',
-                    borderRadius: '3px',
-                    overflow: 'hidden'
-                }}>
+            {/* Collection Progress Bar - Only show if intervalSeconds exists */}
+            {(levelData.stats as any).intervalSeconds && (
+                <div style={{ marginTop: '8px', marginBottom: '8px' }}>
                     <div style={{
-                        width: `${progress}%`,
-                        height: '100%',
-                        background: isPaused
-                            ? '#888' // 일시정지 시 회색
-                            : facility.id === 'mine'
-                                ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
-                                : 'linear-gradient(90deg, #4a90e2, #63b3ed)',
-                        transition: isPaused ? 'none' : 'width 0.05s linear', // 일시정지 시 애니메이션 제거
-                        boxShadow: !isPaused && progress > 90 ? '0 0 8px rgba(255,255,255,0.5)' : 'none',
-                        opacity: isPaused ? 0.5 : 1 // 일시정지 시 투명도 낮춤
-                    }} />
+                        width: '100%',
+                        height: '6px',
+                        background: '#333',
+                        borderRadius: '3px',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{
+                            width: `${progress}%`,
+                            height: '100%',
+                            background: isPaused
+                                ? '#888' // 일시정지 시 회색
+                                : facility.id === 'mine'
+                                    ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
+                                    : 'linear-gradient(90deg, #4a90e2, #63b3ed)',
+                            transition: isPaused ? 'none' : 'width 0.05s linear', // 일시정지 시 애니메이션 제거
+                            boxShadow: !isPaused && progress > 90 ? '0 0 8px rgba(255,255,255,0.5)' : 'none',
+                            opacity: isPaused ? 0.5 : 1 // 일시정지 시 투명도 낮춤
+                        }} />
+                    </div>
+                    <div style={{ fontSize: '0.75em', color: '#888', marginTop: '2px', textAlign: 'center' }}>
+                        {isPaused ? '⏸️ 일시정지' : `채집 중... ${Math.floor(progress)}%`}
+                    </div>
                 </div>
-                <div style={{ fontSize: '0.75em', color: '#888', marginTop: '2px', textAlign: 'center' }}>
-                    {isPaused ? '⏸️ 일시정지' : `채집 중... ${Math.floor(progress)}%`}
-                </div>
-            </div>
+            )}
 
-            <div style={{ fontSize: '0.9em', color: '#aaa', margin: '5px 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span>생산:</span>
-                {Object.keys(levelData.stats.dropRates).map(key => (
-                    <ResourceIcon key={key} resourceId={key} size={18} />
-                ))}
-            </div>
+            {(levelData.stats as any).dropRates && (
+                <div style={{ fontSize: '0.9em', color: '#aaa', margin: '5px 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span>생산:</span>
+                    {Object.keys((levelData.stats as any).dropRates).map(key => (
+                        <ResourceIcon key={key} resourceId={key} size={18} />
+                    ))}
+                </div>
+            )}
+
+            {(levelData.stats as any).capacity && (
+                <div style={{ fontSize: '0.9em', color: '#aaa', margin: '5px 0' }}>
+                    <span>수용량: {(levelData.stats as any).capacity}마리</span>
+                </div>
+            )}
 
             {isHighestLevel && nextLevelData ? (
                 <div style={{ marginTop: '10px', borderTop: '1px solid #333', paddingTop: '10px' }}>

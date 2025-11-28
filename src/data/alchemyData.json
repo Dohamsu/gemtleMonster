@@ -414,6 +414,136 @@
         "factoryProduction": []
       },
       "isSpecial": true
+    },
+    {
+      "id": "essence",
+      "name": "몬스터 정수",
+      "description": "몬스터를 분해하여 얻은 순수한 정수. 연금술 촉매로 사용됨",
+      "family": "SPIRIT",
+      "rarity": "EPIC",
+      "iconUrl": "/assets/materials/essence.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": true
+    },
+    {
+      "id": "shard_fire",
+      "name": "화염 파편",
+      "description": "불 속성 몬스터의 힘이 담긴 파편",
+      "family": "SPIRIT",
+      "rarity": "RARE",
+      "iconUrl": "/assets/materials/shard_fire.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": false
+    },
+    {
+      "id": "shard_water",
+      "name": "수류 파편",
+      "description": "물 속성 몬스터의 힘이 담긴 파편",
+      "family": "SPIRIT",
+      "rarity": "RARE",
+      "iconUrl": "/assets/materials/shard_water.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": false
+    },
+    {
+      "id": "shard_earth",
+      "name": "대지 파편",
+      "description": "땅 속성 몬스터의 힘이 담긴 파편",
+      "family": "SPIRIT",
+      "rarity": "RARE",
+      "iconUrl": "/assets/materials/shard_earth.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": false
+    },
+    {
+      "id": "shard_wind",
+      "name": "질풍 파편",
+      "description": "바람 속성 몬스터의 힘이 담긴 파편",
+      "family": "SPIRIT",
+      "rarity": "RARE",
+      "iconUrl": "/assets/materials/shard_wind.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": false
+    },
+    {
+      "id": "shard_light",
+      "name": "광명 파편",
+      "description": "빛 속성 몬스터의 힘이 담긴 파편",
+      "family": "SPIRIT",
+      "rarity": "RARE",
+      "iconUrl": "/assets/materials/shard_light.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": false
+    },
+    {
+      "id": "shard_dark",
+      "name": "암흑 파편",
+      "description": "어둠 속성 몬스터의 힘이 담긴 파편",
+      "family": "SPIRIT",
+      "rarity": "RARE",
+      "iconUrl": "/assets/materials/shard_dark.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": false
+    },
+    {
+      "id": "slime_fluid",
+      "name": "슬라임 액체",
+      "description": "슬라임을 분해하여 얻은 기본 재료",
+      "family": "SLIME",
+      "rarity": "COMMON",
+      "iconUrl": "/assets/materials/slime_fluid.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": false
+    },
+    {
+      "id": "ore_magic",
+      "name": "마법 광석",
+      "description": "마력이 깃든 희귀한 광석",
+      "family": "MINERAL",
+      "rarity": "RARE",
+      "iconUrl": "/assets/materials/ore_magic.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": false
+    },
+    {
+      "id": "gem_fragment",
+      "name": "보석 파편",
+      "description": "고급 보석의 파편. 다양한 용도로 사용됨",
+      "family": "MINERAL",
+      "rarity": "EPIC",
+      "iconUrl": "/assets/materials/gem_fragment.png",
+      "sourceInfo": {
+        "dungeonDrop": [],
+        "factoryProduction": []
+      },
+      "isSpecial": false
     }
   ],
   "recipes": [

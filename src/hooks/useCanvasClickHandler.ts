@@ -144,6 +144,15 @@ function handleMapClick(
         setDungeonModalOpen(true)
         return
     }
+
+    // Check if clicking on monster farm
+    const farmX = canvas.width * 0.5 - 64
+    const farmY = canvas.height * 0.4 - 64
+
+    if (x >= farmX && x <= farmX + 128 && y >= farmY && y <= farmY + 128) {
+        setCanvasView('monster_farm')
+        return
+    }
 }
 
 function handleAlchemyWorkshopClick(

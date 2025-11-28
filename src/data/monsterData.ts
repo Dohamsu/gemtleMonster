@@ -8,6 +8,8 @@ export interface MonsterData {
     defense: number
     emoji: string
     iconUrl?: string
+    rarity?: 'N' | 'R' | 'SR' | 'SSR'
+    element?: 'fire' | 'water' | 'earth' | 'wind' | 'light' | 'dark'
 }
 
 export const MONSTER_DATA: Record<string, MonsterData> = {
@@ -19,7 +21,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 20,
         defense: 30,
         emoji: '🟢',
-        iconUrl: '/assets/monsters/slime_basic.png'
+        iconUrl: '/assets/monsters/slime_basic.png',
+        rarity: 'N'
     },
     'monster_hound_fang': {
         name: '송곳니 하운드',
@@ -29,7 +32,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 45,
         defense: 15,
         emoji: '🐺',
-        iconUrl: '/assets/monsters/hound_basic.png'
+        iconUrl: '/assets/monsters/hound_basic.png',
+        rarity: 'N'
     },
     'monster_golem_stone': {
         name: '돌 골렘',
@@ -39,7 +43,9 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 25,
         defense: 60,
         emoji: '🗿',
-        iconUrl: '/assets/monsters/stoneGolem.png'
+        iconUrl: '/assets/monsters/stoneGolem.png',
+        rarity: 'R',
+        element: 'earth'
     },
     'monster_fairy_spirit': {
         name: '정령 요정',
@@ -49,7 +55,9 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 15,
         defense: 20,
         emoji: '🧚',
-        iconUrl: '/assets/monsters/fairySpirit.png'
+        iconUrl: '/assets/monsters/fairySpirit.png',
+        rarity: 'R',
+        element: 'wind'
     },
     'monster_wolf_dark': {
         name: '어둠 늑대',
@@ -58,7 +66,9 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         hp: 120,
         attack: 60,
         defense: 25,
-        emoji: '🐺'
+        emoji: '🐺',
+        rarity: 'SR',
+        element: 'dark'
     },
     'monster_slime_king': {
         name: '왕슬라임',
@@ -67,7 +77,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         hp: 350,
         attack: 35,
         defense: 70,
-        emoji: '👑'
+        emoji: '👑',
+        rarity: 'SR'
     },
     'monster_golem_magma': {
         name: '마그마 골렘',
@@ -77,7 +88,9 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 70,
         defense: 40,
         emoji: '🔥',
-        iconUrl: '/assets/monsters/ironGolem.png'
+        iconUrl: '/assets/monsters/ironGolem.png',
+        rarity: 'SR',
+        element: 'fire'
     },
     'monster_slime_nightmare': {
         name: '악몽 슬라임',
@@ -86,7 +99,9 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         hp: 180,
         attack: 55,
         defense: 35,
-        emoji: '👻'
+        emoji: '👻',
+        rarity: 'R',
+        element: 'dark'
     },
     'monster_fairy_dawn': {
         name: '새벽 정령',
@@ -95,16 +110,20 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         hp: 90,
         attack: 20,
         defense: 25,
-        emoji: '✨'
+        emoji: '✨',
+        rarity: 'R',
+        element: 'light'
     },
     'monster_guardian_tiger': {
         name: '호랑이 수호령',
-        description: '한국 언어에서만 생성되는 치명타 특화 수호령.',
+        description: '한국 전통의 수호령. 치명타에 특화된 전설급 몬스터입니다.',
         role: '딜러',
         hp: 300,
-        attack: 85,
+        attack: 90,
         defense: 50,
-        emoji: '🐯'
+        emoji: '🐯',
+        rarity: 'SSR',
+        element: 'light'
     },
     'monster_golem_wood': {
         name: '나무 골렘',
@@ -114,7 +133,9 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 30,
         defense: 45,
         emoji: '🌳',
-        iconUrl: '/assets/monsters/woodGolem.png'
+        iconUrl: '/assets/monsters/woodGolem.png',
+        rarity: 'R',
+        element: 'earth'
     }
 }
 

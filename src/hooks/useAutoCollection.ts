@@ -52,6 +52,9 @@ export function useAutoCollection(userId: string | undefined) {
                     // Use actual interval from stats
                     const collectionInterval = stats.intervalSeconds
 
+                    // Skip if no interval defined (e.g. passive facilities like monster farm)
+                    if (!collectionInterval) continue
+
                     // Set up interval for this specific level
                     const interval = window.setInterval(() => {
                         if (isCancelled) return // Double check inside interval
@@ -60,11 +63,13 @@ export function useAutoCollection(userId: string | undefined) {
                         const drops: Record<string, number> = {}
                         let hasDrops = false
 
-                        for (const [resource, rate] of Object.entries(stats.dropRates)) {
-                            const amount = Math.random() < rate ? stats.bundlesPerTick : 0
-                            if (amount > 0) {
-                                drops[resource] = amount
-                                hasDrops = true
+                        if (stats.dropRates) {
+                            for (const [resource, rate] of Object.entries(stats.dropRates)) {
+                                const amount = Math.random() < rate ? stats.bundlesPerTick : 0
+                                if (amount > 0) {
+                                    drops[resource] = amount
+                                    hasDrops = true
+                                }
                             }
                         }
 

@@ -12,7 +12,7 @@ interface ResourceAddition {
 }
 
 export type Tab = 'facilities' | 'shop' | 'alchemy'
-export type CanvasView = 'map' | 'alchemy_workshop' | 'shop'
+export type CanvasView = 'map' | 'alchemy_workshop' | 'shop' | 'monster_farm'
 
 interface GameState {
     player: {
@@ -76,7 +76,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         magic_ore: 2,
         spirit_dust: 2
     }, // Initial resources for testing
-    facilities: { herb_farm: 1 }, // Initial facility
+    facilities: { herb_farm: 1, monster_farm: 1 }, // Initial facility
     lastCollectedAt: {},
     recentAdditions: [],
     activeTab: 'facilities',

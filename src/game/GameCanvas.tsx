@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useOfflineRewards } from '../hooks/useOfflineRewards'
 import { AlchemyResultModal } from '../ui/alchemy/AlchemyResultModal'
 import Shop from '../ui/shop/Shop'
+import MonsterFarm from '../ui/monster/MonsterFarm'
 import { useCanvasImages } from '../hooks/useCanvasImages'
 import { useCanvasClickHandler } from '../hooks/useCanvasClickHandler'
 import { useAlchemyContext } from '../hooks/useAlchemyContext'
@@ -13,6 +14,7 @@ import { renderAlchemyWorkshop } from './renderers/alchemyRenderer'
 import { renderShopView } from './renderers/shopRenderer'
 import { UI } from '../constants/game'
 import DungeonModal from '../ui/dungeon/DungeonModal'
+import { MATERIALS } from '../data/alchemyData'
 
 /**
  * Optimized GameCanvas Component
@@ -244,6 +246,22 @@ export default function GameCanvas() {
                 </div>
             )}
 
+            {/* Monster Farm UI Overlay */}
+            {canvasView === 'monster_farm' && (
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none'
+                }}>
+                    <div style={{ pointerEvents: 'auto', width: '100%', height: '100%' }}>
+                        <MonsterFarm />
+                    </div>
+                </div>
+            )}
+
             <AlchemyResultModal
                 isOpen={showResultModal}
                 success={lastBrewResult.success}
@@ -296,7 +314,7 @@ export default function GameCanvas() {
                                     padding: '8px 0',
                                     borderBottom: '1px solid rgba(255,255,255,0.1)'
                                 }}>
-                                    <span>{materialId}</span>
+                                    <span>{MATERIALS[materialId]?.name || materialId}</span>
                                     <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>+{quantity}</span>
                                 </div>
                             ))}

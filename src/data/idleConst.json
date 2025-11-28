@@ -500,6 +500,52 @@
                     }
                 }
             ]
+        },
+        {
+            "id": "monster_farm",
+            "name": "몬스터 농장",
+            "category": "unit_growth",
+            "unlockConditions": [
+                {
+                    "type": "playerLevel",
+                    "min": 1
+                }
+            ],
+            "levels": [
+                {
+                    "level": 1,
+                    "stats": {
+                        "capacity": 20,
+                        "happiness_rate": 1.0
+                    },
+                    "upgradeCost": {
+                        "gold": 100
+                    }
+                },
+                {
+                    "level": 2,
+                    "stats": {
+                        "capacity": 30,
+                        "happiness_rate": 1.1
+                    },
+                    "upgradeCost": {
+                        "gold": 500,
+                        "herb_common": 50
+                    }
+                },
+                {
+                    "level": 3,
+                    "stats": {
+                        "capacity": 50,
+                        "happiness_rate": 1.2
+                    },
+                    "upgradeCost": {
+                        "gold": 1500,
+                        "herb_common": 150,
+                        "ore_iron": 30
+                    }
+                }
+            ]
         }
     ]
 }

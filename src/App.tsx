@@ -38,6 +38,46 @@ function App() {
                 console.error('Player initialization failed:', err)
             })
         }
+
+        // Add syncMaterials to window for manual material synchronization
+        const syncMaterials = async () => {
+            if (!user) {
+                console.error('User not logged in')
+                return
+            }
+
+            const { supabase } = await import('./lib/supabase')
+            const alchemyData = await import('./data/alchemyData.json')
+            const materials = alchemyData.materials
+
+            console.log(`🔄 Syncing ${materials.length} materials...`)
+
+            for (const material of materials) {
+                const { error } = await supabase
+                    .from('material')
+                    .upsert({
+                        id: material.id,
+                        name: material.name,
+                        family: material.family,
+                        description: material.description,
+                        rarity: material.rarity,
+                        icon_url: material.iconUrl,
+                        is_special: material.isSpecial,
+                        sell_price: 0
+                    }, { onConflict: 'id' })
+
+                if (error) {
+                    console.error(`❌ Failed to sync ${material.id}:`, error)
+                } else {
+                    console.log(`✅ Synced ${material.id}`)
+                }
+            }
+
+            console.log('✅ Material sync complete!')
+        }
+
+            ; (window as any).syncMaterials = syncMaterials
+            ; (window as any).useGameStore = useGameStore
     }, [user])
 
     return (
