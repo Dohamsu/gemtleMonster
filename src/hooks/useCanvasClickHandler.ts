@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import type { Recipe, Material, PlayerAlchemy } from '../lib/alchemyApi'
 import type { CanvasView } from '../store/useGameStore'
-import { useGameStore } from '../store/useGameStore'
+
 import { ALCHEMY, UI } from '../constants/game'
 
 interface ClickHandlerProps {
@@ -236,7 +236,7 @@ function handleRecipeListClick(
     y: number,
     allRecipes: Recipe[],
     _allMaterials: Material[],
-    _playerMaterials: Record<string, number>,
+    playerMaterials: Record<string, number>,
     isBrewing: boolean,
     selectRecipe: (recipeId: string | null) => void,
     autoFillIngredients: (recipeId: string) => boolean
@@ -258,6 +258,17 @@ function handleRecipeListClick(
                 console.log('Cannot select recipe while brewing')
                 return
             }
+
+            // Check if player has all materials
+            // playerMaterials는 이미 useUnifiedInventory에서 병합된 materialCounts (Single Source of Truth)
+            const hasAllMaterials =
+                recipe.ingredients?.every((ing) => (playerMaterials[ing.material_id] || 0) >= ing.quantity) ?? true
+
+            if (!hasAllMaterials) {
+                console.log('Cannot select recipe: insufficient materials')
+                return
+            }
+
             selectRecipe(recipe.id)
             autoFillIngredients(recipe.id)
             console.log('Selected recipe:', recipe.name)

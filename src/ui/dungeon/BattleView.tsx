@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { SLIME_DUNGEON } from '../../data/dungeonData'
 import { MATERIALS } from '../../data/alchemyData'
+import { MONSTERS } from '../../data/alchemyData'
 
 export default function BattleView() {
     const { battleState, processTurn, endBattle } = useGameStore()
@@ -20,6 +21,8 @@ export default function BattleView() {
     if (!battleState) return null
 
     const enemy = SLIME_DUNGEON.enemies.find(e => e.id === battleState.enemyId)
+    const monsterData = battleState.selectedMonsterType ? MONSTERS[battleState.selectedMonsterType] : null
+    const monsterName = monsterData?.name || '나의 몬스터'
 
     return (
         <div style={{
@@ -43,7 +46,7 @@ export default function BattleView() {
                 {/* Player */}
                 <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '40px', marginBottom: '10px' }}>🧙‍♂️</div>
-                    <div style={{ fontWeight: 'bold' }}>나의 몬스터</div>
+                    <div style={{ fontWeight: 'bold' }}>{monsterName}</div>
                     <div style={{
                         width: '100px',
                         height: '10px',

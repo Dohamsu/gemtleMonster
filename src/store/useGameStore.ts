@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { AlchemyState } from '../types/alchemy'
 import { useAlchemyStore } from './useAlchemyStore'
 import { DUNGEONS } from '../data/dungeonData'
+import { MONSTERS } from '../data/alchemyData'
 
 interface ResourceAddition {
     id: string
@@ -60,8 +61,12 @@ interface GameState {
         logs: string[]
         result: 'victory' | 'defeat' | null
         rewards: Record<string, number>
+        selectedMonsterId: string | null
+        selectedMonsterType: string | null
+        playerAtk: number
+        playerDef: number
     } | null
-    startBattle: (dungeonId: string, enemyId: string) => void
+    startBattle: (dungeonId: string, enemyId: string, playerMonsterId?: string) => void
     processTurn: () => void
     endBattle: () => void
 }
@@ -116,7 +121,7 @@ export const useGameStore = create<GameState>((set, get) => ({
          * 1. AlchemyStore.playerMaterials 업데이트 (실제 데이터, DB 저장용)
          * 2. GameStore.resources 업데이트 (UI 애니메이션용 읽기 전용 캐시)
          */
-        
+
         // 1. AlchemyStore 업데이트 (실제 데이터 소스)
         const { batchSyncCallback, playerMaterials } = useAlchemyStore.getState()
         const alchemyUpdates: Record<string, number> = {}
@@ -378,7 +383,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     })),
 
     // Battle Actions Implementation
-    startBattle: (dungeonId, enemyId) => {
+    startBattle: (dungeonId, enemyId, playerMonsterId) => {
         // Find the dungeon and enemy from data
         const dungeon = DUNGEONS.find(d => d.id === dungeonId)
         if (!dungeon) {
@@ -392,19 +397,51 @@ export const useGameStore = create<GameState>((set, get) => ({
             return
         }
 
+        // Get monster data if provided
+        let playerHp = 100
+        let playerMaxHp = 100
+        let playerAtk = 10
+        let playerDef = 5
+        let selectedMonsterType: string | null = null
+        let monsterName = '플레이어'
+
+        if (playerMonsterId) {
+            const { playerMonsters } = useAlchemyStore.getState()
+            const playerMonster = playerMonsters.find(m => m.id === playerMonsterId)
+
+            if (playerMonster) {
+                // Remove 'monster_' prefix from monster_id
+                const monsterKey = playerMonster.monster_id.replace('monster_', '')
+                const monsterData = MONSTERS[monsterKey]
+
+                if (monsterData) {
+                    playerHp = monsterData.baseStats.hp
+                    playerMaxHp = monsterData.baseStats.hp
+                    playerAtk = monsterData.baseStats.atk
+                    playerDef = monsterData.baseStats.def
+                    selectedMonsterType = monsterKey
+                    monsterName = monsterData.name
+                }
+            }
+        }
+
         set({
             activeDungeon: dungeonId,
             battleState: {
                 isBattling: true,
-                playerHp: 100, // TODO: Get from actual player stats
-                playerMaxHp: 100,
+                playerHp,
+                playerMaxHp,
                 enemyId,
                 enemyHp: enemy.hp,
                 enemyMaxHp: enemy.hp,
                 turn: 1,
-                logs: [`${enemy.name}과(와)의 전투가 시작되었습니다!`],
+                logs: [`${monsterName}이(가) ${enemy.name}과(와)의 전투를 시작했습니다!`],
                 result: null,
-                rewards: {}
+                rewards: {},
+                selectedMonsterId: playerMonsterId || null,
+                selectedMonsterType,
+                playerAtk,
+                playerDef
             }
         })
     },
@@ -412,13 +449,27 @@ export const useGameStore = create<GameState>((set, get) => ({
     processTurn: () => set((state) => {
         if (!state.battleState || state.battleState.result) return state
 
-        const { playerHp, enemyHp, logs, enemyId } = state.battleState
-        const playerDmg = Math.floor(Math.random() * 10) + 5
-        const enemyDmg = Math.floor(Math.random() * 8) + 3
+        const { playerHp, enemyHp, logs, enemyId, playerAtk, playerDef, selectedMonsterType } = state.battleState
+
+        // Get monster name for logs
+        const monsterData = selectedMonsterType ? MONSTERS[selectedMonsterType] : null
+        const monsterName = monsterData?.name || '플레이어'
+
+        // Get enemy data for defense
+        const dungeon = DUNGEONS.find(d => d.id === state.activeDungeon)
+        const enemy = dungeon?.enemies.find(e => e.id === enemyId)
+        const enemyDef = enemy?.defense || 0
+
+        // Calculate damage with stats and randomness
+        const basePlayerDmg = playerAtk + Math.floor(Math.random() * 6) - 3 // atk ± 3
+        const playerDmg = Math.max(1, basePlayerDmg - enemyDef) // Apply enemy defense
+
+        const baseEnemyDmg = (enemy?.attack || 5) + Math.floor(Math.random() * 6) - 3
+        const enemyDmg = Math.max(1, baseEnemyDmg - playerDef) // Apply player defense
 
         const newEnemyHp = Math.max(0, enemyHp - playerDmg)
         const newPlayerHp = Math.max(0, playerHp - enemyDmg)
-        const newLogs = [...logs, `플레이어가 ${playerDmg}의 피해를 입혔습니다!`, `적이 ${enemyDmg}의 피해를 입혔습니다!`]
+        const newLogs = [...logs, `${monsterName}이(가) ${playerDmg}의 피해를 입혔습니다!`, `${enemy?.name || '적'}이(가) ${enemyDmg}의 피해를 입혔습니다!`]
 
         let result: 'victory' | 'defeat' | null = null
         let rewards: Record<string, number> = {}

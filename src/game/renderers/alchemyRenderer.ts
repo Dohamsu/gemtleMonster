@@ -270,11 +270,11 @@ function renderRecipeList(
 
         // Dim if insufficient materials
         if (!hasAllMaterials) {
-            ctx.globalAlpha = 0.5
+            ctx.globalAlpha = 0.3 // More dimmed
+            ctx.fillStyle = '#2a201a' // Darker background
+        } else {
+            ctx.fillStyle = isSelected ? '#5a4030' : '#4a3020'
         }
-
-        // Recipe item background
-        ctx.fillStyle = isSelected ? '#5a4030' : '#4a3020'
         ctx.fillRect(recipeX + 5, currentY, recipeW - 10, itemHeight)
 
         // Selection border

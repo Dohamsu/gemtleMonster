@@ -32,7 +32,7 @@ interface ShopItem {
 }
 
 export default function Shop() {
-    const { sellResource, setCanvasView, addResources } = useGameStore()
+    const { sellResource, setCanvasView } = useGameStore()
     const { sellMaterial } = useAlchemyStore()
     const {
         materials,
@@ -41,7 +41,7 @@ export default function Shop() {
         refreshInventory,
         loading,
     } = useUnifiedInventory()
-    
+
     // 골드는 materialCounts에서 가져옴 (Single Source of Truth)
     const gold = materialCounts['gold'] || 0
 
@@ -60,25 +60,52 @@ export default function Shop() {
     // 통합된 아이템 리스트 생성
     const shopItems: ShopItem[] = useMemo(() => {
         const items: ShopItem[] = []
+        const addedIds = new Set<string>() // 중복 방지용
 
         // 연금술 재료
         materials.forEach(m => {
             const count = materialCounts[m.id] || 0
-            if (count > 0 && m.sell_price > 0) {
+
+            if (count > 0) {
+                // sell_price가 0이면 희귀도에 따라 기본 가격 계산
+                let sellPrice = m.sell_price
+                if (sellPrice === 0) {
+                    switch (m.rarity) {
+                        case 'COMMON':
+                            sellPrice = 5
+                            break
+                        case 'UNCOMMON':
+                            sellPrice = 15
+                            break
+                        case 'RARE':
+                            sellPrice = 50
+                            break
+                        case 'EPIC':
+                            sellPrice = 150
+                            break
+                        case 'LEGENDARY':
+                            sellPrice = 500
+                            break
+                        default:
+                            sellPrice = 10
+                    }
+                }
+
                 items.push({
                     id: m.id,
                     name: m.name,
                     type: 'material',
                     count,
-                    price: m.sell_price,
+                    price: sellPrice,
                     rarity: m.rarity
                 })
+                addedIds.add(m.id) // 추가된 ID 기록
             }
         })
 
-        // 레거시 자원
+        // 레거시 자원 (이미 추가된 항목은 제외)
         Object.entries(legacyResources).forEach(([id, count]) => {
-            if (id !== 'gold' && count > 0 && LEGACY_RESOURCE_NAMES[id]) {
+            if (id !== 'gold' && count > 0 && LEGACY_RESOURCE_NAMES[id] && !addedIds.has(id)) {
                 const legacyPrices: Record<string, number> = {
                     'stone': 5,
                     'ore_magic': 100,
@@ -177,7 +204,22 @@ export default function Shop() {
                 }, 0)
 
                 if (materialGoldEarned > 0) {
-                    addResources({ gold: materialGoldEarned })
+                    // gold는 material 테이블에 없으므로 직접 상태 업데이트
+                    const alchemyStore = useAlchemyStore.getState()
+                    const currentGold = alchemyStore.playerMaterials['gold'] || 0
+                    useAlchemyStore.setState({
+                        playerMaterials: {
+                            ...alchemyStore.playerMaterials,
+                            gold: currentGold + materialGoldEarned
+                        }
+                    })
+
+                    // UI 캐시도 업데이트
+                    const gameStore = useGameStore.getState()
+                    gameStore.setResources({
+                        ...gameStore.resources,
+                        gold: (gameStore.resources.gold || 0) + materialGoldEarned
+                    })
                 }
 
                 console.log(`일괄 판매 완료: ${successCount}건, +${totalGoldEarned}G`)

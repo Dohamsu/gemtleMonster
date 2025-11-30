@@ -15,6 +15,7 @@ import { renderAlchemyWorkshop } from './renderers/alchemyRenderer'
 import { renderShopView } from './renderers/shopRenderer'
 import { UI } from '../constants/game'
 import DungeonModal from '../ui/dungeon/DungeonModal'
+import { MATERIALS } from '../data/alchemyData'
 
 /**
  * Optimized GameCanvas Component
