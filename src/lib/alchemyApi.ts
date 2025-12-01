@@ -520,3 +520,55 @@ export async function toggleMonsterLock(
   console.log(`✅ 몬스터 잠금 상태 변경: ${monsterId} -> ${isLocked}`)
 }
 
+// ============================================
+// 오프라인 보상 관련 API
+// ============================================
+
+/**
+ * 마지막 오프라인 보상 수집 시간 가져오기
+ */
+export async function getLastCollectedAt(userId: string): Promise<Date | null> {
+  const { data, error } = await supabase
+    .from('player_alchemy')
+    .select('last_collected_at')
+    .eq('user_id', userId)
+    .single()
+
+  if (error || !data?.last_collected_at) {
+    return null
+  }
+
+  return new Date(data.last_collected_at)
+}
+
+/**
+ * 마지막 오프라인 보상 수집 시간 업데이트
+ */
+export async function updateLastCollectedAt(userId: string, timestamp?: Date): Promise<void> {
+  const { error } = await supabase
+    .from('player_alchemy')
+    .update({
+      last_collected_at: (timestamp || new Date()).toISOString()
+    })
+    .eq('user_id', userId)
+
+  if (error) {
+    console.error('마지막 수집 시간 업데이트 실패:', error)
+    throw error
+  }
+}
+
+/**
+ * 여러 재료를 한번에 추가 (오프라인 보상용)
+ */
+export async function batchAddMaterials(
+  userId: string,
+  materials: Record<string, number>
+): Promise<void> {
+  for (const [materialId, quantity] of Object.entries(materials)) {
+    if (quantity > 0) {
+      await addMaterialToPlayer(userId, materialId, quantity)
+    }
+  }
+}
+

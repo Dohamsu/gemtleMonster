@@ -38,9 +38,9 @@ async function seedAlchemy() {
                     description: material.description || null,
                     family: material.family,
                     rarity: material.rarity,
-                    icon_url: material.iconUrl || null,
-                    source_info: material.sourceInfo || null,
-                    is_special: material.isSpecial
+                    icon_url: material.icon_url || null,
+                    source_info: material.source_info || null,
+                    is_special: material.is_special
                 }, { onConflict: 'id' })
 
             if (materialError) {
