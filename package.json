@@ -12,6 +12,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css}\"",
     "seed:facilities": "tsx src/data/seedFacilities.ts",
     "seed:alchemy": "tsx src/data/seedAlchemy.ts",
+    "seed:monsters": "tsx src/data/seedMonsters.ts",
+    "seed:all": "npm run seed:facilities && npm run seed:alchemy && npm run seed:monsters",
     "types:generate": "supabase gen types typescript --project-id zcqejdvtwubaodfpjvbm --schema public > src/types/database.types.ts",
     "types:local": "supabase gen types typescript --local --schema public > src/types/database.types.ts",
     "db:pull": "supabase db pull",

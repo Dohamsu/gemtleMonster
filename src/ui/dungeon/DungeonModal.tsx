@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
-import { SLIME_DUNGEON } from '../../data/dungeonData'
-import { MONSTERS } from '../../data/alchemyData'
+import { DUNGEONS } from '../../data/dungeonData'
+import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
 import BattleView from './BattleView'
 
 interface DungeonModalProps {
@@ -14,14 +14,12 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
     const { battleState, startBattle } = useGameStore()
     const { playerMonsters, loadPlayerMonsters, userId } = useAlchemyStore()
     const [selectedMonsterId, setSelectedMonsterId] = useState<string | null>(null)
+    const [selectedDungeonId, setSelectedDungeonId] = useState<string | null>(null)
 
     // Load monsters when modal opens
     useEffect(() => {
         if (isOpen && userId) {
-            console.log('🔍 [DungeonModal] Loading player monsters for userId:', userId)
-            loadPlayerMonsters(userId).then(() => {
-                console.log('✅ [DungeonModal] Monsters loaded:', playerMonsters.length)
-            })
+            loadPlayerMonsters(userId)
         }
     }, [isOpen, userId, loadPlayerMonsters])
 
@@ -29,13 +27,9 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
     useEffect(() => {
         if (!isOpen) {
             setSelectedMonsterId(null)
+            setSelectedDungeonId(null)
         }
     }, [isOpen])
-
-    // Debug log
-    useEffect(() => {
-        console.log('🐉 [DungeonModal] playerMonsters state:', playerMonsters)
-    }, [playerMonsters])
 
     if (!isOpen) return null
 
@@ -44,8 +38,11 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
             alert('몬스터를 먼저 선택해주세요!')
             return
         }
-        startBattle(SLIME_DUNGEON.id, enemyId, selectedMonsterId)
+        if (!selectedDungeonId) return
+        startBattle(selectedDungeonId, enemyId, selectedMonsterId)
     }
+
+    const selectedDungeon = DUNGEONS.find(d => d.id === selectedDungeonId)
 
     return (
         <div style={{
@@ -82,7 +79,26 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                     alignItems: 'center',
                     flexShrink: 0
                 }}>
-                    <h2 style={{ margin: 0, color: '#a3e635' }}>🌲 {SLIME_DUNGEON.name}</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        {selectedDungeonId && !battleState && (
+                            <button
+                                onClick={() => setSelectedDungeonId(null)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#94a3b8',
+                                    cursor: 'pointer',
+                                    fontSize: '18px',
+                                    padding: '0 5px'
+                                }}
+                            >
+                                ←
+                            </button>
+                        )}
+                        <h2 style={{ margin: 0, color: '#a3e635' }}>
+                            {battleState ? '전투 중!' : (selectedDungeon ? selectedDungeon.name : '던전 선택')}
+                        </h2>
+                    </div>
                     <button
                         onClick={onClose}
                         style={{
@@ -105,10 +121,50 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                 }}>
                     {battleState ? (
                         <BattleView />
+                    ) : !selectedDungeonId ? (
+                        // Dungeon List View
+                        <div style={{ padding: '20px', display: 'grid', gap: '15px' }}>
+                            {DUNGEONS.map(dungeon => (
+                                <div
+                                    key={dungeon.id}
+                                    onClick={() => setSelectedDungeonId(dungeon.id)}
+                                    style={{
+                                        background: '#334155',
+                                        padding: '20px',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        border: '2px solid transparent',
+                                        transition: 'all 0.2s',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.borderColor = '#a3e635'}
+                                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
+                                >
+                                    <div>
+                                        <h3 style={{ margin: '0 0 5px 0', color: '#fff' }}>{dungeon.name}</h3>
+                                        <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>
+                                            {dungeon.description}
+                                        </p>
+                                    </div>
+                                    <div style={{
+                                        background: '#0f172a',
+                                        padding: '5px 10px',
+                                        borderRadius: '6px',
+                                        color: '#cbd5e1',
+                                        fontSize: '12px'
+                                    }}>
+                                        권장 Lv.{dungeon.recommendedLevel}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     ) : (
+                        // Dungeon Detail View
                         <div style={{ padding: '20px' }}>
                             <p style={{ color: '#cbd5e1', marginBottom: '20px' }}>
-                                {SLIME_DUNGEON.description}
+                                {selectedDungeon?.description}
                             </p>
 
                             {/* Monster Selection */}
@@ -130,10 +186,8 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                             ) : (
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px', marginBottom: '20px' }}>
                                     {playerMonsters.map(monster => {
-                                        // Remove 'monster_' prefix to match MONSTERS keys
                                         const monsterKey = monster.monster_id.replace('monster_', '')
                                         const monsterData = MONSTERS[monsterKey]
-                                        console.log('🔍 Looking for:', monsterKey, 'Found:', !!monsterData)
                                         if (!monsterData) return null
 
                                         const isSelected = selectedMonsterId === monster.id
@@ -170,40 +224,66 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                             </h3>
 
                             <div style={{ display: 'grid', gap: '15px' }}>
-                                {SLIME_DUNGEON.enemies.map(enemy => (
-                                    <div key={enemy.id} style={{
-                                        background: '#334155',
-                                        padding: '15px',
-                                        borderRadius: '8px',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center'
-                                    }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                            <div style={{ fontSize: '30px' }}>🦠</div>
-                                            <div>
-                                                <div style={{ fontWeight: 'bold', color: '#fff' }}>{enemy.name}</div>
-                                                <div style={{ fontSize: '12px', color: '#94a3b8' }}>Lv.{enemy.level} • HP {enemy.hp}</div>
+                                {selectedDungeon?.enemies.map(enemy => {
+                                    const enemyData = MONSTERS[enemy.id]
+                                    return (
+                                        <div key={enemy.id} style={{
+                                            background: '#334155',
+                                            padding: '15px',
+                                            borderRadius: '8px',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                <div style={{
+                                                    width: '50px',
+                                                    height: '50px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    {enemyData?.iconUrl ? (
+                                                        <img
+                                                            src={enemyData.iconUrl}
+                                                            alt={enemy.name}
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                objectFit: 'contain',
+                                                                filter: 'drop-shadow(0 0 5px rgba(255,0,0,0.3))'
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <div style={{ fontSize: '30px' }}>
+                                                            {selectedDungeonId === 'dungeon_lake' ? '💧' : '🦠'}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontWeight: 'bold', color: '#fff' }}>{enemy.name}</div>
+                                                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>Lv.{enemy.level} • HP {enemy.hp}</div>
+                                                </div>
                                             </div>
+                                            <button
+                                                onClick={() => handleStartBattle(enemy.id)}
+                                                disabled={!selectedMonsterId}
+                                                style={{
+                                                    padding: '8px 16px',
+                                                    background: selectedMonsterId ? '#ef4444' : '#6b7280',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '6px',
+                                                    cursor: selectedMonsterId ? 'pointer' : 'not-allowed',
+                                                    fontWeight: 'bold',
+                                                    opacity: selectedMonsterId ? 1 : 0.5
+                                                }}
+                                            >
+                                                전투 시작
+                                            </button>
                                         </div>
-                                        <button
-                                            onClick={() => handleStartBattle(enemy.id)}
-                                            disabled={!selectedMonsterId}
-                                            style={{
-                                                padding: '8px 16px',
-                                                background: selectedMonsterId ? '#ef4444' : '#6b7280',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                cursor: selectedMonsterId ? 'pointer' : 'not-allowed',
-                                                fontWeight: 'bold',
-                                                opacity: selectedMonsterId ? 1 : 0.5
-                                            }}
-                                        >
-                                            전투 시작
-                                        </button>
-                                    </div>
-                                ))}
+                                    )
+                                })}
                             </div>
                         </div>
                     )}

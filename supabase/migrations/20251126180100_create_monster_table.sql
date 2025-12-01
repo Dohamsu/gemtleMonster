@@ -49,7 +49,7 @@ VALUES
     ('monster_golem_stone', '돌 골렘', '단단한 방어형 골렘. 높은 방어력으로 팀을 지킵니다.', 'EARTH', 'TANK', 'N', 250, 25, 60, '/assets/stoneGolem.png'),
     ('monster_fairy_spirit', '정령 요정', '회복과 버프를 제공하는 서포트 몬스터.', 'LIGHT', 'SUPPORT', 'N', 80, 15, 20, '/assets/monsters/fairySpirit.png'),
     ('monster_wolf_dark', '어둠 늑대', '어둠 속성의 강력한 딜러. 치명타에 특화되어 있습니다.', 'DARK', 'DPS', 'N', 120, 60, 25, '/assets/monsters/wolf_dark.png'),
-    ('monster_slime_king', '왕슬라임', '슬라임의 왕. 강력한 탱커이자 리더입니다.', 'EARTH', 'TANK', 'R', 350, 35, 70, '/assets/monsters/slime_king.png'),
+    ('monster_slime_king', '왕슬라임', '슬라임의 왕. 강력한 탱커이자 리더입니다.', 'WATER', 'TANK', 'SR', 500, 30, 30, '/assets/monsters/slime_king.png'),
     ('monster_golem_magma', '마그마 골렘', '불 속성의 공격형 골렘. 화염 공격으로 적을 태웁니다.', 'FIRE', 'DPS', 'R', 200, 70, 40, '/assets/ironGolem.png'),
     ('monster_slime_nightmare', '악몽 슬라임', '심야에만 만들 수 있는 디버프 특화 몬스터.', 'DARK', 'DPS', 'R', 180, 55, 35, '/assets/monsters/slime_nightmare.png'),
     ('monster_fairy_dawn', '새벽 정령', '새벽에만 소환 가능한 경험치 버프 정령.', 'LIGHT', 'SUPPORT', 'R', 90, 20, 25, '/assets/monsters/fairy_dawn.png'),

@@ -1,6 +1,20 @@
 # 📋 변경 이력
 
 모든 주요 변경사항은 이 파일에 문서화됩니다.
+## [0.2.2] - 2025-12-01
+
+### ✨ New Features
+- **New Dungeon**: Added 'Mystic Lake' (신비한 호수) dungeon.
+- **New Monsters**: Added Water Slime, Lake Fairy, Giant Water Slime, etc.
+- **UI Improvements**:
+  - Added dungeon selection modal.
+  - Displayed monster images in battle view and dungeon modal.
+  - Localized battle loot logs (Korean).
+
+### 🐛 Bug Fixes
+- Fixed issue where monster names appeared as 'Unknown' in battle.
+- Synced missing enemy data in `monsterData.ts`.
+
 ## [0.2.1] - 2025-11-25
 
 ### ✨ New Features

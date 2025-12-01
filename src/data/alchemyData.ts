@@ -1,4 +1,5 @@
-import type { Material, Monster, Recipe, RecipeCondition } from '../types/alchemy'
+import type { Material, Recipe, RecipeCondition } from '../types/alchemy'
+import { MONSTER_DATA } from './monsterData'
 
 export const MATERIALS: Record<string, Material> = {
     'herb_common': { id: 'herb_common', name: '일반 약초', type: 'PLANT', description: '흔하게 볼 수 있는 약초.', rarity: 'N', iconUrl: '/assets/materials/herb_common.png' },
@@ -48,82 +49,12 @@ export const MATERIALS: Record<string, Material> = {
     'catalyst_time': { id: 'catalyst_time', name: '시간의 촉매', type: 'SPIRIT', description: '시간의 흐름을 담은 신비한 촉매', rarity: 'SSR', iconUrl: '/assets/materials/catalyst_time.png' },
 }
 
-export const MONSTERS: Record<string, Monster> = {
-    'slime_basic': {
-        id: 'slime_basic',
-        name: '젤리 슬라임',
-        role: 'TANK',
-        element: 'WATER',
-        rarity: 'N',
-        description: '말랑말랑한 기본 슬라임.',
-        baseStats: { hp: 100, atk: 10, def: 5 },
-        factoryTrait: { targetFacility: 'herb_farm', effect: '생산량 증가', value: 5 },
-        iconUrl: '/assets/monsters/slime_basic.png'
-    },
-    'hound_basic': {
-        id: 'hound_basic',
-        name: '송곳니 하운드',
-        role: 'DPS',
-        element: 'EARTH',
-        rarity: 'N',
-        description: '빠른 속도로 공격하는 사냥개.',
-        baseStats: { hp: 80, atk: 20, def: 3 },
-        iconUrl: '/assets/monsters/hound_basic.png'
-    },
-    'golem_stone': {
-        id: 'golem_stone',
-        name: '돌 골렘',
-        role: 'TANK',
-        element: 'EARTH',
-        rarity: 'R',
-        description: '단단한 돌로 만들어진 골렘.',
-        baseStats: { hp: 200, atk: 15, def: 20 },
-        factoryTrait: { targetFacility: 'mine', effect: '생산량 증가', value: 10 }
-    },
-    'fairy_spirit': {
-        id: 'fairy_spirit',
-        name: '정령 요정',
-        role: 'SUPPORT',
-        element: 'LIGHT',
-        rarity: 'R',
-        description: '치유의 힘을 가진 요정.',
-        baseStats: { hp: 60, atk: 10, def: 5 }
-    },
-    'wolf_dark': {
-        id: 'wolf_dark',
-        name: '어둠 늑대',
-        role: 'DPS',
-        element: 'DARK',
-        rarity: 'R',
-        description: '어둠 속에서 습격하는 늑대.',
-        baseStats: { hp: 90, atk: 25, def: 5 }
-    },
-    'slime_king': {
-        id: 'slime_king',
-        name: '왕슬라임',
-        role: 'TANK',
-        element: 'WATER',
-        rarity: 'SR',
-        description: '거대한 왕관을 쓴 슬라임.',
-        baseStats: { hp: 500, atk: 30, def: 30 },
-        factoryTrait: { targetFacility: 'herb_farm', effect: '생산량 대폭 증가', value: 20 }
-    },
-    'golem_magma': {
-        id: 'golem_magma',
-        name: '마그마 골렘',
-        role: 'HYBRID',
-        element: 'FIRE',
-        rarity: 'SR',
-        description: '용암으로 이루어진 골렘.',
-        baseStats: { hp: 400, atk: 40, def: 25 }
-    }
-}
 
 // DB 시딩용 레시피 데이터 (JSON 형식)
 interface DBRecipeSeed {
     id: string
-    name: string
-    description: string
+    name?: string // Optional: Derived from monsterData if missing
+    description?: string // Optional: Derived from monsterData if missing
     resultMonsterId: string // "monster_slime_basic" 형식
     resultCount: number
     baseSuccessRate: number
@@ -149,8 +80,6 @@ interface DBRecipeSeed {
 const DB_RECIPES_SEED: DBRecipeSeed[] = [
     {
         id: 'recipe_slime_basic',
-        name: '기본 슬라임',
-        description: '가장 기초적인 슬라임 몬스터',
         resultMonsterId: 'monster_slime_basic',
         resultCount: 1,
         baseSuccessRate: 100,
@@ -168,8 +97,6 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_hound_fang',
-        name: '송곳니 하운드',
-        description: '민첩한 공격형 몬스터',
         resultMonsterId: 'monster_hound_fang',
         resultCount: 1,
         baseSuccessRate: 85,
@@ -187,8 +114,6 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_golem_stone',
-        name: '돌 골렘',
-        description: '단단한 방어형 골렘',
         resultMonsterId: 'monster_golem_stone',
         resultCount: 1,
         baseSuccessRate: 75,
@@ -207,8 +132,6 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_fairy_spirit',
-        name: '정령 요정',
-        description: '회복과 버프를 제공하는 서포트 몬스터',
         resultMonsterId: 'monster_fairy_spirit',
         resultCount: 1,
         baseSuccessRate: 80,
@@ -227,8 +150,6 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_wolf_dark',
-        name: '어둠 늑대',
-        description: '어둠 속성의 강력한 딜러',
         resultMonsterId: 'monster_wolf_dark',
         resultCount: 1,
         baseSuccessRate: 70,
@@ -247,28 +168,24 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_slime_king',
-        name: '왕슬라임',
-        description: '슬라임의 왕, 강력한 탱커',
         resultMonsterId: 'monster_slime_king',
         resultCount: 1,
         baseSuccessRate: 60,
         craftTimeSec: 30,
         costGold: 200,
-        requiredAlchemyLevel: 5,
+        requiredAlchemyLevel: 1,
         expGain: 50,
         isHidden: false,
         priority: 75,
         ingredients: [
-            { materialId: 'slime_core', quantity: 5, isCatalyst: false },
-            { materialId: 'slime_gel', quantity: 10, isCatalyst: false },
-            { materialId: 'crown_fragment', quantity: 1, isCatalyst: true }
+            { materialId: 'ore_iron', quantity: 1, isCatalyst: false },
+            { materialId: 'ore_magic', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_special', quantity: 1, isCatalyst: false }
         ],
         conditions: []
     },
     {
         id: 'recipe_golem_magma',
-        name: '마그마 골렘',
-        description: '불 속성의 공격형 골렘',
         resultMonsterId: 'monster_golem_magma',
         resultCount: 1,
         baseSuccessRate: 55,
@@ -287,8 +204,6 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_slime_nightmare',
-        name: '악몽 슬라임',
-        description: '심야에만 만들 수 있는 디버프 특화 몬스터',
         resultMonsterId: 'monster_slime_nightmare',
         resultCount: 1,
         baseSuccessRate: 50,
@@ -313,8 +228,6 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_fairy_dawn',
-        name: '새벽 정령',
-        description: '새벽에만 소환 가능한 경험치 버프 정령',
         resultMonsterId: 'monster_fairy_dawn',
         resultCount: 1,
         baseSuccessRate: 65,
@@ -339,8 +252,6 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_guardian_tiger_ko',
-        name: '호랑이 수호령 (한국)',
-        description: '한국 언어에서만 생성되는 치명타 특화 수호령',
         resultMonsterId: 'monster_guardian_tiger',
         resultCount: 1,
         baseSuccessRate: 45,
@@ -361,33 +272,90 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
                 languageCode: 'ko'
             }
         ]
+    },
+    {
+        id: 'recipe_slime_water',
+        resultMonsterId: 'monster_slime_water',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 10,
+        costGold: 60,
+        requiredAlchemyLevel: 2,
+        expGain: 25,
+        isHidden: false,
+        priority: 89,
+        ingredients: [
+            { materialId: 'slime_fluid', quantity: 2, isCatalyst: false },
+            { materialId: 'shard_water', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_slime_dark',
+        resultMonsterId: 'monster_slime_dark',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 12,
+        costGold: 70,
+        requiredAlchemyLevel: 2,
+        expGain: 30,
+        isHidden: false,
+        priority: 88,
+        ingredients: [
+            { materialId: 'slime_fluid', quantity: 2, isCatalyst: false },
+            { materialId: 'shard_dark', quantity: 1, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_golem_wood',
+        resultMonsterId: 'monster_golem_wood',
+        resultCount: 1,
+        baseSuccessRate: 80,
+        craftTimeSec: 15,
+        costGold: 90,
+        requiredAlchemyLevel: 3,
+        expGain: 35,
+        isHidden: false,
+        priority: 86,
+        ingredients: [
+            { materialId: 'ore_iron', quantity: 3, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_earth', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
     }
 ]
 
 // 런타임용 레시피 (TypeScript 타입)
-export const RECIPES: Recipe[] = DB_RECIPES_SEED.map(dbRecipe => ({
-    id: dbRecipe.id,
-    name: dbRecipe.name,
-    description: dbRecipe.description,
-    resultMonsterId: dbRecipe.resultMonsterId.replace(/^monster_/, ''), // "monster_slime_basic" -> "slime_basic"
-    materials: dbRecipe.ingredients.map(ing => ({
-        materialId: ing.materialId,
-        count: ing.quantity
-    })),
-    craftTimeSec: dbRecipe.craftTimeSec,
-    successRate: dbRecipe.baseSuccessRate,
-    requiredAlchemyLevel: dbRecipe.requiredAlchemyLevel,
-    isHidden: dbRecipe.isHidden,
-    conditions: dbRecipe.conditions.map(cond => ({
-        type: cond.conditionType as any,
-        conditionType: cond.conditionType as any,
-        value: cond.timeStart && cond.timeEnd
-            ? { timeStart: cond.timeStart, timeEnd: cond.timeEnd }
-            : cond.languageCode
-            ? { languageCode: cond.languageCode }
-            : undefined
-    })) as RecipeCondition[]
-}))
+export const RECIPES: Recipe[] = DB_RECIPES_SEED.map(dbRecipe => {
+    const monster = MONSTER_DATA[dbRecipe.resultMonsterId]
+    return {
+        id: dbRecipe.id,
+        name: dbRecipe.name || monster?.name || 'Unknown Recipe',
+        description: dbRecipe.description || monster?.description || 'No description',
+        resultMonsterId: dbRecipe.resultMonsterId.replace(/^monster_/, ''), // "monster_slime_basic" -> "slime_basic"
+        materials: dbRecipe.ingredients.map(ing => ({
+            materialId: ing.materialId,
+            count: ing.quantity
+        })),
+        craftTimeSec: dbRecipe.craftTimeSec,
+        successRate: dbRecipe.baseSuccessRate,
+        requiredAlchemyLevel: dbRecipe.requiredAlchemyLevel,
+        isHidden: dbRecipe.isHidden,
+        conditions: dbRecipe.conditions.map(cond => ({
+            type: cond.conditionType as any,
+            conditionType: cond.conditionType as any,
+            value: cond.timeStart && cond.timeEnd
+                ? { timeStart: cond.timeStart, timeEnd: cond.timeEnd }
+                : cond.languageCode
+                    ? { languageCode: cond.languageCode }
+                    : undefined
+        })) as RecipeCondition[]
+    }
+})
 
 // ============================================
 // DB 시딩용 변환 함수
@@ -436,7 +404,15 @@ export function getMaterialsForDB() {
  * DB 시딩용 레시피 데이터 반환
  */
 export function getRecipesForDB() {
-    return DB_RECIPES_SEED
+    // Hydrate name and description from MONSTER_DATA if missing
+    return DB_RECIPES_SEED.map(recipe => {
+        const monster = MONSTER_DATA[recipe.resultMonsterId]
+        return {
+            ...recipe,
+            name: recipe.name || monster?.name || 'Unknown Recipe',
+            description: recipe.description || monster?.description || 'No description'
+        }
+    })
 }
 
 /**
@@ -448,4 +424,4 @@ export function getAlchemyDataForDB() {
         materials: getMaterialsForDB(),
         recipes: getRecipesForDB()
     }
-}
+} 

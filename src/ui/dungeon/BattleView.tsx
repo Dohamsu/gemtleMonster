@@ -1,11 +1,11 @@
 import { useEffect } from 'react'
 import { useGameStore } from '../../store/useGameStore'
-import { SLIME_DUNGEON } from '../../data/dungeonData'
+import { DUNGEONS } from '../../data/dungeonData'
 import { MATERIALS } from '../../data/alchemyData'
-import { MONSTERS } from '../../data/alchemyData'
+import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
 
 export default function BattleView() {
-    const { battleState, processTurn, endBattle } = useGameStore()
+    const { battleState, processTurn, endBattle, activeDungeon } = useGameStore()
 
     // Auto-battle loop
     useEffect(() => {
@@ -20,7 +20,8 @@ export default function BattleView() {
 
     if (!battleState) return null
 
-    const enemy = SLIME_DUNGEON.enemies.find(e => e.id === battleState.enemyId)
+    const dungeon = DUNGEONS.find(d => d.id === activeDungeon)
+    const enemy = dungeon?.enemies.find(e => e.id === battleState.enemyId)
     const monsterData = battleState.selectedMonsterType ? MONSTERS[battleState.selectedMonsterType] : null
     const monsterName = monsterData?.name || '나의 몬스터'
 
@@ -45,7 +46,21 @@ export default function BattleView() {
             }}>
                 {/* Player */}
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '40px', marginBottom: '10px' }}>🧙‍♂️</div>
+                    {battleState.playerMonsterImage ? (
+                        <img
+                            src={battleState.playerMonsterImage}
+                            alt={monsterName}
+                            style={{
+                                width: '80px',
+                                height: '80px',
+                                objectFit: 'contain',
+                                marginBottom: '10px',
+                                filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))'
+                            }}
+                        />
+                    ) : (
+                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>🧙‍♂️</div>
+                    )}
                     <div style={{ fontWeight: 'bold' }}>{monsterName}</div>
                     <div style={{
                         width: '100px',
@@ -69,7 +84,21 @@ export default function BattleView() {
 
                 {/* Enemy */}
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '40px', marginBottom: '10px' }}>🦠</div>
+                    {battleState.enemyImage ? (
+                        <img
+                            src={battleState.enemyImage}
+                            alt={enemy?.name}
+                            style={{
+                                width: '80px',
+                                height: '80px',
+                                objectFit: 'contain',
+                                marginBottom: '10px',
+                                filter: 'drop-shadow(0 0 10px rgba(255,0,0,0.3))'
+                            }}
+                        />
+                    ) : (
+                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>🦠</div>
+                    )}
                     <div style={{ fontWeight: 'bold' }}>{enemy?.name || 'Unknown'}</div>
                     <div style={{
                         width: '100px',

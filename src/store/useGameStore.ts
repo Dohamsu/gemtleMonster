@@ -1,8 +1,9 @@
 import { create } from 'zustand'
 import type { AlchemyState } from '../types/alchemy'
 import { useAlchemyStore } from './useAlchemyStore'
+import { MATERIALS } from '../data/alchemyData'
 import { DUNGEONS } from '../data/dungeonData'
-import { MONSTERS } from '../data/alchemyData'
+import { GAME_MONSTERS as MONSTERS } from '../data/monsterData'
 
 interface ResourceAddition {
     id: string
@@ -57,6 +58,7 @@ interface GameState {
         enemyId: string | null
         enemyHp: number
         enemyMaxHp: number
+        enemyImage?: string
         turn: number
         logs: string[]
         result: 'victory' | 'defeat' | null
@@ -65,6 +67,7 @@ interface GameState {
         selectedMonsterType: string | null
         playerAtk: number
         playerDef: number
+        playerMonsterImage?: string
     } | null
     startBattle: (dungeonId: string, enemyId: string, playerMonsterId?: string) => void
     processTurn: () => void
@@ -403,7 +406,9 @@ export const useGameStore = create<GameState>((set, get) => ({
         let playerAtk = 10
         let playerDef = 5
         let selectedMonsterType: string | null = null
+
         let monsterName = '플레이어'
+        let playerMonsterImage: string | undefined = undefined
 
         if (playerMonsterId) {
             const { playerMonsters } = useAlchemyStore.getState()
@@ -420,7 +425,9 @@ export const useGameStore = create<GameState>((set, get) => ({
                     playerAtk = monsterData.baseStats.atk
                     playerDef = monsterData.baseStats.def
                     selectedMonsterType = monsterKey
+
                     monsterName = monsterData.name
+                    playerMonsterImage = monsterData.iconUrl
                 }
             }
         }
@@ -434,6 +441,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 enemyId,
                 enemyHp: enemy.hp,
                 enemyMaxHp: enemy.hp,
+                enemyImage: MONSTERS[enemyId]?.iconUrl,
                 turn: 1,
                 logs: [`${monsterName}이(가) ${enemy.name}과(와)의 전투를 시작했습니다!`],
                 result: null,
@@ -441,7 +449,9 @@ export const useGameStore = create<GameState>((set, get) => ({
                 selectedMonsterId: playerMonsterId || null,
                 selectedMonsterType,
                 playerAtk,
-                playerDef
+
+                playerDef,
+                playerMonsterImage
             }
         })
     },
@@ -495,7 +505,10 @@ export const useGameStore = create<GameState>((set, get) => ({
                 // Add drop messages to logs
                 if (Object.keys(rewards).length > 0) {
                     const dropMessages = Object.entries(rewards)
-                        .map(([id, qty]) => `${id} x${qty}`)
+                        .map(([id, qty]) => {
+                            const materialName = MATERIALS[id]?.name || id
+                            return `${materialName} x${qty}`
+                        })
                         .join(', ')
                     newLogs.push(`전리품: ${dropMessages}`)
                 }

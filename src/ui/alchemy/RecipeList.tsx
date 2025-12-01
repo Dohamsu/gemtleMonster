@@ -1,6 +1,7 @@
 
 import { useGameStore } from '../../store/useGameStore'
-import { RECIPES, MONSTERS } from '../../data/alchemyData'
+import { RECIPES } from '../../data/alchemyData'
+import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
 
 export default function RecipeList() {
     const { alchemyState, selectRecipe } = useGameStore()
