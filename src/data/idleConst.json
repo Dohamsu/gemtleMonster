@@ -22,8 +22,8 @@
                         "intervalSeconds": 10,
                         "bundlesPerTick": 1,
                         "dropRates": {
-                            "herb_common": 0.93,
-                            "herb_rare": 0.06,
+                            "herb_common": 0.96,
+                            "herb_rare": 0.03,
                             "herb_special": 0.01
                         },
                         "questSeedDropRate": 0.0005
@@ -38,8 +38,8 @@
                         "intervalSeconds": 8,
                         "bundlesPerTick": 1,
                         "dropRates": {
-                            "herb_common": 0.92,
-                            "herb_rare": 0.07,
+                            "herb_common": 0.94,
+                            "herb_rare": 0.05,
                             "herb_special": 0.01
                         },
                         "questSeedDropRate": 0.0007

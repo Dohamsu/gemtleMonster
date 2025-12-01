@@ -39,7 +39,9 @@ interface GameState {
     setLastCollectedAt: (facilityId: string, timestamp: number) => void
     removeRecentAddition: (id: string) => void
     sellResource: (resourceId: string, amount: number, pricePerUnit: number) => Promise<boolean>
-    upgradeFacility: (facilityId: string, cost: Record<string, number>) => void
+    upgradeFacility: (facilityId: string, cost: Record<string, number>) => Promise<void>
+    batchFacilitySyncCallback: ((facilityId: string, newLevel: number) => void) | null
+    setBatchFacilitySyncCallback: (callback: ((facilityId: string, newLevel: number) => void) | null) => void
     setActiveTab: (tab: Tab) => void
     setCanvasView: (view: CanvasView) => void
 
@@ -281,34 +283,107 @@ export const useGameStore = create<GameState>((set, get) => ({
         return true
     },
 
+    // 배치 동기화 콜백 (시설용)
+    batchFacilitySyncCallback: null as ((facilityId: string, newLevel: number) => void) | null,
+    setBatchFacilitySyncCallback: (callback) => set({ batchFacilitySyncCallback: callback }),
+
     /**
      * 레거시 함수: 시설 업그레이드용
      * 주의: resources는 읽기 전용 캐시이므로, 실제 검증은 playerMaterials를 사용해야 함
      * TODO: useUnifiedInventory.materialCounts를 사용하도록 마이그레이션 권장
      */
-    upgradeFacility: (facilityId, cost) => set((state) => {
-        // 주의: resources는 UI 캐시이므로, 실제 검증은 playerMaterials를 사용해야 함
-        // Check if affordable
+    upgradeFacility: async (facilityId, cost) => {
+        const state = get()
+        const userId = useAlchemyStore.getState().userId
+
+        if (!userId) {
+            console.error('User ID not found')
+            return
+        }
+
+        // 1. Check affordability
         for (const [res, amount] of Object.entries(cost)) {
             if ((state.resources[res] || 0) < amount) {
-                return state; // Not enough resources
+                console.warn(`Not enough ${res} to upgrade`)
+                return
             }
         }
 
-        // Deduct resources (UI 캐시 업데이트)
-        const newResources = { ...state.resources };
-        for (const [res, amount] of Object.entries(cost)) {
-            newResources[res] -= amount;
-        }
+        try {
+            // 2. Deduct from DB
+            const { supabase } = await import('../lib/supabase')
+            const materialsToDeduct: Record<string, number> = {}
 
-        return {
-            resources: newResources,
-            facilities: {
-                ...state.facilities,
-                [facilityId]: (state.facilities[facilityId] || 0) + 1
+            for (const [res, amount] of Object.entries(cost)) {
+                if (res === 'gold') {
+                    // Deduct gold from player_resource
+                    const { data: goldData } = await supabase
+                        .from('player_resource')
+                        .select('amount')
+                        .eq('user_id', userId)
+                        .eq('resource_id', 'gold')
+                        .single()
+
+                    const currentGold = goldData?.amount || 0
+                    const newGold = currentGold - amount
+
+                    await supabase
+                        .from('player_resource')
+                        .update({ amount: newGold })
+                        .eq('user_id', userId)
+                        .eq('resource_id', 'gold')
+                } else {
+                    // Accumulate materials for batch deduction
+                    materialsToDeduct[res] = amount
+                }
             }
-        };
-    }),
+
+            // Deduct materials using consumeMaterials
+            if (Object.keys(materialsToDeduct).length > 0) {
+                const alchemyApi = await import('../lib/alchemyApi')
+                await alchemyApi.consumeMaterials(userId, materialsToDeduct)
+            }
+
+            // 3. Update local state
+            set((state) => {
+                const newResources = { ...state.resources }
+                for (const [res, amount] of Object.entries(cost)) {
+                    newResources[res] = (newResources[res] || 0) - amount
+                }
+
+                const newLevel = (state.facilities[facilityId] || 0) + 1
+
+                // 배치 동기화 콜백 호출 (시설 레벨 변경)
+                if (state.batchFacilitySyncCallback) {
+                    state.batchFacilitySyncCallback(facilityId, newLevel)
+                }
+
+                return {
+                    resources: newResources,
+                    facilities: {
+                        ...state.facilities,
+                        [facilityId]: newLevel
+                    }
+                }
+            })
+
+            // 4. Update AlchemyStore playerMaterials to sync with DB
+            const alchemyStore = useAlchemyStore.getState()
+            const newPlayerMaterials = { ...alchemyStore.playerMaterials }
+            for (const [res, amount] of Object.entries(cost)) {
+                if (res !== 'gold') {
+                    newPlayerMaterials[res] = Math.max(0, (newPlayerMaterials[res] || 0) - amount)
+                } else {
+                    newPlayerMaterials['gold'] = Math.max(0, (newPlayerMaterials['gold'] || 0) - amount)
+                }
+            }
+            useAlchemyStore.setState({ playerMaterials: newPlayerMaterials })
+
+            console.log(`✅ Facility upgraded: ${facilityId} -> Level ${(state.facilities[facilityId] || 0) + 1}`)
+        } catch (error) {
+            console.error('❌ Failed to upgrade facility:', error)
+        }
+    },
 
     setActiveTab: (tab) => set({ activeTab: tab }),
     setCanvasView: (view) => set({ canvasView: view }),

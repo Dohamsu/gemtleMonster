@@ -1,8 +1,8 @@
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useGameStore } from '../store/useGameStore'
 import { useSaveGame } from '../hooks/useSaveGame'
-import { useBatchMaterialSync } from '../hooks/useBatchMaterialSync'
+import { useBatchSync } from '../hooks/useBatchSync'
 import { useEventBasedSync } from '../hooks/useEventBasedSync'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import IdleFacilityList from './idle/IdleFacilityList'
@@ -13,17 +13,14 @@ export default function UIOverlay() {
     const { activeTab, setActiveTab } = useGameStore()
     const { saveGame, saving, lastSaved } = useSaveGame()
 
-    // onSyncComplete를 useCallback으로 고정하여 무한 루프 방지
-    const onSyncComplete = useCallback((success: boolean, updates: Record<string, number>) => {
-        if (success) {
-            console.log('✅ 배치 동기화 완료:', Object.keys(updates).length, '종류')
-        }
-    }, [])
-
     // Phase 1: 배치 동기화 시스템
-    const { queueUpdate, forceSyncNow } = useBatchMaterialSync(user?.id, {
+    const { queueUpdate, queueFacilityUpdate, forceSyncNow } = useBatchSync(user?.id, {
         batchInterval: 30000, // 30초마다 자동 저장
-        onSyncComplete
+        onSyncComplete: (success) => {
+            if (success) {
+                console.log('✅ [UIOverlay] 배치 동기화 완료')
+            }
+        }
     })
 
     // Phase 2: 이벤트 기반 동기화
@@ -41,28 +38,37 @@ export default function UIOverlay() {
     // AlchemyStore에 배치 콜백 연결
     // ref를 사용하여 콜백 참조를 안정적으로 유지
     const queueUpdateRef = useRef(queueUpdate)
+    const queueFacilityUpdateRef = useRef(queueFacilityUpdate)
     const forceSyncNowRef = useRef(forceSyncNow)
-    
+
     // ref 업데이트
     useEffect(() => {
         queueUpdateRef.current = queueUpdate
+        queueFacilityUpdateRef.current = queueFacilityUpdate
         forceSyncNowRef.current = forceSyncNow
-    }, [queueUpdate, forceSyncNow])
+    }, [queueUpdate, queueFacilityUpdate, forceSyncNow])
 
     // 콜백 등록 (user?.id 변경 시에만)
     useEffect(() => {
         if (user?.id) {
+            // 재료 동기화 콜백
             useAlchemyStore.getState().setBatchSyncCallback((materialId: string, quantity: number) => {
                 queueUpdateRef.current(materialId, quantity)
             })
             useAlchemyStore.getState().setForceSyncCallback(async () => {
                 await forceSyncNowRef.current()
             })
+
+            // 시설 동기화 콜백
+            useGameStore.getState().setBatchFacilitySyncCallback((facilityId: string, newLevel: number) => {
+                queueFacilityUpdateRef.current(facilityId, newLevel)
+            })
         }
 
         return () => {
             useAlchemyStore.getState().setBatchSyncCallback(null)
             useAlchemyStore.getState().setForceSyncCallback(null)
+            useGameStore.getState().setBatchFacilitySyncCallback(null)
         }
     }, [user?.id]) // queueUpdate, forceSyncNow 의존성 제거
 

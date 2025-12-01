@@ -220,6 +220,16 @@ export default function Shop() {
                         ...gameStore.resources,
                         gold: (gameStore.resources.gold || 0) + materialGoldEarned
                     })
+
+                    // DB 업데이트 (골드)
+                    if (alchemyStore.userId) {
+                        try {
+                            const api = await import('../../lib/alchemyApi')
+                            await api.addGold(alchemyStore.userId, materialGoldEarned)
+                        } catch (error) {
+                            console.error('골드 DB 저장 실패:', error)
+                        }
+                    }
                 }
 
                 console.log(`일괄 판매 완료: ${successCount}건, +${totalGoldEarned}G`)

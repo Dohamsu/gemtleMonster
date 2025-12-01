@@ -1,44 +1,79 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
-const TEST_EMAIL = 'test@example.com'
-const TEST_PASSWORD = 'testpassword123'
+
 
 export function useAuth() {
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
+    const isInitializing = useRef(false)
 
     useEffect(() => {
-        const signInTestUser = async () => {
-            // Try to sign in with test account
+        // Prevent duplicate execution (React StrictMode)
+        if (isInitializing.current) return
+        isInitializing.current = true
+
+        const getDeviceId = () => {
+            let deviceId = localStorage.getItem('gemtle_device_id')
+            if (!deviceId) {
+                deviceId = crypto.randomUUID()
+                localStorage.setItem('gemtle_device_id', deviceId)
+            }
+            return deviceId
+        }
+
+        const signInWithDevice = async () => {
+            const deviceId = getDeviceId()
+            const email = `user_${deviceId}@gemtlemonster.com`
+            const password = `pwd_${deviceId}` // Simple password based on device ID
+
+            // Try to sign in
             const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                email: TEST_EMAIL,
-                password: TEST_PASSWORD,
+                email,
+                password,
             })
 
             if (signInError) {
                 // If sign in fails, try to sign up
-                console.log('Test account not found, creating...')
+                console.log('Device account not found, creating...')
                 const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-                    email: TEST_EMAIL,
-                    password: TEST_PASSWORD,
+                    email,
+                    password,
                     options: {
                         emailRedirectTo: undefined, // Disable email confirmation
                     }
                 })
 
                 if (signUpError) {
-                    console.error('Failed to create test account:', signUpError)
-                    setLoading(false)
-                    return
-                }
+                    // If user already exists (race condition), try to sign in again
+                    if (signUpError.message.includes('already registered')) {
+                        console.log('User already exists, retrying sign in...')
+                        const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+                            email,
+                            password,
+                        })
 
-                setUser(signUpData.user)
-                console.log('Test account created:', signUpData.user?.id)
+                        if (retryError) {
+                            console.error('Failed to sign in after retry:', retryError)
+                            setLoading(false)
+                            return
+                        }
+
+                        setUser(retryData.user)
+                        console.log('Signed in with device ID (retry):', retryData.user?.id)
+                    } else {
+                        console.error('Failed to create device account:', signUpError)
+                        setLoading(false)
+                        return
+                    }
+                } else {
+                    setUser(signUpData.user)
+                    console.log('Device account created:', signUpData.user?.id)
+                }
             } else {
                 setUser(signInData.user)
-                console.log('Signed in as test user:', signInData.user?.id)
+                console.log('Signed in with device ID:', signInData.user?.id)
             }
 
             setLoading(false)
@@ -50,7 +85,7 @@ export function useAuth() {
                 setUser(session.user)
                 setLoading(false)
             } else {
-                signInTestUser()
+                signInWithDevice()
             }
         })
 

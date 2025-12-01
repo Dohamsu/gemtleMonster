@@ -9,13 +9,13 @@ interface BatchSyncOptions {
 }
 
 /**
- * 재료 변경사항을 배치로 모아서 주기적으로 DB에 저장하는 Hook
+ * 재료 및 시설 변경사항을 배치로 모아서 주기적으로 DB에 저장하는 Hook
  *
  * @param userId - 사용자 ID
  * @param options - 배치 동기화 옵션
- * @returns queueUpdate: 변경사항 추가, forceSyncNow: 즉시 동기화
+ * @returns queueUpdate: 재료 변경사항 추가, queueFacilityUpdate: 시설 변경사항 추가, forceSyncNow: 즉시 동기화
  */
-export function useBatchMaterialSync(
+export function useBatchSync(
   userId: string | undefined,
   options: BatchSyncOptions = {}
 ) {
@@ -28,17 +28,27 @@ export function useBatchMaterialSync(
 
   // 누적된 변경사항 { materialId: totalQuantityChange }
   const pendingUpdates = useRef<Record<string, number>>({})
+  // 누적된 시설 변경사항 { facilityId: newLevel }
+  const pendingFacilityUpdates = useRef<Record<string, number>>({})
   const isSyncing = useRef(false)
 
   /**
-   * 변경사항을 큐에 추가
+   * 재료 변경사항을 큐에 추가
    */
   const queueUpdate = useCallback((materialId: string, quantity: number) => {
     pendingUpdates.current[materialId] =
       (pendingUpdates.current[materialId] || 0) + quantity
 
-    // console.log(`📦 [BatchSync] 큐에 추가: ${materialId} +${quantity}`)
-    // console.log(`📊 [BatchSync] 현재 큐:`, pendingUpdates.current)
+    // console.log(`📦 [BatchSync] 재료 큐에 추가: ${materialId} +${quantity}`)
+  }, [])
+
+  /**
+   * 시설 변경사항을 큐에 추가
+   */
+  const queueFacilityUpdate = useCallback((facilityId: string, newLevel: number) => {
+    pendingFacilityUpdates.current[facilityId] = newLevel
+
+    // console.log(`🏭 [BatchSync] 시설 큐에 추가: ${facilityId} -> Lv.${newLevel}`)
   }, [])
 
   // 콜백을 ref로 저장하여 안정적인 참조 유지
@@ -59,19 +69,21 @@ export function useBatchMaterialSync(
     if (!userId || isSyncing.current) return
 
     const updates = { ...pendingUpdates.current }
-    const updateCount = Object.keys(updates).length
+    const facilityUpdates = { ...pendingFacilityUpdates.current }
+    const materialUpdateCount = Object.keys(updates).length
+    const facilityUpdateCount = Object.keys(facilityUpdates).length
 
-    if (updateCount === 0) {
+    if (materialUpdateCount === 0 && facilityUpdateCount === 0) {
       // console.log('📭 [BatchSync] 저장할 변경사항 없음')
       return
     }
 
     isSyncing.current = true
-    // console.log(`🔄 [BatchSync] DB 동기화 시작... (${updateCount}개 재료)`)
+    // console.log(`🔄 [BatchSync] DB 동기화 시작... (재료: ${materialUpdateCount}개, 시설: ${facilityUpdateCount}개)`)
     onSyncStartRef.current?.()
 
     try {
-      // 각 재료별로 add_materials RPC 호출 (순차 처리로 변경하여 충돌 방지)
+      // 1. 재료 동기화
       for (const [materialId, quantity] of Object.entries(updates)) {
         if (quantity === 0) continue
 
@@ -82,9 +94,19 @@ export function useBatchMaterialSync(
         })
       }
 
+      // 2. 시설 동기화
+      for (const [facilityId, level] of Object.entries(facilityUpdates)) {
+        await supabase
+          .from('player_facility')
+          .update({ current_level: level })
+          .eq('user_id', userId)
+          .eq('facility_id', facilityId)
+      }
+
       // 성공 시 큐 초기화
       pendingUpdates.current = {}
-      // console.log(`✅ [BatchSync] DB 동기화 완료!`, updates)
+      pendingFacilityUpdates.current = {}
+      // console.log(`✅ [BatchSync] DB 동기화 완료!`, { materials: updates, facilities: facilityUpdates })
       onSyncCompleteRef.current?.(true, updates)
     } catch (error) {
       console.error('❌ [BatchSync] DB 동기화 실패:', error)
@@ -126,7 +148,9 @@ export function useBatchMaterialSync(
 
   return {
     queueUpdate,
+    queueFacilityUpdate,
     forceSyncNow,
-    getPendingUpdates: () => ({ ...pendingUpdates.current })
+    getPendingUpdates: () => ({ ...pendingUpdates.current }),
+    getPendingFacilityUpdates: () => ({ ...pendingFacilityUpdates.current })
   }
 }

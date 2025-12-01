@@ -4,15 +4,14 @@ export async function initializePlayer(userId: string) {
     try {
         console.log('Checking player status for:', userId)
 
-        // Check if player already exists
+        // Check if player already exists (use maybeSingle to avoid 406 error)
         const { data: existingProfile, error: checkError } = await supabase
             .from('player_profile')
             .select('user_id')
             .eq('user_id', userId)
-            .single()
+            .maybeSingle()
 
-        if (checkError && checkError.code !== 'PGRST116') {
-            // PGRST116 = no rows returned, which is expected for new players
+        if (checkError) {
             console.error('Error checking player profile:', checkError)
             throw checkError
         }
@@ -58,10 +57,24 @@ export async function initializePlayer(userId: string) {
             throw facilityError
         }
 
+        // Initialize player_alchemy
+        const { error: alchemyError } = await supabase.from('player_alchemy').insert({
+            user_id: userId,
+            level: 1,
+            experience: 0,
+            workshop_level: 1,
+            global_success_bonus: 0,
+            global_time_reduction: 0,
+        })
+
+        if (alchemyError) {
+            console.error('Error creating player alchemy:', alchemyError)
+            throw alchemyError
+        }
+
         console.log('✅ Player initialized successfully')
     } catch (error) {
         console.error('Failed to initialize player:', error)
         throw error
     }
 }
-

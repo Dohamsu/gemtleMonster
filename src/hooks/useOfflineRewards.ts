@@ -95,13 +95,17 @@ export function useOfflineRewards(userId: string | undefined) {
 
             console.log(`📊 ${facilityId} Lv.${level}: ${productionCount}회 생산`)
 
-            // 각 생산마다 확률 계산 (단순화: 평균값 사용)
-            for (const [materialId, dropRate] of Object.entries(stats.dropRates)) {
-              const expectedDrops = productionCount * dropRate * stats.bundlesPerTick
-              const actualDrops = Math.floor(expectedDrops)
+            // 각 생산마다 확률 기반으로 재료 선택
+            for (let i = 0; i < productionCount; i++) {
+              const random = Math.random()
+              let cumulativeProbability = 0
 
-              if (actualDrops > 0) {
-                totalRewards[materialId] = (totalRewards[materialId] || 0) + actualDrops
+              for (const [materialId, dropRate] of Object.entries(stats.dropRates)) {
+                cumulativeProbability += dropRate
+                if (random < cumulativeProbability) {
+                  totalRewards[materialId] = (totalRewards[materialId] || 0) + stats.bundlesPerTick
+                  break
+                }
               }
             }
           }

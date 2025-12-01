@@ -64,11 +64,16 @@ export function useAutoCollection(userId: string | undefined) {
                         let hasDrops = false
 
                         if (stats.dropRates) {
+                            // Select ONE material based on weighted probability
+                            const random = Math.random()
+                            let cumulativeProbability = 0
+
                             for (const [resource, rate] of Object.entries(stats.dropRates)) {
-                                const amount = Math.random() < rate ? stats.bundlesPerTick : 0
-                                if (amount > 0) {
-                                    drops[resource] = amount
+                                cumulativeProbability += rate
+                                if (random < cumulativeProbability) {
+                                    drops[resource] = stats.bundlesPerTick
                                     hasDrops = true
+                                    break
                                 }
                             }
                         }

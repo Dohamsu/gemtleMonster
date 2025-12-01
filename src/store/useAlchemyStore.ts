@@ -3,8 +3,44 @@ import type { Material, Recipe, PlayerRecipe, PlayerAlchemy } from '../lib/alche
 import type { AlchemyContext } from '../types/alchemy'
 import * as alchemyApi from '../lib/alchemyApi'
 import { isRecipeValid, findMatchingRecipe } from '../lib/alchemyLogic'
+import { MATERIALS } from '../data/alchemyData'
 import { ALCHEMY } from '../constants/game'
 import { useGameStore } from './useGameStore'
+import { supabase } from '../lib/supabase'
+
+/**
+ * 실패 시 재료 등급에 따라 경험치 계산
+ * N: 10 XP, R: 20 XP, SR: 30 XP, SSR: 50 XP
+ */
+function calculateFailureExp(materialsUsed: Record<string, number>): number {
+  const RARITY_EXP: Record<string, number> = {
+    'N': 10,
+    'R': 20,
+    'SR': 30,
+    'SSR': 50
+  }
+
+  console.log('🔍 [calculateFailureExp] 재료 사용:', materialsUsed)
+
+  let totalExp = 0
+  for (const [materialId, quantity] of Object.entries(materialsUsed)) {
+    const material = MATERIALS[materialId]
+    if (material) {
+      const expPerItem = RARITY_EXP[material.rarity] || 10
+      const materialExp = expPerItem * quantity
+      totalExp += materialExp
+      console.log(`  - ${material.name} (${material.rarity}): ${expPerItem} × ${quantity} = ${materialExp} XP`)
+    } else {
+      console.warn(`  - ⚠️ 재료 정보 없음: ${materialId}`)
+    }
+  }
+
+  // 실패 시에는 계산된 경험치의 30%만 획득
+  const finalExp = Math.floor(totalExp * 0.3)
+  console.log(`💔 [calculateFailureExp] 총 경험치: ${totalExp} → 실패 보상 (30%): ${finalExp} XP`)
+
+  return finalExp
+}
 
 interface AlchemyState {
   // 마스터 데이터
@@ -179,6 +215,18 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       playerMats.forEach(m => {
         materialsMap[m.material_id] = m.quantity
       })
+
+      // 골드 로드 (player_resource 테이블에서)
+      const { data: goldData } = await supabase
+        .from('player_resource')
+        .select('amount')
+        .eq('user_id', userId)
+        .eq('resource_id', 'gold')
+        .single()
+
+      const goldAmount = goldData?.amount || 0
+      materialsMap['gold'] = goldAmount
+      // console.log(`💰 골드 로드:`, goldAmount)
 
       // 플레이어 레시피
       const playerRecs = await alchemyApi.getPlayerRecipes(userId)
@@ -626,6 +674,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         console.log(`✅ 연금술 성공! +${recipe.exp_gain} XP`)
       } else if (recipe) {
         // 실패했지만 레시피는 있는 경우 (조합 실패)
+        console.log('💔 [Alchemy] 조합 실패 - 경험치 계산 시작')
+
         await alchemyApi.recordAlchemyHistory(
           userId,
           recipe.id,
@@ -635,8 +685,68 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
           undefined
         )
         await alchemyApi.updateRecipeCraftCount(userId, recipe.id, false)
+
+        // 실패 시에도 재료 등급에 따라 경험치 획득
+        const failureExp = calculateFailureExp(materialsUsed)
+        console.log(`💔 [Alchemy] 실패 경험치 계산 완료: ${failureExp} XP`)
+
+        if (failureExp > 0) {
+          console.log(`💔 [Alchemy] 경험치 지급 시작...`)
+          await alchemyApi.addAlchemyExperience(userId, failureExp)
+
+          // 로컬 상태 업데이트 (XP)
+          if (playerAlchemy) {
+            const newExp = playerAlchemy.experience + failureExp
+            const newLevel = Math.floor(newExp / ALCHEMY.XP_PER_LEVEL) + 1
+            set({
+              playerAlchemy: {
+                ...playerAlchemy,
+                experience: newExp,
+                level: newLevel
+              }
+            })
+            console.log(`💔 [Alchemy] 로컬 상태 업데이트 완료: ${playerAlchemy.experience} → ${newExp} XP`)
+          } else {
+            console.warn('⚠️ [Alchemy] playerAlchemy가 null입니다!')
+          }
+
+          console.log(`💔 연금술 실패... 하지만 +${failureExp} XP 획득!`)
+        } else {
+          console.log(`⚠️ [Alchemy] 실패 경험치가 0입니다.`)
+        }
+      } else {
+        // recipe가 null인 경우 = 잘못된 조합
+        console.log('💔 [Alchemy] 잘못된 조합 - 경험치 계산 시작')
+
+        // 잘못된 조합이어도 재료 등급에 따라 경험치 획득
+        const failureExp = calculateFailureExp(materialsUsed)
+        console.log(`💔 [Alchemy] 잘못된 조합 경험치 계산 완료: ${failureExp} XP`)
+
+        if (failureExp > 0) {
+          console.log(`💔 [Alchemy] 경험치 지급 시작...`)
+          await alchemyApi.addAlchemyExperience(userId, failureExp)
+
+          // 로컬 상태 업데이트 (XP)
+          if (playerAlchemy) {
+            const newExp = playerAlchemy.experience + failureExp
+            const newLevel = Math.floor(newExp / ALCHEMY.XP_PER_LEVEL) + 1
+            set({
+              playerAlchemy: {
+                ...playerAlchemy,
+                experience: newExp,
+                level: newLevel
+              }
+            })
+            console.log(`💔 [Alchemy] 로컬 상태 업데이트 완료: ${playerAlchemy.experience} → ${newExp} XP`)
+          } else {
+            console.warn('⚠️ [Alchemy] playerAlchemy가 null입니다!')
+          }
+
+          console.log(`💔 잘못된 조합... 하지만 +${failureExp} XP 획득!`)
+        } else {
+          console.log(`⚠️ [Alchemy] 잘못된 조합 경험치가 0입니다.`)
+        }
       }
-      // recipe가 null인 경우 = 잘못된 조합 (DB 기록 안함)
     } catch (error) {
       console.error('연금술 결과 저장 실패:', error)
     }
