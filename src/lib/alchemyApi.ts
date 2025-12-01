@@ -1,245 +1,49 @@
+/**
+ * Alchemy API
+ * 연금술 관련 데이터베이스 작업 및 통합 API
+ *
+ * 이 파일은 기존 코드와의 하위 호환성을 위해 유지되며,
+ * 분리된 API 파일들을 re-export합니다.
+ */
+
 import { supabase } from './supabase'
+import type {
+  Material,
+  PlayerMaterial,
+  Recipe,
+  RecipeIngredient,
+  RecipeCondition,
+  PlayerRecipe,
+  PlayerAlchemy,
+  PlayerMonster
+} from '../types'
+
+// Re-export types for backward compatibility
+export type {
+  Material,
+  PlayerMaterial,
+  Recipe,
+  RecipeIngredient,
+  RecipeCondition,
+  PlayerRecipe,
+  PlayerAlchemy,
+  PlayerMonster
+}
+
+// Re-export functions from separated API files
+export * from './materialApi'
+export * from './recipeApi'
+export * from './monsterApi'
 
 // ============================================
-// 타입 정의
-// ============================================
-
-export interface Material {
-  id: string
-  name: string
-  description?: string
-  family: 'PLANT' | 'MINERAL' | 'BEAST' | 'SLIME' | 'SPIRIT'
-  rarity: 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
-  icon_url?: string
-  source_info?: any
-  is_special: boolean
-  sell_price: number
-}
-
-export interface RecipeIngredient {
-  material_id: string
-  quantity: number
-  is_catalyst: boolean
-}
-
-// Extended RecipeCondition matching new DB schema
-export interface RecipeCondition {
-  id?: number
-  recipe_id?: string
-  condition_type: string // All condition types from unionRule.md
-  value_int?: number
-  value_float?: number
-  value_text?: string
-  value_json?: any
-  value_bool?: boolean
-  description?: string
-  created_at?: string
-}
-
-export interface Recipe {
-  id: string
-  name: string
-  description?: string
-  result_monster_id: string
-  result_count: number
-  base_success_rate: number
-  craft_time_sec: number
-  cost_gold: number
-  required_alchemy_level: number
-  exp_gain: number
-  is_hidden: boolean
-  priority: number
-  ingredients?: RecipeIngredient[]
-  conditions?: RecipeCondition[]
-}
-
-export interface PlayerMaterial {
-  material_id: string
-  quantity: number
-}
-
-export interface PlayerRecipe {
-  recipe_id: string
-  is_discovered: boolean
-  first_discovered_at?: string
-  craft_count: number
-  success_count: number
-}
-
-export interface PlayerAlchemy {
-  level: number
-  experience: number
-  workshop_level: number
-  global_success_bonus: number
-  global_time_reduction: number
-}
-
-// ============================================
-// 재료 관련 API
-// ============================================
-
-/**
- * 모든 재료 목록 가져오기
- */
-export async function getAllMaterials(): Promise<Material[]> {
-  const { data, error } = await supabase
-    .from('material')
-    .select('*')
-    .order('family, rarity')
-
-  if (error) {
-    console.error('재료 목록 로드 실패:', error)
-    throw error
-  }
-
-  return data || []
-}
-
-/**
- * 특정 계열의 재료 가져오기
- */
-export async function getMaterialsByFamily(family: string): Promise<Material[]> {
-  const { data, error } = await supabase
-    .from('material')
-    .select('*')
-    .eq('family', family)
-    .order('rarity')
-
-  if (error) {
-    console.error(`${family} 재료 로드 실패:`, error)
-    throw error
-  }
-
-  return data || []
-}
-
-/**
- * 플레이어의 재료 인벤토리 가져오기
- */
-export async function getPlayerMaterials(userId: string): Promise<PlayerMaterial[]> {
-  const { data, error } = await supabase
-    .from('player_material')
-    .select('material_id, quantity')
-    .eq('user_id', userId)
-    .gt('quantity', 0)
-
-  if (error) {
-    console.error('플레이어 재료 로드 실패:', error)
-    throw error
-  }
-
-  return data || []
-}
-
-/**
- * 재료 수량 추가 (테스트용)
- */
-export async function addMaterialToPlayer(
-  userId: string,
-  materialId: string,
-  quantity: number
-): Promise<void> {
-  const { error } = await supabase.rpc('add_materials', {
-    p_user_id: userId,
-    p_material_id: materialId,
-    p_quantity: quantity
-  })
-
-  if (error) {
-    console.error('재료 추가 실패:', error)
-    throw error
-  }
-}
-
-// ============================================
-// 레시피 관련 API
-// ============================================
-
-/**
- * 모든 레시피 목록 가져오기 (재료, 조건 포함)
- */
-export async function getAllRecipes(): Promise<Recipe[]> {
-  const { data, error } = await supabase
-    .from('recipe')
-    .select(`
-      *,
-      ingredients:recipe_ingredient(material_id, quantity, is_catalyst),
-      conditions:recipe_condition(condition_type, value_int, value_float, value_text, value_json, value_bool, description)
-    `)
-    .order('priority', { ascending: false })
-
-  if (error) {
-    console.error('레시피 목록 로드 실패:', error)
-    throw error
-  }
-
-  return data || []
-}
-
-/**
- * 특정 레시피 상세 정보 가져오기
- */
-export async function getRecipeById(recipeId: string): Promise<Recipe | null> {
-  const { data, error } = await supabase
-    .from('recipe')
-    .select(`
-      *,
-      ingredients:recipe_ingredient(material_id, quantity, is_catalyst),
-      conditions:recipe_condition(condition_type, value_int, value_float, value_text, value_json, value_bool, description)
-    `)
-    .eq('id', recipeId)
-    .single()
-
-  if (error) {
-    console.error('레시피 로드 실패:', error)
-    return null
-  }
-
-  return data
-}
-
-/**
- * 플레이어의 레시피 발견 정보 가져오기
- */
-export async function getPlayerRecipes(userId: string): Promise<PlayerRecipe[]> {
-  const { data, error } = await supabase
-    .from('player_recipe')
-    .select('recipe_id, is_discovered, first_discovered_at, craft_count, success_count')
-    .eq('user_id', userId)
-
-  if (error) {
-    console.error('플레이어 레시피 로드 실패:', error)
-    throw error
-  }
-
-  return data || []
-}
-
-/**
- * 레시피 발견 처리
- */
-export async function discoverRecipe(userId: string, recipeId: string): Promise<void> {
-  const { error } = await supabase
-    .from('player_recipe')
-    .upsert({
-      user_id: userId,
-      recipe_id: recipeId,
-      is_discovered: true,
-      first_discovered_at: new Date().toISOString()
-    }, { onConflict: 'user_id,recipe_id' })
-
-  if (error) {
-    console.error('레시피 발견 처리 실패:', error)
-    throw error
-  }
-}
-
-// ============================================
-// 연금술 정보 관련 API
+// 연금술 정보 관련 API (Alchemy-specific)
 // ============================================
 
 /**
  * 플레이어 연금술 정보 가져오기
+ *
+ * @param userId - 사용자 ID
+ * @returns 플레이어 연금술 정보 또는 null
  */
 export async function getPlayerAlchemy(userId: string): Promise<PlayerAlchemy | null> {
   const { data, error } = await supabase
@@ -269,6 +73,8 @@ export async function getPlayerAlchemy(userId: string): Promise<PlayerAlchemy | 
 
 /**
  * 플레이어 연금술 정보 초기화
+ *
+ * @param userId - 사용자 ID
  */
 export async function initializePlayerAlchemy(userId: string): Promise<void> {
   const { error } = await supabase
@@ -288,32 +94,15 @@ export async function initializePlayerAlchemy(userId: string): Promise<void> {
   }
 }
 
-// ============================================
-// 조합 관련 API
-// ============================================
-
-/**
- * 재료 소모 (조합 시 사용)
- */
-export async function consumeMaterials(
-  userId: string,
-  materials: Record<string, number>
-): Promise<boolean> {
-  const { data, error } = await supabase.rpc('consume_materials', {
-    p_user_id: userId,
-    p_materials: materials
-  })
-
-  if (error) {
-    console.error('재료 소모 실패:', error)
-    return false
-  }
-
-  return data === true
-}
-
 /**
  * 조합 기록 저장
+ *
+ * @param userId - 사용자 ID
+ * @param recipeId - 레시피 ID
+ * @param success - 성공 여부
+ * @param successRateUsed - 사용된 성공률
+ * @param materialsUsed - 사용된 재료 목록
+ * @param resultMonsterId - 결과 몬스터 ID (성공 시)
  */
 export async function recordAlchemyHistory(
   userId: string,
@@ -341,42 +130,10 @@ export async function recordAlchemyHistory(
 }
 
 /**
- * 조합 성공 시 레시피 카운트 업데이트
- */
-export async function updateRecipeCraftCount(
-  userId: string,
-  recipeId: string,
-  success: boolean
-): Promise<void> {
-  // 기존 레코드 가져오기
-  const { data: existing } = await supabase
-    .from('player_recipe')
-    .select('craft_count, success_count')
-    .eq('user_id', userId)
-    .eq('recipe_id', recipeId)
-    .single()
-
-  const craftCount = (existing?.craft_count || 0) + 1
-  const successCount = (existing?.success_count || 0) + (success ? 1 : 0)
-
-  const { error } = await supabase
-    .from('player_recipe')
-    .upsert({
-      user_id: userId,
-      recipe_id: recipeId,
-      craft_count: craftCount,
-      success_count: successCount,
-      is_discovered: true
-    }, { onConflict: 'user_id,recipe_id' })
-
-  if (error) {
-    console.error('레시피 카운트 업데이트 실패:', error)
-    throw error
-  }
-}
-
-/**
  * 경험치 추가
+ *
+ * @param userId - 사용자 ID
+ * @param exp - 추가할 경험치
  */
 export async function addAlchemyExperience(userId: string, exp: number): Promise<void> {
   const currentData = await getPlayerAlchemy(userId)
@@ -399,211 +156,50 @@ export async function addAlchemyExperience(userId: string, exp: number): Promise
   }
 }
 
-/**
- * 몬스터를 플레이어 인벤토리에 추가
- */
-export async function addMonsterToPlayer(
-  userId: string,
-  monsterId: string
-): Promise<void> {
-  const { error } = await supabase
-    .from('player_monster')
-    .insert({
-      user_id: userId,
-      monster_id: monsterId,
-      level: 1,
-      exp: 0,
-      created_at: new Date().toISOString()
-    })
-
-  if (error) {
-    console.error('❌ 몬스터 추가 실패:', error)
-    console.error('상세 정보:', {
-      userId,
-      monsterId,
-      errorMessage: error.message,
-      errorDetails: error.details,
-      errorHint: error.hint
-    })
-    throw error
-  }
-
-  console.log(`✅ 몬스터 추가 완료: ${monsterId}`)
-}
-
-/**
- * 플레이어의 몬스터 목록 가져오기
- */
-export async function getPlayerMonsters(userId: string): Promise<Array<{
-  id: string
-  monster_id: string
-  level: number
-  exp: number
-  created_at: string
-  is_locked: boolean
-}>> {
-  const { data, error } = await supabase
-    .from('player_monster')
-    .select('id, monster_id, level, exp, created_at, is_locked')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('몬스터 목록 로드 실패:', error)
-    throw error
-  }
-
-  return data || []
-}
-
-// ... (skip to decomposeMonsters)
-
-export async function decomposeMonsters(
-  userId: string,
-  monsterIds: string[]
-): Promise<{
-  success: boolean
-  deleted_count: number
-  rewards: Record<string, number>
-  error?: string
-}> {
-  console.log(`🗑️ Decomposing monsters:`, monsterIds)
-
-  const { data, error } = await supabase.rpc('decompose_monsters', {
-    p_user_id: userId,
-    p_monster_uids: monsterIds
-  })
-
-  if (error) {
-    console.error('몬스터 분해 실패:', error)
-    return {
-      success: false,
-      deleted_count: 0,
-      rewards: {},
-      error: error.message
-    }
-  }
-
-  if (!data) {
-    console.error('몬스터 분해 결과 없음 (data is null)')
-    return {
-      success: false,
-      deleted_count: 0,
-      rewards: {},
-      error: 'No data returned from RPC'
-    }
-  }
-
-  console.log(`✅ 몬스터 분해 완료: ${data.deleted_count}마리`, data)
-  return data
-}
-
-/**
- * 몬스터 잠금/해제 토글
- */
-export async function toggleMonsterLock(
-  userId: string,
-  monsterId: string,
-  isLocked: boolean
-): Promise<void> {
-  const { error } = await supabase
-    .from('player_monster')
-    .update({ is_locked: isLocked })
-    .eq('id', monsterId)
-    .eq('user_id', userId)
-
-  if (error) {
-    console.error('몬스터 잠금 상태 변경 실패:', error)
-    throw error
-  }
-
-  console.log(`✅ 몬스터 잠금 상태 변경: ${monsterId} -> ${isLocked}`)
-}
-
 // ============================================
 // 오프라인 보상 관련 API
 // ============================================
 
 /**
  * 마지막 오프라인 보상 수집 시간 가져오기
+ *
+ * @param userId - 사용자 ID
+ * @returns 마지막 수집 시간 또는 null
  */
 export async function getLastCollectedAt(userId: string): Promise<Date | null> {
   const { data, error } = await supabase
-    .from('player_alchemy')
+    .from('player_resource')
     .select('last_collected_at')
     .eq('user_id', userId)
+    .eq('resource_id', 'offline_reward_timestamp')
     .single()
 
-  if (error || !data?.last_collected_at) {
+  if (error) {
     return null
   }
 
-  return new Date(data.last_collected_at)
+  return data?.last_collected_at ? new Date(data.last_collected_at) : null
 }
 
 /**
  * 마지막 오프라인 보상 수집 시간 업데이트
+ *
+ * @param userId - 사용자 ID
+ * @param timestamp - 수집 시간 (기본값: 현재 시간)
  */
 export async function updateLastCollectedAt(userId: string, timestamp?: Date): Promise<void> {
+  const time = timestamp || new Date()
+
   const { error } = await supabase
-    .from('player_alchemy')
-    .update({
-      last_collected_at: (timestamp || new Date()).toISOString()
-    })
-    .eq('user_id', userId)
+    .from('player_resource')
+    .upsert({
+      user_id: userId,
+      resource_id: 'offline_reward_timestamp',
+      last_collected_at: time.toISOString()
+    }, { onConflict: 'user_id,resource_id' })
 
   if (error) {
     console.error('마지막 수집 시간 업데이트 실패:', error)
     throw error
   }
-}
-
-/**
- * 여러 재료를 한번에 추가 (오프라인 보상용)
- */
-export async function batchAddMaterials(
-  userId: string,
-  materials: Record<string, number>
-): Promise<void> {
-  for (const [materialId, quantity] of Object.entries(materials)) {
-    if (quantity > 0) {
-      await addMaterialToPlayer(userId, materialId, quantity)
-    }
-  }
-}
-
-
-/**
- * 골드 추가 (상점 판매 등)
- */
-export async function addGold(userId: string, amount: number): Promise<void> {
-  // 1. 현재 골드 조회
-  const { data: currentData, error: fetchError } = await supabase
-    .from('player_resource')
-    .select('amount')
-    .eq('user_id', userId)
-    .eq('resource_id', 'gold')
-    .single()
-
-  if (fetchError) {
-    console.error('골드 조회 실패:', fetchError)
-    throw fetchError
-  }
-
-  const currentGold = currentData?.amount || 0
-  const newGold = currentGold + amount
-
-  // 2. 골드 업데이트
-  const { error: updateError } = await supabase
-    .from('player_resource')
-    .update({ amount: newGold })
-    .eq('user_id', userId)
-    .eq('resource_id', 'gold')
-
-  if (updateError) {
-    console.error('골드 업데이트 실패:', updateError)
-    throw updateError
-  }
-
-  console.log(`✅ 골드 업데이트 완료: ${currentGold} -> ${newGold} (+${amount})`)
 }

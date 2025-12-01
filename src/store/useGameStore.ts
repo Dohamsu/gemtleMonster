@@ -1,9 +1,11 @@
 import { create } from 'zustand'
+import type { BattleState } from '../types'
 import type { AlchemyState } from '../types/alchemy'
 import { useAlchemyStore } from './useAlchemyStore'
 import { MATERIALS } from '../data/alchemyData'
 import { DUNGEONS } from '../data/dungeonData'
 import { GAME_MONSTERS as MONSTERS } from '../data/monsterData'
+import { ALCHEMY } from '../constants/game'
 
 interface ResourceAddition {
     id: string
@@ -53,24 +55,7 @@ interface GameState {
     completeBrewing: (resultMonsterId: string, count: number, materialsUsed: Record<string, number>) => void
     // Battle Actions
     activeDungeon: string | null
-    battleState: {
-        isBattling: boolean
-        playerHp: number
-        playerMaxHp: number
-        enemyId: string | null
-        enemyHp: number
-        enemyMaxHp: number
-        enemyImage?: string
-        turn: number
-        logs: string[]
-        result: 'victory' | 'defeat' | null
-        rewards: Record<string, number>
-        selectedMonsterId: string | null
-        selectedMonsterType: string | null
-        playerAtk: number
-        playerDef: number
-        playerMonsterImage?: string
-    } | null
+    battleState: BattleState | null
     startBattle: (dungeonId: string, enemyId: string, playerMonsterId?: string) => void
     processTurn: () => void
     endBattle: () => void
@@ -176,12 +161,12 @@ export const useGameStore = create<GameState>((set, get) => ({
                     }
                     newAdditions.push(addition)
 
-                    // Auto-remove after 2 seconds with cleanup tracking
+                    // Auto-remove after animation duration with cleanup tracking
                     const timer = setTimeout(() => {
                         set((s) => ({
                             recentAdditions: s.recentAdditions.filter(a => a.id !== additionId)
                         }))
-                    }, 2000)
+                    }, ALCHEMY.RESOURCE_ANIMATION_DURATION)
                     timers.push(timer)
                 }
             }
@@ -206,8 +191,15 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     /**
      * 레거시 함수: 상점에서 레거시 자원 판매용
+     *
+     * @deprecated 이 함수는 레거시입니다. useAlchemyStore.sellMaterial을 사용하세요.
+     *
      * 주의: resources는 읽기 전용 캐시이므로, 실제 검증은 playerMaterials를 사용해야 함
-     * TODO: useAlchemyStore.sellMaterial을 사용하도록 마이그레이션 권장
+     *
+     * @param resourceId - 판매할 자원 ID
+     * @param amount - 판매 수량
+     * @param pricePerUnit - 개당 가격
+     * @returns 판매 성공 여부
      */
     sellResource: async (resourceId, amount, pricePerUnit) => {
         const currentState = get()
@@ -289,8 +281,13 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     /**
      * 레거시 함수: 시설 업그레이드용
+     *
+     * @deprecated 이 함수는 레거시입니다. useUnifiedInventory.materialCounts를 사용하세요.
+     *
      * 주의: resources는 읽기 전용 캐시이므로, 실제 검증은 playerMaterials를 사용해야 함
-     * TODO: useUnifiedInventory.materialCounts를 사용하도록 마이그레이션 권장
+     *
+     * @param facilityId - 업그레이드할 시설 ID
+     * @param cost - 업그레이드 비용 (재료별 수량)
      */
     upgradeFacility: async (facilityId, cost) => {
         const state = get()
@@ -424,8 +421,14 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     /**
      * 레거시 함수: 연금술 완료 처리용
+     *
+     * @deprecated 이 함수는 레거시입니다. useAlchemyStore.completeBrewing을 사용하세요.
+     *
      * 주의: resources는 읽기 전용 캐시이므로, 실제 데이터는 useAlchemyStore.completeBrewing을 사용해야 함
-     * TODO: useAlchemyStore.completeBrewing을 사용하도록 마이그레이션 권장
+     *
+     * @param resultMonsterId - 생성된 몬스터 ID
+     * @param count - 생성된 몬스터 수량
+     * @param materialsUsed - 사용한 재료 목록
      */
     completeBrewing: (resultMonsterId, count, materialsUsed) => set((state) => {
         // 주의: resources는 UI 캐시이므로, 실제 데이터는 useAlchemyStore에서 관리됨

@@ -11,6 +11,20 @@ export const ALCHEMY = {
   XP_PER_LEVEL: 100,
   /** Animation duration for resource additions (milliseconds) */
   RESOURCE_ANIMATION_DURATION: 2000,
+  /** Failure experience multiplier (30% of total) */
+  FAILURE_EXP_MULTIPLIER: 0.3,
+  /** Default craft time for failed recipes (milliseconds) */
+  DEFAULT_CRAFT_TIME_MS: 3000,
+  /** Progress update interval during brewing (milliseconds) */
+  BREW_UPDATE_INTERVAL_MS: 50,
+} as const
+
+// Experience by Rarity
+export const RARITY_EXP = {
+  N: 10,
+  R: 20,
+  SR: 30,
+  SSR: 50,
 } as const
 
 // Canvas Rendering Constants

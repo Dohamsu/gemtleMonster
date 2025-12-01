@@ -1,46 +1,18 @@
 import { create } from 'zustand'
-import type { Material, Recipe, PlayerRecipe, PlayerAlchemy } from '../lib/alchemyApi'
-import type { AlchemyContext } from '../types/alchemy'
+import type {
+  Material,
+  Recipe,
+  PlayerRecipe,
+  PlayerAlchemy,
+  AlchemyContext,
+  PlayerMonster
+} from '../types'
 import * as alchemyApi from '../lib/alchemyApi'
 import { isRecipeValid, findMatchingRecipe } from '../lib/alchemyLogic'
-import { MATERIALS } from '../data/alchemyData'
 import { ALCHEMY } from '../constants/game'
 import { useGameStore } from './useGameStore'
 import { supabase } from '../lib/supabase'
-
-/**
- * 실패 시 재료 등급에 따라 경험치 계산
- * N: 10 XP, R: 20 XP, SR: 30 XP, SSR: 50 XP
- */
-function calculateFailureExp(materialsUsed: Record<string, number>): number {
-  const RARITY_EXP: Record<string, number> = {
-    'N': 10,
-    'R': 20,
-    'SR': 30,
-    'SSR': 50
-  }
-
-  console.log('🔍 [calculateFailureExp] 재료 사용:', materialsUsed)
-
-  let totalExp = 0
-  for (const [materialId, quantity] of Object.entries(materialsUsed)) {
-    const material = MATERIALS[materialId]
-    if (material) {
-      const expPerItem = RARITY_EXP[material.rarity] || 10
-      const materialExp = expPerItem * quantity
-      totalExp += materialExp
-      console.log(`  - ${material.name} (${material.rarity}): ${expPerItem} × ${quantity} = ${materialExp} XP`)
-    } else {
-      console.warn(`  - ⚠️ 재료 정보 없음: ${materialId}`)
-    }
-  }
-
-  // 실패 시에는 계산된 경험치의 30%만 획득
-  const finalExp = Math.floor(totalExp * 0.3)
-  console.log(`💔 [calculateFailureExp] 총 경험치: ${totalExp} → 실패 보상 (30%): ${finalExp} XP`)
-
-  return finalExp
-}
+import { calculateFailureExp, calculateNewLevel } from '../utils/alchemyUtils'
 
 interface AlchemyState {
   // 마스터 데이터
@@ -52,14 +24,7 @@ interface AlchemyState {
   playerMaterials: Record<string, number> // materialId -> quantity
   playerRecipes: Record<string, PlayerRecipe> // recipeId -> PlayerRecipe
   playerAlchemy: PlayerAlchemy | null
-  playerMonsters: Array<{
-    id: string
-    monster_id: string
-    level: number
-    exp: number
-    created_at: string
-    is_locked: boolean
-  }>
+  playerMonsters: PlayerMonster[]
 
   // UI 상태
   selectedRecipeId: string | null
@@ -470,7 +435,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       ? findMatchingRecipe(selectedIngredients, alchemyContext, allRecipes)
       : null
 
-    const duration = matchedRecipe ? matchedRecipe.craft_time_sec * 1000 : 3000 // 실패시 3초
+    const duration = matchedRecipe ? matchedRecipe.craft_time_sec * 1000 : ALCHEMY.DEFAULT_CRAFT_TIME_MS
 
 
 
@@ -491,7 +456,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     })
 
     // 진행 바 시뮬레이션
-    const interval = 50
+    const interval = ALCHEMY.BREW_UPDATE_INTERVAL_MS
     const step = interval / duration
 
     let timer: NodeJS.Timeout | null = null
@@ -560,7 +525,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // 진행 바 시뮬레이션
     const duration = recipe.craft_time_sec * 1000
-    const interval = 50
+    const interval = ALCHEMY.BREW_UPDATE_INTERVAL_MS
     const step = interval / duration
 
     let timer: NodeJS.Timeout | null = null
@@ -657,8 +622,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
         // 5. 로컬 상태 업데이트 (XP)
         if (playerAlchemy) {
-          const newExp = playerAlchemy.experience + recipe.exp_gain
-          const newLevel = Math.floor(newExp / ALCHEMY.XP_PER_LEVEL) + 1
+          const { newLevel, newExp } = calculateNewLevel(playerAlchemy.experience, recipe.exp_gain)
           set({
             playerAlchemy: {
               ...playerAlchemy,
@@ -696,8 +660,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
           // 로컬 상태 업데이트 (XP)
           if (playerAlchemy) {
-            const newExp = playerAlchemy.experience + failureExp
-            const newLevel = Math.floor(newExp / ALCHEMY.XP_PER_LEVEL) + 1
+            const { newLevel, newExp } = calculateNewLevel(playerAlchemy.experience, failureExp)
             set({
               playerAlchemy: {
                 ...playerAlchemy,
@@ -728,8 +691,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
           // 로컬 상태 업데이트 (XP)
           if (playerAlchemy) {
-            const newExp = playerAlchemy.experience + failureExp
-            const newLevel = Math.floor(newExp / ALCHEMY.XP_PER_LEVEL) + 1
+            const { newLevel, newExp } = calculateNewLevel(playerAlchemy.experience, failureExp)
             set({
               playerAlchemy: {
                 ...playerAlchemy,
