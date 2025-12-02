@@ -161,19 +161,26 @@ export function isRecipeValid(recipe: Recipe, context: AlchemyContext | null): b
 /**
  * Finds all matching recipes for a given set of materials and context.
  */
+/**
+ * Finds all matching recipes for a given set of materials and context.
+ * Supports minimum quantity matching (superset check).
+ */
 export function findMatchingRecipes(
-    materials: string[],
+    ingredientCounts: Record<string, number>,
     context: AlchemyContext | null,
     allRecipes: Recipe[]
 ): Recipe[] {
-    const key = generateMaterialKey(materials)
-
-    // 1. Filter by material match
+    // 1. Filter by material match (superset check)
     const candidates = allRecipes.filter(recipe => {
-        if (!recipe.ingredients) return false
-        const recipeMaterials = recipe.ingredients.flatMap(m => Array(m.quantity).fill(m.material_id))
-        const recipeKey = generateMaterialKey(recipeMaterials)
-        return recipeKey === key
+        if (!recipe.ingredients || recipe.ingredients.length === 0) return false
+
+        // Check if every ingredient in the recipe is present in sufficient quantity
+        const hasAllIngredients = recipe.ingredients.every(ing => {
+            const currentQty = ingredientCounts[ing.material_id] || 0
+            return currentQty >= ing.quantity
+        })
+
+        return hasAllIngredients
     })
 
     // 2. Filter by conditions
@@ -183,22 +190,23 @@ export function findMatchingRecipes(
 /**
  * Finds a single matching recipe for given ingredient counts.
  * Used for free-form crafting where players add materials without selecting a recipe.
+ * Prioritizes recipes that consume more materials.
  */
 export function findMatchingRecipe(
     ingredientCounts: Record<string, number>,
     context: AlchemyContext | null,
     allRecipes: Recipe[]
 ): Recipe | null {
-    // Convert ingredient counts to array of material IDs
-    const materials: string[] = []
-    for (const [materialId, count] of Object.entries(ingredientCounts)) {
-        for (let i = 0; i < count; i++) {
-            materials.push(materialId)
-        }
-    }
+    const matches = findMatchingRecipes(ingredientCounts, context, allRecipes)
 
-    const matches = findMatchingRecipes(materials, context, allRecipes)
+    if (matches.length === 0) return null
 
-    // Return the first match (could be extended to prioritize by rarity, level, etc.)
-    return matches.length > 0 ? matches[0] : null
+    // Sort matches by total ingredient quantity (descending) to prioritize more complex recipes
+    matches.sort((a, b) => {
+        const totalA = a.ingredients?.reduce((sum, ing) => sum + ing.quantity, 0) || 0
+        const totalB = b.ingredients?.reduce((sum, ing) => sum + ing.quantity, 0) || 0
+        return totalB - totalA
+    })
+
+    return matches[0]
 }

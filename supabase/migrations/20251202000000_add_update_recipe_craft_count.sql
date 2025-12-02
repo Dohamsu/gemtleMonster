@@ -1,4 +1,8 @@
 -- Function to update recipe craft count
+-- Drop potential conflicting functions first to resolve overloading ambiguity
+drop function if exists public.update_recipe_craft_count(uuid, text, boolean);
+drop function if exists public.update_recipe_craft_count(uuid, uuid, boolean);
+
 create or replace function public.update_recipe_craft_count(
   p_user_id uuid,
   p_recipe_id text,
