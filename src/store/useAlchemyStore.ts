@@ -286,7 +286,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // console.log(`✅ 재료 추가 완료. 현재 슬롯:`, newIngredients)
 
-    set({ selectedIngredients: newIngredients })
+    set({ selectedIngredients: newIngredients, selectedRecipeId: null })
   },
 
   removeIngredient: (materialId, quantity) => {
@@ -297,13 +297,14 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     if (newAmount === 0) {
       const newIngredients = { ...selectedIngredients }
       delete newIngredients[materialId]
-      set({ selectedIngredients: newIngredients })
+      set({ selectedIngredients: newIngredients, selectedRecipeId: null })
     } else {
       set({
         selectedIngredients: {
           ...selectedIngredients,
           [materialId]: newAmount
-        }
+        },
+        selectedRecipeId: null
       })
     }
   },
@@ -431,21 +432,16 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     }
 
     // 재료 조합으로 레시피 찾기
-    const matchedRecipe = alchemyContext
-      ? findMatchingRecipe(selectedIngredients, alchemyContext, allRecipes)
-      : null
+    const matchedRecipe = findMatchingRecipe(selectedIngredients, alchemyContext || null, allRecipes)
 
     const duration = matchedRecipe ? matchedRecipe.craft_time_sec * 1000 : ALCHEMY.DEFAULT_CRAFT_TIME_MS
 
-
-
-    /*
     console.log('🧪 자유 조합 시작:', {
       재료: selectedIngredients,
       매칭된레시피: matchedRecipe?.name || '없음',
       소요시간: duration / 1000 + '초'
     })
-    */
+
 
     set({
       isBrewing: true,
@@ -477,7 +473,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
           const success = Math.random() * 100 < matchedRecipe.base_success_rate
           get().completeBrewing(success, matchedRecipe)
         } else {
-          // 레시피 없으면 실패
+          // 레시피 없으면 실패 (경험치는 여전히 획득)
           get().completeBrewing(false, null)
         }
       }
@@ -585,7 +581,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       brewProgress: 0,
       brewResult,
       playerMaterials: newPlayerMaterials,
-      selectedIngredients: {}
+      selectedIngredients: {},
+      selectedRecipeId: null // 조합 완료 후 레시피 선택 해제
     })
 
     // gameStore의 resources도 업데이트

@@ -148,8 +148,9 @@ export function checkCondition(condition: RecipeCondition, context: AlchemyConte
 /**
  * Checks if a recipe is valid given the current context.
  */
-export function isRecipeValid(recipe: Recipe, context: AlchemyContext): boolean {
+export function isRecipeValid(recipe: Recipe, context: AlchemyContext | null): boolean {
     if (!recipe.conditions || recipe.conditions.length === 0) return true
+    if (!context) return false // Conditions exist but no context to check against
     return recipe.conditions.every(condition => checkCondition(condition, context))
 }
 
@@ -162,7 +163,7 @@ export function isRecipeValid(recipe: Recipe, context: AlchemyContext): boolean 
  */
 export function findMatchingRecipes(
     materials: string[],
-    context: AlchemyContext,
+    context: AlchemyContext | null,
     allRecipes: Recipe[]
 ): Recipe[] {
     const key = generateMaterialKey(materials)
@@ -185,7 +186,7 @@ export function findMatchingRecipes(
  */
 export function findMatchingRecipe(
     ingredientCounts: Record<string, number>,
-    context: AlchemyContext,
+    context: AlchemyContext | null,
     allRecipes: Recipe[]
 ): Recipe | null {
     // Convert ingredient counts to array of material IDs

@@ -7,6 +7,8 @@
 export const ALCHEMY = {
   /** Maximum number of ingredient slots in alchemy UI */
   MAX_INGREDIENT_SLOTS: 4,
+  /** Maximum quantity per ingredient slot */
+  MAX_QUANTITY_PER_SLOT: 10,
   /** Experience points required per level */
   XP_PER_LEVEL: 100,
   /** Animation duration for resource additions (milliseconds) */

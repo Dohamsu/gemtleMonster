@@ -46,7 +46,8 @@ export default function GameCanvas() {
         loadAllData,
         playerAlchemy,
         brewResult,
-        setAlchemyContext
+        setAlchemyContext,
+        clearIngredients
     } = useAlchemyStore()
 
     // 통합 인벤토리 사용 (Single Source of Truth)
@@ -92,7 +93,8 @@ export default function GameCanvas() {
         startFreeFormBrewing,
         completeBrewing,
         autoFillIngredients,
-        setDungeonModalOpen: setShowDungeonModal // Pass setter
+        setDungeonModalOpen: setShowDungeonModal, // Pass setter
+        clearIngredients // Pass clearIngredients
     })
 
     // Show modal when brewing completes

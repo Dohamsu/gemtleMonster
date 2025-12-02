@@ -23,6 +23,7 @@ interface ClickHandlerProps {
     completeBrewing: (success: boolean) => Promise<void>
     autoFillIngredients: (recipeId: string) => boolean
     setDungeonModalOpen: (isOpen: boolean) => void
+    clearIngredients: () => void
 }
 
 /**
@@ -48,7 +49,8 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
         startFreeFormBrewing,
         completeBrewing,
         autoFillIngredients,
-        setDungeonModalOpen
+        setDungeonModalOpen,
+        clearIngredients
     } = props
 
     return useCallback(
@@ -82,7 +84,8 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
                     startBrewing,
                     startFreeFormBrewing,
                     completeBrewing,
-                    autoFillIngredients
+                    autoFillIngredients,
+                    clearIngredients
                 )
             }
         },
@@ -174,7 +177,8 @@ function handleAlchemyWorkshopClick(
     startBrewing: (recipeId: string) => Promise<void>,
     startFreeFormBrewing: () => Promise<void>,
     completeBrewing: (success: boolean) => Promise<void>,
-    autoFillIngredients: (recipeId: string) => boolean
+    autoFillIngredients: (recipeId: string) => boolean,
+    clearIngredients: () => void
 ) {
     // Back button
     if (x >= 20 && x <= 120 && y >= 20 && y <= 60) {
@@ -190,6 +194,7 @@ function handleAlchemyWorkshopClick(
         allRecipes,
         allMaterials,
         playerMaterials,
+        selectedRecipeId,
         isBrewing,
         selectRecipe,
         autoFillIngredients
@@ -205,8 +210,7 @@ function handleAlchemyWorkshopClick(
         selectedIngredients,
         isBrewing,
         materialScrollOffset,
-        addIngredient,
-        removeIngredient
+        addIngredient
     )
 
     // Ingredient slot clicks
@@ -237,6 +241,7 @@ function handleRecipeListClick(
     allRecipes: Recipe[],
     _allMaterials: Material[],
     playerMaterials: Record<string, number>,
+    selectedRecipeId: string | null,
     isBrewing: boolean,
     selectRecipe: (recipeId: string | null) => void,
     autoFillIngredients: (recipeId: string) => boolean
@@ -256,6 +261,21 @@ function handleRecipeListClick(
         if (x >= recipeX && x <= recipeX + recipeW && y >= currentY && y <= currentY + itemHeight) {
             if (isBrewing) {
                 console.log('Cannot select recipe while brewing')
+                return
+            }
+
+            // Toggle selection if already selected
+            if (selectedRecipeId === recipe.id) {
+                selectRecipe(null)
+                // Optional: Clear ingredients when deselecting?
+                // Based on user request: "레시피 선택 상태를 해제시켜줘" implies just clearing the selection state.
+                // However, usually deselecting a recipe might imply clearing the board.
+                // Let's check the user request again: "레시피를 선택한 채로 다른 재료를 넣거나... 레시피 선택 상태를 해제시켜줘"
+                // It doesn't explicitly say "clear ingredients".
+                // But `selectRecipe` in store clears ingredients:
+                // selectRecipe: (recipeId) => { set({ selectedRecipeId: recipeId, selectedIngredients: {}, ... }) }
+                // So calling selectRecipe(null) will clear ingredients too, which is likely desired behavior for "deselecting".
+                console.log('Deselected recipe:', recipe.name)
                 return
             }
 
@@ -287,8 +307,7 @@ function handleMaterialGridClick(
     selectedIngredients: Record<string, number>,
     isBrewing: boolean,
     materialScrollOffset: number,
-    addIngredient: (materialId: string, quantity: number) => void,
-    removeIngredient: (materialId: string, quantity: number) => void
+    addIngredient: (materialId: string, quantity: number) => void
 ) {
     const gridX = canvas.width - 260
     const gridY = 120
@@ -317,26 +336,37 @@ function handleMaterialGridClick(
             const available = playerMaterials[material.id] || 0
             const currentlySelected = selectedIngredients[material.id] || 0
 
-            // Toggle off if already selected
-            if (currentlySelected > 0) {
-                removeIngredient(material.id, currentlySelected)
-                console.log('Removed ingredient completely:', material.name)
+            // 재고가 없으면 추가 불가
+            if (available <= 0) {
+                console.log('Cannot add material with zero stock:', material.name)
                 return
             }
 
-            // Add if has stock and under max limit
-            if (available > 0) {
-                const totalSelected = Object.values(selectedIngredients).reduce((sum, qty) => sum + qty, 0)
-
-                if (totalSelected < ALCHEMY.MAX_INGREDIENT_SLOTS) {
-                    addIngredient(material.id, 1)
-                    console.log('Added ingredient:', material.name)
-                } else {
-                    console.log('Cannot add more ingredients: maximum', ALCHEMY.MAX_INGREDIENT_SLOTS, 'reached')
-                }
-            } else {
-                console.log('Cannot add material with zero stock:', material.name)
+            // 이미 보유한 만큼 다 선택했으면 추가 불가
+            if (currentlySelected >= available) {
+                console.log('Already selected all available:', material.name, `(${available}/${available})`)
+                return
             }
+
+            // 슬롯당 최대 수량 체크
+            if (currentlySelected >= ALCHEMY.MAX_QUANTITY_PER_SLOT) {
+                console.log('Cannot add more:', material.name, `- maximum ${ALCHEMY.MAX_QUANTITY_PER_SLOT} per slot`)
+                return
+            }
+
+            // 슬롯 개수 제한 체크 (서로 다른 재료 종류)
+            const uniqueIngredients = Object.keys(selectedIngredients).length
+            const isNewIngredient = currentlySelected === 0
+
+            if (isNewIngredient && uniqueIngredients >= ALCHEMY.MAX_INGREDIENT_SLOTS) {
+                console.log('Cannot add new ingredient: maximum', ALCHEMY.MAX_INGREDIENT_SLOTS, 'ingredient types reached')
+                return
+            }
+
+            // 클릭할 때마다 +1 추가
+            addIngredient(material.id, 1)
+            console.log('Added ingredient:', material.name, `(${currentlySelected + 1}/${Math.min(available, ALCHEMY.MAX_QUANTITY_PER_SLOT)})`)
+
         }
     }
 }
