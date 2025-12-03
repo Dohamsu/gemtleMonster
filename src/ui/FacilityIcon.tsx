@@ -16,6 +16,12 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
             return `/assets/facility/herb_farm_${imageLevel}.png`
         }
 
+        if (id === 'mine') {
+            // mine has level-specific images: mine_1.png, mine_2.png, mine_3.png
+            const imageLevel = Math.min(level, 3) // Cap at 3 since we only have 3 images
+            return `/assets/facility/mine_${imageLevel}.png`
+        }
+
         // For other facilities, you can add similar logic when images are available
         // For now, return null to show a fallback
         return null
