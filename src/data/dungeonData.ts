@@ -27,7 +27,7 @@ export interface Dungeon {
 export const SLIME_DUNGEON: Dungeon = {
     id: 'dungeon_slime_forest',
     name: '슬라임 숲',
-    description: '끈적끈적한 슬라임들이 서식하는 숲입니다. 초보 모험가에게 적합합니다.',
+    description: '끈적한 발자국이 끝없이 이어지는 슬라임들의 안식처. 위험도는 낮지만 방심한 모험가는 순식간에 포위당하는, 초보 모험가들의 시험장입니다.',
     recommendedLevel: 1,
     enemies: [
         {
@@ -75,7 +75,7 @@ export const SLIME_DUNGEON: Dungeon = {
 export const LAKE_DUNGEON: Dungeon = {
     id: 'dungeon_lake',
     name: '신비한 호수',
-    description: '맑은 물이 고여있는 신비한 호수입니다. 물 속성 재료를 얻을 수 있습니다.',
+    description: '옅은 안개가 수면을 뒤덮은 고요한 호수. 잔잔한 물결 아래 고대의 물 마력이 숨어 있어, 맑은 물 속성 재료와 신비한 보물을 노리는 모험가들이 끊이지 않는 장소입니다.',
     recommendedLevel: 3,
     enemies: [
         {

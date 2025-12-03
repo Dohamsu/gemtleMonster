@@ -23,7 +23,6 @@ interface ClickHandlerProps {
     completeBrewing: (success: boolean) => Promise<void>
     autoFillIngredients: (recipeId: string) => boolean
     setDungeonModalOpen: (isOpen: boolean) => void
-    clearIngredients: () => void
 }
 
 /**
@@ -50,7 +49,6 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
         completeBrewing,
         autoFillIngredients,
         setDungeonModalOpen,
-        clearIngredients
     } = props
 
     return useCallback(
@@ -85,7 +83,6 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
                     startFreeFormBrewing,
                     completeBrewing,
                     autoFillIngredients,
-                    clearIngredients
                 )
             }
         },
@@ -178,7 +175,6 @@ function handleAlchemyWorkshopClick(
     startFreeFormBrewing: () => Promise<void>,
     completeBrewing: (success: boolean) => Promise<void>,
     autoFillIngredients: (recipeId: string) => boolean,
-    clearIngredients: () => void
 ) {
     // Back button
     if (x >= 20 && x <= 120 && y >= 20 && y <= 60) {

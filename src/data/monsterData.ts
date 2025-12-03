@@ -22,7 +22,7 @@ export interface MonsterData {
 export const MONSTER_DATA: Record<string, MonsterData> = {
     'monster_slime_basic': {
         name: '기본 슬라임',
-        description: '가장 기초적인 슬라임 몬스터. 던전 입문에 적합합니다.',
+        description: '연금술 초보도 쉽게 다루는 가장 기본형 슬라임. 느릿하지만 탁월한 회복력으로 전열을 지키는 입문용 몬스터입니다.',
         role: '탱커',
         hp: 150,
         attack: 20,
@@ -34,7 +34,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_hound_fang': {
         name: '송곳니 하운드',
-        description: '민첩한 공격형 몬스터. 빠른 공격이 특징입니다.',
+        description: '새하얀 송곳니를 번뜩이며 달려드는 사냥견. 그림자처럼 움직이며 끊임없는 연속 공격을 퍼붓습니다.',
         role: '딜러',
         hp: 100,
         attack: 45,
@@ -45,7 +45,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_golem_stone': {
         name: '돌 골렘',
-        description: '단단한 방어형 골렘. 높은 방어력으로 팀을 지킵니다.',
+        description: '고대 성채의 파편으로 빚어낸 돌 골렘. 거대한 몸으로 일행 앞을 막아서 모든 공격을 받아냅니다.',
         role: '탱커',
         hp: 250,
         attack: 25,
@@ -58,7 +58,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_fairy_spirit': {
         name: '정령 요정',
-        description: '회복과 버프를 제공하는 서포트 몬스터.',
+        description: '숲의 바람과 속삭이는 정령 요정. 아군의 상처를 치유하고 능력을 일시적으로 끌어올려 줍니다.',
         role: '서포터',
         hp: 80,
         attack: 15,
@@ -70,7 +70,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_wolf_dark': {
         name: '어둠 늑대',
-        description: '어둠 속성의 강력한 딜러. 치명타에 특화되어 있습니다.',
+        description: '달빛조차 스며들지 않는 그림자 속을 달리는 늑대. 어둠 속에서 찌르는 한 방의 치명타로 적을 쓰러뜨립니다.',
         role: '딜러',
         hp: 120,
         attack: 60,
@@ -81,7 +81,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_slime_king': {
         name: '왕슬라임',
-        description: '슬라임의 왕. 강력한 탱커이자 리더입니다.',
+        description: '모든 슬라임을 다스리는 점액의 군주. 둔중하지만 압도적인 체력과 방어력으로 전장을 지배합니다.',
         role: '탱커',
         hp: 350,
         attack: 35,
@@ -94,7 +94,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_golem_magma': {
         name: '마그마 골렘',
-        description: '불 속성의 공격형 골렘. 화염 공격으로 적을 태웁니다.',
+        description: '분화구 깊은 곳에서 깨어난 마그마 골렘. 끊임없이 타오르는 화염 주먹으로 적을 재로 만들어 버립니다.',
         role: '딜러',
         hp: 200,
         attack: 70,
@@ -106,7 +106,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_slime_nightmare': {
         name: '악몽 슬라임',
-        description: '심야에만 만들 수 있는 디버프 특화 몬스터.',
+        description: '잠든 자의 악몽이 응고되어 탄생한 슬라임. 적에게 각종 약화 효과를 퍼뜨려 전투를 서서히 무너뜨립니다.',
         role: '딜러',
         hp: 180,
         attack: 55,
@@ -117,7 +117,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_fairy_dawn': {
         name: '새벽 정령',
-        description: '새벽에만 소환 가능한 경험치 버프 정령.',
+        description: '해가 떠오르는 찰나에만 모습을 드러내는 새벽의 정령. 아군이 얻는 경험치를 높여 성장을 가속시켜 줍니다.',
         role: '서포터',
         hp: 90,
         attack: 20,
@@ -128,7 +128,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_guardian_tiger': {
         name: '호랑이 수호령',
-        description: '한국 전통의 수호령. 치명타에 특화된 전설급 몬스터입니다.',
+        description: '옛 사당을 지키던 호랑이 수호령이 형상을 드러낸 존재. 번개 같은 발톱으로 적의 급소를 정확히 노립니다.',
         role: '딜러',
         hp: 300,
         attack: 90,
@@ -139,7 +139,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_slime_water': {
         name: '워터 슬라임',
-        description: '맑은 물로 이루어진 슬라임. 물리 공격에 강한 내성을 가집니다.',
+        description: '맑고 차가운 물기만으로 이루어진 슬라임. 물리 공격을 상쇄하며 흐르는 방어막처럼 아군을 지켜줍니다.',
         role: '탱커',
         hp: 200,
         attack: 25,
@@ -152,7 +152,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_slime_dark': {
         name: '다크 슬라임',
-        description: '어둠에 물든 슬라임. 은밀하게 접근하여 적을 공격합니다.',
+        description: '어둠에 잠식된 점액이 모여 만들어진 슬라임. 인기척 없이 다가가 그림자에서 기습을 가합니다.',
         role: '딜러',
         hp: 160,
         attack: 50,
@@ -164,7 +164,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'monster_golem_wood': {
         name: '나무 골렘',
-        description: '숲의 정령이 깃든 골렘. 자연의 힘으로 아군을 보호합니다.',
+        description: '오래된 숲의 수호목이 움직이기 시작한 골렘. 자연의 수호력을 빌려 아군을 단단히 감싸 보호합니다.',
         role: '서포터',
         hp: 180,
         attack: 30,
@@ -177,7 +177,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     // Dungeon Enemies (Synced from dungeonData.ts)
     'slime_green': {
         name: '초록 슬라임',
-        description: '가장 흔하게 볼 수 있는 초록색 슬라임.',
+        description: '전역 어디에서나 발견되는 초록색 슬라임. 약하지만 무리를 지어 나타나 모험가를 성가시게 합니다.',
         role: '탱커',
         hp: 30,
         attack: 5,
@@ -189,7 +189,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'slime_blue': {
         name: '파랑 슬라임',
-        description: '약간의 마력을 머금은 파란색 슬라임.',
+        description: '호수와 강가에 서식하는 푸른 슬라임. 약한 마력을 머금어 물 속성과 관련된 공격을 시전합니다.',
         role: '탱커',
         hp: 50,
         attack: 8,
@@ -201,7 +201,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'lake_fairy': {
         name: '호수의 요정',
-        description: '호수를 지키는 작은 요정.',
+        description: '고요한 호수 수면 위를 떠도는 작은 요정. 외지인을 경계하지만, 인정받은 자에게는 물의 축복을 나눠 줍니다.',
         role: '서포터',
         hp: 50,
         attack: 15,
@@ -213,7 +213,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'slime_water_giant': {
         name: '거대 워터 슬라임',
-        description: '거대해진 워터 슬라임. 강력한 수압으로 공격합니다.',
+        description: '다수의 워터 슬라임이 뒤엉켜 하나가 된 거대 개체. 거대한 몸체로 솟구치는 수압 공격을 내리꽂습니다.',
         role: '탱커',
         hp: 300,
         attack: 35,
@@ -270,4 +270,3 @@ export const GAME_MONSTERS: Record<string, Monster> = Object.entries(MONSTER_DAT
     }
     return acc
 }, {} as Record<string, Monster>)
-

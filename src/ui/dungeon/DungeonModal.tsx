@@ -179,12 +179,19 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                     borderRadius: '8px',
                                     textAlign: 'center',
                                     color: '#94a3b8',
-                                    marginBottom: '20px'
+                                    marginBottom: '20px',
                                 }}>
                                     몬스터가 없습니다. 연금술로 몬스터를 만들어보세요! 🧪
                                 </div>
                             ) : (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px', marginBottom: '20px' }}>
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                    gap: '10px',
+                                    marginBottom: '20px',
+                                    height: '200px',
+                                    overflowY: 'auto'
+                                }}>
                                     {playerMonsters.map(monster => {
                                         const monsterKey = monster.monster_id.replace('monster_', '')
                                         const monsterData = MONSTERS[monsterKey]
