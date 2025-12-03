@@ -64,6 +64,7 @@ export default function GameCanvas() {
         success: false
     })
     const [materialScrollOffset, setMaterialScrollOffset] = useState(0)
+    const [mobileTab, setMobileTab] = useState<'recipes' | 'materials'>('recipes') // 모바일 탭 상태
 
     // Update alchemy context in store
     useEffect(() => {
@@ -74,7 +75,7 @@ export default function GameCanvas() {
     const [showDungeonModal, setShowDungeonModal] = useState(false)
 
     // Optimized click handler
-    const handleCanvasClick = useCanvasClickHandler({
+    const baseClickHandler = useCanvasClickHandler({
         canvasView,
         setCanvasView,
         allRecipes,
@@ -94,6 +95,35 @@ export default function GameCanvas() {
         autoFillIngredients,
         setDungeonModalOpen: setShowDungeonModal, // Pass setter
     })
+
+    // 모바일 탭 클릭 처리를 위한 래퍼
+    const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
+        const canvas = event.currentTarget
+        const rect = canvas.getBoundingClientRect()
+        const scaleX = canvas.width / rect.width
+        const scaleY = canvas.height / rect.height
+        const x = (event.clientX - rect.left) * scaleX
+        const y = (event.clientY - rect.top) * scaleY
+
+        // 연금술 화면이고 모바일 레이아웃일 때 탭 클릭 처리
+        if (canvasView === 'alchemy_workshop' && canvas.width <= 768) {
+            const tabY = 60
+            const tabHeight = 50
+            const tabW = canvas.width / 2
+
+            if (y >= tabY && y <= tabY + tabHeight) {
+                if (x < tabW) {
+                    setMobileTab('recipes')
+                } else {
+                    setMobileTab('materials')
+                }
+                return
+            }
+        }
+
+        // 기존 클릭 핸들러 호출
+        baseClickHandler(event)
+    }, [canvasView, baseClickHandler, setMobileTab])
 
     // Show modal when brewing completes
     useEffect(() => {
@@ -182,7 +212,8 @@ export default function GameCanvas() {
                 playerAlchemy,
                 materialScrollOffset,
                 MATERIAL_CELL_SIZE: UI.MATERIAL_CELL_SIZE,
-                MATERIAL_GRID_PADDING: UI.MATERIAL_GRID_PADDING
+                MATERIAL_GRID_PADDING: UI.MATERIAL_GRID_PADDING,
+                mobileTab // 모바일 탭 상태 전달
             })
         } else if (canvasView === 'shop') {
             renderShopView({ ctx, canvas, images })

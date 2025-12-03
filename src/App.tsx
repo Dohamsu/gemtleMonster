@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import GameCanvas from './game/GameCanvas'
 import UIOverlay from './ui/UIOverlay'
 import { useAuth } from './hooks/useAuth'
@@ -84,6 +84,126 @@ function App() {
             ; (window as any).useGameStore = useGameStore
     }, [user])
 
+    // 반응형 레이아웃을 위한 뷰포트 크기 감지
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+    const [isOverlayOpen, setIsOverlayOpen] = useState(false) // 모바일 UI Overlay 토글 상태
+
+    useEffect(() => {
+        const handleResize = () => {
+            const mobile = window.innerWidth <= 768
+            setIsMobile(mobile)
+            // 데스크톱으로 전환 시 오버레이 닫기
+            if (!mobile) {
+                setIsOverlayOpen(false)
+            }
+        }
+
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    if (isMobile) {
+        // 모바일 레이아웃: 전체 화면 Canvas + 하단 슬라이드업 UI Overlay
+        return (
+            <div style={{
+                position: 'relative',
+                width: '100vw',
+                height: '100vh',
+                overflow: 'hidden',
+                backgroundColor: '#000'
+            }}>
+                {/* Game Area (Full Screen) */}
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: '#2c3e50',
+                    overflow: 'hidden'
+                }}>
+                    <GameCanvas />
+                </div>
+
+                {/* Hamburger Button */}
+                <button
+                    onClick={() => setIsOverlayOpen(!isOverlayOpen)}
+                    style={{
+                        position: 'absolute',
+                        top: '20px',
+                        right: '20px',
+                        width: '50px',
+                        height: '50px',
+                        backgroundColor: 'rgba(26, 26, 26, 0.9)',
+                        border: '2px solid #444',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '5px',
+                        cursor: 'pointer',
+                        zIndex: 20,
+                        padding: 0,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        transition: 'background-color 0.2s'
+                    }}
+                    onMouseDown={(e) => e.currentTarget.style.backgroundColor = 'rgba(60, 60, 60, 0.9)'}
+                    onMouseUp={(e) => e.currentTarget.style.backgroundColor = 'rgba(26, 26, 26, 0.9)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(26, 26, 26, 0.9)'}
+                >
+                    <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
+                    <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
+                    <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
+                </button>
+
+                {/* UI Overlay (Bottom Slide-up Panel) */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    width: '100%',
+                    maxHeight: '80%',
+                    backgroundColor: '#1a1a1a',
+                    borderTop: '2px solid #333',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    zIndex: 15,
+                    boxShadow: '0 -4px 12px rgba(0,0,0,0.5)',
+                    overflowY: 'auto',
+                    transform: isOverlayOpen ? 'translateY(0)' : 'translateY(100%)',
+                    transition: 'transform 0.3s ease-in-out'
+                }}>
+                    {/* Close button inside overlay */}
+                    <div style={{
+                        padding: '10px',
+                        borderBottom: '1px solid #333',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>메뉴</span>
+                        <button
+                            onClick={() => setIsOverlayOpen(false)}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#fff',
+                                fontSize: '24px',
+                                cursor: 'pointer',
+                                padding: '5px 10px'
+                            }}
+                        >
+                            ✕
+                        </button>
+                    </div>
+                    <UIOverlay />
+                </div>
+            </div>
+        )
+    }
+
+    // 데스크톱 레이아웃 (기존 방식)
     return (
         <div style={{
             display: 'flex',
