@@ -48,7 +48,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         description: '고대 성채의 파편으로 빚어낸 돌 골렘. 거대한 몸으로 일행 앞을 막아서 모든 공격을 받아냅니다.',
         role: '탱커',
         hp: 250,
-        attack: 25,
+        attack: 250,
         defense: 60,
         emoji: '🗿',
         iconUrl: '/assets/monsters/stoneGolem.png',
@@ -174,6 +174,42 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'earth'
     },
+    'monster_mushroom': {
+        name: '머쉬룸',
+        description: '숲의 기운을 머금고 자라난 거대 버섯. 포자를 퍼뜨려 아군을 치유하거나 적을 혼란스럽게 만듭니다.',
+        role: '서포터',
+        hp: 110,
+        attack: 25,
+        defense: 25,
+        emoji: '🍄',
+        iconUrl: '/assets/monsters/mushroom.png',
+        rarity: 'N',
+        element: 'earth'
+    },
+    'monster_mushroom_dark': {
+        name: '다크 머쉬룸',
+        description: '음습한 늪지에서 자라난 독버섯. 치명적인 독 포자를 뿜어 적을 서서히 죽음에 이르게 합니다.',
+        role: '딜러',
+        hp: 130,
+        attack: 55,
+        defense: 20,
+        emoji: '🍄',
+        iconUrl: '/assets/monsters/mushroom_dark.png',
+        rarity: 'R',
+        element: 'dark'
+    },
+    'monster_golem_gem': {
+        name: '보석 골렘',
+        description: '희귀한 보석들로 이루어진 화려한 골렘. 눈부신 광채로 적의 시야를 가리고 단단한 보석 몸체로 공격을 튕겨냅니다.',
+        role: '탱커',
+        hp: 280,
+        attack: 40,
+        defense: 80,
+        emoji: '💎',
+        iconUrl: '/assets/monsters/golem_gem.png',
+        rarity: 'SR',
+        element: 'earth'
+    },
     // Dungeon Enemies (Synced from dungeonData.ts)
     'slime_green': {
         name: '초록 슬라임',
@@ -222,6 +258,42 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/slime_water_big.png',
         rarity: 'SR',
         element: 'water'
+    },
+    'crystal_mite': {
+        name: '수정 진드기',
+        description: '수정 동굴의 마력을 먹고 자란 진드기. 단단한 수정 껍질로 몸을 보호하며, 날카로운 다리로 공격합니다.',
+        role: '딜러',
+        hp: 80,
+        attack: 18,
+        defense: 8,
+        emoji: '🕷️',
+        iconUrl: '/assets/monsters/gem_ant.png',
+        rarity: 'N',
+        element: 'earth'
+    },
+    'mana_spirit': {
+        name: '마력의 정령',
+        description: '순수한 마력이 뭉쳐 태어난 정령. 동굴 내부를 부유하며 침입자에게 마력탄을 발사합니다.',
+        role: '딜러',
+        hp: 120,
+        attack: 25,
+        defense: 15,
+        emoji: '✨',
+        iconUrl: '/assets/monsters/gem_spirit.png',
+        rarity: 'R',
+        element: 'light'
+    },
+    'crystal_golem': {
+        name: '수정 골렘',
+        description: '거대한 수정 원석으로 이루어진 골렘. 움직일 때마다 영롱한 빛을 내뿜지만, 그 주먹은 바위보다 단단합니다.',
+        role: '탱커',
+        hp: 400,
+        attack: 45,
+        defense: 30,
+        emoji: '💎',
+        iconUrl: '/assets/monsters/crystal_golem.png',
+        rarity: 'SR',
+        element: 'earth'
     }
 }
 

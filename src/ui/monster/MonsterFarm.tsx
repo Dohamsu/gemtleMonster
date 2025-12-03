@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useAuth } from '../../hooks/useAuth'
 import { MONSTER_DATA } from '../../data/monsterData'
+import { MATERIALS } from '../../data/alchemyData'
 
 export default function MonsterFarm() {
     const { setCanvasView } = useGameStore()
@@ -244,7 +245,7 @@ export default function MonsterFarm() {
                                     borderRadius: '6px',
                                     fontSize: '0.9em'
                                 }}>
-                                    {materialId}: +{amount}
+                                    {MATERIALS[materialId]?.name || materialId}: +{amount}
                                 </div>
                             ))}
                         </div>
@@ -469,7 +470,7 @@ export default function MonsterFarm() {
                                         fontSize: '0.9em',
                                         color: '#86efac'
                                     }}>
-                                        {materialId}: +{amount}
+                                        {MATERIALS[materialId]?.name || materialId}: +{amount}
                                     </div>
                                 ))}
                             </div>

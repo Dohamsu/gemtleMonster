@@ -34,7 +34,39 @@ export default function BattleView() {
             flexDirection: 'column',
             height: '100%'
         }}>
-            <h2 style={{ color: '#ef4444' }}>⚔️ 전투 중! ⚔️</h2>
+            <div style={{ position: 'relative', marginBottom: '20px' }}>
+                <h2 style={{ color: '#ef4444', margin: 0 }}>⚔️ 전투 중! ⚔️</h2>
+                {!battleState.result && (
+                    <button
+                        onClick={endBattle}
+                        style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            background: 'rgba(239, 68, 68, 0.2)',
+                            border: '1px solid #ef4444',
+                            color: '#fca5a5',
+                            padding: '5px 12px',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#ef4444'
+                            e.currentTarget.style.color = 'white'
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'
+                            e.currentTarget.style.color = '#fca5a5'
+                        }}
+                    >
+                        🏳️ 전투 중단
+                    </button>
+                )}
+            </div>
 
             {/* Battle Arena */}
             <div style={{
@@ -121,7 +153,7 @@ export default function BattleView() {
 
             {/* Battle Logs */}
             <div style={{
-                flex: 1,
+                height: '200px',
                 background: 'rgba(0,0,0,0.3)',
                 borderRadius: '8px',
                 padding: '10px',
@@ -160,18 +192,35 @@ export default function BattleView() {
                         }}>
                             <h4 style={{ color: '#fbbf24', margin: '0 0 10px 0', fontSize: '16px' }}>✨ 획득한 아이템</h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                {Object.entries(battleState.rewards).map(([materialId, quantity]) => (
-                                    <div key={materialId} style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        padding: '5px 10px',
-                                        background: 'rgba(0,0,0,0.2)',
-                                        borderRadius: '4px'
-                                    }}>
-                                        <span style={{ color: '#e5e7eb' }}>{MATERIALS[materialId]?.name || materialId}</span>
-                                        <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>x{quantity}</span>
-                                    </div>
-                                ))}
+                                {Object.entries(battleState.rewards).map(([materialId, quantity]) => {
+                                    const material = MATERIALS[materialId]
+                                    const isImage = material?.iconUrl?.startsWith('/') || material?.iconUrl?.startsWith('http')
+
+                                    return (
+                                        <div key={materialId} style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            padding: '5px 10px',
+                                            background: 'rgba(0,0,0,0.2)',
+                                            borderRadius: '4px'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                {isImage ? (
+                                                    <img
+                                                        src={material?.iconUrl}
+                                                        alt={material?.name}
+                                                        style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                                                    />
+                                                ) : (
+                                                    <span style={{ fontSize: '20px' }}>{material?.iconUrl || '📦'}</span>
+                                                )}
+                                                <span style={{ color: '#e5e7eb' }}>{material?.name || materialId}</span>
+                                            </div>
+                                            <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>x{quantity}</span>
+                                        </div>
+                                    )
+                                })}
                             </div>
                         </div>
                     )}

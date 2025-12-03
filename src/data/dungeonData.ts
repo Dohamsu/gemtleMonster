@@ -122,4 +122,52 @@ export const LAKE_DUNGEON: Dungeon = {
     ]
 }
 
-export const DUNGEONS = [SLIME_DUNGEON, LAKE_DUNGEON]
+export const CRYSTAL_DUNGEON: Dungeon = {
+    id: 'dungeon_crystal_cave',
+    name: '수정 동굴',
+    description: '형형색색의 수정이 빛나는 아름다운 동굴. 하지만 아름다움 뒤에는 마력을 탐하는 위험한 생물들이 도사리고 있습니다. 희귀한 마력 결정과 보석을 얻을 수 있는 장소입니다.',
+    recommendedLevel: 5,
+    enemies: [
+        {
+            id: 'crystal_mite',
+            name: '수정 진드기',
+            level: 5,
+            hp: 80,
+            attack: 18,
+            defense: 8,
+            exp: 30,
+            drops: [
+                { materialId: 'ore_iron', chance: 60, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'crystal_mana', chance: 30, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'mana_spirit',
+            name: '마력의 정령',
+            level: 8,
+            hp: 120,
+            attack: 25,
+            defense: 15,
+            exp: 50,
+            drops: [
+                { materialId: 'herb_rare', chance: 50, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'crystal_mana', chance: 40, minQuantity: 1, maxQuantity: 2 }
+            ]
+        },
+        {
+            id: 'crystal_golem',
+            name: '수정 골렘',
+            level: 12,
+            hp: 400,
+            attack: 45,
+            defense: 30,
+            exp: 120,
+            drops: [
+                { materialId: 'crystal_mana', chance: 100, minQuantity: 2, maxQuantity: 4 },
+                { materialId: 'gem_fragment', chance: 60, minQuantity: 1, maxQuantity: 2 }
+            ]
+        }
+    ]
+}
+
+export const DUNGEONS = [SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON]

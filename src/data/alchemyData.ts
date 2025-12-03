@@ -326,6 +326,59 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
             { materialId: 'shard_earth', quantity: 1, isCatalyst: false }
         ],
         conditions: []
+    },
+    {
+        id: 'recipe_mushroom',
+        resultMonsterId: 'monster_mushroom',
+        resultCount: 1,
+        baseSuccessRate: 95,
+        craftTimeSec: 8,
+        costGold: 30,
+        requiredAlchemyLevel: 1,
+        expGain: 15,
+        isHidden: false,
+        priority: 95,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 3, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_mushroom_dark',
+        resultMonsterId: 'monster_mushroom_dark',
+        resultCount: 1,
+        baseSuccessRate: 75,
+        craftTimeSec: 15,
+        costGold: 80,
+        requiredAlchemyLevel: 3,
+        expGain: 30,
+        isHidden: false,
+        priority: 84,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 5, isCatalyst: false },
+            { materialId: 'slime_core', quantity: 1, isCatalyst: false },
+            { materialId: 'crystal_mana', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_golem_gem',
+        resultMonsterId: 'monster_golem_gem',
+        resultCount: 1,
+        baseSuccessRate: 60,
+        craftTimeSec: 30,
+        costGold: 220,
+        requiredAlchemyLevel: 5,
+        expGain: 55,
+        isHidden: false,
+        priority: 72,
+        ingredients: [
+            { materialId: 'ore_iron', quantity: 5, isCatalyst: false },
+            { materialId: 'gem_fragment', quantity: 3, isCatalyst: false },
+            { materialId: 'crystal_mana', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
     }
 ]
 
