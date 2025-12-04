@@ -1,26 +1,16 @@
 /**
- * 연금술 공방 렌더러 - 반응형 구현
- * 
- * [반응형 구현 방식]
- * 1. 레이아웃 감지: getAlchemyLayout()을 통해 캔버스 크기 기반으로 모바일/데스크톱 판별
- *    - 모바일: 캔버스 너비 <= 768px
- *    - 데스크톱: 캔버스 너비 > 768px
- * 
- * 2. 레이아웃 분기:
- *    - 모바일: 탭 기반 UI (레시피/재료 탭 전환), 세로 레이아웃
- *    - 데스크톱: 좌우 패널 레이아웃 (레시피 왼쪽, 재료 오른쪽)
- * 
- * 3. 모바일 최적화:
- *    - 터치 친화적 크기 (재료 셀 60px, 슬롯 50px)
- *    - 탭 전환으로 화면 공간 효율화
- *    - 세로 스크롤 지원
- *    - 작은 폰트 및 간격 조정
- * 
- * 4. 동적 크기 조정:
- *    - 모든 UI 요소는 캔버스 크기에 따라 동적으로 계산됨
- *    - responsiveUtils.ts의 getAlchemyLayout()에서 중앙 집중식 레이아웃 관리
- *    - constants/game.ts의 LAYOUT 상수로 공통 값 관리
+ * 연금술 공방 렌더러 - 반응형 구현 + React 통합
+ *
+ * [Canvas + React 하이브리드 접근]
+ * - Canvas: 중앙 가마솥, 재료 슬롯, 양조 버튼 (게임 느낌 유지)
+ * - React: 레시피 리스트, 재료 그리드 (반응형, 접근성, 생산성)
+ *
+ * [이전 구현 (Canvas 전용)]
+ * - 레시피 리스트와 재료 그리드도 Canvas로 렌더링
+ * - 아래 _render* 함수들은 참고용으로 남겨둠 (Git에서 복구 가능)
  */
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import type { CanvasImages } from '../../hooks/useCanvasImages'
 import type { Recipe, Material, PlayerAlchemy } from '../../lib/alchemyApi'
@@ -101,34 +91,22 @@ export function renderAlchemyWorkshop(props: AlchemyRendererProps) {
     ctx.fillStyle = '#2a1810'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
+    // React가 레시피 리스트와 재료 그리드를 처리하므로,
+    // Canvas는 중앙 요소(가마솥, 슬롯, 버튼)만 렌더링
+
+    renderBackButton(ctx)
+    renderTitle(ctx, canvas)
+
     if (layout.isMobile) {
-        // ===== 모바일 레이아웃 =====
-        // 탭 기반 UI로 레시피/재료를 전환하여 표시
-        renderBackButton(ctx)
-        renderTitle(ctx, canvas)
-        renderMobileTabs(ctx, canvas, props.mobileTab || 'recipes') // 탭 UI 렌더링
-        renderCentralCauldronMobile(ctx, canvas, props.images, layout) // 작은 가마솥
-        renderIngredientSlotsMobile(ctx, canvas, props, layout) // 작은 재료 슬롯
-
-        // 현재 활성 탭에 따라 레시피 또는 재료 그리드 표시
-        // 한 번에 하나의 패널만 표시하여 화면 공간 절약
-        if (props.mobileTab === 'materials') {
-            renderMaterialGridMobile(ctx, canvas, props, layout)
-        } else {
-            renderRecipeListMobile(ctx, canvas, props, layout)
-        }
-
+        // 모바일: 작은 가마솥과 슬롯
+        renderCentralCauldronMobile(ctx, canvas, props.images, layout)
+        renderIngredientSlotsMobile(ctx, canvas, props, layout)
         renderBrewButtonMobile(ctx, canvas, props, layout)
         renderXPBarMobile(ctx, canvas, props.playerAlchemy, layout)
     } else {
-        // ===== 데스크톱 레이아웃 =====
-        // 모든 패널을 동시에 표시하는 전통적인 레이아웃
-        renderBackButton(ctx)
-        renderTitle(ctx, canvas)
-        renderCentralCauldron(ctx, canvas, props.images) // 큰 가마솥 (중앙)
-        renderIngredientSlots(ctx, canvas, props) // 재료 슬롯 (가마솥 아래)
-        renderRecipeList(ctx, canvas, props) // 레시피 목록 (왼쪽 패널)
-        renderMaterialGrid(ctx, canvas, props) // 재료 그리드 (오른쪽 패널)
+        // 데스크톱: 큰 가마솥과 슬롯
+        renderCentralCauldron(ctx, canvas, props.images)
+        renderIngredientSlots(ctx, canvas, props)
         renderBrewButton(ctx, canvas, props)
         renderXPBar(ctx, canvas, props.playerAlchemy)
     }
@@ -290,7 +268,7 @@ function renderIngredientSlots(
     }
 }
 
-function renderRecipeList(
+export function _renderRecipeList(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     props: AlchemyRendererProps
@@ -379,7 +357,7 @@ function renderRecipeList(
     ctx.globalAlpha = 1.0
 }
 
-function renderMaterialGrid(
+export function _renderMaterialGrid(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     props: AlchemyRendererProps
@@ -629,7 +607,7 @@ function renderXPBar(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, p
  * - 클릭 이벤트는 useCanvasClickHandler.ts에서 처리
  * - 탭 영역 클릭 시 mobileTab 상태 변경
  */
-function renderMobileTabs(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, activeTab: 'recipes' | 'materials') {
+export function _renderMobileTabs(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, activeTab: 'recipes' | 'materials') {
     // LAYOUT 상수에서 탭 위치 가져오기 (중앙 집중식 관리)
     const tabY = LAYOUT.MOBILE_TAB_Y
     const tabHeight = LAYOUT.MOBILE_TAB_HEIGHT
@@ -828,7 +806,7 @@ function renderIngredientSlotsMobile(
  * - 재료 부족: 어두운 배경 + 투명도 0.3
  * - 제조 중: 전체 목록 투명도 0.4
  */
-function renderRecipeListMobile(
+export function _renderRecipeListMobile(
     ctx: CanvasRenderingContext2D,
     _canvas: HTMLCanvasElement,
     props: AlchemyRendererProps,
@@ -938,7 +916,7 @@ function renderRecipeListMobile(
  * - 제조 중: 전체 그리드 투명도 0.4
  * - 희귀도: 테두리 색상으로 표시
  */
-function renderMaterialGridMobile(
+export function _renderMaterialGridMobile(
     ctx: CanvasRenderingContext2D,
     _canvas: HTMLCanvasElement,
     props: AlchemyRendererProps,

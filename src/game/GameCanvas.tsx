@@ -7,6 +7,7 @@ import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 import { AlchemyResultModal } from '../ui/alchemy/AlchemyResultModal'
 import Shop from '../ui/shop/Shop'
 import MonsterFarm from '../ui/monster/MonsterFarm'
+import AlchemyWorkshopOverlay from '../ui/alchemy/AlchemyWorkshopOverlay'
 import { useCanvasImages } from '../hooks/useCanvasImages'
 import { useCanvasClickHandler } from '../hooks/useCanvasClickHandler'
 import { useAlchemyContext } from '../hooks/useAlchemyContext'
@@ -16,6 +17,7 @@ import { renderShopView } from './renderers/shopRenderer'
 import { UI, LAYOUT } from '../constants/game'
 import DungeonModal from '../ui/dungeon/DungeonModal'
 import { MATERIALS } from '../data/alchemyData'
+import { isMobileView } from '../utils/responsiveUtils'
 
 /**
  * Optimized GameCanvas Component
@@ -65,6 +67,16 @@ export default function GameCanvas() {
     })
     const [materialScrollOffset, setMaterialScrollOffset] = useState(0)
     const [mobileTab, setMobileTab] = useState<'recipes' | 'materials'>('recipes') // 모바일 탭 상태
+    const [isMobile, setIsMobile] = useState(isMobileView())
+
+    // 반응형 감지
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(isMobileView())
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     // Update alchemy context in store
     useEffect(() => {
@@ -294,6 +306,22 @@ export default function GameCanvas() {
                 </div>
             )}
 
+            {/* Alchemy Workshop UI Overlay */}
+            {canvasView === 'alchemy_workshop' && (
+                <AlchemyWorkshopOverlay
+                    recipes={allRecipes}
+                    materials={allMaterials}
+                    playerMaterials={materialCounts}
+                    selectedRecipeId={selectedRecipeId}
+                    selectedIngredients={selectedIngredients}
+                    isBrewing={isBrewing}
+                    onSelectRecipe={selectRecipe}
+                    onAddIngredient={addIngredient}
+                    mobileTab={mobileTab}
+                    onMobileTabChange={setMobileTab}
+                />
+            )}
+
             <AlchemyResultModal
                 isOpen={showResultModal}
                 success={lastBrewResult.success}
@@ -318,33 +346,45 @@ export default function GameCanvas() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    zIndex: 1000
+                    zIndex: 1000,
+                    padding: isMobile ? '20px' : '0'
                 }}>
                     <div style={{
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        borderRadius: '20px',
-                        padding: '40px',
-                        maxWidth: '500px',
+                        borderRadius: isMobile ? '16px' : '20px',
+                        padding: isMobile ? '24px' : '40px',
+                        maxWidth: isMobile ? '100%' : '500px',
+                        width: isMobile ? '100%' : 'auto',
                         color: 'white',
                         boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-                        textAlign: 'center'
+                        textAlign: 'center',
+                        maxHeight: isMobile ? '90vh' : 'none',
+                        overflowY: isMobile ? 'auto' : 'visible'
                     }}>
-                        <h2 style={{ margin: '0 0 20px 0', fontSize: '2em' }}>🎁 오프라인 보상!</h2>
-                        <p style={{ margin: '0 0 30px 0', fontSize: '1.1em', opacity: 0.9 }}>
+                        <h2 style={{
+                            margin: '0 0 16px 0',
+                            fontSize: isMobile ? '1.5em' : '2em'
+                        }}>🎁 오프라인 보상!</h2>
+                        <p style={{
+                            margin: '0 0 20px 0',
+                            fontSize: isMobile ? '1em' : '1.1em',
+                            opacity: 0.9
+                        }}>
                             {Math.floor(elapsedTime / 60)}분 동안 시설이 자원을 생산했습니다!
                         </p>
                         <div style={{
                             background: 'rgba(255,255,255,0.1)',
-                            borderRadius: '10px',
-                            padding: '20px',
-                            marginBottom: '30px'
+                            borderRadius: isMobile ? '8px' : '10px',
+                            padding: isMobile ? '16px' : '20px',
+                            marginBottom: isMobile ? '20px' : '30px'
                         }}>
                             {Object.entries(rewards).map(([materialId, quantity]) => (
                                 <div key={materialId} style={{
                                     display: 'flex',
                                     justifyContent: 'space-between',
-                                    padding: '8px 0',
-                                    borderBottom: '1px solid rgba(255,255,255,0.1)'
+                                    padding: isMobile ? '6px 0' : '8px 0',
+                                    borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                    fontSize: isMobile ? '0.9em' : '1em'
                                 }}>
                                     <span>{MATERIALS[materialId]?.name || materialId}</span>
                                     <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>+{quantity}</span>
@@ -357,9 +397,10 @@ export default function GameCanvas() {
                                 background: 'white',
                                 color: '#667eea',
                                 border: 'none',
-                                borderRadius: '10px',
-                                padding: '15px 40px',
-                                fontSize: '1.1em',
+                                borderRadius: isMobile ? '8px' : '10px',
+                                padding: isMobile ? '14px 32px' : '15px 40px',
+                                minHeight: isMobile ? '48px' : 'auto',
+                                fontSize: isMobile ? '1em' : '1.1em',
                                 fontWeight: 'bold',
                                 cursor: 'pointer',
                                 transition: 'transform 0.2s',

@@ -1,10 +1,11 @@
-import React from 'react'
+import { useState, useEffect } from 'react'
 import IdleFacilityItem from './IdleFacilityItem'
 import IdleFacilityGridItem from './IdleFacilityGridItem'
 import { useFacilities } from '../../hooks/useFacilities'
 import { useGameStore } from '../../store/useGameStore'
 import { useAuth } from '../../hooks/useAuth'
 import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
+import { isMobileView } from '../../utils/responsiveUtils'
 
 
 export default function IdleFacilityList() {
@@ -12,8 +13,18 @@ export default function IdleFacilityList() {
     const { facilities, loading: facilitiesLoading } = useFacilities(user?.id);
     const { facilities: playerFacilities, upgradeFacility, canvasView } = useGameStore();
     const { materialCounts } = useUnifiedInventory();
-    const [viewMode, setViewMode] = React.useState<'list' | 'grid'>('list');
-    const [allCollapsed, setAllCollapsed] = React.useState(false);
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+    const [allCollapsed, setAllCollapsed] = useState(false);
+    const [isMobile, setIsMobile] = useState(isMobileView());
+
+    // 반응형 감지
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(isMobileView())
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, []);
 
     // Check if production is paused (when shop is open)
     const isPaused = canvasView === 'shop';
@@ -41,7 +52,7 @@ export default function IdleFacilityList() {
             flex: 1,
             overflowY: 'auto',
             background: '#2a2a2a',
-            padding: '15px',
+            padding: isMobile ? '10px' : '15px',
             borderRadius: '8px',
             boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)',
             position: 'relative', // For overlay positioning if needed
@@ -57,12 +68,12 @@ export default function IdleFacilityList() {
                     zIndex: 10,
                     background: 'rgba(251, 191, 36, 0.2)',
                     color: '#fbbf24',
-                    padding: '8px',
+                    padding: isMobile ? '6px' : '8px',
                     borderRadius: '4px',
-                    marginBottom: '10px',
+                    marginBottom: isMobile ? '8px' : '10px',
                     textAlign: 'center',
                     fontWeight: 'bold',
-                    fontSize: '0.9em',
+                    fontSize: isMobile ? '0.8em' : '0.9em',
                     backdropFilter: 'blur(2px)',
                     border: '1px solid rgba(251, 191, 36, 0.4)'
                 }}>
@@ -74,14 +85,14 @@ export default function IdleFacilityList() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                marginBottom: '15px',
+                marginBottom: isMobile ? '12px' : '15px',
                 borderBottom: '1px solid #444',
-                paddingBottom: '10px'
+                paddingBottom: isMobile ? '8px' : '10px'
             }}>
                 <h2 style={{
                     color: 'white',
                     margin: 0,
-                    fontSize: '1.1em'
+                    fontSize: isMobile ? '1em' : '1.1em'
                 }}>
                     시설 목록
                 </h2>
@@ -97,14 +108,14 @@ export default function IdleFacilityList() {
                     <button
                         onClick={() => setViewMode('list')}
                         style={{
-                            width: '32px',
-                            height: '32px',
+                            width: isMobile ? '40px' : '32px',
+                            height: isMobile ? '40px' : '32px',
                             background: viewMode === 'list' ? '#444' : 'transparent',
                             border: 'none',
                             borderRadius: '4px',
                             cursor: 'pointer',
                             color: viewMode === 'list' ? '#facc15' : '#888',
-                            fontSize: '16px',
+                            fontSize: isMobile ? '18px' : '16px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -117,14 +128,14 @@ export default function IdleFacilityList() {
                     <button
                         onClick={() => setViewMode('grid')}
                         style={{
-                            width: '32px',
-                            height: '32px',
+                            width: isMobile ? '40px' : '32px',
+                            height: isMobile ? '40px' : '32px',
                             background: viewMode === 'grid' ? '#444' : 'transparent',
                             border: 'none',
                             borderRadius: '4px',
                             cursor: 'pointer',
                             color: viewMode === 'grid' ? '#facc15' : '#888',
-                            fontSize: '16px',
+                            fontSize: isMobile ? '18px' : '16px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -142,14 +153,15 @@ export default function IdleFacilityList() {
                 <button
                     onClick={() => setAllCollapsed(!allCollapsed)}
                     style={{
-                        marginBottom: '10px',
-                        padding: '6px 12px',
+                        marginBottom: isMobile ? '8px' : '10px',
+                        padding: isMobile ? '10px 16px' : '6px 12px',
+                        minHeight: isMobile ? '40px' : 'auto',
                         background: '#555',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
-                        fontSize: '12px'
+                        fontSize: isMobile ? '13px' : '12px'
                     }}
                 >
                     {allCollapsed ? '전체 펼치기' : '전체 접기'}

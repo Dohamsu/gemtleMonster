@@ -1,60 +1,171 @@
+import { useState, useEffect } from 'react'
+import type { Recipe, Material } from '../../lib/alchemyApi'
+import { isMobileView } from '../../utils/responsiveUtils'
 
-import { useGameStore } from '../../store/useGameStore'
-import { RECIPES } from '../../data/alchemyData'
-import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
+interface RecipeListProps {
+    recipes: Recipe[]
+    materials: Material[]
+    playerMaterials: Record<string, number>
+    selectedRecipeId: string | null
+    isBrewing: boolean
+    onSelectRecipe: (recipeId: string | null) => void
+}
 
-export default function RecipeList() {
-    const { alchemyState, selectRecipe } = useGameStore()
-    const { selectedRecipeId } = alchemyState
+export default function RecipeList({
+    recipes,
+    materials,
+    playerMaterials,
+    selectedRecipeId,
+    isBrewing,
+    onSelectRecipe
+}: RecipeListProps) {
+    const [isMobile, setIsMobile] = useState(isMobileView())
 
-    // Simple filter for now: Show all non-hidden recipes
-    // In a real implementation, we would check if hidden recipes are discovered
-    const visibleRecipes = RECIPES.filter(r => !r.isHidden)
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(isMobileView())
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    const visibleRecipes = recipes.filter(r => !r.is_hidden)
+
+    const handleRecipeClick = (recipeId: string) => {
+        if (isBrewing) return
+
+        // Toggle selection
+        if (selectedRecipeId === recipeId) {
+            onSelectRecipe(null)
+        } else {
+            onSelectRecipe(recipeId)
+        }
+    }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div style={{ padding: '10px', borderBottom: '1px solid #333' }}>
-                <h3 style={{ margin: 0, color: '#ddd' }}>레시피 목록</h3>
+        <div style={{
+            width: isMobile ? '100%' : '260px',
+            height: '100%',
+            background: '#3a2520',
+            border: '2px solid #7a5040',
+            borderRadius: '8px',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+        }}>
+            {/* Header */}
+            <div style={{
+                padding: isMobile ? '10px' : '12px',
+                borderBottom: '1px solid #7a5040',
+                background: '#2a1810'
+            }}>
+                <h3 style={{
+                    margin: 0,
+                    fontSize: isMobile ? '16px' : '18px',
+                    color: '#f0d090',
+                    fontWeight: 'bold'
+                }}>
+                    📜 레시피
+                </h3>
             </div>
-            <div style={{ flex: 1, overflowY: 'auto', padding: '10px' }}>
+
+            {/* Recipe List */}
+            <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: isMobile ? '6px' : '8px',
+                opacity: isBrewing ? 0.4 : 1,
+                pointerEvents: isBrewing ? 'none' : 'auto'
+            }}>
                 {visibleRecipes.map(recipe => {
-                    const monster = MONSTERS[recipe.resultMonsterId]
                     const isSelected = selectedRecipeId === recipe.id
+                    const hasAllMaterials = recipe.ingredients?.every(
+                        ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
+                    ) ?? true
 
                     return (
                         <div
                             key={recipe.id}
-                            onClick={() => selectRecipe(recipe.id)}
+                            onClick={() => handleRecipeClick(recipe.id)}
                             style={{
-                                padding: '10px',
-                                marginBottom: '8px',
-                                background: isSelected ? '#3a3a3a' : '#2a2a2a',
-                                border: isSelected ? '1px solid #666' : '1px solid #333',
+                                marginBottom: isMobile ? '6px' : '8px',
+                                padding: isMobile ? '8px' : '10px',
+                                background: hasAllMaterials
+                                    ? (isSelected ? '#5a4030' : '#4a3020')
+                                    : '#2a201a',
+                                border: isSelected ? '2px solid #facc15' : '1px solid transparent',
                                 borderRadius: '6px',
-                                cursor: 'pointer',
+                                cursor: hasAllMaterials ? 'pointer' : 'not-allowed',
+                                opacity: hasAllMaterials ? 1 : 0.5,
                                 transition: 'all 0.2s'
                             }}
+                            onMouseEnter={(e) => {
+                                if (hasAllMaterials && !isBrewing) {
+                                    e.currentTarget.style.transform = 'translateX(4px)'
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateX(0)'
+                            }}
                         >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontWeight: 'bold', color: isSelected ? '#fff' : '#ccc' }}>
-                                    {recipe.name}
-                                </span>
-                                <span style={{
-                                    fontSize: '0.8em',
-                                    padding: '2px 6px',
-                                    borderRadius: '4px',
-                                    background: monster?.rarity === 'N' ? '#444' : monster?.rarity === 'R' ? '#2563eb' : '#7c3aed',
-                                    color: '#fff'
+                            {/* Recipe Name */}
+                            <div style={{
+                                fontSize: isMobile ? '13px' : '14px',
+                                fontWeight: 'bold',
+                                color: '#f0d090',
+                                marginBottom: '6px'
+                            }}>
+                                {recipe.name} ({recipe.craft_time_sec}s)
+                            </div>
+
+                            {/* Required Materials */}
+                            {recipe.ingredients && recipe.ingredients.length > 0 && (
+                                <div style={{ marginTop: '6px' }}>
+                                    {recipe.ingredients.map((ing, idx) => {
+                                        const mat = materials.find(m => m.id === ing.material_id)
+                                        const owned = playerMaterials[ing.material_id] || 0
+                                        const hasEnough = owned >= ing.quantity
+
+                                        return (
+                                            <div
+                                                key={idx}
+                                                style={{
+                                                    fontSize: isMobile ? '10px' : '11px',
+                                                    color: hasEnough ? '#aaa' : '#ff6666',
+                                                    marginBottom: '2px'
+                                                }}
+                                            >
+                                                {mat?.name || ing.material_id} {owned}/{ing.quantity}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+
+                            {/* Level Requirement */}
+                            {recipe.required_alchemy_level > 1 && (
+                                <div style={{
+                                    fontSize: isMobile ? '9px' : '10px',
+                                    color: '#facc15',
+                                    marginTop: '4px'
                                 }}>
-                                    {monster?.rarity}
-                                </span>
-                            </div>
-                            <div style={{ fontSize: '0.85em', color: '#888', marginTop: '4px' }}>
-                                {monster?.role} / {monster?.element}
-                            </div>
+                                    필요 레벨: {recipe.required_alchemy_level}
+                                </div>
+                            )}
                         </div>
                     )
                 })}
+
+                {visibleRecipes.length === 0 && (
+                    <div style={{
+                        padding: '20px',
+                        textAlign: 'center',
+                        color: '#aaa',
+                        fontSize: isMobile ? '12px' : '13px'
+                    }}>
+                        레시피가 없습니다.
+                    </div>
+                )}
             </div>
         </div>
     )
