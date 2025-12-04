@@ -2,7 +2,9 @@ import { useCallback } from 'react'
 import type { Recipe, Material, PlayerAlchemy } from '../lib/alchemyApi'
 import type { CanvasView } from '../store/useGameStore'
 
-import { ALCHEMY, UI } from '../constants/game'
+import { ALCHEMY } from '../constants/game'
+import { getAlchemyLayout } from '../utils/responsiveUtils'
+import type { AlchemyLayoutParams } from '../utils/responsiveUtils'
 
 interface ClickHandlerProps {
     canvasView: CanvasView
@@ -23,6 +25,7 @@ interface ClickHandlerProps {
     completeBrewing: (success: boolean) => Promise<void>
     autoFillIngredients: (recipeId: string) => boolean
     setDungeonModalOpen: (isOpen: boolean) => void
+    mobileTab?: 'recipes' | 'materials'
 }
 
 /**
@@ -49,6 +52,7 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
         completeBrewing,
         autoFillIngredients,
         setDungeonModalOpen,
+        mobileTab
     } = props
 
     return useCallback(
@@ -83,6 +87,7 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
                     startFreeFormBrewing,
                     completeBrewing,
                     autoFillIngredients,
+                    mobileTab
                 )
             }
         },
@@ -106,7 +111,8 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
             completeBrewing,
             autoFillIngredients,
             autoFillIngredients,
-            setDungeonModalOpen
+            setDungeonModalOpen,
+            mobileTab
         ]
     )
 }
@@ -175,44 +181,87 @@ function handleAlchemyWorkshopClick(
     startFreeFormBrewing: () => Promise<void>,
     completeBrewing: (success: boolean) => Promise<void>,
     autoFillIngredients: (recipeId: string) => boolean,
+    mobileTab?: 'recipes' | 'materials'
 ) {
+    // Get layout parameters based on canvas size
+    const layout = getAlchemyLayout(canvas.width, canvas.height)
+
     // Back button
     if (x >= 20 && x <= 120 && y >= 20 && y <= 60) {
         setCanvasView('map')
         return
     }
 
-    // Recipe list clicks
-    handleRecipeListClick(
-        canvas,
-        x,
-        y,
-        allRecipes,
-        allMaterials,
-        playerMaterials,
-        selectedRecipeId,
-        isBrewing,
-        selectRecipe,
-        autoFillIngredients
-    )
+    // Mobile specific: Check tabs if in mobile view
+    if (layout.isMobile && mobileTab) {
+        // Only handle clicks for the active tab
+        if (mobileTab === 'recipes') {
+            const recipeHandled = handleRecipeListClick(
+                canvas,
+                x,
+                y,
+                allRecipes,
+                allMaterials,
+                playerMaterials,
+                selectedRecipeId,
+                isBrewing,
+                selectRecipe,
+                autoFillIngredients,
+                layout
+            )
+            if (recipeHandled) return
+        } else if (mobileTab === 'materials') {
+            const materialHandled = handleMaterialGridClick(
+                canvas,
+                x,
+                y,
+                allMaterials,
+                playerMaterials,
+                selectedIngredients,
+                isBrewing,
+                materialScrollOffset,
+                addIngredient,
+                layout
+            )
+            if (materialHandled) return
+        }
+    } else {
+        // Desktop: Handle both panels
+        const recipeHandled = handleRecipeListClick(
+            canvas,
+            x,
+            y,
+            allRecipes,
+            allMaterials,
+            playerMaterials,
+            selectedRecipeId,
+            isBrewing,
+            selectRecipe,
+            autoFillIngredients,
+            layout
+        )
+        if (recipeHandled) return
 
-    // Material grid clicks
-    handleMaterialGridClick(
-        canvas,
-        x,
-        y,
-        allMaterials,
-        playerMaterials,
-        selectedIngredients,
-        isBrewing,
-        materialScrollOffset,
-        addIngredient
-    )
+        const materialHandled = handleMaterialGridClick(
+            canvas,
+            x,
+            y,
+            allMaterials,
+            playerMaterials,
+            selectedIngredients,
+            isBrewing,
+            materialScrollOffset,
+            addIngredient,
+            layout
+        )
+        if (materialHandled) return
+    }
 
-    // Ingredient slot clicks
-    handleIngredientSlotClick(canvas, x, y, selectedIngredients, isBrewing, allMaterials, removeIngredient)
+    // Ingredient slot clicks (Always visible)
+    const slotHandled = handleIngredientSlotClick(canvas, x, y, selectedIngredients, isBrewing, allMaterials, removeIngredient, layout)
+    if (slotHandled) return
 
-    // Brew button click
+    // Brew button click (Always visible)
     handleBrewButtonClick(
         canvas,
         x,
@@ -226,7 +275,8 @@ function handleAlchemyWorkshopClick(
         autoFillIngredients,
         startBrewing,
         startFreeFormBrewing,
-        completeBrewing
+        completeBrewing,
+        layout
     )
 }
 
@@ -240,14 +290,18 @@ function handleRecipeListClick(
     selectedRecipeId: string | null,
     isBrewing: boolean,
     selectRecipe: (recipeId: string | null) => void,
-    autoFillIngredients: (recipeId: string) => boolean
-) {
-    const recipeX = 40
-    const recipeY = 120
-    const recipeW = 220
+    autoFillIngredients: (recipeId: string) => boolean,
+    layout: AlchemyLayoutParams
+): boolean {
+    const { recipeX, recipeY, recipeW, recipeH } = layout
+
+    // Check if click is within recipe panel
+    if (x < recipeX || x > recipeX + recipeW || y < recipeY || y > recipeY + recipeH) {
+        return false
+    }
 
     const visibleRecipes = allRecipes.filter((r) => !r.is_hidden)
-    let currentY = recipeY + 40
+    let currentY = recipeY + (layout.isMobile ? 10 : 40) // Adjust start Y based on layout
     const recipePadding = 5
 
     for (let i = 0; i < visibleRecipes.length; i++) {
@@ -257,45 +311,37 @@ function handleRecipeListClick(
         if (x >= recipeX && x <= recipeX + recipeW && y >= currentY && y <= currentY + itemHeight) {
             if (isBrewing) {
                 console.log('Cannot select recipe while brewing')
-                return
+                return true
             }
 
             // Toggle selection if already selected
             if (selectedRecipeId === recipe.id) {
                 selectRecipe(null)
-                // Optional: Clear ingredients when deselecting?
-                // Based on user request: "레시피 선택 상태를 해제시켜줘" implies just clearing the selection state.
-                // However, usually deselecting a recipe might imply clearing the board.
-                // Let's check the user request again: "레시피를 선택한 채로 다른 재료를 넣거나... 레시피 선택 상태를 해제시켜줘"
-                // It doesn't explicitly say "clear ingredients".
-                // But `selectRecipe` in store clears ingredients:
-                // selectRecipe: (recipeId) => { set({ selectedRecipeId: recipeId, selectedIngredients: {}, ... }) }
-                // So calling selectRecipe(null) will clear ingredients too, which is likely desired behavior for "deselecting".
                 console.log('Deselected recipe:', recipe.name)
-                return
+                return true
             }
 
             // Check if player has all materials
-            // playerMaterials는 이미 useUnifiedInventory에서 병합된 materialCounts (Single Source of Truth)
             const hasAllMaterials =
                 recipe.ingredients?.every((ing) => (playerMaterials[ing.material_id] || 0) >= ing.quantity) ?? true
 
             if (!hasAllMaterials) {
                 console.log('Cannot select recipe: insufficient materials')
-                return
+                return true
             }
 
             selectRecipe(recipe.id)
             autoFillIngredients(recipe.id)
             console.log('Selected recipe:', recipe.name)
-            return
+            return true
         }
         currentY += itemHeight + recipePadding
     }
+    return false
 }
 
 function handleMaterialGridClick(
-    canvas: HTMLCanvasElement,
+    _canvas: HTMLCanvasElement,
     x: number,
     y: number,
     allMaterials: Material[],
@@ -303,68 +349,87 @@ function handleMaterialGridClick(
     selectedIngredients: Record<string, number>,
     isBrewing: boolean,
     materialScrollOffset: number,
-    addIngredient: (materialId: string, quantity: number) => void
-) {
-    const gridX = canvas.width - 260
-    const gridY = 120
-    const gridW = 220
-    const gridCellSize = UI.MATERIAL_CELL_SIZE
-    const gridPadding = UI.MATERIAL_GRID_PADDING
-    const gridCols = Math.floor(gridW / (gridCellSize + gridPadding))
+    addIngredient: (materialId: string, quantity: number) => void,
+    layout: AlchemyLayoutParams
+): boolean {
+    const { materialX: gridX, materialY: gridY, materialW: gridW, materialH: gridH, materialCellSize: gridCellSize, materialGridPadding: gridPadding } = layout
 
-    if (x >= gridX && x <= gridX + gridW && y >= gridY + 40 && y <= gridY + canvas.height - 160) {
-        if (isBrewing) {
-            console.log('Cannot select materials while brewing')
-            return
-        }
-
-        const relX = x - gridX
-        const relY = y - (gridY + 40) + materialScrollOffset
-
-        const col = Math.floor(relX / (gridCellSize + gridPadding))
-        const row = Math.floor(relY / (gridCellSize + gridPadding))
-        const index = row * gridCols + col
-
-        if (index >= 0 && index < allMaterials.length) {
-            const material = allMaterials[index]
-
-            // playerMaterials는 이미 useUnifiedInventory에서 병합된 materialCounts (Single Source of Truth)
-            const available = playerMaterials[material.id] || 0
-            const currentlySelected = selectedIngredients[material.id] || 0
-
-            // 재고가 없으면 추가 불가
-            if (available <= 0) {
-                console.log('Cannot add material with zero stock:', material.name)
-                return
-            }
-
-            // 이미 보유한 만큼 다 선택했으면 추가 불가
-            if (currentlySelected >= available) {
-                console.log('Already selected all available:', material.name, `(${available}/${available})`)
-                return
-            }
-
-            // 슬롯당 최대 수량 체크
-            if (currentlySelected >= ALCHEMY.MAX_QUANTITY_PER_SLOT) {
-                console.log('Cannot add more:', material.name, `- maximum ${ALCHEMY.MAX_QUANTITY_PER_SLOT} per slot`)
-                return
-            }
-
-            // 슬롯 개수 제한 체크 (서로 다른 재료 종류)
-            const uniqueIngredients = Object.keys(selectedIngredients).length
-            const isNewIngredient = currentlySelected === 0
-
-            if (isNewIngredient && uniqueIngredients >= ALCHEMY.MAX_INGREDIENT_SLOTS) {
-                console.log('Cannot add new ingredient: maximum', ALCHEMY.MAX_INGREDIENT_SLOTS, 'ingredient types reached')
-                return
-            }
-
-            // 클릭할 때마다 +1 추가
-            addIngredient(material.id, 1)
-            console.log('Added ingredient:', material.name, `(${currentlySelected + 1}/${Math.min(available, ALCHEMY.MAX_QUANTITY_PER_SLOT)})`)
-
-        }
+    // Check if click is within material grid panel
+    if (x < gridX || x > gridX + gridW || y < gridY || y > gridY + gridH) {
+        return false
     }
+
+    const contentStartY = gridY + 40
+    const contentEndY = gridY + gridH
+
+    if (y < contentStartY || y > contentEndY) {
+        return false
+    }
+
+    if (isBrewing) {
+        console.log('Cannot select materials while brewing')
+        return true
+    }
+
+    const gridCols = Math.floor(gridW / (gridCellSize + gridPadding))
+    const relX = x - gridX - (layout.isMobile ? 0 : 0) // Adjust if needed
+    const relY = y - contentStartY + materialScrollOffset
+
+    // Adjust for padding
+    const col = Math.floor((relX - gridPadding) / (gridCellSize + gridPadding))
+    const row = Math.floor((relY - gridPadding) / (gridCellSize + gridPadding))
+
+    // Check if click is within a cell (accounting for padding)
+    const cellRelX = (relX - gridPadding) % (gridCellSize + gridPadding)
+    const cellRelY = (relY - gridPadding) % (gridCellSize + gridPadding)
+
+    if (col < 0 || col >= gridCols || cellRelX > gridCellSize || cellRelY > gridCellSize) {
+        return false // Clicked on padding or outside columns
+    }
+
+    const index = row * gridCols + col
+
+    if (index >= 0 && index < allMaterials.length) {
+        const material = allMaterials[index]
+
+        // playerMaterials는 이미 useUnifiedInventory에서 병합된 materialCounts (Single Source of Truth)
+        const available = playerMaterials[material.id] || 0
+        const currentlySelected = selectedIngredients[material.id] || 0
+
+        // 재고가 없으면 추가 불가
+        if (available <= 0) {
+            console.log('Cannot add material with zero stock:', material.name)
+            return true
+        }
+
+        // 이미 보유한 만큼 다 선택했으면 추가 불가
+        if (currentlySelected >= available) {
+            console.log('Already selected all available:', material.name, `(${available}/${available})`)
+            return true
+        }
+
+        // 슬롯당 최대 수량 체크
+        if (currentlySelected >= ALCHEMY.MAX_QUANTITY_PER_SLOT) {
+            console.log('Cannot add more:', material.name, `- maximum ${ALCHEMY.MAX_QUANTITY_PER_SLOT} per slot`)
+            return true
+        }
+
+        // 슬롯 개수 제한 체크 (서로 다른 재료 종류)
+        const uniqueIngredients = Object.keys(selectedIngredients).length
+        const isNewIngredient = currentlySelected === 0
+
+        if (isNewIngredient && uniqueIngredients >= ALCHEMY.MAX_INGREDIENT_SLOTS) {
+            console.log('Cannot add new ingredient: maximum', ALCHEMY.MAX_INGREDIENT_SLOTS, 'ingredient types reached')
+            return true
+        }
+
+        // 클릭할 때마다 +1 추가
+        addIngredient(material.id, 1)
+        console.log('Added ingredient:', material.name, `(${currentlySelected + 1}/${Math.min(available, ALCHEMY.MAX_QUANTITY_PER_SLOT)})`)
+        return true
+    }
+
+    return false
 }
 
 function handleIngredientSlotClick(
@@ -374,17 +439,20 @@ function handleIngredientSlotClick(
     selectedIngredients: Record<string, number>,
     isBrewing: boolean,
     allMaterials: Material[],
-    removeIngredient: (materialId: string, quantity: number) => void
-) {
-    if (isBrewing) return
+    removeIngredient: (materialId: string, quantity: number) => void,
+    layout: AlchemyLayoutParams
+): boolean {
+    if (isBrewing) return false
 
-    const cauldronSize = 200
-    const cauldronY = canvas.height / 2 - 100
-    const slotSize = 60
-    const slotGap = 10
+    const { slotSize, slotGap, cauldronY, cauldronSize } = layout
+
+    // Calculate slots position based on layout logic (same as renderer)
+    // Mobile: cauldronY + cauldronSize + 15
+    // Desktop: cauldronY + cauldronSize + 20
+    const slotsY = cauldronY + cauldronSize + (layout.isMobile ? 15 : 20)
+
     const totalSlotsWidth = slotSize * ALCHEMY.MAX_INGREDIENT_SLOTS + slotGap * (ALCHEMY.MAX_INGREDIENT_SLOTS - 1)
     const slotsX = canvas.width / 2 - totalSlotsWidth / 2
-    const slotsY = cauldronY + cauldronSize + 20
 
     const ingredientEntries = Object.entries(selectedIngredients)
 
@@ -396,9 +464,10 @@ function handleIngredientSlotClick(
             removeIngredient(materialId, quantity)
             const material = allMaterials.find((m) => m.id === materialId)
             console.log('Removed ingredient completely from slot:', material?.name || materialId)
-            return
+            return true
         }
     }
+    return false
 }
 
 function handleBrewButtonClick(
@@ -414,14 +483,13 @@ function handleBrewButtonClick(
     autoFillIngredients: (recipeId: string) => boolean,
     startBrewing: (recipeId: string) => Promise<void>,
     startFreeFormBrewing: () => Promise<void>,
-    completeBrewing: (success: boolean) => Promise<void>
+    completeBrewing: (success: boolean) => Promise<void>,
+    layout: AlchemyLayoutParams
 ) {
     if (isBrewing) return
 
-    const brewBtnW = 180
-    const brewBtnH = 50
+    const { brewButtonW: brewBtnW, brewButtonH: brewBtnH, brewButtonY: brewBtnY } = layout
     const brewBtnX = canvas.width / 2 - brewBtnW / 2
-    const brewBtnY = canvas.height - 140
 
     if (x >= brewBtnX && x <= brewBtnX + brewBtnW && y >= brewBtnY && y <= brewBtnY + brewBtnH) {
         if (selectedRecipeId) {

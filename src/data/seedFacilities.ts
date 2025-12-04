@@ -52,8 +52,8 @@ async function seedFacilities() {
             await supabase.from('facility_unlock_condition').delete().eq('facility_id', facility.id)
 
             if (facility.unlockConditions && facility.unlockConditions.length > 0) {
-                const conditions = facility.unlockConditions.map((cond: any) => {
-                    const mapped: any = {
+                const conditions = facility.unlockConditions.map((cond: Record<string, unknown>) => {
+                    const mapped: Record<string, unknown> = {
                         facility_id: facility.id,
                         condition_type: cond.type === 'playerLevel' ? 'player_level' :
                             cond.type === 'questComplete' ? 'quest_complete' :

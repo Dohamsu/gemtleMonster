@@ -1,12 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
+import { isMobileView } from '../../utils/responsiveUtils'
 import { InventoryPanel } from '../InventoryPanel'
 import FreeFormCauldron from './FreeFormCauldron'
 
 export default function AlchemyLayout() {
     const { user } = useAuth()
     const { loadAllData, resetBrewResult } = useAlchemyStore()
+    const [isMobile, setIsMobile] = useState(isMobileView())
 
     useEffect(() => {
         // console.log('🔄 [AlchemyLayout] Mount/User Change Effect')
@@ -18,6 +20,15 @@ export default function AlchemyLayout() {
             resetBrewResult()
         }
     }, [user])
+
+    // 반응형 감지
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(isMobileView())
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     return (
         <div style={{
@@ -31,13 +42,13 @@ export default function AlchemyLayout() {
         }}>
             {/* Header */}
             <div style={{
-                padding: '16px',
+                padding: isMobile ? '12px' : '16px',
                 borderBottom: '2px solid #4a5568',
                 background: 'linear-gradient(90deg, #1a1a2e 0%, #16213e 100%)'
             }}>
                 <h1 style={{
                     margin: 0,
-                    fontSize: '24px',
+                    fontSize: isMobile ? '20px' : '24px',
                     color: '#f0e68c',
                     textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                     textAlign: 'center'
@@ -50,18 +61,24 @@ export default function AlchemyLayout() {
             <div style={{
                 flex: 1,
                 display: 'flex',
-                overflow: 'hidden'
+                flexDirection: isMobile ? 'column' : 'row',
+                overflow: 'hidden',
+                minHeight: 0
             }}>
-                {/* Left: Free Form Cauldron */}
+                {/* Left/Top: Free Form Cauldron */}
                 <div style={{
                     flex: 1,
                     overflow: 'auto',
-                    borderRight: '2px solid #4a5568'
+                    borderRight: isMobile ? 'none' : '2px solid #4a5568',
+                    borderBottom: isMobile ? '2px solid #4a5568' : 'none',
+                    minHeight: isMobile ? '50%' : 0,
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}>
                     <FreeFormCauldron />
                 </div>
 
-                {/* Right: Inventory Panel */}
+                {/* Right/Bottom: Inventory Panel */}
                 <InventoryPanel />
             </div>
         </div>

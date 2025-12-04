@@ -1,11 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { useGameStore } from '../store/useGameStore'
+import { isMobileView } from '../utils/responsiveUtils'
 import ResourceAnimation from './ResourceAnimation'
 import ResourceIcon from './ResourceIcon'
 import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 
 export const InventoryPanel: React.FC = () => {
+  const [isMobile, setIsMobile] = useState(isMobileView())
   const {
     allMaterials,
     addIngredient,
@@ -18,6 +20,15 @@ export const InventoryPanel: React.FC = () => {
 
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+
+  // 반응형 감지
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(isMobileView())
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // Show all materials
   const ownedMaterials = allMaterials
@@ -78,17 +89,20 @@ export const InventoryPanel: React.FC = () => {
 
   return (
     <div style={{
-      width: '320px',
-      height: '100%',
+      width: isMobile ? '100%' : '320px',
+      height: isMobile ? '50%' : '100%',
+      flex: isMobile ? 1 : 'none',
+      minHeight: isMobile ? '50%' : 0,
       background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
-      borderLeft: '2px solid #4a5568',
+      borderLeft: isMobile ? 'none' : '2px solid #4a5568',
+      borderTop: isMobile ? '2px solid #4a5568' : 'none',
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden'
     }}>
       {/* 헤더 */}
       <div style={{
-        padding: '16px',
+        padding: isMobile ? '12px' : '16px',
         borderBottom: '1px solid #4a5568',
         display: 'flex',
         alignItems: 'center',
@@ -96,7 +110,7 @@ export const InventoryPanel: React.FC = () => {
       }}>
         <h2 style={{
           margin: 0,
-          fontSize: '20px',
+          fontSize: isMobile ? '18px' : '20px',
           color: '#f0e68c'
         }}>
           인벤토리
@@ -179,7 +193,8 @@ export const InventoryPanel: React.FC = () => {
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: '8px'
+        padding: isMobile ? '6px' : '8px',
+        minHeight: 0
       }}>
         <>
           {ownedMaterials.length === 0 ? (
@@ -428,10 +443,10 @@ export const InventoryPanel: React.FC = () => {
 
       {/* 안내 */}
       <div style={{
-        padding: '12px',
+        padding: isMobile ? '10px' : '12px',
         borderTop: '1px solid #4a5568',
         background: '#0f172a',
-        fontSize: '11px',
+        fontSize: isMobile ? '10px' : '11px',
         color: '#64748b',
         textAlign: 'center'
       }}>

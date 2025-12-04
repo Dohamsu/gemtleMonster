@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useGameStore } from '../store/useGameStore'
 import { useSaveGame } from '../hooks/useSaveGame'
 import { useBatchSync } from '../hooks/useBatchSync'
 import { useEventBasedSync } from '../hooks/useEventBasedSync'
 import { useAlchemyStore } from '../store/useAlchemyStore'
+import { isMobileView } from '../utils/responsiveUtils'
 import IdleFacilityList from './idle/IdleFacilityList'
 import AlchemyLayout from './alchemy/AlchemyLayout'
 
@@ -12,6 +13,7 @@ export default function UIOverlay() {
     const { user, loading: authLoading } = useAuth()
     const { activeTab, setActiveTab } = useGameStore()
     const { saveGame, saving, lastSaved } = useSaveGame()
+    const [isMobile, setIsMobile] = useState(isMobileView())
 
     // Phase 1: 배치 동기화 시스템
     const { queueUpdate, queueFacilityUpdate, forceSyncNow } = useBatchSync(user?.id, {
@@ -47,6 +49,15 @@ export default function UIOverlay() {
         queueFacilityUpdateRef.current = queueFacilityUpdate
         forceSyncNowRef.current = forceSyncNow
     }, [queueUpdate, queueFacilityUpdate, forceSyncNow])
+
+    // 반응형 감지
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(isMobileView())
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     // 콜백 등록 (user?.id 변경 시에만)
     useEffect(() => {
@@ -85,7 +96,7 @@ export default function UIOverlay() {
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
-            padding: '15px',
+            padding: isMobile ? '10px' : '15px',
             boxSizing: 'border-box',
             position: 'relative'
         }}>
@@ -93,13 +104,21 @@ export default function UIOverlay() {
             {/* Header / Player Info */}
             <div style={{
                 background: '#2a2a2a',
-                padding: '15px',
+                padding: isMobile ? '12px' : '15px',
                 borderRadius: '8px',
-                marginBottom: '15px',
+                marginBottom: isMobile ? '10px' : '15px',
                 boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
             }}>
-                <h2 style={{ margin: '0 0 10px 0', color: '#fff', fontSize: '1.2em' }}>GemtleMonster</h2>
-                <div style={{ fontSize: '0.85em', color: '#aaa', marginBottom: '10px' }}>
+                <h2 style={{
+                    margin: '0 0 8px 0',
+                    color: '#fff',
+                    fontSize: isMobile ? '1.1em' : '1.2em'
+                }}>GemtleMonster</h2>
+                <div style={{
+                    fontSize: isMobile ? '0.8em' : '0.85em',
+                    color: '#aaa',
+                    marginBottom: isMobile ? '8px' : '10px'
+                }}>
                     ID: {user?.id.slice(0, 8)}...
                 </div>
 
@@ -109,20 +128,27 @@ export default function UIOverlay() {
                         disabled={saving}
                         style={{
                             width: '100%',
-                            padding: '8px',
+                            padding: isMobile ? '10px' : '8px',
+                            minHeight: isMobile ? '44px' : 'auto',
                             background: saving ? '#555' : '#3b82f6',
                             color: 'white',
                             border: 'none',
                             borderRadius: '4px',
                             cursor: saving ? 'not-allowed' : 'pointer',
                             fontWeight: 'bold',
+                            fontSize: isMobile ? '0.95em' : '1em',
                             transition: 'background 0.2s',
                         }}
                     >
                         {saving ? '저장 중...' : '저장하기'}
                     </button>
                     {lastSaved && (
-                        <div style={{ fontSize: '0.75em', color: '#888', marginTop: '5px', textAlign: 'center' }}>
+                        <div style={{
+                            fontSize: isMobile ? '0.7em' : '0.75em',
+                            color: '#888',
+                            marginTop: '5px',
+                            textAlign: 'center'
+                        }}>
                             저장됨: {lastSaved.toLocaleTimeString()}
                         </div>
                     )}
@@ -130,17 +156,23 @@ export default function UIOverlay() {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+            <div style={{
+                display: 'flex',
+                gap: isMobile ? '8px' : '10px',
+                marginBottom: isMobile ? '10px' : '15px'
+            }}>
                 <button
                     onClick={() => setActiveTab('facilities')}
                     style={{
                         flex: 1,
-                        padding: '10px',
+                        padding: isMobile ? '12px 8px' : '10px',
+                        minHeight: isMobile ? '44px' : 'auto',
                         background: activeTab === 'facilities' ? '#444' : '#2a2a2a',
                         color: 'white',
                         border: 'none',
                         borderRadius: '8px',
                         cursor: 'pointer',
+                        fontSize: isMobile ? '0.95em' : '1em',
                         fontWeight: activeTab === 'facilities' ? 'bold' : 'normal'
                     }}
                 >
@@ -150,12 +182,14 @@ export default function UIOverlay() {
                     onClick={() => setActiveTab('alchemy')}
                     style={{
                         flex: 1,
-                        padding: '10px',
+                        padding: isMobile ? '12px 8px' : '10px',
+                        minHeight: isMobile ? '44px' : 'auto',
                         background: activeTab === 'alchemy' ? '#444' : '#2a2a2a',
                         color: 'white',
                         border: 'none',
                         borderRadius: '8px',
                         cursor: 'pointer',
+                        fontSize: isMobile ? '0.95em' : '1em',
                         fontWeight: activeTab === 'alchemy' ? 'bold' : 'normal'
                     }}
                 >

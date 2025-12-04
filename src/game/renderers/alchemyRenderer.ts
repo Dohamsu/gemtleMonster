@@ -3,6 +3,8 @@ import type { Recipe, Material, PlayerAlchemy } from '../../lib/alchemyApi'
 import { ALCHEMY } from '../../constants/game'
 import { getAlchemyLayout } from '../../utils/responsiveUtils'
 
+import type { AlchemyLayoutParams } from '../../utils/responsiveUtils'
+
 interface AlchemyRendererProps {
     ctx: CanvasRenderingContext2D
     canvas: HTMLCanvasElement
@@ -593,9 +595,9 @@ function renderMobileTabs(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasEleme
 
 function renderCentralCauldronMobile(
     ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
+    _canvas: HTMLCanvasElement,
     images: CanvasImages,
-    layout: any
+    layout: AlchemyLayoutParams
 ) {
     const { cauldronX, cauldronY, cauldronSize } = layout
 
@@ -713,11 +715,11 @@ function renderIngredientSlotsMobile(
 
 function renderRecipeListMobile(
     ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
+    _canvas: HTMLCanvasElement,
     props: AlchemyRendererProps,
-    layout: any
+    layout: AlchemyLayoutParams
 ) {
-    const { allRecipes, allMaterials, playerMaterials, selectedRecipeId, isBrewing, playerAlchemy } = props
+    const { allRecipes, allMaterials, playerMaterials, selectedRecipeId, isBrewing } = props
     const { recipeX, recipeY, recipeW, recipeH } = layout
 
     // Panel background
@@ -801,9 +803,9 @@ function renderRecipeListMobile(
 
 function renderMaterialGridMobile(
     ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
+    _canvas: HTMLCanvasElement,
     props: AlchemyRendererProps,
-    layout: any
+    layout: AlchemyLayoutParams
 ) {
     const {
         allMaterials,

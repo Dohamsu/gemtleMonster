@@ -94,6 +94,7 @@ export default function GameCanvas() {
         completeBrewing,
         autoFillIngredients,
         setDungeonModalOpen: setShowDungeonModal, // Pass setter
+        mobileTab // Pass mobileTab state
     })
 
     // 모바일 탭 클릭 처리를 위한 래퍼

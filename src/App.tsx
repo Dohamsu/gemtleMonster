@@ -80,8 +80,8 @@ function App() {
             console.log('✅ Material sync complete!')
         }
 
-            ; (window as any).syncMaterials = syncMaterials
-            ; (window as any).useGameStore = useGameStore
+            ; (window as unknown as { syncMaterials: typeof syncMaterials; useGameStore: typeof useGameStore }).syncMaterials = syncMaterials
+            ; (window as unknown as { syncMaterials: typeof syncMaterials; useGameStore: typeof useGameStore }).useGameStore = useGameStore
     }, [user])
 
     // 반응형 레이아웃을 위한 뷰포트 크기 감지

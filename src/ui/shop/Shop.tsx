@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
+import { isMobileView } from '../../utils/responsiveUtils'
 
 const LEGACY_RESOURCE_NAMES: Record<string, string> = {
     gold: '골드',
@@ -41,6 +42,7 @@ export default function Shop() {
         refreshInventory,
         loading,
     } = useUnifiedInventory()
+    const [isMobile, setIsMobile] = useState(isMobileView())
 
     // 골드는 materialCounts에서 가져옴 (Single Source of Truth)
     const gold = materialCounts['gold'] || 0
@@ -49,6 +51,15 @@ export default function Shop() {
     useEffect(() => {
         refreshInventory()
     }, [refreshInventory])
+
+    // 반응형 감지
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(isMobileView())
+        }
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     // 개별 아이템의 판매 수량을 관리하는 상태
     const [sellQuantities, setSellQuantities] = useState<Record<string, number>>({})
@@ -272,44 +283,57 @@ export default function Shop() {
 
     return (
         <div style={{
-            padding: '20px',
+            padding: isMobile ? '12px' : '20px',
             color: '#eee',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px',
+            gap: isMobile ? '12px' : '20px',
             maxWidth: '1000px',
             margin: '0 auto',
-            width: '100%'
+            width: '100%',
+            overflow: 'hidden'
         }}>
             <div style={{
                 display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
                 justifyContent: 'space-between',
-                alignItems: 'center',
+                alignItems: isMobile ? 'stretch' : 'center',
                 background: 'rgba(0,0,0,0.6)',
-                padding: '15px',
+                padding: isMobile ? '12px' : '15px',
                 borderRadius: '12px',
-                backdropFilter: 'blur(4px)'
+                backdropFilter: 'blur(4px)',
+                gap: isMobile ? '10px' : '0'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '15px' }}>
                     <button
                         onClick={handleBack}
                         style={{
                             background: '#4a3020',
                             border: '2px solid #8a6040',
                             color: 'white',
-                            padding: '8px 16px',
+                            padding: isMobile ? '10px 14px' : '8px 16px',
+                            minHeight: isMobile ? '44px' : 'auto',
                             borderRadius: '8px',
                             cursor: 'pointer',
                             fontWeight: 'bold',
-                            fontSize: '14px'
+                            fontSize: isMobile ? '0.95em' : '14px'
                         }}
                     >
                         ← 나가기
                     </button>
-                    <h2 style={{ margin: 0, fontSize: '1.5em', color: '#f0d090' }}>🏪 상점</h2>
+                    <h2 style={{
+                        margin: 0,
+                        fontSize: isMobile ? '1.3em' : '1.5em',
+                        color: '#f0d090'
+                    }}>🏪 상점</h2>
                 </div>
-                <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#facc15' }}>
+                <div style={{
+                    fontSize: isMobile ? '1.1em' : '1.2em',
+                    fontWeight: 'bold',
+                    color: '#facc15',
+                    textAlign: isMobile ? 'center' : 'right'
+                }}>
                     💰 {formatNumber(gold)} G
                 </div>
             </div>
@@ -317,16 +341,24 @@ export default function Shop() {
             {/* Bulk Action Bar */}
             <div style={{
                 background: '#333',
-                padding: '15px',
+                padding: isMobile ? '12px' : '15px',
                 borderRadius: '8px',
                 display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
                 justifyContent: 'space-between',
-                alignItems: 'center',
-                border: '1px solid #444'
+                alignItems: isMobile ? 'stretch' : 'center',
+                border: '1px solid #444',
+                gap: isMobile ? '10px' : '0'
             }}>
-                <div style={{ color: '#ddd', fontWeight: 'bold' }}>
+                <div style={{
+                    color: '#ddd',
+                    fontWeight: 'bold',
+                    fontSize: isMobile ? '0.9em' : '1em',
+                    textAlign: isMobile ? 'center' : 'left'
+                }}>
                     선택된 아이템: <span style={{ color: '#fff' }}>{selectedItems.size}</span>개
-                    <span style={{ margin: '0 10px', color: '#555' }}>|</span>
+                    <span style={{ margin: '0 10px', color: '#555' }}>{isMobile ? '' : '|'}</span>
+                    {isMobile && <br />}
                     총 예상 금액: <span style={{ color: '#eab308' }}>{formatNumber(totalSelectedValue)}G</span>
                 </div>
                 <button
@@ -336,11 +368,12 @@ export default function Shop() {
                         background: selectedItems.size > 0 ? '#eab308' : '#555',
                         color: selectedItems.size > 0 ? 'black' : '#aaa',
                         border: 'none',
-                        padding: '10px 24px',
+                        padding: isMobile ? '12px 24px' : '10px 24px',
+                        minHeight: isMobile ? '44px' : 'auto',
                         borderRadius: '6px',
                         cursor: selectedItems.size > 0 ? 'pointer' : 'not-allowed',
                         fontWeight: 'bold',
-                        fontSize: '1em',
+                        fontSize: isMobile ? '0.95em' : '1em',
                         transition: 'all 0.2s'
                     }}
                 >
@@ -348,15 +381,175 @@ export default function Shop() {
                 </button>
             </div>
 
-            {/* Table */}
+            {/* Table or Card List */}
             {shopItems.length === 0 ? (
                 <p style={{ color: '#aaa', textAlign: 'center', marginTop: '40px' }}>판매할 자원이 없습니다.</p>
+            ) : isMobile ? (
+                /* Mobile: Card Layout */
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    flex: 1,
+                    overflow: 'auto',
+                    minHeight: 0
+                }}>
+                    {/* Select All Card */}
+                    <div style={{
+                        background: '#222',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        border: '1px solid #444'
+                    }}>
+                        <input
+                            type="checkbox"
+                            checked={shopItems.length > 0 && selectedItems.size === shopItems.length}
+                            onChange={toggleSelectAll}
+                            style={{ cursor: 'pointer', width: '18px', height: '18px', minWidth: '18px' }}
+                        />
+                        <span style={{ fontWeight: 'bold', fontSize: '0.95em' }}>전체 선택</span>
+                    </div>
+
+                    {/* Item Cards */}
+                    {shopItems.map(item => {
+                        const sellQuantity = sellQuantities[item.id] || 1
+                        const totalValue = sellQuantity * item.price
+                        const isSelected = selectedItems.has(item.id)
+
+                        return (
+                            <div key={item.id} style={{
+                                background: isSelected ? '#3a3520' : '#333',
+                                border: `2px solid ${isSelected ? '#eab308' : '#444'}`,
+                                borderRadius: '8px',
+                                padding: '12px',
+                                transition: 'all 0.2s'
+                            }}>
+                                {/* Header: Checkbox + Name */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => toggleSelection(item.id)}
+                                        style={{ cursor: 'pointer', width: '18px', height: '18px', minWidth: '18px' }}
+                                    />
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                            <span style={{ fontWeight: 'bold', fontSize: '1.05em' }}>{item.name}</span>
+                                            {item.rarity && (
+                                                <span style={{
+                                                    fontSize: '0.65em',
+                                                    padding: '2px 6px',
+                                                    borderRadius: '4px',
+                                                    background: getRarityColor(item.rarity),
+                                                    color: 'white'
+                                                }}>
+                                                    {item.rarity}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Info Row */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.9em', color: '#aaa' }}>
+                                    <span>보유: {formatNumber(item.count)}개</span>
+                                    <span>단가: {item.price}G</span>
+                                </div>
+
+                                {/* Quantity Controls */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                                    <span style={{ fontSize: '0.85em', color: '#aaa', minWidth: '60px' }}>판매 수량:</span>
+                                    <button
+                                        onClick={() => handleQuantityChange(item.id, sellQuantity - 1, item.count)}
+                                        style={{
+                                            width: '32px',
+                                            height: '32px',
+                                            minHeight: '32px',
+                                            background: '#444',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '1.1em',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >-</button>
+                                    <input
+                                        type="number"
+                                        value={sellQuantity}
+                                        onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 0, item.count)}
+                                        style={{
+                                            flex: 1,
+                                            textAlign: 'center',
+                                            background: '#222',
+                                            color: 'white',
+                                            border: '1px solid #555',
+                                            borderRadius: '6px',
+                                            padding: '8px',
+                                            fontSize: '0.95em',
+                                            minHeight: '32px'
+                                        }}
+                                    />
+                                    <button
+                                        onClick={() => handleQuantityChange(item.id, sellQuantity + 1, item.count)}
+                                        style={{
+                                            width: '32px',
+                                            height: '32px',
+                                            minHeight: '32px',
+                                            background: '#444',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '1.1em',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >+</button>
+                                    <button
+                                        onClick={() => handleQuantityChange(item.id, item.count, item.count)}
+                                        style={{
+                                            padding: '0 12px',
+                                            height: '32px',
+                                            minHeight: '32px',
+                                            background: '#555',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontSize: '0.8em',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >Max</button>
+                                </div>
+
+                                {/* Total Value */}
+                                <div style={{
+                                    background: '#222',
+                                    padding: '8px',
+                                    borderRadius: '6px',
+                                    textAlign: 'center',
+                                    fontWeight: 'bold',
+                                    color: '#eab308',
+                                    fontSize: '1em'
+                                }}>
+                                    합계: {formatNumber(totalValue)}G
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
             ) : (
+                /* Desktop: Table Layout */
                 <div style={{
                     background: '#333',
                     borderRadius: '8px',
-                    overflow: 'hidden',
-                    border: '1px solid #444'
+                    overflow: 'auto',
+                    border: '1px solid #444',
+                    flex: 1,
+                    minHeight: 0
                 }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', color: '#ddd' }}>
                         <thead>

@@ -105,7 +105,7 @@ async function seedAlchemy() {
 
             if (recipe.conditions && recipe.conditions.length > 0) {
                 const conditions = recipe.conditions.map((cond) => {
-                    const mapped: any = {
+                    const mapped: Record<string, unknown> = {
                         recipe_id: recipe.id,
                         condition_type: cond.conditionType
                     }

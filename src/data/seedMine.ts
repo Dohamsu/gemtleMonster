@@ -26,7 +26,7 @@ const idleConst = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'))
 async function seedMine() {
     console.log('Starting Mine facility seeding...')
 
-    const mineData = idleConst.facilities.find((f: any) => f.id === 'mine')
+    const mineData = idleConst.facilities.find((f: Record<string, unknown>) => f.id === 'mine')
 
     if (!mineData) {
         console.error('Mine data not found in idleConst.json')

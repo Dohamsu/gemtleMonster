@@ -399,8 +399,8 @@ export const RECIPES: Recipe[] = DB_RECIPES_SEED.map(dbRecipe => {
         requiredAlchemyLevel: dbRecipe.requiredAlchemyLevel,
         isHidden: dbRecipe.isHidden,
         conditions: dbRecipe.conditions.map(cond => ({
-            type: cond.conditionType as any,
-            conditionType: cond.conditionType as any,
+            type: cond.conditionType as RecipeCondition['type'],
+            conditionType: cond.conditionType as RecipeCondition['type'],
             value: cond.timeStart && cond.timeEnd
                 ? { timeStart: cond.timeStart, timeEnd: cond.timeEnd }
                 : cond.languageCode
