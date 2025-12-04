@@ -16,10 +16,9 @@ export const MATERIALS: Record<string, Material> = {
     'crack_stone_fragment': { id: 'crack_stone_fragment', name: '균열석 파편', type: 'SPECIAL', description: '차원의 균열에서 나온 돌조각.', rarity: 'SR', iconUrl: '/assets/materials/crack_stone_fragment.png' },
     'ancient_relic_fragment': { id: 'ancient_relic_fragment', name: '고대 유물 파편', type: 'SPECIAL', description: '알 수 없는 고대의 유물 조각.', rarity: 'SR', iconUrl: '/assets/materials/ancient_relic_fragment.png' },
     'magic_ore': { id: 'magic_ore', name: '마력 광석(구)', type: 'MINERAL', description: '마력이 깃든 광석.', rarity: 'R', iconUrl: '/assets/materials/ore_magic.png' },
-    'spirit_dust': { id: 'spirit_dust', name: '정령 가루', type: 'SPIRIT', description: '반짝이는 가루.', rarity: 'R', iconUrl: '✨' },
-    'dark_crystal': { id: 'dark_crystal', name: '어둠의 결정', type: 'MINERAL', description: '어두운 기운이 감도는 결정.', rarity: 'R', iconUrl: '🔮' },
-    'crown_shard': { id: 'crown_shard', name: '왕관 파편', type: 'SPECIAL', description: '부서진 왕관의 조각.', rarity: 'SR', iconUrl: '👑' },
-    'fire_core': { id: 'fire_core', name: '불 던전 코어', type: 'SPECIAL', description: '뜨거운 열기를 내뿜는 코어.', rarity: 'SR', iconUrl: '🔥' },
+    'spirit_dust': { id: 'spirit_dust', name: '정령 가루', type: 'SPIRIT', description: '반짝이는 가루.', rarity: 'R', iconUrl: '/assets/materials/spirit_dust.png' },
+    'dark_crystal': { id: 'dark_crystal', name: '어둠의 결정', type: 'MINERAL', description: '어두운 기운이 감도는 결정.', rarity: 'R', iconUrl: '/assets/materials/dark_crystal.png' },
+    'fire_core': { id: 'fire_core', name: '불 던전 코어', type: 'SPECIAL', description: '뜨거운 열기를 내뿜는 코어.', rarity: 'SR', iconUrl: '/assets/materials/fire_core.png' },
 
     // Decompose System Materials
     'essence': { id: 'essence', name: '몬스터 정수', type: 'SPECIAL', description: '몬스터의 생명력이 응축된 정수.', rarity: 'N', iconUrl: '/assets/materials/essence.png' },
@@ -39,7 +38,6 @@ export const MATERIALS: Record<string, Material> = {
     'hide_tough': { id: 'hide_tough', name: '질긴 가죽', type: 'BEAST', description: '두껍고 질긴 몬스터 가죽', rarity: 'R', iconUrl: '/assets/materials/hide_tough.png' },
     'bone_dragon': { id: 'bone_dragon', name: '용의 뼈', type: 'BEAST', description: '고대 용의 강력한 뼈', rarity: 'SSR', iconUrl: '/assets/materials/bone_dragon.png' },
     'slime_mutant': { id: 'slime_mutant', name: '변이 점액', type: 'SLIME', description: '특이하게 변이한 슬라임의 점액', rarity: 'R', iconUrl: '/assets/materials/slime_mutant.png' },
-    'crown_fragment': { id: 'crown_fragment', name: '왕관 파편', type: 'SLIME', description: '고대 왕의 왕관 조각', rarity: 'SR', iconUrl: '/assets/materials/crown_fragment.png' },
     'soul_fragment': { id: 'soul_fragment', name: '영혼 파편', type: 'SPIRIT', description: '영혼의 일부가 결정화된 파편', rarity: 'R', iconUrl: '/assets/materials/soul_fragment.png' },
     'essence_light': { id: 'essence_light', name: '빛의 정수', type: 'SPIRIT', description: '순수한 빛의 힘', rarity: 'SR', iconUrl: '/assets/materials/essence_light.png' },
     'rune_world': { id: 'rune_world', name: '세계의 룬', type: 'SPIRIT', description: '세계를 지키는 고대 룬', rarity: 'SSR', iconUrl: '/assets/materials/rune_world.png' },

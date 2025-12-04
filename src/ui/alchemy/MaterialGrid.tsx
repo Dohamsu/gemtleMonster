@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import type { Material } from '../../lib/alchemyApi'
 import { isMobileView } from '../../utils/responsiveUtils'
+import { getFamilyColor, getRarityColor } from '../../utils/materialUtils'
 import ResourceIcon from '../ResourceIcon'
 import { ALCHEMY } from '../../constants/game'
 
@@ -64,30 +65,6 @@ export default function MaterialGrid({
 
         // 클릭할 때마다 +1 추가
         onAddIngredient(materialId, 1)
-    }
-
-    // 계열별 색상
-    const getFamilyColor = (family: string) => {
-        switch (family) {
-            case 'PLANT': return '#c3c3c3ff'
-            case 'MINERAL': return '#c3c3c3ff'
-            case 'BEAST': return '#c3c3c3ff'
-            case 'SLIME': return '#c3c3c3ff'
-            case 'SPIRIT': return '#c3c3c3ff'
-            default: return '#ffffffff'
-        }
-    }
-
-    // 등급별 텍스트 색상
-    const getRarityColor = (rarity: string) => {
-        switch (rarity) {
-            case 'COMMON': return '#ffffff' // White
-            case 'UNCOMMON': return '#4ade80' // Green-400 (Bright Green)
-            case 'RARE': return '#60a5fa' // Blue-400 (Bright Blue)
-            case 'EPIC': return '#c084fc' // Purple-400 (Bright Purple)
-            case 'LEGENDARY': return '#fbbf24' // Amber-400 (Bright Gold)
-            default: return '#f0d090'
-        }
     }
 
     return (
@@ -173,7 +150,11 @@ export default function MaterialGrid({
                                     justifyContent: 'center',
                                     overflow: 'hidden'
                                 }}>
-                                    <ResourceIcon resourceId={material.id} size={isMobile ? 32 : 28} />
+                                    <ResourceIcon
+                                        resourceId={material.id}
+                                        size={isMobile ? 32 : 28}
+                                        iconUrl={material.icon_url}
+                                    />
                                 </div>
 
                                 {/* Material Name */}

@@ -218,7 +218,6 @@ DROP TABLE IF EXISTS recipe_condition_backup;
 -- Update material.sell_price for existing materials (optional, update as needed)
 UPDATE material SET sell_price = 10 WHERE id = 'herb_common';
 UPDATE material SET sell_price = 25 WHERE id = 'slime_core';
-UPDATE material SET sell_price = 40 WHERE id = 'fang_beast';
 UPDATE material SET sell_price = 30 WHERE id = 'ore_iron';
 UPDATE material SET sell_price = 100 WHERE id = 'crystal_mana';
 UPDATE material SET sell_price = 80 WHERE id = 'spirit_dust';

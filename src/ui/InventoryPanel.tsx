@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { useGameStore } from '../store/useGameStore'
 import { isMobileView } from '../utils/responsiveUtils'
+import { getFamilyColor, getRarityColor } from '../utils/materialUtils'
 import ResourceAnimation from './ResourceAnimation'
 import ResourceIcon from './ResourceIcon'
 import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
@@ -41,30 +42,6 @@ export const InventoryPanel: React.FC = () => {
     acc[material.family].push(material)
     return acc
   }, {} as Record<string, typeof allMaterials>)
-
-  // 등급별 색상
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'COMMON': return '#9ca3af'
-      case 'UNCOMMON': return '#22c55e'
-      case 'RARE': return '#3b82f6'
-      case 'EPIC': return '#a855f7'
-      case 'LEGENDARY': return '#f59e0b'
-      default: return '#fff'
-    }
-  }
-
-  // 계열별 배경색
-  const getFamilyColor = (family: string) => {
-    switch (family) {
-      case 'PLANT': return '#10b981'
-      case 'MINERAL': return '#6366f1'
-      case 'BEAST': return '#f59e0b'
-      case 'SLIME': return '#8b5cf6'
-      case 'SPIRIT': return '#ec4899'
-      default: return '#64748b'
-    }
-  }
 
   const toggleCategory = (family: string) => {
     setCollapsedCategories(prev => {

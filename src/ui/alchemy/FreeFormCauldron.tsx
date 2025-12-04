@@ -19,84 +19,16 @@ export default function FreeFormCauldron() {
     )
     const { materialCounts: playerMaterials } = useUnifiedInventory()
 
-    // 재료의 총 개수를 계산 (종류가 아닌 실제 개수)
-    const ingredientCount = Object.values(selectedIngredients).reduce((sum, count) => sum + count, 0)
-
     return (
         <div style={{
             display: 'flex',
             flexDirection: 'column',
             flex: 1,
-            padding: '20px',
             alignItems: 'center',
             overflow: 'auto',
             boxSizing: 'border-box',
             minHeight: 0
         }}>
-            {/* Header Info */}
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <h2 style={{ margin: '0 0 5px 0', color: '#fff' }}>📦 재료 인벤토리</h2>
-                <div style={{ color: '#aaa', fontSize: '0.9em' }}>보유 재료를 확인하세요 (조합은 Canvas에서)</div>
-            </div>
-
-            {/* Canvas에서 선택한 재료 (읽기 전용) */}
-            {ingredientCount > 0 && (
-                <div style={{ width: '100%', marginBottom: '20px' }}>
-                    <h4 style={{ margin: '0 0 10px 0', color: '#ddd', textAlign: 'center' }}>
-                        Canvas에서 선택한 재료 ({ingredientCount}개)
-                    </h4>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap' }}>
-                        {Object.entries(selectedIngredients).map(([materialId, count]) => {
-                            const material = allMaterials.find(m => m.id === materialId)
-                            return (
-                                <div key={materialId} style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center'
-                                }}>
-                                    <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        background: '#1e293b',
-                                        border: '2px solid #3b82f6',
-                                        borderRadius: '8px',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        marginBottom: '5px',
-                                        position: 'relative'
-                                    }}>
-                                        <ResourceIcon resourceId={materialId} size={28} />
-
-                                        {/* Count badge */}
-                                        <div style={{
-                                            position: 'absolute',
-                                            bottom: '-5px',
-                                            right: '-5px',
-                                            background: '#3b82f6',
-                                            borderRadius: '50%',
-                                            minWidth: '24px',
-                                            height: '24px',
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            fontSize: '12px',
-                                            color: 'white',
-                                            fontWeight: 'bold',
-                                            padding: '0 4px'
-                                        }}>×{count}</div>
-                                    </div>
-                                    <span style={{ fontSize: '11px', color: '#cbd5e1', textAlign: 'center', maxWidth: '80px' }}>
-                                        {material?.name || materialId}
-                                    </span>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-            )}
-
             {/* Available Materials (읽기 전용) */}
             <div style={{
                 marginTop: '30px',
@@ -140,7 +72,11 @@ export default function FreeFormCauldron() {
                                         transition: 'all 0.2s'
                                     }}
                                 >
-                                    <ResourceIcon resourceId={material.id} size={32} />
+                                    <ResourceIcon
+                                        resourceId={material.id}
+                                        size={32}
+                                        iconUrl={material.icon_url}
+                                    />
                                     <span style={{
                                         fontSize: '10px',
                                         color: '#cbd5e1',

@@ -726,7 +726,6 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       console.log('🔧 테스트 재료 추가 시작...')
       await alchemyApi.addMaterialToPlayer(userId, 'herb_common', 20)
       await alchemyApi.addMaterialToPlayer(userId, 'slime_core', 10)
-      await alchemyApi.addMaterialToPlayer(userId, 'fang_beast', 8)
       await alchemyApi.addMaterialToPlayer(userId, 'ore_iron', 10)
       await alchemyApi.addMaterialToPlayer(userId, 'crystal_mana', 5)
       await alchemyApi.addMaterialToPlayer(userId, 'spirit_dust', 6)

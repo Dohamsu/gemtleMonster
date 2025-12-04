@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useGameStore } from '../store/useGameStore'
-import { useSaveGame } from '../hooks/useSaveGame'
 import { useBatchSync } from '../hooks/useBatchSync'
 import { useEventBasedSync } from '../hooks/useEventBasedSync'
 import { useAlchemyStore } from '../store/useAlchemyStore'
@@ -12,7 +11,6 @@ import AlchemyLayout from './alchemy/AlchemyLayout'
 export default function UIOverlay() {
     const { user, loading: authLoading } = useAuth()
     const { activeTab, setActiveTab } = useGameStore()
-    const { saveGame, saving, lastSaved } = useSaveGame()
     const [isMobile, setIsMobile] = useState(isMobileView())
 
     // Phase 1: 배치 동기화 시스템
@@ -120,38 +118,6 @@ export default function UIOverlay() {
                     marginBottom: isMobile ? '8px' : '10px'
                 }}>
                     ID: {user?.id.slice(0, 8)}...
-                </div>
-
-                <div>
-                    <button
-                        onClick={saveGame}
-                        disabled={saving}
-                        style={{
-                            width: '100%',
-                            padding: isMobile ? '10px' : '8px',
-                            minHeight: isMobile ? '44px' : 'auto',
-                            background: saving ? '#555' : '#3b82f6',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: saving ? 'not-allowed' : 'pointer',
-                            fontWeight: 'bold',
-                            fontSize: isMobile ? '0.95em' : '1em',
-                            transition: 'background 0.2s',
-                        }}
-                    >
-                        {saving ? '저장 중...' : '저장하기'}
-                    </button>
-                    {lastSaved && (
-                        <div style={{
-                            fontSize: isMobile ? '0.7em' : '0.75em',
-                            color: '#888',
-                            marginTop: '5px',
-                            textAlign: 'center'
-                        }}>
-                            저장됨: {lastSaved.toLocaleTimeString()}
-                        </div>
-                    )}
                 </div>
             </div>
 

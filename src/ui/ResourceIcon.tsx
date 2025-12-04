@@ -1,6 +1,7 @@
 interface Props {
     resourceId: string
     size?: number
+    iconUrl?: string
 }
 
 const RESOURCE_ICONS: Record<string, string> = {
@@ -26,7 +27,6 @@ const RESOURCE_ICONS: Record<string, string> = {
     // 정령/특수
     spirit_dust: '✨',
     dark_crystal: '🔮',
-    crown_shard: '👑',
     fire_core: '🔥',
 
     // 기타
@@ -34,8 +34,11 @@ const RESOURCE_ICONS: Record<string, string> = {
     training_token: '🎖️'
 }
 
-export default function ResourceIcon({ resourceId, size = 20 }: Props) {
-    const icon = RESOURCE_ICONS[resourceId] || '❓'
+export default function ResourceIcon({ resourceId, size = 20, iconUrl }: Props) {
+    // 1. iconUrl prop이 있으면 최우선 사용
+    // 2. 없으면 RESOURCE_ICONS 맵에서 조회
+    // 3. 그래도 없으면 물음표
+    const icon = iconUrl || RESOURCE_ICONS[resourceId] || '❓'
 
     // Check if icon is an image path
     if (icon.startsWith('/')) {
