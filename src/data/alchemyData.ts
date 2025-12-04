@@ -45,6 +45,8 @@ export const MATERIALS: Record<string, Material> = {
     'flower_moonlight': { id: 'flower_moonlight', name: '월광 꽃', type: 'PLANT', description: '달빛 아래서만 피는 신비한 꽃', rarity: 'R', iconUrl: '/assets/materials/flower_moonlight.png' },
     'scale_serpent': { id: 'scale_serpent', name: '뱀의 비늘', type: 'BEAST', description: '강인한 뱀 몬스터의 비늘', rarity: 'R', iconUrl: '/assets/materials/scale_serpent.png' },
     'catalyst_time': { id: 'catalyst_time', name: '시간의 촉매', type: 'SPIRIT', description: '시간의 흐름을 담은 신비한 촉매', rarity: 'SSR', iconUrl: '/assets/materials/catalyst_time.png' },
+    // Boss/Dungeon Drop Materials
+    'crown_fragment': { id: 'crown_fragment', name: '왕관 파편', type: 'SPECIAL', description: '보스 몬스터가 드랍하는 귀중한 왕관 조각', rarity: 'SR', iconUrl: '/assets/materials/crown_fragment.png' },
 }
 
 
@@ -88,7 +90,6 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 100,
         ingredients: [
-            { materialId: 'slime_core', quantity: 1, isCatalyst: false },
             { materialId: 'herb_common', quantity: 2, isCatalyst: false }
         ],
         conditions: []

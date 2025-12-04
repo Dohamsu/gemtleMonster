@@ -44,6 +44,8 @@ export const RecipePanel: React.FC = () => {
 
   const handleSelectRecipe = (recipeId: string) => {
     selectRecipe(recipeId)
+    // 레시피 선택 시 자동으로 재료 배치
+    autoFillIngredients(recipeId)
   }
 
   const handleAutoFill = (recipeId: string, e: React.MouseEvent) => {

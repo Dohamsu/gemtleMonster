@@ -315,7 +315,13 @@ export default function GameCanvas() {
                     selectedRecipeId={selectedRecipeId}
                     selectedIngredients={selectedIngredients}
                     isBrewing={isBrewing}
-                    onSelectRecipe={selectRecipe}
+                    onSelectRecipe={(recipeId) => {
+                        selectRecipe(recipeId)
+                        // 레시피 선택 시 자동으로 재료 배치
+                        if (recipeId) {
+                            autoFillIngredients(recipeId)
+                        }
+                    }}
                     onAddIngredient={addIngredient}
                     mobileTab={mobileTab}
                     onMobileTabChange={setMobileTab}

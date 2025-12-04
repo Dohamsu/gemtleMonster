@@ -316,22 +316,30 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     const gameStore = useGameStore.getState()
     const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
 
+    console.log('🔄 [autoFillIngredients] 시작:', recipeId)
+    console.log('📦 [autoFillIngredients] 전체 레시피 수:', allRecipes.length)
+
     const recipe = allRecipes.find(r => r.id === recipeId)
-    if (!recipe || !recipe.ingredients) {
-      console.log('❌ 레시피를 찾을 수 없음:', recipeId)
+    if (!recipe) {
+      console.log('❌ [autoFillIngredients] 레시피를 찾을 수 없음:', recipeId)
       return false
     }
 
+    console.log('📜 [autoFillIngredients] 레시피 정보:', recipe.name, recipe)
+    console.log('🧪 [autoFillIngredients] ingredients:', recipe.ingredients)
 
+    if (!recipe.ingredients || recipe.ingredients.length === 0) {
+      console.log('❌ [autoFillIngredients] 레시피에 재료 정보가 없음')
+      return false
+    }
 
-    // console.log('🔄 자동 배치 시도:', recipe.name)
-    // console.log('📦 현재 보유 재료:', mergedMaterials)
+    console.log('📦 [autoFillIngredients] 현재 보유 재료:', mergedMaterials)
 
     const newIngredients: Record<string, number> = {}
 
     for (const ing of recipe.ingredients) {
       const available = mergedMaterials[ing.material_id] || 0
-      // console.log(`  - ${ing.material_id}: ${available} / ${ing.quantity} 필요`)
+      console.log(`  - ${ing.material_id}: 보유 ${available} / 필요 ${ing.quantity}`)
       if (available < ing.quantity) {
         // 재료 부족
         console.log(`❌ 재료 부족: ${ing.material_id}`)
@@ -340,8 +348,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       newIngredients[ing.material_id] = ing.quantity
     }
 
+    console.log('✅ [autoFillIngredients] 자동 배치 완료:', newIngredients)
     set({ selectedIngredients: newIngredients })
-    // console.log('✅ 자동 배치 완료:', newIngredients)
     return true
   },
 
