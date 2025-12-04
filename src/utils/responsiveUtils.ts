@@ -130,15 +130,15 @@ export function getAlchemyLayout(canvasWidth: number, canvasHeight: number): Alc
         // 가마솥: 탭 아래 중앙 정렬, LAYOUT 상수에서 크기 가져오기
         const cauldronSize = LAYOUT.MOBILE_CAULDRON_SIZE
         const cauldronX = canvasWidth / 2 - cauldronSize / 2
-        const cauldronY = tabY + tabHeight + 20
+        const cauldronY = tabY + tabHeight + 10 // 간격 축소: 20 → 10
 
         // 재료 슬롯: 터치 친화적 크기(50px), 좁은 간격(8px)
         const slotSize = 50
         const slotGap = 8
 
         // 탭 컨텐츠 영역: 가마솥 + 슬롯 아래부터 버튼 위까지
-        const contentY = cauldronY + cauldronSize + 100  // 가마솥 + 슬롯 영역
-        const contentH = canvasHeight - contentY - 160  // 버튼 + XP바 공간 확보
+        const contentY = cauldronY + cauldronSize + 20  // 가마솥 + 슬롯 영역 (간격 축소: 100 → 20)
+        const contentH = canvasHeight - contentY - 100  // 버튼 + XP바 공간 확보
 
         return {
             isMobile: true,
@@ -189,26 +189,26 @@ export function getAlchemyLayout(canvasWidth: number, canvasHeight: number): Alc
         return {
             isMobile: false,
 
-            // 가마솥: 화면 중앙, LAYOUT 상수에서 크기 가져오기
+            // 가마솥: 화면 중앙 약간 위로, LAYOUT 상수에서 크기 가져오기
             cauldronSize: LAYOUT.DESKTOP_CAULDRON_SIZE,
             cauldronX: canvasWidth / 2 - LAYOUT.DESKTOP_CAULDRON_SIZE / 2,
-            cauldronY: canvasHeight / 2 - LAYOUT.DESKTOP_CAULDRON_SIZE / 2,
+            cauldronY: canvasHeight / 2 - LAYOUT.DESKTOP_CAULDRON_SIZE / 2 - 30, // 30px 위로 이동
 
             // 재료 슬롯: 적당한 크기(60px), 넓은 간격(10px)
             slotSize: 60,
             slotGap: 10,
 
-            // 레시피 패널: 왼쪽 고정 위치
+            // 레시피 패널: 왼쪽 고정 위치 (Y 좌표 상향 조정)
             recipeX: 40,
-            recipeY: 120,  // 타이틀 아래
+            recipeY: 90,  // 타이틀 아래 (120 → 90으로 30px 상향)
             recipeW: 220,
-            recipeH: canvasHeight - 160,  // 상하 여백 확보
+            recipeH: canvasHeight - 130,  // 높이 증가 (160 → 130으로 30px 증가)
 
-            // 재료 그리드 패널: 오른쪽 고정 위치
+            // 재료 그리드 패널: 오른쪽 고정 위치 (Y 좌표 상향 조정)
             materialX: canvasWidth - 260,  // 우측 정렬 (너비 220 + 여백 40)
-            materialY: 120,
+            materialY: 90,  // 120 → 90으로 30px 상향
             materialW: 220,
-            materialH: canvasHeight - 160,
+            materialH: canvasHeight - 130,  // 높이 증가 (160 → 130으로 30px 증가)
 
             // 연금술 시작 버튼: 중앙 하단
             brewButtonW: 180,

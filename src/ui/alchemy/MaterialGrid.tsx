@@ -69,12 +69,12 @@ export default function MaterialGrid({
     // 계열별 색상
     const getFamilyColor = (family: string) => {
         switch (family) {
-            case 'PLANT': return '#10b981'
-            case 'MINERAL': return '#6366f1'
-            case 'BEAST': return '#f59e0b'
-            case 'SLIME': return '#8b5cf6'
-            case 'SPIRIT': return '#ec4899'
-            default: return '#64748b'
+            case 'PLANT': return '#c3c3c3ff'
+            case 'MINERAL': return '#c3c3c3ff'
+            case 'BEAST': return '#c3c3c3ff'
+            case 'SLIME': return '#c3c3c3ff'
+            case 'SPIRIT': return '#c3c3c3ff'
+            default: return '#ffffffff'
         }
     }
 

@@ -41,6 +41,7 @@ export default function AlchemyWorkshopOverlay({
 
     if (isMobile) {
         // 모바일: 탭 기반 UI
+        // Canvas 버튼(height-130)과 XP바(height-65) 공간 확보를 위해 하단 150px 비워둠
         return (
             <div style={{
                 position: 'absolute',
@@ -55,10 +56,10 @@ export default function AlchemyWorkshopOverlay({
                 {/* Tabs */}
                 <div style={{
                     position: 'absolute',
-                    bottom: 0,
+                    bottom: '140px', // 버튼(130px) + XP바(65px) 공간 확보
                     left: 0,
                     width: '100%',
-                    height: '50%',
+                    height: 'calc(50% - 20px)', // 전체 50%에서 하단 공간 제외
                     pointerEvents: 'auto',
                     background: 'transparent',
                     display: 'flex',
@@ -158,8 +159,8 @@ export default function AlchemyWorkshopOverlay({
             {/* Left Panel - Recipe List */}
             <div style={{
                 pointerEvents: 'auto',
-                height: 'calc(100% - 180px)',
-                marginTop: '100px'
+                height: 'calc(100% - 150px)', // 높이 증가 (180 → 150)
+                marginTop: '70px' // 상단 마진 축소 (100 → 70)
             }}>
                 <RecipeList
                     recipes={recipes}
@@ -174,8 +175,8 @@ export default function AlchemyWorkshopOverlay({
             {/* Right Panel - Material Grid */}
             <div style={{
                 pointerEvents: 'auto',
-                height: 'calc(100% - 180px)',
-                marginTop: '100px'
+                height: 'calc(100% - 150px)', // 높이 증가 (180 → 150)
+                marginTop: '70px' // 상단 마진 축소 (100 → 70)
             }}>
                 <MaterialGrid
                     materials={materials}

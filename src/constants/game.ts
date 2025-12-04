@@ -50,9 +50,9 @@ export const UI = {
 // Layout Constants (연금술 화면 레이아웃)
 export const LAYOUT = {
   /** 모바일 탭 Y 좌표 (타이틀 아래 위치) */
-  MOBILE_TAB_Y: 120,
+  MOBILE_TAB_Y: 40,
   /** 모바일 탭 높이 */
-  MOBILE_TAB_HEIGHT: 50,
+  MOBILE_TAB_HEIGHT: 40,
   /** 모바일 가마솥 크기 */
   MOBILE_CAULDRON_SIZE: 120,
   /** 데스크톱 가마솥 크기 */
