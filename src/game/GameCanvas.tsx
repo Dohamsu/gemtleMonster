@@ -13,7 +13,7 @@ import { useAlchemyContext } from '../hooks/useAlchemyContext'
 import { renderMapView } from './renderers/mapRenderer'
 import { renderAlchemyWorkshop } from './renderers/alchemyRenderer'
 import { renderShopView } from './renderers/shopRenderer'
-import { UI } from '../constants/game'
+import { UI, LAYOUT } from '../constants/game'
 import DungeonModal from '../ui/dungeon/DungeonModal'
 import { MATERIALS } from '../data/alchemyData'
 
@@ -108,8 +108,9 @@ export default function GameCanvas() {
 
         // 연금술 화면이고 모바일 레이아웃일 때 탭 클릭 처리
         if (canvasView === 'alchemy_workshop' && canvas.width <= 768) {
-            const tabY = 60
-            const tabHeight = 50
+            // LAYOUT 상수에서 탭 위치 가져오기 (중앙 집중식 관리)
+            const tabY = LAYOUT.MOBILE_TAB_Y
+            const tabHeight = LAYOUT.MOBILE_TAB_HEIGHT
             const tabW = canvas.width / 2
 
             if (y >= tabY && y <= tabY + tabHeight) {

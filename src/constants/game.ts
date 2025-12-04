@@ -47,6 +47,20 @@ export const UI = {
   MATERIAL_GRID_PADDING: 5,
 } as const
 
+// Layout Constants (연금술 화면 레이아웃)
+export const LAYOUT = {
+  /** 모바일 탭 Y 좌표 (타이틀 아래 위치) */
+  MOBILE_TAB_Y: 120,
+  /** 모바일 탭 높이 */
+  MOBILE_TAB_HEIGHT: 50,
+  /** 모바일 가마솥 크기 */
+  MOBILE_CAULDRON_SIZE: 120,
+  /** 데스크톱 가마솥 크기 */
+  DESKTOP_CAULDRON_SIZE: 200,
+  /** 재료 그리드 최대 표시 줄 수 */
+  MAX_MATERIAL_ROWS: 5,
+} as const
+
 // Progress Update Constants
 export const PROGRESS = {
   /** Update interval for collection progress animation (milliseconds) */
