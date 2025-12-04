@@ -229,7 +229,7 @@ export const InventoryPanel: React.FC = () => {
                       justifyContent: 'center',
                       overflow: 'hidden'
                     }}>
-                      <ResourceIcon resourceId={material.id} size={32} />
+                      <ResourceIcon resourceId={material.id} size={32} iconUrl={material.icon_url} />
                     </div>
                     <div style={{
                       fontSize: '11px',

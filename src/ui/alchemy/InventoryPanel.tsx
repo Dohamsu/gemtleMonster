@@ -39,7 +39,7 @@ export default function InventoryPanel() {
                                     position: 'relative'
                                 }}
                             >
-                                <ResourceIcon resourceId={material.id} size={24} />
+                                <ResourceIcon resourceId={material.id} size={24} iconUrl={material.icon_url} />
                                 <span style={{ fontSize: '0.8em', marginTop: '4px', textAlign: 'center', wordBreak: 'break-word' }}>
                                     {material.name}
                                 </span>
