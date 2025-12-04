@@ -78,6 +78,18 @@ export default function MaterialGrid({
         }
     }
 
+    // 등급별 텍스트 색상
+    const getRarityColor = (rarity: string) => {
+        switch (rarity) {
+            case 'COMMON': return '#ffffff' // White
+            case 'UNCOMMON': return '#4ade80' // Green-400 (Bright Green)
+            case 'RARE': return '#60a5fa' // Blue-400 (Bright Blue)
+            case 'EPIC': return '#c084fc' // Purple-400 (Bright Purple)
+            case 'LEGENDARY': return '#fbbf24' // Amber-400 (Bright Gold)
+            default: return '#f0d090'
+        }
+    }
+
     return (
         <div style={{
             width: isMobile ? '100%' : '260px',
@@ -167,7 +179,7 @@ export default function MaterialGrid({
                                 {/* Material Name */}
                                 <div style={{
                                     fontSize: isMobile ? '10px' : '9px',
-                                    color: '#f0d090',
+                                    color: getRarityColor(material.rarity),
                                     textAlign: 'center',
                                     lineHeight: '1.2',
                                     fontWeight: 'bold'

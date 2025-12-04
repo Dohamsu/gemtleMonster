@@ -99,7 +99,7 @@ export function renderAlchemyWorkshop(props: AlchemyRendererProps) {
 function renderBackButton(ctx: CanvasRenderingContext2D) {
     const backBtnX = 20
     const backBtnY = 20
-    const backBtnW = 100
+    const backBtnW = 60
     const backBtnH = 40
 
     ctx.fillStyle = '#4a3020'
@@ -112,14 +112,14 @@ function renderBackButton(ctx: CanvasRenderingContext2D) {
     ctx.font = 'bold 16px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText('← 돌아가기', backBtnX + backBtnW / 2, backBtnY + backBtnH / 2)
+    ctx.fillText('←', backBtnX + backBtnW / 2, backBtnY + backBtnH / 2)
 }
 
 function renderTitle(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     ctx.fillStyle = '#f0d090'
     ctx.font = 'bold 32px Arial'
     ctx.textAlign = 'center'
-    ctx.fillText('🧪 연금술 공방', canvas.width / 2, 60)
+    ctx.fillText('연금술 공방', canvas.width / 2, 60)
 }
 
 function renderCentralCauldron(
@@ -602,7 +602,7 @@ function renderXPBarMobile(
     ctx.fillRect(xpBarX + 3, xpBarY + 3, progressWidth, xpBarH - 6)
 
     // Text
-    ctx.fillStyle = '#f0d090'
+    ctx.fillStyle = '#b07500ff'
     ctx.font = 'bold 13px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
