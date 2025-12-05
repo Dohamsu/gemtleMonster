@@ -346,6 +346,67 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/crystal_golem.png',
         rarity: 'SR',
         element: 'earth'
+    },
+    // Christmas Dungeon Enemies (크리스마스 던전 적)
+    'snowball_slime': {
+        name: '눈덩이 슬라임',
+        description: '눈으로 뭉쳐진 귀여운 슬라임. 차가운 몸으로 천천히 굴러다니며 침입자를 쫓아다닙니다.',
+        role: '탱커',
+        hp: 45,
+        attack: 8,
+        defense: 5,
+        emoji: '⛄',
+        iconUrl: '/assets/monsters/monster_ice_slime.png',
+        rarity: 'N',
+        element: 'water'
+    },
+    'frost_sprite': {
+        name: '서리 요정',
+        description: '겨울 숲에서 태어난 작은 요정. 날개에서 눈꽃을 뿌리며 차가운 마법으로 적을 공격합니다.',
+        role: '서포터',
+        hp: 60,
+        attack: 15,
+        defense: 8,
+        emoji: '❄️',
+        iconUrl: '/assets/monsters/monster_snowflake_sprite.png',
+        rarity: 'N',
+        element: 'water'
+    },
+    'ice_wolf': {
+        name: '얼음 늑대',
+        description: '서리로 뒤덮인 맹렬한 늑대. 차가운 숨결을 내뿜으며 무리를 지어 사냥합니다.',
+        role: '딜러',
+        hp: 100,
+        attack: 25,
+        defense: 12,
+        emoji: '🐺',
+        iconUrl: '/assets/monsters/ice_wolf.png',
+        rarity: 'R',
+        element: 'water'
+    },
+    'christmas_tree_ent': {
+        name: '크리스마스 트리 엔트',
+        description: '크리스마스 장식으로 빛나는 거대한 나무 정령. 겨울 숲의 수호자로서 침입자를 물리칩니다. 🎄',
+        role: '탱커',
+        hp: 250,
+        attack: 35,
+        defense: 25,
+        emoji: '🎄',
+        iconUrl: '/assets/monsters/woodGolem.png',
+        rarity: 'SR',
+        element: 'earth'
+    },
+    'santa_golem': {
+        name: '산타 골렘',
+        description: '겨울 왕국을 지키는 거대한 눈 골렘. 산타 복장을 하고 있지만 선물 대신 강력한 주먹을 선사합니다. 🎅',
+        role: '탱커',
+        hp: 500,
+        attack: 50,
+        defense: 35,
+        emoji: '🎅',
+        iconUrl: '/assets/monsters/santa_golem.png',
+        rarity: 'SR',
+        element: 'water'
     }
 }
 

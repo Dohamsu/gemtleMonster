@@ -21,6 +21,7 @@ export interface Dungeon {
     name: string
     description: string
     recommendedLevel: number
+    iconUrl: string  // 던전 이미지 URL
     enemies: DungeonEnemy[]
 }
 
@@ -29,6 +30,7 @@ export const SLIME_DUNGEON: Dungeon = {
     name: '슬라임 숲',
     description: '끈적한 발자국이 끝없이 이어지는 슬라임들의 안식처. 위험도는 낮지만 방심한 모험가는 순식간에 포위당하는, 초보 모험가들의 시험장입니다.',
     recommendedLevel: 1,
+    iconUrl: '/assets/dungeons/slime_forest.png',
     enemies: [
         {
             id: 'slime_green',
@@ -81,6 +83,7 @@ export const LAKE_DUNGEON: Dungeon = {
     name: '신비한 호수',
     description: '옅은 안개가 수면을 뒤덮은 고요한 호수. 잔잔한 물결 아래 고대의 물 마력이 숨어 있어, 맑은 물 속성 재료와 신비한 보물을 노리는 모험가들이 끊이지 않는 장소입니다.',
     recommendedLevel: 3,
+    iconUrl: '/assets/dungeons/lake.png',
     enemies: [
         {
             id: 'slime_water',
@@ -134,6 +137,7 @@ export const CRYSTAL_DUNGEON: Dungeon = {
     name: '수정 동굴',
     description: '형형색색의 수정이 빛나는 아름다운 동굴. 하지만 아름다움 뒤에는 마력을 탐하는 위험한 생물들이 도사리고 있습니다. 희귀한 마력 결정과 보석을 얻을 수 있는 장소입니다.',
     recommendedLevel: 5,
+    iconUrl: '/assets/dungeons/crystal_cave.png',
     enemies: [
         {
             id: 'crystal_mite',
@@ -177,4 +181,85 @@ export const CRYSTAL_DUNGEON: Dungeon = {
     ]
 }
 
-export const DUNGEONS = [SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON]
+export const CHRISTMAS_DUNGEON: Dungeon = {
+    id: 'dungeon_christmas',
+    name: '겨울 왕국',
+    description: '영원한 눈이 내리는 신비로운 겨울 왕국. 크리스마스 분위기가 가득한 이곳에서 눈꽃 요정들과 얼음 생물들이 소중한 겨울 재료를 지키고 있습니다. ⛄🎄',
+    recommendedLevel: 2,
+    iconUrl: '/assets/dungeons/christmas.png',
+    enemies: [
+        {
+            id: 'snowball_slime',
+            name: '눈덩이 슬라임',
+            level: 2,
+            hp: 45,
+            attack: 8,
+            defense: 5,
+            exp: 15,
+            drops: [
+                { materialId: 'snowflake', chance: 70, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'slime_fluid', chance: 50, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'frost_sprite',
+            name: '서리 요정',
+            level: 4,
+            hp: 60,
+            attack: 15,
+            defense: 8,
+            exp: 25,
+            drops: [
+                { materialId: 'snowflake', chance: 80, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'ice_shard', chance: 60, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'spirit_dust', chance: 30, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'ice_wolf',
+            name: '얼음 늑대',
+            level: 6,
+            hp: 100,
+            attack: 25,
+            defense: 12,
+            exp: 40,
+            drops: [
+                { materialId: 'ice_shard', chance: 70, minQuantity: 1, maxQuantity: 3 },
+                { materialId: 'frozen_dew', chance: 40, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'beast_fang', chance: 50, minQuantity: 1, maxQuantity: 2 }
+            ]
+        },
+        {
+            id: 'christmas_tree_ent',
+            name: '크리스마스 트리 엔트',
+            level: 10,
+            hp: 250,
+            attack: 35,
+            defense: 25,
+            exp: 80,
+            drops: [
+                { materialId: 'frozen_dew', chance: 80, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'frost_essence', chance: 50, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'herb_rare', chance: 40, minQuantity: 1, maxQuantity: 2 }
+            ]
+        },
+        {
+            id: 'santa_golem',
+            name: '산타 골렘',
+            level: 15,
+            hp: 500,
+            attack: 50,
+            defense: 35,
+            exp: 200,
+            drops: [
+                { materialId: 'frost_essence', chance: 100, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'frozen_dew', chance: 80, minQuantity: 2, maxQuantity: 3 },
+                { materialId: 'snowflake', chance: 100, minQuantity: 3, maxQuantity: 5 },
+                { materialId: 'gem_fragment', chance: 30, minQuantity: 1, maxQuantity: 1 }
+            ]
+        }
+    ]
+}
+
+export const DUNGEONS = [SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON, CHRISTMAS_DUNGEON]
+

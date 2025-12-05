@@ -29,6 +29,36 @@ async function seedAlchemy() {
 
         // 1. 재료(Material) 시딩
         console.log('\n📦 재료 데이터 업로드 중...')
+
+        // 1-0. 로컬에 없는 재료 DB에서 삭제 (Cleanup)
+        const localMaterialIds = data.materials.map(m => m.id)
+        const { data: existingMaterials, error: fetchError } = await supabase
+            .from('material')
+            .select('id, name')
+
+        if (fetchError) {
+            console.error('⚠️ 기존 재료 조회 실패:', fetchError.message)
+        } else if (existingMaterials) {
+            const orphanedMaterials = existingMaterials.filter(m => !localMaterialIds.includes(m.id))
+            if (orphanedMaterials.length > 0) {
+                console.log(`\n🗑️ 로컬에 없는 재료 ${orphanedMaterials.length}개 삭제 중...`)
+                for (const orphan of orphanedMaterials) {
+                    const { error: deleteError } = await supabase
+                        .from('material')
+                        .delete()
+                        .eq('id', orphan.id)
+
+                    if (deleteError) {
+                        console.error(`  ❌ 삭제 실패 (${orphan.id}):`, deleteError.message)
+                    } else {
+                        console.log(`  🗑️ ${orphan.name} (${orphan.id}) 삭제됨`)
+                    }
+                }
+                console.log('')
+            }
+        }
+
+        // 1-1. 재료 upsert
         for (const material of data.materials) {
             const { error: materialError } = await supabase
                 .from('material')
@@ -52,6 +82,39 @@ async function seedAlchemy() {
 
         // 2. 레시피(Recipe) 시딩
         console.log('\n📜 레시피 데이터 업로드 중...')
+
+        // 2-0. 로컬에 없는 레시피 DB에서 삭제 (Cleanup)
+        const localRecipeIds = data.recipes.map(r => r.id)
+        const { data: existingRecipes, error: fetchRecipeError } = await supabase
+            .from('recipe')
+            .select('id, name')
+
+        if (fetchRecipeError) {
+            console.error('⚠️ 기존 레시피 조회 실패:', fetchRecipeError.message)
+        } else if (existingRecipes) {
+            const orphanedRecipes = existingRecipes.filter(r => !localRecipeIds.includes(r.id))
+            if (orphanedRecipes.length > 0) {
+                console.log(`\n🗑️ 로컬에 없는 레시피 ${orphanedRecipes.length}개 삭제 중...`)
+                for (const orphan of orphanedRecipes) {
+                    // 레시피 삭제 전에 연관된 ingredient, condition 먼저 삭제
+                    await supabase.from('recipe_ingredient').delete().eq('recipe_id', orphan.id)
+                    await supabase.from('recipe_condition').delete().eq('recipe_id', orphan.id)
+
+                    const { error: deleteError } = await supabase
+                        .from('recipe')
+                        .delete()
+                        .eq('id', orphan.id)
+
+                    if (deleteError) {
+                        console.error(`  ❌ 삭제 실패 (${orphan.id}):`, deleteError.message)
+                    } else {
+                        console.log(`  🗑️ ${orphan.name} (${orphan.id}) 삭제됨`)
+                    }
+                }
+                console.log('')
+            }
+        }
+
         for (const recipe of data.recipes) {
             // 2-1. Recipe 기본 정보 업로드
             const { error: recipeError } = await supabase

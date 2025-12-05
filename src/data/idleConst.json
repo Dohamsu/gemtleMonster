@@ -22,11 +22,9 @@
                         "intervalSeconds": 10,
                         "bundlesPerTick": 1,
                         "dropRates": {
-                            "herb_common": 0.90,
+                            "herb_common": 0.96,
                             "herb_rare": 0.03,
-                            "herb_special": 0.01,
-                            "snowflake": 0.04,
-                            "ice_shard": 0.02
+                            "herb_special": 0.01
                         },
                         "questSeedDropRate": 0.0005
                     },
@@ -40,11 +38,9 @@
                         "intervalSeconds": 8,
                         "bundlesPerTick": 1,
                         "dropRates": {
-                            "herb_common": 0.86,
+                            "herb_common": 0.94,
                             "herb_rare": 0.05,
-                            "herb_special": 0.01,
-                            "snowflake": 0.05,
-                            "ice_shard": 0.03
+                            "herb_special": 0.01
                         },
                         "questSeedDropRate": 0.0007
                     },
@@ -58,11 +54,9 @@
                         "intervalSeconds": 6,
                         "bundlesPerTick": 2,
                         "dropRates": {
-                            "herb_common": 0.80,
+                            "herb_common": 0.90,
                             "herb_rare": 0.08,
-                            "herb_special": 0.02,
-                            "snowflake": 0.06,
-                            "ice_shard": 0.04
+                            "herb_special": 0.02
                         },
                         "questSeedDropRate": 0.001
                     },

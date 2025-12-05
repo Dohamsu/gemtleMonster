@@ -73,17 +73,17 @@ export function renderMapView({ ctx, canvas, images, facilities }: MapRendererPr
         ctx.shadowBlur = 0
     }
 
-    // Render forest dungeon
+    // Render dungeon entrance
     if (images.dungeon_forest) {
         const dungeonX = canvas.width * 0.15 - 64
         const dungeonY = canvas.height * 0.7 - 64
         ctx.drawImage(images.dungeon_forest, dungeonX, dungeonY, 128, 128)
 
-        ctx.fillStyle = '#a3e635' // Lime green for slime/forest feel
+        ctx.fillStyle = '#f59e0b' // Amber color for dungeon
         ctx.font = 'bold 14px Arial'
         ctx.shadowColor = 'black'
         ctx.shadowBlur = 4
-        ctx.fillText('슬라임 숲', dungeonX + 35, dungeonY + 140)
+        ctx.fillText('던전 입구', dungeonX + 32, dungeonY + 140)
         ctx.shadowBlur = 0
     }
 

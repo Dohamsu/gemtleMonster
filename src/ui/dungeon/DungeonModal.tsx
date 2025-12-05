@@ -130,30 +130,73 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                     onClick={() => setSelectedDungeonId(dungeon.id)}
                                     style={{
                                         background: '#334155',
-                                        padding: '20px',
+                                        padding: '15px',
                                         borderRadius: '12px',
                                         cursor: 'pointer',
                                         border: '2px solid transparent',
                                         transition: 'all 0.2s',
                                         display: 'flex',
-                                        justifyContent: 'space-between',
+                                        gap: '15px',
                                         alignItems: 'center'
                                     }}
                                     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#a3e635'}
                                     onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
                                 >
-                                    <div>
+                                    {/* Dungeon Image */}
+                                    <div style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        borderRadius: '8px',
+                                        overflow: 'hidden',
+                                        flexShrink: 0,
+                                        background: '#1e293b',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <img
+                                            src={dungeon.iconUrl}
+                                            alt={dungeon.name}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover'
+                                            }}
+                                            onError={(e) => {
+                                                // 이미지 로드 실패 시 이모지로 대체
+                                                e.currentTarget.style.display = 'none'
+                                                const parent = e.currentTarget.parentElement
+                                                if (parent) {
+                                                    parent.innerHTML = '<span style="font-size: 40px">🏰</span>'
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                    {/* Dungeon Info */}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
                                         <h3 style={{ margin: '0 0 5px 0', color: '#fff' }}>{dungeon.name}</h3>
-                                        <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>
+                                        <p style={{
+                                            margin: 0,
+                                            color: '#94a3b8',
+                                            fontSize: '13px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical'
+                                        }}>
                                             {dungeon.description}
                                         </p>
                                     </div>
+                                    {/* Level Badge */}
                                     <div style={{
                                         background: '#0f172a',
-                                        padding: '5px 10px',
+                                        padding: '8px 12px',
                                         borderRadius: '6px',
-                                        color: '#cbd5e1',
-                                        fontSize: '12px'
+                                        color: '#a3e635',
+                                        fontSize: '12px',
+                                        fontWeight: 'bold',
+                                        flexShrink: 0
                                     }}>
                                         권장 Lv.{dungeon.recommendedLevel}
                                     </div>
