@@ -210,6 +210,58 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SR',
         element: 'earth'
     },
+    // 눈꽃 몬스터 (Snow/Ice Monsters)
+    'monster_snowflake_sprite': {
+        name: '눈꽃 정령',
+        description: '첫눈이 내릴 때 태어나는 순수한 정령. 차가운 바람과 함께 춤추며 아군의 마음을 치유합니다.',
+        role: '서포터',
+        hp: 70,
+        attack: 15,
+        defense: 15,
+        emoji: '❄️',
+        iconUrl: '/assets/monsters/snowflake_sprite.png',
+        rarity: 'N',
+        element: 'water',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '희귀 약초 확률 증가', value: 3 }
+    },
+    'monster_ice_slime': {
+        name: '아이스 슬라임',
+        description: '얼어붙은 호수에서 태어난 차가운 슬라임. 몸을 얼음처럼 굳혀 적의 공격을 막아냅니다.',
+        role: '탱커',
+        hp: 180,
+        attack: 20,
+        defense: 45,
+        emoji: '🧊',
+        iconUrl: '/assets/monsters/ice_slime.png',
+        rarity: 'N',
+        element: 'water',
+        factoryTrait: { targetFacility: 'mine', effect: '마력 광석 확률 증가', value: 5 }
+    },
+    'monster_frost_bunny': {
+        name: '서리 토끼',
+        description: '하얀 털에 서리를 두른 재빠른 토끼. 차가운 발차기로 적을 연속 공격합니다.',
+        role: '딜러',
+        hp: 90,
+        attack: 40,
+        defense: 12,
+        emoji: '🐇',
+        iconUrl: '/assets/monsters/frost_bunny.png',
+        rarity: 'N',
+        element: 'water'
+    },
+    'monster_snow_fairy': {
+        name: '설화 요정',
+        description: '눈보라 속에서 태어난 아름다운 요정. 눈꽃 마법으로 적을 얼리고 아군을 보호합니다.',
+        role: '서포터',
+        hp: 100,
+        attack: 25,
+        defense: 30,
+        emoji: '🧚‍♀️',
+        iconUrl: '/assets/monsters/snow_fairy.png',
+        rarity: 'R',
+        element: 'water',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '생산 속도 증가', value: 8 }
+    },
     // Dungeon Enemies (Synced from dungeonData.ts)
     'slime_green': {
         name: '초록 슬라임',

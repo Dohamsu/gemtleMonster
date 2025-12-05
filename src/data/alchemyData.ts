@@ -47,6 +47,12 @@ export const MATERIALS: Record<string, Material> = {
     'catalyst_time': { id: 'catalyst_time', name: '시간의 촉매', type: 'SPIRIT', description: '시간의 흐름을 담은 신비한 촉매', rarity: 'SSR', iconUrl: '/assets/materials/catalyst_time.png' },
     // Boss/Dungeon Drop Materials
     'crown_fragment': { id: 'crown_fragment', name: '왕관 파편', type: 'SPECIAL', description: '보스 몬스터가 드랍하는 귀중한 왕관 조각', rarity: 'SR', iconUrl: '/assets/materials/crown_fragment.png' },
+
+    // Snow/Ice Materials (눈꽃 재료)
+    'snowflake': { id: 'snowflake', name: '눈꽃 결정', type: 'MINERAL', description: '녹지 않는 신비한 눈 결정. 차가운 마력이 깃들어 있다.', rarity: 'N', iconUrl: '/assets/materials/snowflake.png' },
+    'ice_shard': { id: 'ice_shard', name: '얼음 파편', type: 'MINERAL', description: '단단하고 날카로운 얼음 조각. 차가운 기운을 발산한다.', rarity: 'N', iconUrl: '/assets/materials/ice_shard.png' },
+    'frozen_dew': { id: 'frozen_dew', name: '얼어붙은 이슬', type: 'PLANT', description: '새벽에 얼어붙은 신비한 이슬. 생명력을 품고 있다.', rarity: 'R', iconUrl: '/assets/materials/frozen_dew.png' },
+    'frost_essence': { id: 'frost_essence', name: '서리 정수', type: 'SPIRIT', description: '겨울의 정령이 남긴 순수한 서리의 힘.', rarity: 'R', iconUrl: '/assets/materials/frost_essence.png' },
 }
 
 
@@ -172,7 +178,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         baseSuccessRate: 60,
         craftTimeSec: 30,
         costGold: 200,
-        requiredAlchemyLevel: 1,
+        requiredAlchemyLevel: 3,
         expGain: 50,
         isHidden: false,
         priority: 75,
@@ -376,6 +382,77 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
             { materialId: 'ore_iron', quantity: 5, isCatalyst: false },
             { materialId: 'gem_fragment', quantity: 3, isCatalyst: false },
             { materialId: 'crystal_mana', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    // 눈꽃 몬스터 레시피 (Snow/Ice Monster Recipes)
+    {
+        id: 'recipe_snowflake_sprite',
+        resultMonsterId: 'monster_snowflake_sprite',
+        resultCount: 1,
+        baseSuccessRate: 95,
+        craftTimeSec: 6,
+        costGold: 15,
+        requiredAlchemyLevel: 1,
+        expGain: 12,
+        isHidden: false,
+        priority: 94,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'snowflake', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_ice_slime',
+        resultMonsterId: 'monster_ice_slime',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 8,
+        costGold: 25,
+        requiredAlchemyLevel: 1,
+        expGain: 15,
+        isHidden: false,
+        priority: 93,
+        ingredients: [
+            { materialId: 'slime_fluid', quantity: 2, isCatalyst: false },
+            { materialId: 'ice_shard', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_frost_bunny',
+        resultMonsterId: 'monster_frost_bunny',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 10,
+        costGold: 35,
+        requiredAlchemyLevel: 1,
+        expGain: 18,
+        isHidden: false,
+        priority: 92,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 3, isCatalyst: false },
+            { materialId: 'snowflake', quantity: 2, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_snow_fairy',
+        resultMonsterId: 'monster_snow_fairy',
+        resultCount: 1,
+        baseSuccessRate: 80,
+        craftTimeSec: 12,
+        costGold: 60,
+        requiredAlchemyLevel: 2,
+        expGain: 25,
+        isHidden: false,
+        priority: 87,
+        ingredients: [
+            { materialId: 'snowflake', quantity: 3, isCatalyst: false },
+            { materialId: 'frozen_dew', quantity: 1, isCatalyst: false },
+            { materialId: 'spirit_dust', quantity: 1, isCatalyst: false }
         ],
         conditions: []
     }

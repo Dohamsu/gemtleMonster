@@ -40,7 +40,9 @@ export const SLIME_DUNGEON: Dungeon = {
             exp: 10,
             drops: [
                 { materialId: 'slime_fluid', chance: 80, minQuantity: 1, maxQuantity: 2 },
-                { materialId: 'herb_common', chance: 40, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'herb_common', chance: 40, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'beast_fang', chance: 25, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'shard_earth', chance: 15, minQuantity: 1, maxQuantity: 1 }
             ]
         },
         {
@@ -53,7 +55,9 @@ export const SLIME_DUNGEON: Dungeon = {
             exp: 20,
             drops: [
                 { materialId: 'slime_fluid', chance: 90, minQuantity: 1, maxQuantity: 3 },
-                { materialId: 'slime_core', chance: 20, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'slime_core', chance: 20, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'mushroom_blue', chance: 20, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'beast_fang', chance: 30, minQuantity: 1, maxQuantity: 2 }
             ]
         },
         {
@@ -88,7 +92,8 @@ export const LAKE_DUNGEON: Dungeon = {
             exp: 15,
             drops: [
                 { materialId: 'slime_fluid', chance: 70, minQuantity: 1, maxQuantity: 2 },
-                { materialId: 'shard_water', chance: 40, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'shard_water', chance: 40, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'frozen_dew', chance: 25, minQuantity: 1, maxQuantity: 1 }
             ]
         },
         {
@@ -102,7 +107,8 @@ export const LAKE_DUNGEON: Dungeon = {
             drops: [
                 { materialId: 'herb_common', chance: 60, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'shard_water', chance: 30, minQuantity: 1, maxQuantity: 1 },
-                { materialId: 'crystal_mana', chance: 10, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'crystal_mana', chance: 10, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'spirit_dust', chance: 35, minQuantity: 1, maxQuantity: 2 }
             ]
         },
         {
@@ -116,7 +122,8 @@ export const LAKE_DUNGEON: Dungeon = {
             drops: [
                 { materialId: 'shard_water', chance: 100, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'gem_fragment', chance: 40, minQuantity: 1, maxQuantity: 1 },
-                { materialId: 'slime_fluid', chance: 80, minQuantity: 3, maxQuantity: 5 }
+                { materialId: 'slime_fluid', chance: 80, minQuantity: 3, maxQuantity: 5 },
+                { materialId: 'frost_essence', chance: 30, minQuantity: 1, maxQuantity: 1 }
             ]
         }
     ]
