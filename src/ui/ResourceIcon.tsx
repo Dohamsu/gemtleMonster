@@ -12,6 +12,8 @@ const RESOURCE_ICONS: Record<string, string> = {
 
     // 몬스터 소재
     slime_core: '/assets/materials/slime_core.png',
+    slime_fluid: '/assets/materials/slime_fluid.png',
+    slime_gel: '/assets/materials/slime_gel.png',
     beast_fang: '/assets/materials/beast_fang.png',
 
     // 광석류
@@ -23,11 +25,29 @@ const RESOURCE_ICONS: Record<string, string> = {
     gem_fragment: '/assets/materials/gem_fragment.png',
     crack_stone_fragment: '/assets/materials/crack_stone_fragment.png',
     ancient_relic_fragment: '/assets/materials/ancient_relic_fragment.png',
+    crystal_mana: '/assets/materials/crystal_mana.png',
+
+    // 버섯류
+    mushroom_blue: '/assets/materials/mushroom_blue.png',
 
     // 정령/특수
-    spirit_dust: '✨',
+    spirit_dust: '/assets/materials/spirit_dust.png',
     dark_crystal: '🔮',
     fire_core: '🔥',
+
+    // 눈꽃/얼음 재료
+    snowflake: '/assets/materials/snowflake.png',
+    ice_shard: '/assets/materials/ice_shard.png',
+    frozen_dew: '/assets/materials/frozen_dew.png',
+    frost_essence: '/assets/materials/frost_essence.png',
+
+    // 속성 파편
+    shard_water: '/assets/materials/shard_water.png',
+    shard_earth: '/assets/materials/shard_earth.png',
+    shard_fire: '/assets/materials/shard_fire.png',
+    shard_dark: '/assets/materials/shard_dark.png',
+    shard_wind: '/assets/materials/shard_wind.png',
+    shard_light: '/assets/materials/shard_light.png',
 
     // 기타
     gold: '💰',

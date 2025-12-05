@@ -219,7 +219,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 15,
         defense: 15,
         emoji: '❄️',
-        iconUrl: '/assets/monsters/snowflake_sprite.png',
+        iconUrl: '/assets/monsters/monster_snowflake_sprite.png',
         rarity: 'N',
         element: 'water',
         factoryTrait: { targetFacility: 'herb_farm', effect: '희귀 약초 확률 증가', value: 3 }
@@ -232,7 +232,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 20,
         defense: 45,
         emoji: '🧊',
-        iconUrl: '/assets/monsters/ice_slime.png',
+        iconUrl: '/assets/monsters/monster_ice_slime.png',
         rarity: 'N',
         element: 'water',
         factoryTrait: { targetFacility: 'mine', effect: '마력 광석 확률 증가', value: 5 }
@@ -257,7 +257,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 25,
         defense: 30,
         emoji: '🧚‍♀️',
-        iconUrl: '/assets/monsters/snow_fairy.png',
+        iconUrl: '/assets/monsters/monster_snow_fairy.png',
         rarity: 'R',
         element: 'water',
         factoryTrait: { targetFacility: 'herb_farm', effect: '생산 속도 증가', value: 8 }
