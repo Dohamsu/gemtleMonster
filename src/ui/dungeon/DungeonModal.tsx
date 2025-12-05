@@ -191,14 +191,14 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                     {/* Level Badge */}
                                     <div style={{
                                         background: '#0f172a',
-                                        padding: '8px 12px',
-                                        borderRadius: '6px',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
                                         color: '#a3e635',
-                                        fontSize: '12px',
+                                        fontSize: '11px',
                                         fontWeight: 'bold',
                                         flexShrink: 0
                                     }}>
-                                        권장 Lv.{dungeon.recommendedLevel}
+                                        Lv.{dungeon.recommendedLevel}
                                     </div>
                                 </div>
                             ))}
@@ -228,12 +228,13 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                 </div>
                             ) : (
                                 <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                                    gap: '10px',
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '8px',
                                     marginBottom: '20px',
-                                    height: '200px',
-                                    overflowY: 'auto'
+                                    maxHeight: '140px',
+                                    overflowY: 'auto',
+                                    padding: '4px'
                                 }}>
                                     {playerMonsters.map(monster => {
                                         const monsterKey = monster.monster_id.replace('monster_', '')
@@ -246,22 +247,54 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                                 key={monster.id}
                                                 onClick={() => setSelectedMonsterId(monster.id)}
                                                 style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
                                                     background: isSelected ? '#3b82f6' : '#334155',
-                                                    padding: '12px',
+                                                    padding: '8px',
                                                     borderRadius: '8px',
                                                     cursor: 'pointer',
                                                     border: isSelected ? '2px solid #60a5fa' : '2px solid transparent',
-                                                    transition: 'all 0.2s'
+                                                    transition: 'all 0.2s',
+                                                    width: '64px',
+                                                    flexShrink: 0
                                                 }}
                                             >
-                                                <div style={{ fontWeight: 'bold', color: '#fff', marginBottom: '5px' }}>
-                                                    {monsterData.name}
+                                                {/* 몬스터 썸네일 */}
+                                                <div style={{
+                                                    width: '48px',
+                                                    height: '48px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    marginBottom: '4px'
+                                                }}>
+                                                    {monsterData.iconUrl ? (
+                                                        <img
+                                                            src={monsterData.iconUrl}
+                                                            alt={monsterData.name}
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                objectFit: 'contain'
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <span style={{ fontSize: '28px' }}>🦠</span>
+                                                    )}
                                                 </div>
-                                                <div style={{ fontSize: '12px', color: '#cbd5e1' }}>
+                                                {/* 레벨 뱃지 */}
+                                                <div style={{
+                                                    fontSize: '10px',
+                                                    color: isSelected ? '#fff' : '#94a3b8',
+                                                    fontWeight: 'bold',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    width: '100%',
+                                                    textAlign: 'center'
+                                                }}>
                                                     Lv.{monster.level}
-                                                </div>
-                                                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '5px' }}>
-                                                    HP: {monsterData.baseStats.hp} | ATK: {monsterData.baseStats.atk} | DEF: {monsterData.baseStats.def}
                                                 </div>
                                             </div>
                                         )
@@ -269,29 +302,31 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                 </div>
                             )}
 
-                            <h3 style={{ color: '#fff', borderBottom: '1px solid #334155', paddingBottom: '10px' }}>
+                            <h3 style={{ color: '#fff', borderBottom: '1px solid #334155', paddingBottom: '10px', fontSize: '14px' }}>
                                 출몰 몬스터
                             </h3>
 
-                            <div style={{ display: 'grid', gap: '15px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {selectedDungeon?.enemies.map(enemy => {
                                     const enemyData = MONSTERS[enemy.id]
                                     return (
                                         <div key={enemy.id} style={{
                                             background: '#334155',
-                                            padding: '15px',
+                                            padding: '10px 12px',
                                             borderRadius: '8px',
                                             display: 'flex',
                                             justifyContent: 'space-between',
-                                            alignItems: 'center'
+                                            alignItems: 'center',
+                                            gap: '10px'
                                         }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                                                 <div style={{
-                                                    width: '50px',
-                                                    height: '50px',
+                                                    width: '40px',
+                                                    height: '40px',
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    justifyContent: 'center'
+                                                    justifyContent: 'center',
+                                                    flexShrink: 0
                                                 }}>
                                                     {enemyData?.iconUrl ? (
                                                         <img
@@ -305,31 +340,33 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                                             }}
                                                         />
                                                     ) : (
-                                                        <div style={{ fontSize: '30px' }}>
+                                                        <div style={{ fontSize: '24px' }}>
                                                             {selectedDungeonId === 'dungeon_lake' ? '💧' : '🦠'}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div>
-                                                    <div style={{ fontWeight: 'bold', color: '#fff' }}>{enemy.name}</div>
-                                                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>Lv.{enemy.level} • HP {enemy.hp}</div>
+                                                <div style={{ minWidth: 0 }}>
+                                                    <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{enemy.name}</div>
+                                                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>Lv.{enemy.level} • HP {enemy.hp}</div>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => handleStartBattle(enemy.id)}
                                                 disabled={!selectedMonsterId}
                                                 style={{
-                                                    padding: '8px 16px',
+                                                    padding: '6px 12px',
                                                     background: selectedMonsterId ? '#ef4444' : '#6b7280',
                                                     color: 'white',
                                                     border: 'none',
                                                     borderRadius: '6px',
                                                     cursor: selectedMonsterId ? 'pointer' : 'not-allowed',
                                                     fontWeight: 'bold',
-                                                    opacity: selectedMonsterId ? 1 : 0.5
+                                                    opacity: selectedMonsterId ? 1 : 0.5,
+                                                    fontSize: '12px',
+                                                    flexShrink: 0
                                                 }}
                                             >
-                                                전투 시작
+                                                전투
                                             </button>
                                         </div>
                                     )

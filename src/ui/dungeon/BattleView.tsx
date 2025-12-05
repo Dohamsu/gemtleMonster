@@ -153,15 +153,18 @@ export default function BattleView() {
 
             {/* Battle Logs */}
             <div style={{
-                height: '200px',
+                flex: 1,
+                minHeight: '120px',
+                maxHeight: '140px',
+                height: '140px',
                 background: 'rgba(0,0,0,0.3)',
                 borderRadius: '8px',
                 padding: '10px',
                 overflowY: 'auto',
                 marginBottom: '20px',
                 textAlign: 'left',
-                fontSize: '14px',
-                lineHeight: '1.6'
+                fontSize: '13px',
+                lineHeight: '1.5'
             }}>
                 {battleState.logs.map((log, i) => (
                     <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '2px 0', color: 'white' }}>
@@ -178,7 +181,7 @@ export default function BattleView() {
                         fontSize: '24px',
                         margin: '0 0 20px 0'
                     }}>
-                        {battleState.result === 'victory' ? '🎉 승리!' : '💀 패배...'}
+                        {battleState.result === 'victory' ? '승리!' : '패배...'}
                     </h3>
 
                     {/* Show rewards on victory */}
@@ -187,11 +190,16 @@ export default function BattleView() {
                             background: 'rgba(251, 191, 36, 0.1)',
                             border: '2px solid #fbbf24',
                             borderRadius: '8px',
-                            padding: '15px',
-                            marginBottom: '20px'
+                            padding: '10px',
+                            marginBottom: '15px',
+                            maxHeight: '120px',
+                            overflowY: 'auto'
                         }}>
-                            <h4 style={{ color: '#fbbf24', margin: '0 0 10px 0', fontSize: '16px' }}>✨ 획득한 아이템</h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <h4 style={{ color: '#fbbf24', margin: '0 0 8px 0', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <img src="/assets/bag.png" alt="bag" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+                                획득한 아이템
+                            </h4>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                                 {Object.entries(battleState.rewards).map(([materialId, quantity]) => {
                                     const material = MATERIALS[materialId]
                                     const isImage = material?.iconUrl?.startsWith('/') || material?.iconUrl?.startsWith('http')
@@ -199,25 +207,23 @@ export default function BattleView() {
                                     return (
                                         <div key={materialId} style={{
                                             display: 'flex',
-                                            justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            padding: '5px 10px',
-                                            background: 'rgba(0,0,0,0.2)',
+                                            gap: '4px',
+                                            padding: '4px 8px',
+                                            background: 'rgba(0,0,0,0.3)',
                                             borderRadius: '4px'
                                         }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                {isImage ? (
-                                                    <img
-                                                        src={material?.iconUrl}
-                                                        alt={material?.name}
-                                                        style={{ width: '24px', height: '24px', objectFit: 'contain' }}
-                                                    />
-                                                ) : (
-                                                    <span style={{ fontSize: '20px' }}>{material?.iconUrl || '📦'}</span>
-                                                )}
-                                                <span style={{ color: '#e5e7eb' }}>{material?.name || materialId}</span>
-                                            </div>
-                                            <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>x{quantity}</span>
+                                            {isImage ? (
+                                                <img
+                                                    src={material?.iconUrl}
+                                                    alt={material?.name}
+                                                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                                                />
+                                            ) : (
+                                                <span style={{ fontSize: '16px' }}>{material?.iconUrl || '📦'}</span>
+                                            )}
+                                            <span style={{ color: '#e5e7eb', fontSize: '12px', whiteSpace: 'nowrap' }}>{material?.name || materialId}</span>
+                                            <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '12px' }}>x{quantity}</span>
                                         </div>
                                     )
                                 })}

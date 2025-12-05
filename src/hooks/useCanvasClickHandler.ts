@@ -286,7 +286,7 @@ function handleRecipeListClick(
     y: number,
     allRecipes: Recipe[],
     _allMaterials: Material[],
-    playerMaterials: Record<string, number>,
+    _playerMaterials: Record<string, number>,
     selectedRecipeId: string | null,
     isBrewing: boolean,
     selectRecipe: (recipeId: string | null) => void,
@@ -321,9 +321,9 @@ function handleRecipeListClick(
                 return true
             }
 
-            // Check if player has all materials
-            const hasAllMaterials =
-                recipe.ingredients?.every((ing) => (playerMaterials[ing.material_id] || 0) >= ing.quantity) ?? true
+            // 먼저 레시피를 선택하고, autoFillIngredients로 재료 체크
+            // autoFillIngredients는 스토어에서 최신 상태를 가져오므로 stale state 문제 없음
+            const hasAllMaterials = autoFillIngredients(recipe.id)
 
             if (!hasAllMaterials) {
                 console.log('Cannot select recipe: insufficient materials')
@@ -331,7 +331,6 @@ function handleRecipeListClick(
             }
 
             selectRecipe(recipe.id)
-            autoFillIngredients(recipe.id)
             console.log('Selected recipe:', recipe.name)
             return true
         }

@@ -23,8 +23,7 @@
                         "bundlesPerTick": 1,
                         "dropRates": {
                             "herb_common": 0.96,
-                            "herb_rare": 0.03,
-                            "herb_special": 0.01
+                            "herb_rare": 0.04
                         },
                         "questSeedDropRate": 0.0005
                     },
@@ -38,9 +37,8 @@
                         "intervalSeconds": 8,
                         "bundlesPerTick": 1,
                         "dropRates": {
-                            "herb_common": 0.94,
-                            "herb_rare": 0.05,
-                            "herb_special": 0.01
+                            "herb_common": 0.90,
+                            "herb_rare": 0.10
                         },
                         "questSeedDropRate": 0.0007
                     },
@@ -54,8 +52,8 @@
                         "intervalSeconds": 6,
                         "bundlesPerTick": 2,
                         "dropRates": {
-                            "herb_common": 0.90,
-                            "herb_rare": 0.08,
+                            "herb_common": 0.86,
+                            "herb_rare": 0.12,
                             "herb_special": 0.02
                         },
                         "questSeedDropRate": 0.001
@@ -71,9 +69,9 @@
                         "intervalSeconds": 5,
                         "bundlesPerTick": 2,
                         "dropRates": {
-                            "herb_common": 0.88,
-                            "herb_rare": 0.09,
-                            "herb_special": 0.03
+                            "herb_common": 0.80,
+                            "herb_rare": 0.16,
+                            "herb_special": 0.04
                         },
                         "questSeedDropRate": 0.002
                     },
@@ -88,9 +86,9 @@
                         "intervalSeconds": 4,
                         "bundlesPerTick": 3,
                         "dropRates": {
-                            "herb_common": 0.85,
-                            "herb_rare": 0.1,
-                            "herb_special": 0.05
+                            "herb_common": 0.70,
+                            "herb_rare": 0.20,
+                            "herb_special": 0.10
                         },
                         "questSeedDropRate": 0.005
                     },

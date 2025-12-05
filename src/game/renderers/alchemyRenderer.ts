@@ -246,6 +246,13 @@ function renderIngredientSlots(
             ctx.fillText('+', slotX + slotSize / 2, slotsY + slotSize / 2)
         }
     }
+
+    // 슬롯 아래 안내 문구
+    ctx.fillStyle = '#666'
+    ctx.font = '11px Arial'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'top'
+    ctx.fillText('재료를 클릭하면 제거됩니다', canvas.width / 2, slotsY + slotSize + 5)
 }
 
 // Canvas 전용 함수들은 alchemyRenderer_old.ts로 이동됨
@@ -255,7 +262,7 @@ function renderBrewButton(
     canvas: HTMLCanvasElement,
     props: AlchemyRendererProps
 ) {
-    const { allRecipes, playerMaterials, selectedRecipeId, selectedIngredients, isBrewing, brewProgress, playerAlchemy } = props
+    const { allRecipes, playerMaterials: _playerMaterials, selectedRecipeId, selectedIngredients, isBrewing, brewProgress, playerAlchemy } = props
 
     const brewBtnW = 180
     const brewBtnH = 50
@@ -287,9 +294,12 @@ function renderBrewButton(
         let hasMaterials = false
         let hasLevel = true // 자유 조합은 레벨 제한 없음
 
-        // 레시피가 선택된 경우 기존 검증 로직 사용
+        // 레시피가 선택된 경우: selectedIngredients가 필요 재료를 모두 포함하는지 확인
+        // (autoFillIngredients가 성공했다면 selectedIngredients에 필요한 재료가 모두 있음)
         if (selectedRecipe && selectedRecipe.ingredients) {
-            hasMaterials = selectedRecipe.ingredients.every((ing) => (playerMaterials[ing.material_id] || 0) >= ing.quantity)
+            hasMaterials = selectedRecipe.ingredients.every((ing) =>
+                (selectedIngredients[ing.material_id] || 0) >= ing.quantity
+            )
             hasLevel = (playerAlchemy?.level || 1) >= selectedRecipe.required_alchemy_level
         }
 
@@ -510,6 +520,13 @@ function renderIngredientSlotsMobile(
             ctx.fillText('+', slotX + slotSize / 2, slotsY + slotSize / 2)
         }
     }
+
+    // 슬롯 아래 안내 문구 (모바일)
+    ctx.fillStyle = '#666'
+    ctx.font = '10px Arial'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'top'
+    ctx.fillText('재료를 클릭하면 제거됩니다', canvas.width / 2, slotsY + slotSize + 3)
 }
 
 // 모바일 레시피/재료 렌더링 함수들은 alchemyRenderer_old.ts로 이동됨
@@ -521,7 +538,7 @@ function renderBrewButtonMobile(
     props: AlchemyRendererProps,
     layout: any
 ) {
-    const { allRecipes, playerMaterials, selectedRecipeId, selectedIngredients, isBrewing, brewProgress, playerAlchemy } = props
+    const { allRecipes, playerMaterials: _playerMaterials, selectedRecipeId, selectedIngredients, isBrewing, brewProgress, playerAlchemy } = props
     const { brewButtonW, brewButtonH, brewButtonY } = layout
     const brewBtnX = canvas.width / 2 - brewButtonW / 2
 
@@ -548,8 +565,12 @@ function renderBrewButtonMobile(
         let hasMaterials = false
         let hasLevel = true
 
+        // 레시피가 선택된 경우: selectedIngredients가 필요 재료를 모두 포함하는지 확인
+        // (autoFillIngredients가 성공했다면 selectedIngredients에 필요한 재료가 모두 있음)
         if (selectedRecipe && selectedRecipe.ingredients) {
-            hasMaterials = selectedRecipe.ingredients.every((ing) => (playerMaterials[ing.material_id] || 0) >= ing.quantity)
+            hasMaterials = selectedRecipe.ingredients.every((ing) =>
+                (selectedIngredients[ing.material_id] || 0) >= ing.quantity
+            )
             hasLevel = (playerAlchemy?.level || 1) >= selectedRecipe.required_alchemy_level
         }
 
