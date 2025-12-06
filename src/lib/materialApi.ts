@@ -135,13 +135,35 @@ export async function batchAddMaterials(
  * @param amount - 추가할 골드 양
  */
 export async function addGold(userId: string, amount: number): Promise<void> {
-  const { error } = await supabase.rpc('add_gold', {
-    p_user_id: userId,
-    p_amount: amount
-  })
+  // 먼저 현재 골드 조회
+  const { data: currentData, error: fetchError } = await supabase
+    .from('player_resource')
+    .select('amount')
+    .eq('user_id', userId)
+    .eq('resource_id', 'gold')
+    .single()
 
-  if (error) {
-    console.error('골드 추가 실패:', error)
-    throw error
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    console.error('골드 조회 실패:', fetchError)
+    throw fetchError
   }
+
+  const currentGold = currentData?.amount || 0
+  const newGold = currentGold + amount
+
+  // 골드 업데이트 (upsert)
+  const { error: updateError } = await supabase
+    .from('player_resource')
+    .upsert({
+      user_id: userId,
+      resource_id: 'gold',
+      amount: newGold
+    }, { onConflict: 'user_id,resource_id' })
+
+  if (updateError) {
+    console.error('골드 업데이트 실패:', updateError)
+    throw updateError
+  }
+
+  console.log(`✅ 골드 업데이트 완료: ${currentGold} -> ${newGold} (+${amount})`)
 }

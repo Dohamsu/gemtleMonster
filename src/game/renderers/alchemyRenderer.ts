@@ -74,45 +74,26 @@ export function renderAlchemyWorkshop(props: AlchemyRendererProps) {
     // React가 레시피 리스트와 재료 그리드를 처리하므로,
     // Canvas는 중앙 요소(가마솥, 슬롯, 버튼)만 렌더링
 
-    renderBackButton(ctx)
+    // renderBackButton(ctx) // React 컴포넌트로 대체됨
     renderTitle(ctx, canvas)
 
     if (layout.isMobile) {
         // 모바일: 작은 가마솥과 슬롯
         renderCentralCauldronMobile(ctx, canvas, props.images, layout)
         renderIngredientSlotsMobile(ctx, canvas, props, layout)
-        renderBrewButtonMobile(ctx, canvas, props, layout)
+        // renderBrewButtonMobile(ctx, canvas, props, layout) // React 컴포넌트로 대체됨
         renderXPBarMobile(ctx, canvas, props.playerAlchemy, layout)
     } else {
         // 데스크톱: 큰 가마솥과 슬롯
         renderCentralCauldron(ctx, canvas, props.images)
         renderIngredientSlots(ctx, canvas, props)
-        renderBrewButton(ctx, canvas, props)
+        // renderBrewButton(ctx, canvas, props) // React 컴포넌트로 대체됨
         renderXPBar(ctx, canvas, props.playerAlchemy)
     }
 
     // 텍스트 정렬 초기화 (다른 렌더링에 영향 방지)
     ctx.textAlign = 'left'
     ctx.textBaseline = 'alphabetic'
-}
-
-function renderBackButton(ctx: CanvasRenderingContext2D) {
-    const backBtnX = 20
-    const backBtnY = 20
-    const backBtnW = 60
-    const backBtnH = 40
-
-    ctx.fillStyle = '#4a3020'
-    ctx.fillRect(backBtnX, backBtnY, backBtnW, backBtnH)
-    ctx.strokeStyle = '#8a6040'
-    ctx.lineWidth = 2
-    ctx.strokeRect(backBtnX, backBtnY, backBtnW, backBtnH)
-
-    ctx.fillStyle = 'white'
-    ctx.font = 'bold 16px Arial'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText('←', backBtnX + backBtnW / 2, backBtnY + backBtnH / 2)
 }
 
 function renderTitle(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -257,74 +238,8 @@ function renderIngredientSlots(
 
 // Canvas 전용 함수들은 alchemyRenderer_old.ts로 이동됨
 
-function renderBrewButton(
-    ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
-    props: AlchemyRendererProps
-) {
-    const { allRecipes, playerMaterials: _playerMaterials, selectedRecipeId, selectedIngredients, isBrewing, brewProgress, playerAlchemy } = props
-
-    const brewBtnW = 180
-    const brewBtnH = 50
-    const brewBtnX = canvas.width / 2 - brewBtnW / 2
-    const brewBtnY = canvas.height - 140
-
-    if (isBrewing) {
-        // Progress bar
-        ctx.fillStyle = '#3a2a20'
-        ctx.fillRect(brewBtnX, brewBtnY, brewBtnW, brewBtnH)
-        ctx.strokeStyle = '#7a5a40'
-        ctx.lineWidth = 3
-        ctx.strokeRect(brewBtnX, brewBtnY, brewBtnW, brewBtnH)
-
-        // Use brewProgress from store (works for both recipe and free-form brewing)
-        const progressW = (brewBtnW - 10) * brewProgress
-        ctx.fillStyle = '#facc15'
-        ctx.fillRect(brewBtnX + 5, brewBtnY + 5, progressW, brewBtnH - 10)
-
-        ctx.fillStyle = '#fff'
-        ctx.font = 'bold 18px Arial'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(`⚗️ 제조 중... ${Math.floor(brewProgress * 100)}%`, brewBtnX + brewBtnW / 2, brewBtnY + brewBtnH / 2)
-    } else {
-        // 자유 조합 모드 지원: 재료가 있으면 조합 가능
-        const hasIngredients = Object.values(selectedIngredients).some(count => count > 0)
-        const selectedRecipe = allRecipes.find((r) => r.id === selectedRecipeId)
-        let hasMaterials = false
-        let hasLevel = true // 자유 조합은 레벨 제한 없음
-
-        // 레시피가 선택된 경우: selectedIngredients가 필요 재료를 모두 포함하는지 확인
-        // (autoFillIngredients가 성공했다면 selectedIngredients에 필요한 재료가 모두 있음)
-        if (selectedRecipe && selectedRecipe.ingredients) {
-            hasMaterials = selectedRecipe.ingredients.every((ing) =>
-                (selectedIngredients[ing.material_id] || 0) >= ing.quantity
-            )
-            hasLevel = (playerAlchemy?.level || 1) >= selectedRecipe.required_alchemy_level
-        }
-
-        // 레시피 선택 OR 재료 추가 시 활성화
-        const isEnabled = (selectedRecipe && hasMaterials && hasLevel) || (!selectedRecipe && hasIngredients)
-
-        ctx.fillStyle = isEnabled ? '#5a3a20' : '#3a2520'
-        ctx.fillRect(brewBtnX, brewBtnY, brewBtnW, brewBtnH)
-        ctx.strokeStyle = isEnabled ? '#9a6a40' : '#5a4030'
-        ctx.lineWidth = 3
-        ctx.strokeRect(brewBtnX, brewBtnY, brewBtnW, brewBtnH)
-
-        ctx.fillStyle = isEnabled ? '#f0d090' : '#666'
-        ctx.font = 'bold 20px Arial'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-
-        let btnText = '🧪 연금술 시작'
-        if (selectedRecipe && !hasLevel) btnText = `Lv.${selectedRecipe.required_alchemy_level} 필요`
-        else if (selectedRecipe && !hasMaterials) btnText = '재료 부족'
-        else if (!selectedRecipe && !hasIngredients) btnText = '재료를 추가하세요'
-
-        ctx.fillText(btnText, brewBtnX + brewBtnW / 2, brewBtnY + brewBtnH / 2)
-    }
-}
+// renderBrewButton 함수는 React 컴포넌트(AlchemyBrewButton)로 대체되어 제거됨
+// 이전 코드는 git 히스토리 또는 alchemyRenderer_old.ts 참조
 
 function renderXPBar(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, playerAlchemy: PlayerAlchemy | null) {
     if (!playerAlchemy) return
@@ -532,69 +447,7 @@ function renderIngredientSlotsMobile(
 // 모바일 레시피/재료 렌더링 함수들은 alchemyRenderer_old.ts로 이동됨
 // React 컴포넌트(RecipeList.tsx, MaterialGrid.tsx)로 대체되었습니다
 
-function renderBrewButtonMobile(
-    ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
-    props: AlchemyRendererProps,
-    layout: any
-) {
-    const { allRecipes, playerMaterials: _playerMaterials, selectedRecipeId, selectedIngredients, isBrewing, brewProgress, playerAlchemy } = props
-    const { brewButtonW, brewButtonH, brewButtonY } = layout
-    const brewBtnX = canvas.width / 2 - brewButtonW / 2
-
-    if (isBrewing) {
-        // Progress bar
-        ctx.fillStyle = '#3a2a20'
-        ctx.fillRect(brewBtnX, brewButtonY, brewButtonW, brewButtonH)
-        ctx.strokeStyle = '#7a5a40'
-        ctx.lineWidth = 3
-        ctx.strokeRect(brewBtnX, brewButtonY, brewButtonW, brewButtonH)
-
-        const progressW = (brewButtonW - 10) * brewProgress
-        ctx.fillStyle = '#facc15'
-        ctx.fillRect(brewBtnX + 5, brewButtonY + 5, progressW, brewButtonH - 10)
-
-        ctx.fillStyle = '#fff'
-        ctx.font = 'bold 18px Arial'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(`⚗️ 제조 중... ${Math.floor(brewProgress * 100)}%`, brewBtnX + brewButtonW / 2, brewButtonY + brewButtonH / 2)
-    } else {
-        const hasIngredients = Object.values(selectedIngredients).some(count => count > 0)
-        const selectedRecipe = allRecipes.find((r) => r.id === selectedRecipeId)
-        let hasMaterials = false
-        let hasLevel = true
-
-        // 레시피가 선택된 경우: selectedIngredients가 필요 재료를 모두 포함하는지 확인
-        // (autoFillIngredients가 성공했다면 selectedIngredients에 필요한 재료가 모두 있음)
-        if (selectedRecipe && selectedRecipe.ingredients) {
-            hasMaterials = selectedRecipe.ingredients.every((ing) =>
-                (selectedIngredients[ing.material_id] || 0) >= ing.quantity
-            )
-            hasLevel = (playerAlchemy?.level || 1) >= selectedRecipe.required_alchemy_level
-        }
-
-        const isEnabled = (selectedRecipe && hasMaterials && hasLevel) || (!selectedRecipe && hasIngredients)
-
-        ctx.fillStyle = isEnabled ? '#5a3a20' : '#3a2520'
-        ctx.fillRect(brewBtnX, brewButtonY, brewButtonW, brewButtonH)
-        ctx.strokeStyle = isEnabled ? '#9a6a40' : '#5a4030'
-        ctx.lineWidth = 3
-        ctx.strokeRect(brewBtnX, brewButtonY, brewButtonW, brewButtonH)
-
-        ctx.fillStyle = isEnabled ? '#f0d090' : '#666'
-        ctx.font = 'bold 19px Arial'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-
-        let btnText = '🧪 연금술 시작'
-        if (selectedRecipe && !hasLevel) btnText = `Lv.${selectedRecipe.required_alchemy_level} 필요`
-        else if (selectedRecipe && !hasMaterials) btnText = '재료 부족'
-        else if (!selectedRecipe && !hasIngredients) btnText = '재료를 추가하세요'
-
-        ctx.fillText(btnText, brewBtnX + brewButtonW / 2, brewButtonY + brewButtonH / 2)
-    }
-}
+// renderBrewButtonMobile 함수는 React 컴포넌트(AlchemyBrewButton)로 대체되어 제거됨
 
 function renderXPBarMobile(
     ctx: CanvasRenderingContext2D,
@@ -633,4 +486,3 @@ function renderXPBarMobile(
         xpBarY + xpBarH / 2
     )
 }
-

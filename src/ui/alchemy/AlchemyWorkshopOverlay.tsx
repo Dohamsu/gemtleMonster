@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
-import type { Recipe, Material } from '../../lib/alchemyApi'
+import type { Recipe, Material, PlayerAlchemy } from '../../lib/alchemyApi'
 import { isMobileView } from '../../utils/responsiveUtils'
 import RecipeList from './RecipeList'
 import MaterialGrid from './MaterialGrid'
+import { AlchemyBrewButton } from './AlchemyBrewButton'
+import { AlchemyBackButton } from './AlchemyBackButton'
+import { useGameStore } from '../../store/useGameStore'
 
 interface AlchemyWorkshopOverlayProps {
     recipes: Recipe[]
@@ -11,8 +14,12 @@ interface AlchemyWorkshopOverlayProps {
     selectedRecipeId: string | null
     selectedIngredients: Record<string, number>
     isBrewing: boolean
+    brewProgress: number
+    playerAlchemy: PlayerAlchemy | null
     onSelectRecipe: (recipeId: string | null) => void
     onAddIngredient: (materialId: string, quantity: number) => void
+    onStartBrewing: (recipeId: string) => Promise<void>
+    onStartFreeFormBrewing: () => Promise<void>
     mobileTab?: 'recipes' | 'materials'
     onMobileTabChange?: (tab: 'recipes' | 'materials') => void
 }
@@ -24,12 +31,17 @@ export default function AlchemyWorkshopOverlay({
     selectedRecipeId,
     selectedIngredients,
     isBrewing,
+    brewProgress,
+    playerAlchemy,
     onSelectRecipe,
     onAddIngredient,
+    onStartBrewing,
+    onStartFreeFormBrewing,
     mobileTab = 'recipes',
     onMobileTabChange
 }: AlchemyWorkshopOverlayProps) {
     const [isMobile, setIsMobile] = useState(isMobileView())
+    const setCanvasView = useGameStore((state) => state.setCanvasView)
 
     useEffect(() => {
         const handleResize = () => {
@@ -38,6 +50,10 @@ export default function AlchemyWorkshopOverlay({
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
     }, [])
+
+    const handleBack = () => {
+        setCanvasView('map')
+    }
 
     if (isMobile) {
         // 모바일: 탭 기반 UI
@@ -53,6 +69,8 @@ export default function AlchemyWorkshopOverlay({
                 display: 'flex',
                 flexDirection: 'column'
             }}>
+                <AlchemyBackButton onBack={handleBack} />
+
                 {/* Tabs */}
                 <div style={{
                     position: 'absolute',
@@ -138,6 +156,31 @@ export default function AlchemyWorkshopOverlay({
                         )}
                     </div>
                 </div>
+
+                {/* Mobile Brew Button Container */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: '80px',
+                    left: 0,
+                    width: '100%',
+                    height: '60px',
+                    pointerEvents: 'auto',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 10
+                }}>
+                    <AlchemyBrewButton
+                        selectedRecipeId={selectedRecipeId}
+                        selectedIngredients={selectedIngredients}
+                        isBrewing={isBrewing}
+                        brewProgress={brewProgress}
+                        allRecipes={recipes}
+                        playerAlchemy={playerAlchemy}
+                        onStartBrewing={onStartBrewing}
+                        onStartFreeFormBrewing={onStartFreeFormBrewing}
+                    />
+                </div>
             </div>
         )
     }
@@ -156,6 +199,8 @@ export default function AlchemyWorkshopOverlay({
             padding: '20px',
             gap: '20px'
         }}>
+            <AlchemyBackButton onBack={handleBack} />
+
             {/* Left Panel - Recipe List */}
             <div style={{
                 pointerEvents: 'auto',
@@ -184,6 +229,27 @@ export default function AlchemyWorkshopOverlay({
                     selectedIngredients={selectedIngredients}
                     isBrewing={isBrewing}
                     onAddIngredient={onAddIngredient}
+                />
+            </div>
+
+            {/* Desktop Brew Button Container */}
+            <div style={{
+                position: 'absolute',
+                bottom: '80px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                pointerEvents: 'auto',
+                zIndex: 10
+            }}>
+                <AlchemyBrewButton
+                    selectedRecipeId={selectedRecipeId}
+                    selectedIngredients={selectedIngredients}
+                    isBrewing={isBrewing}
+                    brewProgress={brewProgress}
+                    allRecipes={recipes}
+                    playerAlchemy={playerAlchemy}
+                    onStartBrewing={onStartBrewing}
+                    onStartFreeFormBrewing={onStartFreeFormBrewing}
                 />
             </div>
         </div>

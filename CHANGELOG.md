@@ -1,6 +1,18 @@
 # 📋 변경 이력
 
 모든 주요 변경사항은 이 파일에 문서화됩니다.
+## [0.2.3] - 2025-12-06
+
+### ♻️ Refactoring
+- **Alchemy UI**:
+  - Converted "Start Brewing" button to React component (`AlchemyBrewButton`).
+  - Converted "Back" button to React component (`AlchemyBackButton`).
+  - Removed legacy canvas rendering and click handling for these buttons.
+
+### 🐛 Bug Fixes
+- **Alchemy**: Fixed an issue where the brewing process would hang at 100% progress.
+- **Shop**: Fixed an issue where gold was not correctly updated after selling items.
+
 ## [0.2.2] - 2025-12-01
 
 ### ✨ New Features

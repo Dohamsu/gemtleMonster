@@ -545,6 +545,10 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
       if (newProgress >= 1) {
         if (timer) clearInterval(timer)
+
+        // 조합 완료 처리
+        const success = Math.random() * 100 < recipe.base_success_rate
+        get().completeBrewing(success, recipe)
       }
     }, interval)
 

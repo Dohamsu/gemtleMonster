@@ -169,6 +169,8 @@ export default function Shop() {
         setIsBulkSelling(true)
         let totalGoldEarned = 0
         let successCount = 0
+        // 성공적으로 판매된 재료 아이템과 그 수익을 추적
+        const successfulMaterialSales: { itemId: string, goldEarned: number }[] = []
 
         try {
             // 선택된 아이템들을 순회하며 판매 처리
@@ -178,75 +180,67 @@ export default function Shop() {
 
                 const quantity = sellQuantities[itemId] || 1
                 const price = item.price
+                const goldForThisItem = quantity * price
 
                 if (item.type === 'material') {
                     const success = await sellMaterial(item.id, quantity)
                     if (success) {
-                        totalGoldEarned += quantity * price
+                        totalGoldEarned += goldForThisItem
                         successCount++
+                        // 성공한 재료 판매 기록
+                        successfulMaterialSales.push({ itemId, goldEarned: goldForThisItem })
                     }
                 } else {
                     const success = await sellResource(item.id, quantity, price)
                     if (success) {
-                        totalGoldEarned += quantity * price
+                        totalGoldEarned += goldForThisItem
                         successCount++
                     }
                 }
             }
 
-            if (totalGoldEarned > 0) {
-                // 골드 지급 (레거시 자원은 sellResource 내부에서 처리되지만, 연금술 재료는 여기서 처리)
-                // 주의: sellResource는 내부적으로 골드를 증가시키므로, 연금술 재료 판매분만 계산해서 더해야 함.
-                // 하지만 현재 구조상 sellMaterial은 골드를 주지 않고 true만 리턴하므로, 
-                // 위 루프에서 계산된 totalGoldEarned 중 'material' 타입인 것만 더해야 하는 게 맞지만,
-                // 기존 로직(handleSellMaterial)을 보면 sellMaterial 성공 시 addResources({ gold })를 호출했음.
-                // 여기서는 편의상 레거시 자원 판매 시 골드 증가 로직이 중복되지 않도록 주의해야 함.
+            // 성공적으로 판매된 재료에 대해서만 골드 지급
+            const materialGoldEarned = successfulMaterialSales.reduce((sum, sale) => sum + sale.goldEarned, 0)
 
-                // 수정: sellResource는 내부적으로 addResources를 호출함.
-                // 따라서 연금술 재료 판매분만 별도로 골드를 지급해야 함.
+            if (materialGoldEarned > 0) {
+                // gold는 material 테이블에 없으므로 직접 상태 업데이트
+                const alchemyStore = useAlchemyStore.getState()
+                const currentGold = alchemyStore.playerMaterials['gold'] || 0
+                const newGold = currentGold + materialGoldEarned
 
-                const materialGoldEarned = Array.from(selectedItems).reduce((sum, itemId) => {
-                    const item = shopItems.find(i => i.id === itemId)
-                    if (item && item.type === 'material') {
-                        const quantity = sellQuantities[itemId] || 1
-                        return sum + (quantity * item.price)
+                useAlchemyStore.setState({
+                    playerMaterials: {
+                        ...alchemyStore.playerMaterials,
+                        gold: newGold
                     }
-                    return sum
-                }, 0)
+                })
 
-                if (materialGoldEarned > 0) {
-                    // gold는 material 테이블에 없으므로 직접 상태 업데이트
-                    const alchemyStore = useAlchemyStore.getState()
-                    const currentGold = alchemyStore.playerMaterials['gold'] || 0
-                    useAlchemyStore.setState({
-                        playerMaterials: {
-                            ...alchemyStore.playerMaterials,
-                            gold: currentGold + materialGoldEarned
-                        }
-                    })
+                // UI 캐시도 업데이트
+                const gameStore = useGameStore.getState()
+                gameStore.setResources({
+                    ...gameStore.resources,
+                    gold: newGold
+                })
 
-                    // UI 캐시도 업데이트
-                    const gameStore = useGameStore.getState()
-                    gameStore.setResources({
-                        ...gameStore.resources,
-                        gold: (gameStore.resources.gold || 0) + materialGoldEarned
-                    })
-
-                    // DB 업데이트 (골드)
-                    if (alchemyStore.userId) {
-                        try {
-                            const api = await import('../../lib/alchemyApi')
-                            await api.addGold(alchemyStore.userId, materialGoldEarned)
-                        } catch (error) {
-                            console.error('골드 DB 저장 실패:', error)
-                        }
+                // DB 업데이트 (골드) - await로 완료 대기
+                if (alchemyStore.userId) {
+                    try {
+                        const api = await import('../../lib/alchemyApi')
+                        await api.addGold(alchemyStore.userId, materialGoldEarned)
+                        console.log(`✅ 골드 DB 저장 성공: +${materialGoldEarned}G`)
+                    } catch (error) {
+                        console.error('골드 DB 저장 실패:', error)
                     }
                 }
+            }
 
+            if (successCount > 0) {
                 console.log(`일괄 판매 완료: ${successCount}건, +${totalGoldEarned}G`)
             }
 
-            await refreshInventory()
+            // refreshInventory()를 호출하지 않음 - 로컬 상태가 이미 업데이트되었고,
+            // DB 동기화는 위에서 완료됨. refreshInventory 호출 시 DB에서 stale 데이터를
+            // 가져올 수 있는 race condition을 방지함.
         } catch (error) {
             console.error('일괄 판매 중 오류:', error)
         } finally {

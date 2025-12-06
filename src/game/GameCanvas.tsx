@@ -323,6 +323,10 @@ export default function GameCanvas() {
                         }
                     }}
                     onAddIngredient={addIngredient}
+                    brewProgress={brewProgress}
+                    playerAlchemy={playerAlchemy}
+                    onStartBrewing={startBrewing}
+                    onStartFreeFormBrewing={startFreeFormBrewing}
                     mobileTab={mobileTab}
                     onMobileTabChange={setMobileTab}
                 />
