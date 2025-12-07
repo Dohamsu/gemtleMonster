@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useGameStore } from '../../store/useGameStore'
+import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { DUNGEONS } from '../../data/dungeonData'
 import { MATERIALS } from '../../data/alchemyData'
 import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
@@ -110,6 +111,40 @@ export default function BattleView() {
                         }} />
                     </div>
                     <div>{battleState.playerHp} / {battleState.playerMaxHp}</div>
+
+                    {/* Level and Exp Bar */}
+                    {battleState.selectedMonsterId && (
+                        <div style={{ marginTop: '8px' }}>
+                            {(() => {
+                                const { playerMonsters } = useAlchemyStore.getState() // Direct access for simplicity in view
+                                const monster = playerMonsters.find(m => m.id === battleState.selectedMonsterId)
+                                if (!monster) return null
+
+                                const expPercent = (monster.exp / (monster.level * 100)) * 100
+
+                                return (
+                                    <>
+                                        <div style={{ fontSize: '12px', color: '#fbbf24', fontWeight: 'bold' }}>Lv.{monster.level}</div>
+                                        <div style={{
+                                            width: '100px',
+                                            height: '4px',
+                                            background: '#333',
+                                            borderRadius: '2px',
+                                            margin: '2px auto',
+                                            overflow: 'hidden'
+                                        }}>
+                                            <div style={{
+                                                width: `${Math.min(100, expPercent)}%`,
+                                                height: '100%',
+                                                background: '#3b82f6',
+                                                transition: 'width 0.3s'
+                                            }} />
+                                        </div>
+                                    </>
+                                )
+                            })()}
+                        </div>
+                    )}
                 </div>
 
                 <div style={{ fontSize: '24px', color: '#aaa' }}>VS</div>

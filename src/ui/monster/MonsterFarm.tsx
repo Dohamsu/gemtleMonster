@@ -406,18 +406,30 @@ export default function MonsterFarm() {
                                     gap: '5px',
                                     textAlign: 'center'
                                 }}>
-                                    <div>
-                                        <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>HP</div>
-                                        <div style={{ color: '#ef4444', fontWeight: 'bold' }}>{data.hp}</div>
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>ATK</div>
-                                        <div style={{ color: '#eab308', fontWeight: 'bold' }}>{data.attack}</div>
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>DEF</div>
-                                        <div style={{ color: '#3b82f6', fontWeight: 'bold' }}>{data.defense}</div>
-                                    </div>
+                                    {(() => {
+                                        const level = monster.level || 1
+                                        const multiplier = 1 + (level - 1) * 0.1
+                                        const hp = Math.floor(data.hp * multiplier)
+                                        const atk = Math.floor(data.attack * multiplier)
+                                        const def = Math.floor(data.defense * multiplier)
+
+                                        return (
+                                            <>
+                                                <div>
+                                                    <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>HP</div>
+                                                    <div style={{ color: '#ef4444', fontWeight: 'bold' }}>{hp}</div>
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>ATK</div>
+                                                    <div style={{ color: '#eab308', fontWeight: 'bold' }}>{atk}</div>
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>DEF</div>
+                                                    <div style={{ color: '#3b82f6', fontWeight: 'bold' }}>{def}</div>
+                                                </div>
+                                            </>
+                                        )
+                                    })()}
                                 </div>
                             </div>
                         )

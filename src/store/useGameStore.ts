@@ -498,10 +498,14 @@ export const useGameStore = create<GameState>((set, get) => ({
                 const monsterData = MONSTERS[monsterKey]
 
                 if (monsterData) {
-                    playerHp = monsterData.baseStats.hp
-                    playerMaxHp = monsterData.baseStats.hp
-                    playerAtk = monsterData.baseStats.atk
-                    playerDef = monsterData.baseStats.def
+                    // Level scaling: 10% increase per level
+                    const level = playerMonster.level || 1
+                    const multiplier = 1 + (level - 1) * 0.1
+
+                    playerHp = Math.floor(monsterData.baseStats.hp * multiplier)
+                    playerMaxHp = playerHp
+                    playerAtk = Math.floor(monsterData.baseStats.atk * multiplier)
+                    playerDef = Math.floor(monsterData.baseStats.def * multiplier)
                     selectedMonsterType = monsterKey
 
                     monsterName = monsterData.name
@@ -570,6 +574,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             const enemy = dungeon?.enemies.find(e => e.id === enemyId)
 
             if (enemy) {
+                // Drop Logic
                 for (const drop of enemy.drops) {
                     const roll = Math.random() * 100
                     if (roll < drop.chance) {
@@ -577,6 +582,55 @@ export const useGameStore = create<GameState>((set, get) => ({
                             Math.random() * (drop.maxQuantity - drop.minQuantity + 1) + drop.minQuantity
                         )
                         rewards[drop.materialId] = (rewards[drop.materialId] || 0) + quantity
+                    }
+                }
+
+                // Monster EXP Logic
+                const { selectedMonsterId } = state.battleState
+                const userId = useAlchemyStore.getState().userId
+
+                if (selectedMonsterId && userId) {
+                    const { playerMonsters } = useAlchemyStore.getState()
+                    const playerMonster = playerMonsters.find(m => m.id === selectedMonsterId)
+
+                    if (playerMonster) {
+                        const earnedExp = enemy.exp
+                        newLogs.push(`획득 경험치: ${earnedExp} XP`)
+
+                        // Update DB and Local State (Async)
+                        import('../lib/monsterApi').then(async ({ updateMonsterExp }) => {
+                            try {
+                                const { level, leveledUp } = await updateMonsterExp(
+                                    userId,
+                                    selectedMonsterId,
+                                    playerMonster.level,
+                                    playerMonster.exp,
+                                    earnedExp
+                                )
+
+                                if (leveledUp) {
+                                    // Use a callback or store action to push log if possible, 
+                                    // but state might have changed. Ideally logs should be updated here.
+                                    // For now, we will just update the playerMonsters list.
+                                    useGameStore.setState(s => {
+                                        if (s.battleState && s.battleState.isBattling) {
+                                            return {
+                                                battleState: {
+                                                    ...s.battleState,
+                                                    logs: [...s.battleState.logs, `🎉 레벨 업! Lv.${level} 달성!`]
+                                                }
+                                            }
+                                        }
+                                        return s
+                                    })
+                                }
+
+                                // Reload monsters to update UI
+                                await useAlchemyStore.getState().loadPlayerMonsters(userId)
+                            } catch (e) {
+                                console.error('Failed to update monster exp', e)
+                            }
+                        })
                     }
                 }
 

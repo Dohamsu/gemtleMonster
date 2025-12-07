@@ -134,3 +134,54 @@ export async function toggleMonsterLock(
 
   console.log(`✅ 몬스터 잠금 상태 변경: ${monsterId} -> ${isLocked}`)
 }
+
+/**
+ * 몬스터 경험치 업데이트
+ *
+ * @param userId - 사용자 ID
+ * @param monsterId - 몬스터 ID (UUID)
+ * @param currentLevel - 현재 레벨
+ * @param currentExp - 현재 경험치
+ * @param addedExp - 추가할 경험치
+ * @returns 업데이트된 레벨과 경험치
+ */
+export async function updateMonsterExp(
+  userId: string,
+  monsterId: string,
+  currentLevel: number,
+  currentExp: number,
+  addedExp: number
+): Promise<{ level: number; exp: number; leveledUp: boolean }> {
+  let newLevel = currentLevel
+  let newExp = currentExp + addedExp
+  let leveledUp = false
+
+  // 간단한 레벨업 로직 loop (한 번에 여러 레벨업 가능)
+  // 필요 경험치 = 레벨 * 100
+  while (true) {
+    const requiredExp = newLevel * 100
+    if (newExp >= requiredExp) {
+      newExp -= requiredExp
+      newLevel++
+      leveledUp = true
+    } else {
+      break
+    }
+  }
+
+  const { error } = await supabase
+    .from('player_monster')
+    .update({
+      level: newLevel,
+      exp: newExp
+    })
+    .eq('id', monsterId)
+    .eq('user_id', userId)
+
+  if (error) {
+    console.error('몬스터 경험치 업데이트 실패:', error)
+    throw error
+  }
+
+  return { level: newLevel, exp: newExp, leveledUp }
+}

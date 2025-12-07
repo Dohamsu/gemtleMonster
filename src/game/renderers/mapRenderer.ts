@@ -88,7 +88,7 @@ export function renderMapView({ ctx, canvas, images, facilities }: MapRendererPr
     }
 
     // Render monster farm
-    if (images.shop_building && facilities['monster_farm']) {
+    if (images.shop_building) {
         const farmX = canvas.width * 0.5 - 64
         const farmY = canvas.height * 0.4 - 64
 
