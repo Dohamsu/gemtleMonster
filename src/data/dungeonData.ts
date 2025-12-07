@@ -336,5 +336,54 @@ export const SKY_DUNGEON: Dungeon = {
     ]
 }
 
-export const DUNGEONS = [SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON, CHRISTMAS_DUNGEON, VOLCANO_DUNGEON, SKY_DUNGEON]
+export const BEAST_DUNGEON: Dungeon = {
+    id: 'dungeon_beast_forest',
+    name: '짐승의 숲',
+    description: '거대한 곰이 포효하는 깊은 숲. 사나운 짐승들이 영역을 지키고 있어 함부로 발을 들였다가 목숨을 잃을 수 있습니다.',
+    recommendedLevel: 12,
+    iconUrl: '/assets/dungeons/slime_forest.png',
+    enemies: [
+        {
+            id: 'wolf_dark', // monster_wolf_dark without prefix
+            name: '어둠 늑대',
+            level: 10,
+            hp: 120,
+            attack: 35,
+            defense: 15,
+            exp: 60,
+            drops: [
+                { materialId: 'beast_fang', chance: 70, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'claw_sharp', chance: 30, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'hound_fang', // monster_hound_fang
+            name: '송곳니 하운드',
+            level: 8,
+            hp: 100,
+            attack: 30,
+            defense: 10,
+            exp: 45,
+            drops: [
+                { materialId: 'beast_fang', chance: 80, minQuantity: 1, maxQuantity: 2 }
+            ]
+        },
+        {
+            id: 'scar_bear',
+            name: '상처 입은 곰',
+            level: 15,
+            hp: 800,
+            attack: 60,
+            defense: 40,
+            exp: 300,
+            drops: [
+                { materialId: 'leather_beast', chance: 100, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'beast_fang', chance: 80, minQuantity: 2, maxQuantity: 4 },
+                { materialId: 'claw_sharp', chance: 50, minQuantity: 1, maxQuantity: 2 }
+            ]
+        }
+    ]
+}
+
+export const DUNGEONS = [SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON, BEAST_DUNGEON, CHRISTMAS_DUNGEON, VOLCANO_DUNGEON, SKY_DUNGEON]
 

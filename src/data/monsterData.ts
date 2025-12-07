@@ -76,6 +76,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 60,
         defense: 25,
         emoji: '🐺',
+        iconUrl: '/assets/monsters/hound_basic.png',
         rarity: 'SR',
         element: 'dark'
     },
@@ -457,6 +458,104 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/sky_dragon.png',
         rarity: 'SSR',
         element: 'wind'
+    },
+    // Beast Forest Monsters (짐승의 숲)
+    'monster_scar_bear': {
+        name: '상처 입은 곰',
+        description: '수많은 전투로 온몸에 흉터가 남은 거대한 곰. 숲의 깊은 곳에서 영역을 지키며, 침입자를 무자비하게 공격합니다.',
+        role: '탱커',
+        hp: 800,
+        attack: 90,
+        defense: 60,
+        emoji: '🐻',
+        iconUrl: '/assets/monsters/scar_bear.png',
+        rarity: 'SR',
+        element: 'earth'
+    },
+    'monster_penguin': {
+        name: '아기 펭귄',
+        description: '뒤뚱거리며 걷는 귀여운 펭귄. 차가운 물속을 자유롭게 헤엄치며, 보는 이의 마음을 녹입니다.',
+        role: '서포터',
+        hp: 100,
+        attack: 20,
+        defense: 20,
+        emoji: '🐧',
+        iconUrl: '/assets/monsters/baby_penguin.png',
+        rarity: 'N',
+        element: 'water'
+    },
+    'monster_gazelle': {
+        name: '바람 가젤',
+        description: '바람처럼 빠르게 달리는 가젤. 날렵한 뿔과 다리로 적의 공격을 피하며 초원을 누빕니다.',
+        role: '딜러',
+        hp: 120,
+        attack: 45,
+        defense: 15,
+        emoji: '🦌',
+        iconUrl: '/assets/monsters/gazzel.png',
+        rarity: 'N',
+        element: 'wind'
+    },
+    // Conditional Monsters
+    'monster_owl_night': {
+        name: '밤눈 부엉이',
+        description: '밤이 깊어질수록 눈빛이 밝게 빛나는 부엉이. 어둠 속에서 진실을 꿰뚫어 봅니다.',
+        role: '서포터',
+        hp: 130,
+        attack: 45,
+        defense: 35,
+        emoji: '🦉',
+        iconUrl: '/assets/monsters/owl_night.png',
+        rarity: 'R',
+        element: 'wind'
+    },
+    'monster_rooster_morning': {
+        name: '새벽의 닭',
+        description: '아침 해가 뜨면 가장 먼저 울어 세상을 깨우는 닭. 그 울음소리는 아군의 사기를 높입니다.',
+        role: '딜러',
+        hp: 140,
+        attack: 80,
+        defense: 30,
+        emoji: '🐓',
+        iconUrl: '/assets/monsters/rooster_morning.png',
+        rarity: 'N',
+        element: 'fire'
+    },
+    'monster_turtle_weekend': {
+        name: '주말 거북이',
+        description: '평일에는 깊은 잠에 빠져 있다가 주말에만 활동하는 거북이. 여유롭지만 단단한 등껍질을 가지고 있습니다.',
+        role: '탱커',
+        hp: 200,
+        attack: 30,
+        defense: 80,
+        emoji: '🐢',
+        iconUrl: '/assets/monsters/turtle_weekend.png',
+        rarity: 'R',
+        element: 'water'
+    },
+    'monster_golem_desktop': {
+        name: 'PC 골렘',
+        description: '복잡한 연산 장치와 회로로 구성된 골렘. 데스크탑 환경의 강력한 리소스를 동력원으로 사용합니다.',
+        role: '탱커',
+        hp: 250,
+        attack: 50,
+        defense: 70,
+        emoji: '🖥️',
+        iconUrl: '/assets/monsters/golem_desktop.png',
+        rarity: 'SR',
+        element: 'earth'
+    },
+    'monster_slime_mobile': {
+        name: '모바일 슬라임',
+        description: '작고 가벼워 어디든 데리고 다닐 수 있는 슬라임. 모바일 환경에 최적화되어 있습니다.',
+        role: '서포터',
+        hp: 100,
+        attack: 40,
+        defense: 20,
+        emoji: '📱',
+        iconUrl: '/assets/monsters/slime_mobile.png',
+        rarity: 'N',
+        element: 'water'
     }
 }
 

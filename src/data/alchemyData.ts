@@ -35,6 +35,7 @@ export const MATERIALS: Record<string, Material> = {
     'gem_dark': { id: 'gem_dark', name: '어둠의 보석', type: 'MINERAL', description: '어둠 속성이 담긴 신비한 보석', rarity: 'SR', iconUrl: '/assets/materials/gem_dark.png' },
     'claw_sharp': { id: 'claw_sharp', name: '날카로운 발톱', type: 'BEAST', description: '공격적인 몬스터의 발톱', rarity: 'R', iconUrl: '/assets/materials/claw_sharp.png' },
     'hide_tough': { id: 'hide_tough', name: '질긴 가죽', type: 'BEAST', description: '두껍고 질긴 몬스터 가죽', rarity: 'R', iconUrl: '/assets/materials/hide_tough.png' },
+    'leather_beast': { id: 'leather_beast', name: '짐승 가죽', type: 'BEAST', description: '가공되어 부드럽고 질긴 짐승의 가죽', rarity: 'N', iconUrl: '/assets/materials/hide_tough.png' },
     'bone_dragon': { id: 'bone_dragon', name: '용의 뼈', type: 'BEAST', description: '고대 용의 강력한 뼈', rarity: 'SSR', iconUrl: '/assets/materials/bone_dragon.png' },
     'slime_mutant': { id: 'slime_mutant', name: '변이 점액', type: 'SLIME', description: '특이하게 변이한 슬라임의 점액', rarity: 'R', iconUrl: '/assets/materials/slime_mutant.png' },
     'soul_fragment': { id: 'soul_fragment', name: '영혼 파편', type: 'SPIRIT', description: '영혼의 일부가 결정화된 파편', rarity: 'R', iconUrl: '/assets/materials/soul_fragment.png' },
@@ -78,6 +79,8 @@ interface DBRecipeSeed {
         timeStart?: string
         timeEnd?: string
         languageCode?: string
+        value_json?: any
+        value_text?: string
     }>
 }
 
@@ -453,6 +456,160 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
             { materialId: 'spirit_dust', quantity: 1, isCatalyst: false }
         ],
         conditions: []
+    },
+    // Beast Forest Monsters (짐승의 숲 몬스터)
+    {
+        id: 'recipe_penguin',
+        resultMonsterId: 'monster_penguin',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 10,
+        costGold: 40,
+        requiredAlchemyLevel: 1,
+        expGain: 20,
+        isHidden: false,
+        priority: 91,
+        ingredients: [
+            { materialId: 'leather_beast', quantity: 1, isCatalyst: false },
+            { materialId: 'ice_shard', quantity: 2, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_gazelle',
+        resultMonsterId: 'monster_gazelle',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 10,
+        costGold: 40,
+        requiredAlchemyLevel: 1,
+        expGain: 20,
+        isHidden: false,
+        priority: 91,
+        ingredients: [
+            { materialId: 'leather_beast', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_rare', quantity: 1, isCatalyst: false },
+            { materialId: 'shard_wind', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    // Conditional Monster Recipes
+    {
+        id: 'recipe_owl_night',
+        resultMonsterId: 'monster_owl_night',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 20,
+        costGold: 100,
+        requiredAlchemyLevel: 3,
+        expGain: 40,
+        isHidden: true, // Special monsters are hidden by default -> Unlocked by conditions? No, let's make them visible if condition met (handled by UI filtering usually, or just show them)
+        // For now, let's keep isHidden false so users can see them if they meet requirements (or see them greyed out)
+        // Actually, logic usually hides them if they are 'secret'. Let's make them visible.
+        priority: 70,
+        ingredients: [
+            { materialId: 'herb_special', quantity: 2, isCatalyst: false },
+            { materialId: 'gem_dark', quantity: 1, isCatalyst: false }
+        ],
+        conditions: [
+            {
+                conditionType: 'real_time_range',
+                timeStart: '18:00:00',
+                timeEnd: '06:00:00'
+            }
+        ]
+    },
+    {
+        id: 'recipe_rooster_morning',
+        resultMonsterId: 'monster_rooster_morning',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 15,
+        costGold: 50,
+        requiredAlchemyLevel: 2,
+        expGain: 30,
+        isHidden: false,
+        priority: 71,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_fire', quantity: 1, isCatalyst: false }
+        ],
+        conditions: [
+            {
+                conditionType: 'real_time_range',
+                timeStart: '05:00:00',
+                timeEnd: '10:00:00'
+            }
+        ]
+    },
+    {
+        id: 'recipe_turtle_weekend',
+        resultMonsterId: 'monster_turtle_weekend',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 30,
+        costGold: 150,
+        requiredAlchemyLevel: 4,
+        expGain: 50,
+        isHidden: false,
+        priority: 69,
+        ingredients: [
+            { materialId: 'slime_gel', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_water', quantity: 2, isCatalyst: false },
+            { materialId: 'hide_tough', quantity: 1, isCatalyst: false }
+        ],
+        conditions: [
+            {
+                conditionType: 'weekday',
+                value_json: [0, 6] // 0: Sun, 6: Sat
+            }
+        ]
+    },
+    {
+        id: 'recipe_golem_desktop',
+        resultMonsterId: 'monster_golem_desktop',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 45,
+        costGold: 300,
+        requiredAlchemyLevel: 5,
+        expGain: 80,
+        isHidden: false,
+        priority: 60,
+        ingredients: [
+            { materialId: 'ore_iron', quantity: 10, isCatalyst: false },
+            { materialId: 'ore_magic', quantity: 5, isCatalyst: false },
+            { materialId: 'crystal_mana', quantity: 2, isCatalyst: false }
+        ],
+        conditions: [
+            {
+                conditionType: 'device_type',
+                value_text: 'DESKTOP'
+            }
+        ]
+    },
+    {
+        id: 'recipe_slime_mobile',
+        resultMonsterId: 'monster_slime_mobile',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 10,
+        costGold: 20,
+        requiredAlchemyLevel: 1,
+        expGain: 15,
+        isHidden: false,
+        priority: 95,
+        ingredients: [
+            { materialId: 'slime_fluid', quantity: 3, isCatalyst: false },
+            { materialId: 'essence', quantity: 1, isCatalyst: false }
+        ],
+        conditions: [
+            {
+                conditionType: 'device_type',
+                value_text: 'MOBILE'
+            }
+        ]
     }
 ]
 
@@ -475,6 +632,8 @@ export const RECIPES: Recipe[] = DB_RECIPES_SEED.map(dbRecipe => {
         conditions: dbRecipe.conditions.map(cond => ({
             type: cond.conditionType as RecipeCondition['type'],
             conditionType: cond.conditionType as RecipeCondition['type'],
+            value_json: cond.value_json,
+            value_text: cond.value_text,
             value: cond.timeStart && cond.timeEnd
                 ? { timeStart: cond.timeStart, timeEnd: cond.timeEnd }
                 : cond.languageCode

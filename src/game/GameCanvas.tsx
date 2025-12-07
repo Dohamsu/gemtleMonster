@@ -43,7 +43,6 @@ export default function GameCanvas() {
         removeIngredient,
         startBrewing,
         startFreeFormBrewing,
-        completeBrewing,
         autoFillIngredients,
         loadAllData,
         playerAlchemy,
@@ -90,23 +89,11 @@ export default function GameCanvas() {
     const baseClickHandler = useCanvasClickHandler({
         canvasView,
         setCanvasView,
-        allRecipes,
         allMaterials,
-        playerMaterials: materialCounts, // useUnifiedInventory의 materialCounts 사용
-        selectedRecipeId,
         selectedIngredients,
         isBrewing,
-        playerAlchemy,
-        materialScrollOffset,
-        selectRecipe,
-        addIngredient,
         removeIngredient,
-        startBrewing,
-        startFreeFormBrewing,
-        completeBrewing,
-        autoFillIngredients,
-        setDungeonModalOpen: setShowDungeonModal, // Pass setter
-        mobileTab // Pass mobileTab state
+        setDungeonModalOpen: setShowDungeonModal,
     })
 
     // 모바일 탭 클릭 처리를 위한 래퍼
