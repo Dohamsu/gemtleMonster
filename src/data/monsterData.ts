@@ -407,6 +407,56 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/santa_golem.png',
         rarity: 'SR',
         element: 'water'
+    },
+    // Volcano Dungeon Enemies
+    'fire_slime': {
+        name: '파이어 슬라임',
+        description: '용암에서 태어난 뜨거운 슬라임. 몸이 불타고 있어 가까이 가기만 해도 화상을 입을 수 있습니다.',
+        role: '탱커',
+        hp: 600,
+        attack: 60,
+        defense: 40,
+        emoji: '🔥',
+        iconUrl: '/assets/monsters/magma_slime.png',
+        rarity: 'N',
+        element: 'fire'
+    },
+    'magma_golem': {
+        name: '마그마 골렘',
+        description: '굳지 않은 용암과 흑요석으로 이루어진 골렘. 분노하면 몸의 열기가 더욱 거세집니다.',
+        role: '탱커',
+        hp: 1000,
+        attack: 80,
+        defense: 60,
+        emoji: '🌋',
+        iconUrl: '/assets/monsters/magma_golem.png',
+        rarity: 'SR',
+        element: 'fire'
+    },
+    // Sky Dungeon Enemies
+    'cloud_slime': {
+        name: '구름 슬라임',
+        description: '뭉게구름처럼 폭신해 보이는 슬라임. 바람을 타고 자유롭게 날아다닙니다.',
+        role: '서포터',
+        hp: 800,
+        attack: 70,
+        defense: 45,
+        emoji: '☁️',
+        iconUrl: '/assets/monsters/cloud_slime.png',
+        rarity: 'N',
+        element: 'wind'
+    },
+    'sky_dragon_hatchling': {
+        name: '스카이 드래곤 유치',
+        description: '천공의 탑 둥지에서 갓 깨어난 드래곤. 아직 어리지만 하늘의 제왕다운 위엄과 힘을 가지고 있습니다.',
+        role: '딜러',
+        hp: 1500,
+        attack: 100,
+        defense: 80,
+        emoji: '🐉',
+        iconUrl: '/assets/monsters/sky_dragon.png',
+        rarity: 'SSR',
+        element: 'wind'
     }
 }
 

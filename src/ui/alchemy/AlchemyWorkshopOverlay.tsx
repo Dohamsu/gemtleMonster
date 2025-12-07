@@ -3,7 +3,7 @@ import type { Recipe, Material, PlayerAlchemy } from '../../lib/alchemyApi'
 import { isMobileView } from '../../utils/responsiveUtils'
 import RecipeList from './RecipeList'
 import MaterialGrid from './MaterialGrid'
-import { AlchemyBrewButton } from './AlchemyBrewButton'
+import AlchemyBrewButton from './AlchemyBrewButton'
 import { AlchemyBackButton } from './AlchemyBackButton'
 import { useGameStore } from '../../store/useGameStore'
 

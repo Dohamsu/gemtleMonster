@@ -261,5 +261,80 @@ export const CHRISTMAS_DUNGEON: Dungeon = {
     ]
 }
 
-export const DUNGEONS = [SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON, CHRISTMAS_DUNGEON]
+export const VOLCANO_DUNGEON: Dungeon = {
+    id: 'dungeon_volcano',
+    name: '화산 요새',
+    description: '뜨거운 용암이 흐르는 위험한 요새. 화염 속성 몬스터들이 서식합니다. 숙련된 모험가만이 살아남을 수 있습니다.',
+    recommendedLevel: 20,
+    iconUrl: '/assets/dungeons/magma_dungeon.png',
+    enemies: [
+        {
+            id: 'fire_slime',
+            name: '파이어 슬라임',
+            level: 18,
+            hp: 600,
+            attack: 60,
+            defense: 40,
+            exp: 250,
+            drops: [
+                { materialId: 'slime_fluid', chance: 80, minQuantity: 3, maxQuantity: 5 },
+                { materialId: 'ore_iron', chance: 40, minQuantity: 2, maxQuantity: 4 },
+                { materialId: 'gem_fragment', chance: 20, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'magma_golem',
+            name: '마그마 골렘',
+            level: 22,
+            hp: 1000,
+            attack: 80,
+            defense: 60,
+            exp: 400,
+            drops: [
+                { materialId: 'ore_iron', chance: 100, minQuantity: 3, maxQuantity: 6 },
+                { materialId: 'gem_fragment', chance: 50, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'crystal_mana', chance: 30, minQuantity: 1, maxQuantity: 2 }
+            ]
+        }
+    ]
+}
+
+export const SKY_DUNGEON: Dungeon = {
+    id: 'dungeon_sky',
+    name: '천공의 탑',
+    description: '구름 위에 떠 있는 신비한 탑. 비행 몬스터들과 바람의 정령들이 지키고 있습니다.',
+    recommendedLevel: 25,
+    iconUrl: '/assets/dungeons/sky_catsle.png',
+    enemies: [
+        {
+            id: 'cloud_slime',
+            name: '구름 슬라임',
+            level: 23,
+            hp: 800,
+            attack: 70,
+            defense: 45,
+            exp: 300,
+            drops: [
+                { materialId: 'slime_fluid', chance: 80, minQuantity: 3, maxQuantity: 5 },
+                { materialId: 'spirit_dust', chance: 50, minQuantity: 2, maxQuantity: 4 }
+            ]
+        },
+        {
+            id: 'sky_dragon_hatchling',
+            name: '스카이 드래곤 유치',
+            level: 28,
+            hp: 1500,
+            attack: 100,
+            defense: 80,
+            exp: 600,
+            drops: [
+                { materialId: 'beast_fang', chance: 80, minQuantity: 2, maxQuantity: 4 },
+                { materialId: 'gem_fragment', chance: 40, minQuantity: 2, maxQuantity: 3 },
+                { materialId: 'crystal_mana', chance: 20, minQuantity: 1, maxQuantity: 2 }
+            ]
+        }
+    ]
+}
+
+export const DUNGEONS = [SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON, CHRISTMAS_DUNGEON, VOLCANO_DUNGEON, SKY_DUNGEON]
 

@@ -1,6 +1,17 @@
 # 📋 변경 이력
 
 모든 주요 변경사항은 이 파일에 문서화됩니다.
+## [0.2.4] - 2025-12-07
+### ✨ New Features
+- **UI Overlay**: Added current gold display below player ID.
+- **New Dungeons**: Added 'Volcano Dungeon' and 'Sky Dungeon' to `dungeonData.ts` with relevant monsters.
+- **New Monsters**: Added Fire Slime, Magma Golem, Cloud Slime, etc., with images.
+
+### 🎨 Assets & UI
+- **Alchemy**: Fixed 'Back' button unresponsive issue by adding `pointerEvents: 'auto'`.
+- **Assets**: Added icon images for new dungeons and monsters.
+- **Images**: Updated `monsterData` to use correct local assets (Cloud Slime, Sky Dragon, etc.).
+
 ## [0.2.3] - 2025-12-06
 
 ### ♻️ Refactoring

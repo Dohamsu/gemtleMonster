@@ -1,12 +1,12 @@
 import React from 'react'
-import { isMobileView } from '../../utils/responsiveUtils'
+// import { isMobileView } from '../../utils/responsiveUtils'
 
 interface AlchemyBackButtonProps {
     onBack: () => void
 }
 
 export const AlchemyBackButton: React.FC<AlchemyBackButtonProps> = ({ onBack }) => {
-    const isMobile = isMobileView()
+    // const isMobile = isMobileView()
 
     const buttonStyle: React.CSSProperties = {
         position: 'absolute',
@@ -26,7 +26,8 @@ export const AlchemyBackButton: React.FC<AlchemyBackButtonProps> = ({ onBack }) 
         justifyContent: 'center',
         boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
         zIndex: 100,
-        transition: 'all 0.2s ease'
+        transition: 'all 0.2s ease',
+        pointerEvents: 'auto'
     }
 
     return (

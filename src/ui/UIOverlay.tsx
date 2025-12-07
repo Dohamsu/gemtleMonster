@@ -10,7 +10,7 @@ import AlchemyLayout from './alchemy/AlchemyLayout'
 
 export default function UIOverlay() {
     const { user, loading: authLoading } = useAuth()
-    const { activeTab, setActiveTab } = useGameStore()
+    const { activeTab, setActiveTab, resources } = useGameStore()
     const [isMobile, setIsMobile] = useState(isMobileView())
 
     // Phase 1: 배치 동기화 시스템
@@ -118,6 +118,16 @@ export default function UIOverlay() {
                     marginBottom: isMobile ? '8px' : '10px'
                 }}>
                     ID: {user?.id.slice(0, 8)}...
+                </div>
+                <div style={{
+                    fontSize: isMobile ? '0.9em' : '0.95em',
+                    color: '#ffd700',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                }}>
+                    💰 {(resources.gold || 0).toLocaleString()} G
                 </div>
             </div>
 
