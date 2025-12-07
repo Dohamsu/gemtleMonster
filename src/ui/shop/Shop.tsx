@@ -454,69 +454,76 @@ export default function Shop() {
                                 </div>
 
                                 {/* Quantity Controls */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                                    <span style={{ fontSize: '0.85em', color: '#aaa', minWidth: '60px' }}>판매 수량:</span>
-                                    <button
-                                        onClick={() => handleQuantityChange(item.id, sellQuantity - 1, item.count)}
-                                        style={{
-                                            width: '32px',
-                                            height: '32px',
-                                            minHeight: '32px',
-                                            background: '#444',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '6px',
-                                            cursor: 'pointer',
-                                            fontSize: '1.1em',
-                                            fontWeight: 'bold'
-                                        }}
-                                    >-</button>
-                                    <input
-                                        type="number"
-                                        value={sellQuantity}
-                                        onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 0, item.count)}
-                                        style={{
-                                            flex: 1,
-                                            textAlign: 'center',
-                                            background: '#222',
-                                            color: 'white',
-                                            border: '1px solid #555',
-                                            borderRadius: '6px',
-                                            padding: '8px',
-                                            fontSize: '0.95em',
-                                            minHeight: '32px'
-                                        }}
-                                    />
-                                    <button
-                                        onClick={() => handleQuantityChange(item.id, sellQuantity + 1, item.count)}
-                                        style={{
-                                            width: '32px',
-                                            height: '32px',
-                                            minHeight: '32px',
-                                            background: '#444',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '6px',
-                                            cursor: 'pointer',
-                                            fontSize: '1.1em',
-                                            fontWeight: 'bold'
-                                        }}
-                                    >+</button>
-                                    <button
-                                        onClick={() => handleQuantityChange(item.id, item.count, item.count)}
-                                        style={{
-                                            padding: '0 12px',
-                                            height: '32px',
-                                            minHeight: '32px',
-                                            background: '#555',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '6px',
-                                            cursor: 'pointer',
-                                            fontSize: '0.8em',
-                                            fontWeight: 'bold'
-                                        }}
-                                    >Max</button>
+                                <div style={{ marginBottom: '10px' }}>
+                                    <div style={{ fontSize: '0.85em', color: '#aaa', marginBottom: '6px' }}>판매 수량</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <button
+                                            onClick={() => handleQuantityChange(item.id, sellQuantity - 1, item.count)}
+                                            style={{
+                                                width: '36px',
+                                                height: '36px',
+                                                minHeight: '36px',
+                                                background: '#444',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer',
+                                                fontSize: '1.2em',
+                                                fontWeight: 'bold',
+                                                flexShrink: 0
+                                            }}
+                                        >-</button>
+                                        <input
+                                            type="number"
+                                            value={sellQuantity}
+                                            onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 0, item.count)}
+                                            style={{
+                                                flex: 1,
+                                                minWidth: '0',
+                                                textAlign: 'center',
+                                                background: '#222',
+                                                color: 'white',
+                                                border: '1px solid #555',
+                                                borderRadius: '6px',
+                                                padding: '8px',
+                                                fontSize: '1em',
+                                                height: '36px',
+                                                minHeight: '36px'
+                                            }}
+                                        />
+                                        <button
+                                            onClick={() => handleQuantityChange(item.id, sellQuantity + 1, item.count)}
+                                            style={{
+                                                width: '36px',
+                                                height: '36px',
+                                                minHeight: '36px',
+                                                background: '#444',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer',
+                                                fontSize: '1.2em',
+                                                fontWeight: 'bold',
+                                                flexShrink: 0
+                                            }}
+                                        >+</button>
+                                        <button
+                                            onClick={() => handleQuantityChange(item.id, item.count, item.count)}
+                                            style={{
+                                                padding: '0 12px',
+                                                height: '36px',
+                                                minHeight: '36px',
+                                                background: '#555',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer',
+                                                fontSize: '0.9em',
+                                                fontWeight: 'bold',
+                                                flexShrink: 0
+                                            }}
+                                        >Max</button>
+                                    </div>
                                 </div>
 
                                 {/* Total Value */}

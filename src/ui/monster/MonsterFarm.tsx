@@ -121,49 +121,74 @@ export default function MonsterFarm() {
         return rewards
     }
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
     return (
         <div style={{
-            padding: '20px',
+            padding: isMobile ? '10px' : '20px',
             color: '#eee',
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px',
+            gap: isMobile ? '10px' : '20px',
             maxWidth: '1000px',
             margin: '0 auto',
-            width: '100%'
+            width: '100%',
+            overflow: 'hidden'
         }}>
             {/* Header */}
             <div style={{
                 display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
                 justifyContent: 'space-between',
-                alignItems: 'center',
+                alignItems: isMobile ? 'stretch' : 'center',
                 background: 'rgba(0,0,0,0.6)',
-                padding: '15px',
+                padding: isMobile ? '12px' : '15px',
                 borderRadius: '12px',
-                backdropFilter: 'blur(4px)'
+                backdropFilter: 'blur(4px)',
+                gap: isMobile ? '10px' : '0'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '15px' }}>
                     <button
                         onClick={handleBack}
                         style={{
                             background: '#4a3020',
                             border: '2px solid #8a6040',
                             color: 'white',
-                            padding: '8px 16px',
+                            padding: isMobile ? '8px 12px' : '8px 16px',
+                            minHeight: isMobile ? '40px' : 'auto',
                             borderRadius: '8px',
                             cursor: 'pointer',
                             fontWeight: 'bold',
-                            fontSize: '14px'
+                            fontSize: isMobile ? '13px' : '14px',
+                            whiteSpace: 'nowrap'
                         }}
                     >
                         ← 나가기
                     </button>
-                    <h2 style={{ margin: 0, fontSize: '1.5em', color: '#f0d090' }}>🏰 몬스터 농장</h2>
+                    <h2 style={{
+                        margin: 0,
+                        fontSize: isMobile ? '1.2em' : '1.5em',
+                        color: '#f0d090',
+                        whiteSpace: 'nowrap'
+                    }}>
+                        🏰 몬스터 농장
+                    </h2>
                 </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#facc15' }}>
-                        보유 몬스터: {playerMonsters.length}마리
+                <div style={{
+                    display: 'flex',
+                    gap: '10px',
+                    alignItems: 'center',
+                    justifyContent: isMobile ? 'space-between' : 'flex-end'
+                }}>
+                    <div style={{ fontSize: isMobile ? '1em' : '1.2em', fontWeight: 'bold', color: '#facc15' }}>
+                        보유: {playerMonsters.length}마리
                     </div>
                     <button
                         onClick={() => {
@@ -174,14 +199,15 @@ export default function MonsterFarm() {
                             background: decomposeMode ? '#dc2626' : '#059669',
                             border: 'none',
                             color: 'white',
-                            padding: '8px 16px',
+                            padding: isMobile ? '8px 12px' : '8px 16px',
                             borderRadius: '8px',
                             cursor: 'pointer',
                             fontWeight: 'bold',
-                            fontSize: '14px'
+                            fontSize: isMobile ? '13px' : '14px',
+                            minHeight: isMobile ? '40px' : 'auto'
                         }}
                     >
-                        {decomposeMode ? '❌ 분해 모드 종료' : '⚙️ 분해 모드'}
+                        {decomposeMode ? '❌ 종료' : '⚙️ 분해'}
                     </button>
                 </div>
             </div>
