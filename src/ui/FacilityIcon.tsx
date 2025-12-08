@@ -72,6 +72,11 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
             const color = colors[Math.min(level - 1, 4)]
             return { emoji: '🏋️', color }
         }
+        if (id === 'spirit_sanctum') {
+            const colors = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#facc15']
+            const color = colors[Math.min(level - 1, 4)]
+            return { emoji: '🧚', color }
+        }
         return { emoji: '🏠', color: 'white' }
     }
 

@@ -29,8 +29,8 @@ export default function IdleFacilityList() {
     // Check if production is paused (when shop is open)
     const isPaused = canvasView === 'shop';
 
-    // Filter facilities that player owns
-    const visibleFacilities = facilities.filter(f => playerFacilities[f.id] && playerFacilities[f.id] > 0)
+    // Show all facilities to allow construction of unbuilt ones
+    const visibleFacilities = facilities;
 
     if (facilitiesLoading) {
         return (
@@ -173,16 +173,20 @@ export default function IdleFacilityList() {
                     <p style={{ color: '#aaa', textAlign: 'center', marginTop: '20px' }}>시설이 없습니다.</p>
                 ) : (
                     visibleFacilities.map(facility => {
-                        const currentLevel = playerFacilities[facility.id];
-                        const levelsToShow = Array.from({ length: currentLevel }, (_, i) => i + 1).reverse();
+                        const currentLevel = playerFacilities[facility.id] || 0;
+                        const levelsToShow = currentLevel === 0
+                            ? [0]
+                            : Array.from({ length: currentLevel }, (_, i) => i + 1).reverse();
 
                         return (
                             <details key={facility.id} open={!allCollapsed} style={{ marginBottom: '20px', background: '#2a2a2a', padding: '10px', borderRadius: '6px' }}>
-                                <summary style={{ color: 'white', cursor: 'pointer', fontSize: '1.1em' }}>{facility.name}</summary>
+                                <summary style={{ color: 'white', cursor: 'pointer', fontSize: '1.1em' }}>
+                                    {facility.name} {currentLevel === 0 && <span style={{ fontSize: '0.8em', color: '#fbbf24', marginLeft: '8px' }}>(미보유)</span>}
+                                </summary>
                                 <div style={{ marginTop: '10px' }}>
                                     {levelsToShow.map(level => (
-                                        <details key={`${facility.id}-${level}`} open={!allCollapsed} style={{ marginBottom: '8px', background: '#3a3a3a', padding: '6px', borderRadius: '4px' }}>
-                                            <summary style={{ color: '#ddd', cursor: 'pointer' }}>Level {level}</summary>
+                                        <details key={`${facility.id}-${level}`} open={true} style={{ marginBottom: '8px', background: '#3a3a3a', padding: '6px', borderRadius: '4px' }}>
+                                            <summary style={{ color: '#ddd', cursor: 'pointer' }}>{level === 0 ? '건설 필요' : `Level ${level}`}</summary>
                                             <IdleFacilityItem
                                                 facility={facility}
                                                 currentLevel={level}
@@ -211,7 +215,6 @@ export default function IdleFacilityList() {
                                 level={level}
                                 onClick={() => {
                                     setViewMode('list');
-                                    // Optional: Scroll to item or expand specific details
                                 }}
                                 isPaused={isPaused}
                             />

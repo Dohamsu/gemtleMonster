@@ -104,4 +104,28 @@ export function renderMapView({ ctx, canvas, images, facilities }: MapRendererPr
         ctx.fillText('몬스터 농장', farmX + 30, farmY + 140)
         ctx.shadowBlur = 0
     }
+
+    // Render Spirit Sanctum if owned (or for debugging)
+    // Use herb_farm image as a guaranteed placeholder
+    if (images.herb_farm && facilities && facilities['spirit_sanctum'] !== undefined) {
+        const sanctumX = canvas.width * 0.2 - 64
+        const sanctumY = canvas.height * 0.2 - 64
+
+        // Use filter to give it a magical/spirit look (blue/purple tint)
+        ctx.filter = 'hue-rotate(180deg) brightness(1.2)'
+        ctx.drawImage(images.herb_farm, sanctumX, sanctumY, 128, 128)
+        ctx.filter = 'none'
+
+        ctx.fillStyle = '#a78bfa' // Light purple
+        ctx.font = 'bold 14px Arial'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 4
+        // Show level or just name if level is 0/undefined
+        const level = facilities['spirit_sanctum'] || 0
+        ctx.fillText(`정령의 성소 Lv.${level}`, sanctumX + 10, sanctumY + 140)
+        ctx.shadowBlur = 0
+    } else {
+        // Debug log only if missing (to avoid spamming loop)
+        // console.log('Spirit Sanctum missing:', { img: !!images.herb_farm, fac: facilities['spirit_sanctum'] })
+    }
 }

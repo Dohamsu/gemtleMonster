@@ -349,14 +349,28 @@ export const useGameStore = create<GameState>((set, get) => ({
                 await alchemyApi.consumeMaterials(userId, materialsToDeduct)
             }
 
-            // 3. Update local state
+            // 3. Update DB (Upsert facility level)
+            const newLevel = (state.facilities[facilityId] || 0) + 1
+
+            const { error: upsertError } = await supabase
+                .from('player_facility')
+                .upsert({
+                    user_id: userId,
+                    facility_id: facilityId,
+                    current_level: newLevel
+                }, { onConflict: 'user_id,facility_id' })
+
+            if (upsertError) {
+                console.error('Failed to save facility level to DB:', upsertError)
+                // Optionally revert resource deduction here if critical, but for now just logging
+            }
+
+            // 4. Update local state
             set((state) => {
                 const newResources = { ...state.resources }
                 for (const [res, amount] of Object.entries(cost)) {
                     newResources[res] = (newResources[res] || 0) - amount
                 }
-
-                const newLevel = (state.facilities[facilityId] || 0) + 1
 
                 // 배치 동기화 콜백 호출 (시설 레벨 변경)
                 if (state.batchFacilitySyncCallback) {

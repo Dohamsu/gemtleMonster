@@ -41,6 +41,11 @@ const RESOURCE_ICONS: Record<string, string> = {
     frozen_dew: '/assets/materials/frozen_dew.png',
     frost_essence: '/assets/materials/frost_essence.png',
 
+    // 추가된 정령 재료
+    essence_light: '/assets/materials/essence_light.png',
+    soul_fragment: '/assets/materials/soul_fragment.png',
+    rune_world: '/assets/materials/rune_world.png',
+
     // 속성 파편
     shard_water: '/assets/materials/shard_water.png',
     shard_earth: '/assets/materials/shard_earth.png',

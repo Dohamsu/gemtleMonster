@@ -23,7 +23,11 @@ const RESOURCE_NAMES: Record<string, string> = {
     ore_iron: '철광석',
     ore_magic: '마력석',
     gem_fragment: '보석 파편',
-    training_token: '훈련 토큰'
+    training_token: '훈련 토큰',
+    spirit_dust: '정령 가루',
+    essence_light: '빛의 정수',
+    soul_fragment: '영혼 파편',
+    crack_stone_fragment: '균열석 파편'
 }
 
 import FacilityIcon from '../FacilityIcon'
@@ -57,6 +61,75 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
             setCollectedResources(newCollections)
         }
     }, [recentAdditions, facilityKey])
+
+    // If level 0, verify if we can construct (upgrade to level 1)
+    if (currentLevel === 0) {
+        // Mock empty level data for rendering
+
+        // Next level is level 1
+        const nextLevelData = facility.levels.find(l => l.level === 1)
+
+        // Render minimal item for construction
+        const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([res, cost]) => (resources[res] || 0) >= cost)
+
+        const handleUpgrade = () => {
+            if (nextLevelData) {
+                onUpgrade(facility.id, nextLevelData.upgradeCost)
+            }
+        }
+
+        return (
+            <div style={{
+                border: '1px solid #444',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '10px',
+                background: '#222',
+                color: '#aaa', // Dimmed text for unbuilt
+                position: 'relative'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        {/* Use level 1 icon or generic icon */}
+                        <FacilityIcon id={facility.id} level={1} style={{ marginRight: '10px', filter: 'grayscale(1)' }} />
+                        <h3 style={{ margin: 0 }}>{facility.name} (미보유)</h3>
+                    </div>
+                    <span style={{ fontSize: '0.85em', color: '#666' }}>-</span>
+                </div>
+
+                <div style={{ marginTop: '10px', borderTop: '1px solid #333', paddingTop: '10px' }}>
+                    <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', color: '#fbbf24' }}>건설 비용:</p>
+                    {nextLevelData && (
+                        <div style={{ display: 'flex', gap: '10px', fontSize: '0.85em', flexWrap: 'wrap' }}>
+                            {Object.entries(nextLevelData.upgradeCost).map(([res, cost]) => (
+                                <span key={res} style={{ color: (resources[res] || 0) >= cost ? '#8f8' : '#f88' }}>
+                                    {RESOURCE_NAMES[res] || res}: {cost}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                    <button
+                        onClick={handleUpgrade}
+                        disabled={!canUpgrade}
+                        style={{
+                            marginTop: '8px',
+                            padding: '6px 12px',
+                            background: canUpgrade ? '#f59e0b' : '#555', // Orange for construction
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: canUpgrade ? 'pointer' : 'not-allowed',
+                            fontSize: '0.9em',
+                            fontWeight: 'bold',
+                            width: '100%'
+                        }}
+                    >
+                        건설하기
+                    </button>
+                </div>
+            </div>
+        )
+    }
 
     if (!levelData) return null
 

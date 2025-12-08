@@ -119,21 +119,7 @@
             "id": "mine",
             "name": "광산",
             "category": "resource_production",
-            "unlockConditions": [
-                {
-                    "type": "playerLevel",
-                    "min": 3
-                },
-                {
-                    "type": "questComplete",
-                    "questId": "OPEN_MINE"
-                },
-                {
-                    "type": "facilityLevel",
-                    "facilityId": "herb_farm",
-                    "min": 2
-                }
-            ],
+            "unlockConditions": [],
             "levels": [
                 {
                     "level": 1,
@@ -541,6 +527,75 @@
                         "gold": 1500,
                         "herb_common": 150,
                         "ore_iron": 30
+                    }
+                }
+            ]
+        },
+        {
+            "id": "spirit_sanctum",
+            "name": "정령의 성소",
+            "category": "resource_production",
+            "unlockConditions": [
+                {
+                    "type": "playerLevel",
+                    "min": 5
+                },
+                {
+                    "type": "facilityLevel",
+                    "facilityId": "alchemy_lab",
+                    "min": 2
+                }
+            ],
+            "levels": [
+                {
+                    "level": 1,
+                    "stats": {
+                        "intervalSeconds": 60,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "spirit_dust": 0.9,
+                            "essence_light": 0.1
+                        },
+                        "runeWorldDropRate": 0.0001
+                    },
+                    "upgradeCost": {
+                        "gold": 100
+                    }
+                },
+                {
+                    "level": 2,
+                    "stats": {
+                        "intervalSeconds": 50,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "spirit_dust": 0.85,
+                            "essence_light": 0.15
+                        },
+                        "runeWorldDropRate": 0.0002
+                    },
+                    "upgradeCost": {
+                        "gold": 2500,
+                        "ore_magic": 100,
+                        "gem_fragment": 20
+                    }
+                },
+                {
+                    "level": 3,
+                    "stats": {
+                        "intervalSeconds": 40,
+                        "bundlesPerTick": 2,
+                        "dropRates": {
+                            "spirit_dust": 0.8,
+                            "essence_light": 0.18,
+                            "soul_fragment": 0.02
+                        },
+                        "runeWorldDropRate": 0.0005
+                    },
+                    "upgradeCost": {
+                        "gold": 6000,
+                        "ore_magic": 250,
+                        "gem_fragment": 50,
+                        "crack_stone_fragment": 10
                     }
                 }
             ]
