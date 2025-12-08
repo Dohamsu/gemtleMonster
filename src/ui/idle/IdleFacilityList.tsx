@@ -30,7 +30,9 @@ export default function IdleFacilityList() {
     const isPaused = canvasView === 'shop';
 
     // Show all facilities to allow construction of unbuilt ones
-    const visibleFacilities = facilities;
+    // Filter out facilities that should be hidden
+    const hiddenFacilityIds = ['alchemy_lab', 'training_ground', 'dungeon_dispatch'];
+    const visibleFacilities = facilities.filter(f => !hiddenFacilityIds.includes(f.id));
 
     if (facilitiesLoading) {
         return (

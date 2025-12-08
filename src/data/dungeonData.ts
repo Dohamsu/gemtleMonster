@@ -341,7 +341,7 @@ export const BEAST_DUNGEON: Dungeon = {
     name: '짐승의 숲',
     description: '거대한 곰이 포효하는 깊은 숲. 사나운 짐승들이 영역을 지키고 있어 함부로 발을 들였다가 목숨을 잃을 수 있습니다.',
     recommendedLevel: 12,
-    iconUrl: '/assets/dungeons/slime_forest.png',
+    iconUrl: '/assets/dungeons/beast_forest.png',
     enemies: [
         {
             id: 'wolf_dark', // monster_wolf_dark without prefix

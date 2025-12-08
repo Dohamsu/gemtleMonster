@@ -15,8 +15,9 @@ const RESOURCE_ICONS: Record<string, string> = {
     slime_fluid: '/assets/materials/slime_fluid.png',
     slime_gel: '/assets/materials/slime_gel.png',
     beast_fang: '/assets/materials/beast_fang.png',
-
-    // 광석류
+    // Beast Forest Materials
+    claw_sharp: '/assets/materials/claw_sharp.png',
+    leather_beast: '/assets/materials/hide_tough.png', // Reusing tough hide image for now
     ore_iron: '/assets/materials/ore_iron.png',
     ore_magic: '/assets/materials/ore_magic.png',
     stone: '🪨',

@@ -21,6 +21,7 @@ export default function MaterialGrid({
     onAddIngredient
 }: MaterialGridProps) {
     const [isMobile, setIsMobile] = useState(isMobileView())
+    const [showOnlyOwned, setShowOnlyOwned] = useState(false)
 
     useEffect(() => {
         const handleResize = () => {
@@ -82,7 +83,10 @@ export default function MaterialGrid({
             <div style={{
                 padding: isMobile ? '10px' : '12px',
                 borderBottom: '1px solid #7a5040',
-                background: '#2a1810'
+                background: '#2a1810',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
             }}>
                 <h3 style={{
                     margin: 0,
@@ -92,6 +96,28 @@ export default function MaterialGrid({
                 }}>
                     🎒 보유 재료
                 </h3>
+                <button
+                    onClick={() => setShowOnlyOwned(!showOnlyOwned)}
+                    style={{
+                        width: isMobile ? '28px' : '24px',
+                        height: isMobile ? '28px' : '24px',
+                        background: showOnlyOwned ? '#5a4030' : 'transparent',
+                        border: '1px solid #7a5040',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        color: showOnlyOwned ? '#facc15' : '#886',
+                        fontSize: isMobile ? '14px' : '12px',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s',
+                        padding: 0
+                    }}
+                    title="보유 재료만 보기"
+                >
+                    ★
+                </button>
             </div>
 
             {/* Material Grid */}
@@ -107,116 +133,119 @@ export default function MaterialGrid({
                     gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(70px, 1fr))' : 'repeat(auto-fill, minmax(60px, 1fr))',
                     gap: isMobile ? '10px' : '8px'
                 }}>
-                    {materials.map(material => {
-                        const available = playerMaterials[material.id] || 0
-                        const currentlySelected = selectedIngredients[material.id] || 0
-                        const hasStock = available > 0
+                    {materials
+                        .filter(m => !showOnlyOwned || (playerMaterials[m.id] || 0) > 0)
+                        .map(material => {
+                            const available = playerMaterials[material.id] || 0
+                            const currentlySelected = selectedIngredients[material.id] || 0
+                            const hasStock = available > 0
 
-                        return (
-                            <div
-                                key={material.id}
-                                onClick={() => handleMaterialClick(material.id)}
-                                style={{
-                                    padding: isMobile ? '10px' : '8px',
-                                    background: currentlySelected > 0 ? '#5a4030' : '#4a3020',
-                                    border: currentlySelected > 0 ? '2px solid #facc15' : '2px solid #7a5040',
-                                    borderRadius: '8px',
-                                    cursor: hasStock ? 'pointer' : 'not-allowed',
-                                    opacity: hasStock ? 1 : 0.3,
-                                    transition: 'all 0.2s',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: isMobile ? '6px' : '4px',
-                                    position: 'relative'
-                                }}
-                                onMouseEnter={(e) => {
-                                    if (hasStock && !isBrewing) {
-                                        e.currentTarget.style.transform = 'scale(1.05)'
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'scale(1)'
-                                }}
-                            >
-                                {/* Material Icon */}
-                                <div style={{
-                                    width: isMobile ? '40px' : '36px',
-                                    height: isMobile ? '40px' : '36px',
-                                    borderRadius: '50%',
-                                    background: getFamilyColor(material.family),
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    overflow: 'hidden'
-                                }}>
-                                    <ResourceIcon
-                                        resourceId={material.id}
-                                        size={isMobile ? 32 : 28}
-                                        iconUrl={material.icon_url}
-                                    />
-                                </div>
-
-                                {/* Material Name */}
-                                <div style={{
-                                    fontSize: isMobile ? '10px' : '9px',
-                                    color: getRarityColor(material.rarity),
-                                    textAlign: 'center',
-                                    lineHeight: '1.2',
-                                    fontWeight: 'bold'
-                                }}>
-                                    {material.name}
-                                </div>
-
-                                {/* Quantity */}
-                                <div style={{
-                                    fontSize: isMobile ? '11px' : '10px',
-                                    color: hasStock ? '#aaa' : '#ff6666',
-                                    fontWeight: 'bold'
-                                }}>
-                                    {available}개
-                                </div>
-
-                                {/* Selected indicator */}
-                                {currentlySelected > 0 && (
+                            return (
+                                <div
+                                    key={material.id}
+                                    onClick={() => handleMaterialClick(material.id)}
+                                    style={{
+                                        padding: isMobile ? '10px' : '8px',
+                                        background: currentlySelected > 0 ? '#5a4030' : '#4a3020',
+                                        border: currentlySelected > 0 ? '2px solid #facc15' : '2px solid #7a5040',
+                                        borderRadius: '8px',
+                                        cursor: hasStock ? 'pointer' : 'not-allowed',
+                                        opacity: hasStock ? 1 : 0.4,
+                                        filter: hasStock ? 'none' : 'grayscale(1)',
+                                        transition: 'all 0.2s',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: isMobile ? '6px' : '4px',
+                                        position: 'relative'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (hasStock && !isBrewing) {
+                                            e.currentTarget.style.transform = 'scale(1.05)'
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)'
+                                    }}
+                                >
+                                    {/* Material Icon */}
                                     <div style={{
-                                        position: 'absolute',
-                                        top: '4px',
-                                        right: '4px',
-                                        background: '#facc15',
-                                        color: '#000',
+                                        width: isMobile ? '40px' : '36px',
+                                        height: isMobile ? '40px' : '36px',
                                         borderRadius: '50%',
-                                        width: isMobile ? '20px' : '18px',
-                                        height: isMobile ? '20px' : '18px',
+                                        background: getFamilyColor(material.family),
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        fontSize: isMobile ? '11px' : '10px',
-                                        fontWeight: 'bold'
+                                        overflow: 'hidden'
                                     }}>
-                                        {currentlySelected}
+                                        <ResourceIcon
+                                            resourceId={material.id}
+                                            size={isMobile ? 32 : 28}
+                                            iconUrl={material.icon_url}
+                                        />
                                     </div>
-                                )}
 
-                                {/* Special indicator */}
-                                {material.is_special && (
+                                    {/* Material Name */}
                                     <div style={{
-                                        position: 'absolute',
-                                        bottom: '4px',
-                                        right: '4px',
-                                        fontSize: isMobile ? '9px' : '8px',
-                                        padding: '2px 4px',
-                                        background: '#7c3aed',
-                                        color: 'white',
-                                        borderRadius: '3px',
+                                        fontSize: isMobile ? '10px' : '9px',
+                                        color: getRarityColor(material.rarity),
+                                        textAlign: 'center',
+                                        lineHeight: '1.2',
                                         fontWeight: 'bold'
                                     }}>
-                                        특수
+                                        {material.name}
                                     </div>
-                                )}
-                            </div>
-                        )
-                    })}
+
+                                    {/* Quantity */}
+                                    <div style={{
+                                        fontSize: isMobile ? '11px' : '10px',
+                                        color: hasStock ? '#aaa' : '#ff6666',
+                                        fontWeight: 'bold'
+                                    }}>
+                                        {available}개
+                                    </div>
+
+                                    {/* Selected indicator */}
+                                    {currentlySelected > 0 && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '4px',
+                                            right: '4px',
+                                            background: '#facc15',
+                                            color: '#000',
+                                            borderRadius: '50%',
+                                            width: isMobile ? '20px' : '18px',
+                                            height: isMobile ? '20px' : '18px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: isMobile ? '11px' : '10px',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            {currentlySelected}
+                                        </div>
+                                    )}
+
+                                    {/* Special indicator */}
+                                    {material.is_special && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '4px',
+                                            right: '4px',
+                                            fontSize: isMobile ? '9px' : '8px',
+                                            padding: '2px 4px',
+                                            background: '#7c3aed',
+                                            color: 'white',
+                                            borderRadius: '3px',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            특수
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
                 </div>
 
                 {materials.length === 0 && (

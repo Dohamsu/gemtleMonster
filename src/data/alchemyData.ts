@@ -494,6 +494,24 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         ],
         conditions: []
     },
+    {
+        id: 'recipe_scar_bear',
+        resultMonsterId: 'monster_scar_bear',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 40,
+        costGold: 200,
+        requiredAlchemyLevel: 5,
+        expGain: 60,
+        isHidden: false,
+        priority: 75,
+        ingredients: [
+            { materialId: 'leather_beast', quantity: 3, isCatalyst: false },
+            { materialId: 'claw_sharp', quantity: 2, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
     // Conditional Monster Recipes
     {
         id: 'recipe_owl_night',

@@ -21,6 +21,7 @@ export const InventoryPanel: React.FC = () => {
 
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+  const [showOnlyOwned, setShowOnlyOwned] = useState(false)
 
   // 반응형 감지
   useEffect(() => {
@@ -31,8 +32,10 @@ export const InventoryPanel: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Show all materials
-  const ownedMaterials = allMaterials
+  // Show all materials (filtered by ownership if toggled)
+  const ownedMaterials = showOnlyOwned
+    ? allMaterials.filter(m => (playerMaterials[m.id] || 0) > 0)
+    : allMaterials
 
   // 계열별로 그룹화
   const groupedMaterials = ownedMaterials.reduce((acc, material) => {
@@ -101,6 +104,29 @@ export const InventoryPanel: React.FC = () => {
           borderRadius: '6px',
           padding: '4px'
         }}>
+          {/* Show Only Owned Toggle */}
+          <button
+            onClick={() => setShowOnlyOwned(!showOnlyOwned)}
+            style={{
+              width: '32px',
+              height: '32px',
+              background: showOnlyOwned ? '#334155' : 'transparent',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              color: showOnlyOwned ? '#facc15' : '#64748b',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s'
+            }}
+            title="보유 재료만 보기"
+          >
+            ★
+          </button>
+          <div style={{ width: '1px', background: '#334155', margin: '0 2px' }} />
           <button
             onClick={() => setViewMode('list')}
             style={{
@@ -207,7 +233,9 @@ export const InventoryPanel: React.FC = () => {
                       flexDirection: 'column',
                       alignItems: 'center',
                       gap: '6px',
-                      position: 'relative'
+                      position: 'relative',
+                      opacity: quantity > 0 ? 1 : 0.4,
+                      filter: quantity > 0 ? 'none' : 'grayscale(1)'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = '#334155'
@@ -323,7 +351,9 @@ export const InventoryPanel: React.FC = () => {
                         borderRadius: '6px',
                         cursor: 'pointer',
                         transition: 'all 0.15s',
-                        position: 'relative'
+                        position: 'relative',
+                        opacity: quantity > 0 ? 1 : 0.4,
+                        filter: quantity > 0 ? 'none' : 'grayscale(1)'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.background = '#334155'
