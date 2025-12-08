@@ -4,6 +4,12 @@ import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useAuth } from '../../hooks/useAuth'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { MATERIALS } from '../../data/alchemyData'
+import { calculateStats, getRequiredExp, getExpProgress, getMaxLevel, type RarityType } from '../../lib/monsterLevelUtils'
+import { getUnlockableSkills, getNextSkillUnlockLevel } from '../../data/monsterSkillData'
+import type { RoleType } from '../../types/alchemy'
+import CustomSelect from '../CustomSelect'
+import SkillDetailModal from './SkillDetailModal'
+import type { MonsterSkill } from '../../data/monsterSkillData'
 
 export default function MonsterFarm() {
     const { setCanvasView } = useGameStore()
@@ -18,6 +24,21 @@ export default function MonsterFarm() {
         rewards: Record<string, number>
         count: number
     } | null>(null)
+    const [selectedSkill, setSelectedSkill] = useState<MonsterSkill | null>(null)
+
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+    // Filter & Sort States
+    const [filterElement, setFilterElement] = useState<string>('ALL')
+    const [filterRole, setFilterRole] = useState<string>('ALL')
+    const [filterRarity, setFilterRarity] = useState<string>('ALL')
+    const [sortType, setSortType] = useState<string>('LEVEL_DESC')
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     useEffect(() => {
         if (user) {
@@ -121,13 +142,68 @@ export default function MonsterFarm() {
         return rewards
     }
 
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+    // Filter Logic
+    const filteredMonsters = playerMonsters.filter(monster => {
+        const data = MONSTER_DATA[monster.monster_id]
+        if (!data) return false
 
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768)
-        window.addEventListener('resize', handleResize)
-        return () => window.removeEventListener('resize', handleResize)
-    }, [])
+        // Element Filter
+        if (filterElement !== 'ALL') {
+            const el = data.element?.toUpperCase() || 'EARTH' // Default fallback
+            if (filterElement === 'OTHER' && !data.element) return true // No element
+            if (el !== filterElement) return false
+        }
+
+        // Role Filter (Data uses Korean keys)
+        if (filterRole !== 'ALL') {
+            // Map English filter to Korean data
+            const roleMap: Record<string, string> = {
+                'TANK': '탱커',
+                'DPS': '딜러',
+                'SUPPORT': '서포터',
+                'HYBRID': '하이브리드',
+                'PRODUCTION': '생산'
+            }
+            if (data.role !== roleMap[filterRole]) return false
+        }
+
+        // Rarity Filter
+        if (filterRarity !== 'ALL') {
+            const rarity = data.rarity || 'N'
+            if (rarity !== filterRarity) return false
+        }
+
+        return true
+    }).sort((a, b) => {
+        const dataA = MONSTER_DATA[a.monster_id]
+        const dataB = MONSTER_DATA[b.monster_id]
+
+        const rarityScore = (r?: string) => {
+            if (r === 'SSR') return 4
+            if (r === 'SR') return 3
+            if (r === 'R') return 2
+            return 1
+        }
+
+        switch (sortType) {
+            case 'LEVEL_DESC':
+                return (b.level || 1) - (a.level || 1)
+            case 'LEVEL_ASC':
+                return (a.level || 1) - (b.level || 1)
+            case 'RARITY_DESC':
+                const rA = rarityScore(dataA?.rarity)
+                const rB = rarityScore(dataB?.rarity)
+                if (rA !== rB) return rB - rA
+                // If same rarity, sort by level
+                return (b.level || 1) - (a.level || 1)
+            case 'NEWEST':
+                return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+            case 'OLDEST':
+                return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+            default:
+                return 0
+        }
+    })
 
     return (
         <div style={{
@@ -145,70 +221,113 @@ export default function MonsterFarm() {
             {/* Header */}
             <div style={{
                 display: 'flex',
-                flexDirection: isMobile ? 'column' : 'row',
-                justifyContent: 'space-between',
-                alignItems: isMobile ? 'stretch' : 'center',
-                background: 'rgba(0,0,0,0.6)',
-                padding: isMobile ? '12px' : '15px',
-                borderRadius: '12px',
-                backdropFilter: 'blur(4px)',
-                gap: isMobile ? '10px' : '0'
+                flexDirection: 'column', // Changed for filter bar
+                gap: '15px'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '15px' }}>
-                    <button
-                        onClick={handleBack}
-                        style={{
-                            background: '#4a3020',
-                            border: '2px solid #8a6040',
-                            color: 'white',
-                            padding: isMobile ? '8px 12px' : '8px 16px',
-                            minHeight: isMobile ? '40px' : 'auto',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontWeight: 'bold',
-                            fontSize: isMobile ? '13px' : '14px',
-                            whiteSpace: 'nowrap'
-                        }}
-                    >
-                        ← 나가기
-                    </button>
-                    <h2 style={{
-                        margin: 0,
-                        fontSize: isMobile ? '1.2em' : '1.5em',
-                        color: '#f0d090',
-                        whiteSpace: 'nowrap'
-                    }}>
-                        🏰 몬스터 농장
-                    </h2>
-                </div>
                 <div style={{
                     display: 'flex',
-                    gap: '10px',
-                    alignItems: 'center',
-                    justifyContent: isMobile ? 'space-between' : 'flex-end'
+                    flexDirection: isMobile ? 'column' : 'row',
+                    justifyContent: 'space-between',
+                    alignItems: isMobile ? 'stretch' : 'center',
+                    background: 'rgba(0,0,0,0.6)',
+                    padding: isMobile ? '12px' : '15px',
+                    borderRadius: '12px',
+                    backdropFilter: 'blur(4px)',
+                    gap: isMobile ? '10px' : '0'
                 }}>
-                    <div style={{ fontSize: isMobile ? '1em' : '1.2em', fontWeight: 'bold', color: '#facc15' }}>
-                        보유: {playerMonsters.length}마리
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '15px' }}>
+                        <button
+                            onClick={handleBack}
+                            style={{
+                                background: '#4a3020',
+                                border: '2px solid #8a6040',
+                                color: 'white',
+                                padding: isMobile ? '8px 12px' : '8px 16px',
+                                minHeight: isMobile ? '40px' : 'auto',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                fontSize: isMobile ? '13px' : '14px',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            ← 나가기
+                        </button>
+                        <h2 style={{
+                            margin: 0,
+                            fontSize: isMobile ? '1.2em' : '1.5em',
+                            color: '#f0d090',
+                            whiteSpace: 'nowrap'
+                        }}>
+                            🏰 몬스터 농장
+                        </h2>
                     </div>
-                    <button
-                        onClick={() => {
-                            setDecomposeMode(!decomposeMode)
-                            setSelectedMonsters(new Set())
-                        }}
-                        style={{
-                            background: decomposeMode ? '#dc2626' : '#059669',
-                            border: 'none',
-                            color: 'white',
-                            padding: isMobile ? '8px 12px' : '8px 16px',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontWeight: 'bold',
-                            fontSize: isMobile ? '13px' : '14px',
-                            minHeight: isMobile ? '40px' : 'auto'
-                        }}
-                    >
-                        {decomposeMode ? '❌ 종료' : '⚙️ 분해'}
-                    </button>
+                    <div style={{
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'center',
+                        justifyContent: isMobile ? 'space-between' : 'flex-end'
+                    }}>
+                        <div style={{ fontSize: isMobile ? '1em' : '1.2em', fontWeight: 'bold', color: '#facc15' }}>
+                            보유: {playerMonsters.length}마리
+                        </div>
+                        <button
+                            onClick={() => {
+                                setDecomposeMode(!decomposeMode)
+                                setSelectedMonsters(new Set())
+                            }}
+                            style={{
+                                background: decomposeMode ? '#dc2626' : '#059669',
+                                border: 'none',
+                                color: 'white',
+                                padding: isMobile ? '8px 12px' : '8px 16px',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold',
+                                fontSize: isMobile ? '13px' : '14px',
+                                minHeight: isMobile ? '40px' : 'auto'
+                            }}
+                        >
+                            {decomposeMode ? '❌ 종료' : '⚙️ 분해'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Filter & Sort Bar (Custom Select) */}
+                <div style={{
+                    display: 'flex', flexWrap: 'wrap', gap: '8px',
+                    background: 'rgba(15, 23, 42, 0.6)', padding: '10px', borderRadius: '12px', border: '1px solid #334155',
+                    alignItems: 'center'
+                }}>
+                    <CustomSelect
+                        value={filterElement} onChange={setFilterElement}
+                        options={[
+                            { value: 'ALL', label: '🔮 모든 속성' }, { value: 'FIRE', label: '🔥 불' }, { value: 'WATER', label: '💧 물' },
+                            { value: 'EARTH', label: '🌳 대지' }, { value: 'WIND', label: '🌪️ 바람' }, { value: 'LIGHT', label: '✨ 빛' }, { value: 'DARK', label: '� 어둠' }
+                        ]} style={{ flex: isMobile ? '1 1 45%' : '0 0 140px' }}
+                    />
+                    <CustomSelect
+                        value={filterRole} onChange={setFilterRole}
+                        options={[
+                            { value: 'ALL', label: '⚔️ 모든 역할' }, { value: 'TANK', label: '🛡️ 탱커' }, { value: 'DPS', label: '⚔️ 딜러' },
+                            { value: 'SUPPORT', label: '🌿 서포터' }, { value: 'HYBRID', label: '⚖️ 하이브리드' }, { value: 'PRODUCTION', label: '⚒️ 생산' }
+                        ]} style={{ flex: isMobile ? '1 1 45%' : '0 0 140px' }}
+                    />
+                    <CustomSelect
+                        value={filterRarity} onChange={setFilterRarity}
+                        options={[
+                            { value: 'ALL', label: '⭐ 모든 등급' }, { value: 'SSR', label: '🟨 SSR' }, { value: 'SR', label: '� SR' },
+                            { value: 'R', label: '🟦 R' }, { value: 'N', label: '⬜ N' }
+                        ]} style={{ flex: isMobile ? '1 1 45%' : '0 0 140px' }}
+                    />
+                    {!isMobile && <div style={{ width: '1px', height: '20px', background: '#475569', margin: '0 5px' }} />}
+                    <CustomSelect
+                        value={sortType} onChange={setSortType}
+                        options={[
+                            { value: 'LEVEL_DESC', label: '⬇️ 레벨 높은 순' }, { value: 'LEVEL_ASC', label: '⬆️ 레벨 낮은 순' },
+                            { value: 'RARITY_DESC', label: '⭐ 등급 높은 순' }, { value: 'NEWEST', label: '🕒 최신순' }, { value: 'OLDEST', label: '�️ 오래된 순' }
+                        ]} style={{ flex: isMobile ? '1 1 45%' : '0 0 160px' }}
+                    />
                 </div>
             </div>
 
@@ -280,7 +399,7 @@ export default function MonsterFarm() {
             )}
 
             {/* Monster Grid */}
-            {playerMonsters.length === 0 ? (
+            {filteredMonsters.length === 0 ? (
                 <div style={{
                     flex: 1,
                     display: 'flex',
@@ -291,19 +410,23 @@ export default function MonsterFarm() {
                     flexDirection: 'column',
                     gap: '20px'
                 }}>
-                    <div style={{ fontSize: '4em' }}>🥚</div>
-                    <p style={{ color: '#aaa', fontSize: '1.2em' }}>아직 보유한 몬스터가 없습니다.</p>
-                    <p style={{ color: '#888' }}>연금술 공방에서 몬스터를 소환해보세요!</p>
+                    <div style={{ fontSize: '4em' }}>🔍</div>
+                    <p style={{ color: '#aaa', fontSize: '1.2em' }}>
+                        {playerMonsters.length === 0 ? '아직 보유한 몬스터가 없습니다.' : '조건에 맞는 몬스터가 없습니다.'}
+                    </p>
+                    {playerMonsters.length === 0 && (
+                        <p style={{ color: '#888' }}>연금술 공방에서 몬스터를 소환해보세요!</p>
+                    )}
                 </div>
             ) : (
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: '20px',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                    gap: '15px',
                     padding: '10px',
                     overflowY: 'auto'
                 }}>
-                    {playerMonsters.map(monster => {
+                    {filteredMonsters.map(monster => {
                         const data = MONSTER_DATA[monster.monster_id]
                         if (!data) return null
 
@@ -311,152 +434,156 @@ export default function MonsterFarm() {
                         const isSelected = selectedMonsters.has(monster.id)
                         const canSelect = decomposeMode && !isLocked
 
+                        // Calculated Stats
+                        const level = monster.level || 1
+                        const rarity = (data.rarity || 'N') as RarityType
+                        const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
+                        const role = roleMap[data.role] || 'TANK'
+                        const monsterTypeId = monster.monster_id.replace(/^monster_/, '')
+                        const stats = calculateStats({ hp: data.hp, atk: data.attack, def: data.defense }, level, rarity)
+                        const expProgress = getExpProgress(monster.exp, level, rarity)
+                        const requiredExp = getRequiredExp(level, rarity)
+                        const maxLevel = getMaxLevel(rarity)
+                        const skills = getUnlockableSkills(monsterTypeId, role, level)
+                        const nextSkillLevel = getNextSkillUnlockLevel(monsterTypeId, role, level)
+
                         return (
                             <div key={monster.id} style={{
                                 background: isSelected ? 'rgba(220, 38, 38, 0.2)' : 'rgba(30, 41, 59, 0.8)',
                                 borderRadius: '12px',
                                 border: isSelected ? '2px solid #dc2626' : isLocked ? '2px solid #facc15' : '1px solid #334155',
-                                padding: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '15px',
-                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                cursor: canSelect ? 'pointer' : 'default',
-                                opacity: (decomposeMode && isLocked) ? 0.5 : 1
+                                padding: '15px',
+                                display: 'flex', flexDirection: 'column', gap: '12px',
+                                transition: 'transform 0.2s', cursor: canSelect ? 'pointer' : 'default',
+                                opacity: (decomposeMode && isLocked) ? 0.5 : 1,
+                                position: 'relative'
                             }}
                                 onClick={() => canSelect && toggleMonsterSelection(monster.id)}
-                                onMouseEnter={(e) => {
-                                    if (canSelect) {
-                                        e.currentTarget.style.transform = 'translateY(-5px)'
-                                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)'
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.transform = 'none'
-                                    e.currentTarget.style.boxShadow = 'none'
-                                }}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                {/* --- New Layout: Flex Row --- */}
+                                <div style={{ display: 'flex', gap: '15px' }}>
+                                    {/* Left: Image & Lock */}
                                     <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        background: '#0f172a',
-                                        borderRadius: '10px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '30px',
-                                        border: '2px solid #334155'
+                                        flexShrink: 0, width: '80px', height: '80px', background: '#0f172a',
+                                        borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: '40px', border: '2px solid #475569', position: 'relative'
                                     }}>
-                                        {data.iconUrl ? (
-                                            <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                        ) : (
-                                            data.emoji
-                                        )}
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                                        <button
-                                            onClick={(e) => handleLockToggle(monster.id, isLocked, e)}
-                                            style={{
-                                                background: 'transparent',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                fontSize: '1.5em',
-                                                padding: '5px'
-                                            }}
-                                            title={isLocked ? '잠금 해제' : '잠금'}
-                                        >
-                                            {isLocked ? '🔒' : '🔓'}
+                                        {data.iconUrl ? <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : data.emoji}
+                                        <button onClick={(e) => handleLockToggle(monster.id, isLocked, e)} style={{
+                                            position: 'absolute', top: '-5px', left: '-5px', background: 'rgba(0,0,0,0.7)', border: 'none',
+                                            borderRadius: '50%', width: '34px', height: '34px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            padding: 0
+                                        }}>
+                                            <img
+                                                src={isLocked ? '/assets/ui/locked.png' : '/assets/ui/unlocked.png'}
+                                                alt={isLocked ? 'Locked' : 'Unlocked'}
+                                                style={{
+                                                    width: '26px',
+                                                    height: '26px',
+                                                    objectFit: 'contain',
+                                                    // Use grayscale for locked state since we are using same image temporarily
+                                                    filter: isLocked
+                                                        ? 'grayscale(100%) brightness(70%) drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
+                                                        : 'drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
+                                                }}
+                                            />
                                         </button>
                                         <div style={{
-                                            background: '#3b82f6',
-                                            padding: '4px 10px',
-                                            borderRadius: '20px',
-                                            fontSize: '0.8em',
-                                            fontWeight: 'bold'
+                                            position: 'absolute', bottom: '-8px', width: '100%', textAlign: 'center'
                                         }}>
-                                            Lv.{monster.level}
+                                            <span style={{
+                                                background: '#3b82f6', color: 'white', fontSize: '11px', fontWeight: 'bold',
+                                                padding: '2px 8px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                                            }}>Lv.{level}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: Info */}
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                        <div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                                                <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1em' }}>{data.name}</h3>
+                                                <span style={{
+                                                    fontSize: '0.75em', padding: '2px 8px', borderRadius: '4px',
+                                                    background: '#475569', color: '#cbd5e1', whiteSpace: 'nowrap'
+                                                }}>{data.role}</span>
+                                            </div>
+                                            <p style={{ margin: 0, fontSize: '0.85em', color: '#94a3b8', lineHeight: '1.3', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                                {data.description}
+                                            </p>
+                                        </div>
+
+                                        {/* EXP Bar (Mini) */}
+                                        <div style={{ marginTop: 'auto' }} title={`EXP: ${monster.exp} / ${requiredExp}`}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b', marginBottom: '2px' }}>
+                                                <span>EXP</span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <span>{level >= maxLevel ? 'MAX' : `${Math.floor(expProgress)}%`}</span>
+                                                    {nextSkillLevel && <span style={{ color: '#fbbf24' }} title={`Lv.${nextSkillLevel}에서 스킬 해금`}>★</span>}
+                                                </div>
+                                            </div>
+                                            <div style={{ height: '4px', background: '#1e293b', borderRadius: '2px', overflow: 'hidden' }}>
+                                                <div style={{
+                                                    width: `${level >= maxLevel ? 100 : expProgress}%`, height: '100%',
+                                                    background: level >= maxLevel ? '#22c55e' : '#3b82f6'
+                                                }} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {decomposeMode && isSelected && (
                                     <div style={{
-                                        position: 'absolute',
-                                        top: '10px',
-                                        left: '10px',
-                                        background: '#dc2626',
-                                        color: 'white',
-                                        padding: '5px 10px',
-                                        borderRadius: '6px',
-                                        fontSize: '0.8em',
-                                        fontWeight: 'bold'
-                                    }}>
-                                        ✓ 선택됨
-                                    </div>
+                                        position: 'absolute', top: '10px', right: '10px', background: '#dc2626', color: 'white',
+                                        padding: '5px 10px', borderRadius: '6px', fontSize: '0.8em', fontWeight: 'bold', zIndex: 10
+                                    }}>✓ 선택됨</div>
                                 )}
 
-                                <div>
-                                    <h3 style={{ margin: '0 0 5px 0', color: '#f8fafc' }}>{data.name}</h3>
-                                    <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
-                                        <span style={{
-                                            fontSize: '0.7em',
-                                            padding: '2px 8px',
-                                            borderRadius: '4px',
-                                            background: '#475569',
-                                            color: '#cbd5e1'
-                                        }}>
-                                            {data.role}
-                                        </span>
-                                        <span style={{
-                                            fontSize: '0.7em',
-                                            padding: '2px 8px',
-                                            borderRadius: '4px',
-                                            background: '#334155',
-                                            color: '#94a3b8'
-                                        }}>
-                                            EXP: {monster.exp}
-                                        </span>
-                                    </div>
-                                    <p style={{ margin: 0, fontSize: '0.9em', color: '#94a3b8', lineHeight: '1.4' }}>
-                                        {data.description}
-                                    </p>
-                                </div>
-
+                                {/* Stats Grid */}
                                 <div style={{
-                                    background: 'rgba(0,0,0,0.2)',
-                                    borderRadius: '8px',
-                                    padding: '10px',
-                                    display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr 1fr',
-                                    gap: '5px',
-                                    textAlign: 'center'
+                                    display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '5px',
+                                    background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '8px', textAlign: 'center'
                                 }}>
-                                    {(() => {
-                                        const level = monster.level || 1
-                                        const multiplier = 1 + (level - 1) * 0.1
-                                        const hp = Math.floor(data.hp * multiplier)
-                                        const atk = Math.floor(data.attack * multiplier)
-                                        const def = Math.floor(data.defense * multiplier)
-
-                                        return (
-                                            <>
-                                                <div>
-                                                    <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>HP</div>
-                                                    <div style={{ color: '#ef4444', fontWeight: 'bold' }}>{hp}</div>
-                                                </div>
-                                                <div>
-                                                    <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>ATK</div>
-                                                    <div style={{ color: '#eab308', fontWeight: 'bold' }}>{atk}</div>
-                                                </div>
-                                                <div>
-                                                    <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>DEF</div>
-                                                    <div style={{ color: '#3b82f6', fontWeight: 'bold' }}>{def}</div>
-                                                </div>
-                                            </>
-                                        )
-                                    })()}
+                                    <div>
+                                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>HP</div>
+                                        <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '13px' }}>{stats.hp}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>ATK</div>
+                                        <div style={{ color: '#eab308', fontWeight: 'bold', fontSize: '13px' }}>{stats.atk}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>DEF</div>
+                                        <div style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '13px' }}>{stats.def}</div>
+                                    </div>
                                 </div>
+
+                                {/* Skills */}
+                                {skills.length > 0 && (
+                                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                                        {skills.slice(0, 3).map(skill => (
+                                            <div
+                                                key={skill.id}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setSelectedSkill(skill)
+                                                }}
+                                                style={{
+                                                    background: skill.type === 'ACTIVE' ? 'rgba(220, 38, 38, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                                                    border: `1px solid ${skill.type === 'ACTIVE' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+                                                    borderRadius: '4px', padding: '3px 6px', fontSize: '11px', color: '#e2e8f0',
+                                                    display: 'flex', alignItems: 'center', gap: '3px',
+                                                    cursor: 'pointer'
+                                                }}
+                                                title="스킬 상세 보기" // Simplified title
+                                            >
+                                                <span>{skill.emoji}</span>
+                                                <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80px' }}>{skill.name}</span>
+                                            </div>
+                                        ))}
+                                        {skills.length > 3 && <div style={{ fontSize: '11px', color: '#64748b', alignSelf: 'center' }}>+{skills.length - 3}</div>}
+                                    </div>
+                                )}
                             </div>
                         )
                     })}
@@ -546,6 +673,14 @@ export default function MonsterFarm() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Skill Detail Modal */}
+            {selectedSkill && (
+                <SkillDetailModal
+                    skill={selectedSkill}
+                    onClose={() => setSelectedSkill(null)}
+                />
             )}
         </div>
     )

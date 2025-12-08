@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { DUNGEONS } from '../../data/dungeonData'
@@ -7,6 +7,22 @@ import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
 
 export default function BattleView() {
     const { battleState, processTurn, endBattle, activeDungeon } = useGameStore()
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    const logContainerRef = useRef<HTMLDivElement>(null)
+
+    // Auto-scroll logs
+    useEffect(() => {
+        if (logContainerRef.current) {
+            logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight
+        }
+    }, [battleState?.logs, battleState?.result])
 
     // Auto-battle loop
     useEffect(() => {
@@ -28,23 +44,25 @@ export default function BattleView() {
 
     return (
         <div style={{
-            padding: '20px',
+            paddingLeft: '10px',
+            paddingRight: '10px',
             color: 'white',
             textAlign: 'center',
             display: 'flex',
             flexDirection: 'column',
             height: '100%'
         }}>
-            <div style={{ position: 'relative', marginBottom: '20px' }}>
-                <h2 style={{ color: '#ef4444', margin: 0 }}>⚔️ 전투 중! ⚔️</h2>
+            <div style={{
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                marginBottom: '10px',
+                height: '30px'
+            }}>
                 {!battleState.result && (
                     <button
                         onClick={endBattle}
                         style={{
-                            position: 'absolute',
-                            right: 0,
-                            top: '50%',
-                            transform: 'translateY(-50%)',
                             background: 'rgba(239, 68, 68, 0.2)',
                             border: '1px solid #ef4444',
                             color: '#fca5a5',
@@ -53,7 +71,10 @@ export default function BattleView() {
                             cursor: 'pointer',
                             fontSize: '14px',
                             fontWeight: 'bold',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.background = '#ef4444'
@@ -64,7 +85,8 @@ export default function BattleView() {
                             e.currentTarget.style.color = '#fca5a5'
                         }}
                     >
-                        🏳️ 전투 중단
+                        <span>🏳️</span>
+                        <span>전투 중단</span>
                     </button>
                 )}
             </div>
@@ -74,7 +96,7 @@ export default function BattleView() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                margin: '40px 0',
+                marginBottom: '20px',
                 padding: '0 20px'
             }}>
                 {/* Player */}
@@ -84,8 +106,8 @@ export default function BattleView() {
                             src={battleState.playerMonsterImage}
                             alt={monsterName}
                             style={{
-                                width: '80px',
-                                height: '80px',
+                                width: isMobile ? '120px' : '80px',
+                                height: isMobile ? '120px' : '80px',
                                 objectFit: 'contain',
                                 marginBottom: '10px',
                                 filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))'
@@ -111,6 +133,19 @@ export default function BattleView() {
                         }} />
                     </div>
                     <div>{battleState.playerHp} / {battleState.playerMaxHp}</div>
+
+                    {/* Player Stats */}
+                    <div style={{
+                        marginTop: '8px',
+                        fontSize: '12px',
+                        color: '#94a3b8',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>⚔️ {battleState.playerAtk}</span>
+                        <span>🛡️ {battleState.playerDef}</span>
+                    </div>
 
                     {/* Level and Exp Bar */}
                     {battleState.selectedMonsterId && (
@@ -156,8 +191,8 @@ export default function BattleView() {
                             src={battleState.enemyImage}
                             alt={enemy?.name}
                             style={{
-                                width: '80px',
-                                height: '80px',
+                                width: isMobile ? '120px' : '80px',
+                                height: isMobile ? '120px' : '80px',
                                 objectFit: 'contain',
                                 marginBottom: '10px',
                                 filter: 'drop-shadow(0 0 10px rgba(255,0,0,0.3))'
@@ -183,34 +218,91 @@ export default function BattleView() {
                         }} />
                     </div>
                     <div>{battleState.enemyHp} / {battleState.enemyMaxHp}</div>
+
+                    {/* Enemy Stats */}
+                    <div style={{
+                        marginTop: '8px',
+                        fontSize: '12px',
+                        color: '#94a3b8',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        gap: '8px'
+                    }}>
+                        <span>⚔️ {battleState.enemyAtk}</span>
+                        <span>🛡️ {battleState.enemyDef}</span>
+                    </div>
                 </div>
             </div>
 
             {/* Battle Logs */}
-            <div style={{
-                flex: 1,
-                minHeight: '120px',
-                maxHeight: '140px',
-                height: '140px',
-                background: 'rgba(0,0,0,0.3)',
-                borderRadius: '8px',
-                padding: '10px',
-                overflowY: 'auto',
-                marginBottom: '20px',
-                textAlign: 'left',
-                fontSize: '13px',
-                lineHeight: '1.5'
-            }}>
-                {battleState.logs.map((log, i) => (
-                    <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '2px 0', color: 'white' }}>
-                        {log}
-                    </div>
-                ))}
+            <div
+                ref={logContainerRef}
+                style={{
+                    flex: 1,
+                    minHeight: '120px',
+                    background: 'rgba(0,0,0,0.3)',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    overflowY: 'auto',
+                    marginBottom: '20px',
+                    textAlign: 'left',
+                    fontSize: '13px',
+                    lineHeight: '1.5'
+                }}>
+                {battleState.logs.map((log, i) => {
+                    // Normalize log to string just in case
+                    let logText = String(log)
+                    let color = 'white'
+
+                    if (logText.startsWith('[PLAYER]')) {
+                        color = '#e5e7eb' // Standard text
+                        logText = logText.replace('[PLAYER]', '')
+                    } else if (logText.startsWith('[ENEMY]')) {
+                        color = '#9ca3af' // Dimmed
+                        logText = logText.replace('[ENEMY]', '')
+                    }
+
+                    // Parsing logic for tags: {{RED|text}}, {{GREEN|text}} and {{R_RARITY|text}}
+                    const parts = logText.split(/({{RED\|[^}]+}}|{{GREEN\|[^}]+}}|{{R_[^|]+\|[^}]+}})/g)
+
+                    const getRarityColor = (rarity: string) => {
+                        switch (rarity) {
+                            case 'N': return '#e5e7eb'
+                            case 'R': return '#3b82f6'
+                            case 'SR': return '#a855f7'
+                            case 'SSR': return '#fbbf24'
+                            case 'UR': return '#ef4444'
+                            default: return '#e5e7eb'
+                        }
+                    }
+
+                    return (
+                        <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '2px 0', color }}>
+                            {parts.map((part, idx) => {
+                                if (part.startsWith('{{RED|') && part.endsWith('}}')) {
+                                    const content = part.slice(6, -2)
+                                    return <span key={idx} style={{ color: '#ef4444', fontWeight: 'bold' }}>{content}</span>
+                                } else if (part.startsWith('{{GREEN|') && part.endsWith('}}')) {
+                                    const content = part.slice(8, -2)
+                                    return <span key={idx} style={{ color: '#4ade80', fontWeight: 'bold' }}>{content}</span>
+                                } else if (part.startsWith('{{R_') && part.endsWith('}}')) {
+                                    const match = part.match(/{{R_([^|]+)\|([^}]+)}}/)
+                                    if (match) {
+                                        const rarity = match[1]
+                                        const content = match[2]
+                                        return <span key={idx} style={{ color: getRarityColor(rarity), fontWeight: 'bold' }}>{content}</span>
+                                    }
+                                }
+                                return <span key={idx}>{part}</span>
+                            })}
+                        </div>
+                    )
+                })}
             </div>
 
             {/* Result Actions */}
             {battleState.result && (
-                <div>
+                <div style={{ paddingBottom: '20px' }}>
                     <h3 style={{
                         color: battleState.result === 'victory' ? '#fbbf24' : '#94a3b8',
                         fontSize: '24px',
@@ -239,6 +331,19 @@ export default function BattleView() {
                                     const material = MATERIALS[materialId]
                                     const isImage = material?.iconUrl?.startsWith('/') || material?.iconUrl?.startsWith('http')
 
+                                    // Helper duplicated or moved to outer scope if preferred, but defining locally for safety in this snippet
+                                    const getRarityColorForReward = (rarity: string) => {
+                                        switch (rarity) {
+                                            case 'N': return '#e5e7eb'
+                                            case 'R': return '#3b82f6'
+                                            case 'SR': return '#a855f7'
+                                            case 'SSR': return '#fbbf24'
+                                            case 'UR': return '#ef4444'
+                                            default: return '#e5e7eb'
+                                        }
+                                    }
+                                    const rarityColor = getRarityColorForReward(material?.rarity || 'N')
+
                                     return (
                                         <div key={materialId} style={{
                                             display: 'flex',
@@ -257,7 +362,9 @@ export default function BattleView() {
                                             ) : (
                                                 <span style={{ fontSize: '16px' }}>{material?.iconUrl || '📦'}</span>
                                             )}
-                                            <span style={{ color: '#e5e7eb', fontSize: '12px', whiteSpace: 'nowrap' }}>{material?.name || materialId}</span>
+                                            <span style={{ color: rarityColor, fontSize: '12px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+                                                {material?.name || materialId}
+                                            </span>
                                             <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '12px' }}>x{quantity}</span>
                                         </div>
                                     )
@@ -281,6 +388,7 @@ export default function BattleView() {
                     >
                         돌아가기
                     </button>
+                    <div style={{ height: '20px' }} /> {/* Extra padding at bottom */}
                 </div>
             )}
         </div>

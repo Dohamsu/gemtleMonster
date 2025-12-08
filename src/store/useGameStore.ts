@@ -6,14 +6,22 @@ import { MATERIALS } from '../data/alchemyData'
 import { DUNGEONS } from '../data/dungeonData'
 import { GAME_MONSTERS as MONSTERS } from '../data/monsterData'
 import { ALCHEMY } from '../constants/game'
+import { calculateStats, type RarityType } from '../lib/monsterLevelUtils'
+import type { RoleType } from '../types/alchemy'
 
-interface ResourceAddition {
+import { getUnlockableSkills } from '../data/monsterSkillData'
+
+// ... existing imports ...
+
+
+export interface ResourceAddition {
     id: string
     resourceId: string
     amount: number
     timestamp: number
-    facilityKey?: string // e.g., "herb_farm-1"
+    facilityKey?: string
 }
+
 
 export type Tab = 'facilities' | 'shop' | 'alchemy'
 export type CanvasView = 'map' | 'alchemy_workshop' | 'shop' | 'monster_farm'
@@ -494,22 +502,78 @@ export const useGameStore = create<GameState>((set, get) => ({
 
             if (playerMonster) {
                 // Remove 'monster_' prefix from monster_id
-                const monsterKey = playerMonster.monster_id.replace('monster_', '')
-                const monsterData = MONSTERS[monsterKey]
+                const monsterRoleId = playerMonster.monster_id.replace(/^monster_/, '')
+                const monsterData = MONSTERS[monsterRoleId]
 
                 if (monsterData) {
-                    // Level scaling: 10% increase per level
                     const level = playerMonster.level || 1
-                    const multiplier = 1 + (level - 1) * 0.1
+                    const rarity = (monsterData.rarity || 'N') as RarityType
 
-                    playerHp = Math.floor(monsterData.baseStats.hp * multiplier)
-                    playerMaxHp = playerHp
-                    playerAtk = Math.floor(monsterData.baseStats.atk * multiplier)
-                    playerDef = Math.floor(monsterData.baseStats.def * multiplier)
-                    selectedMonsterType = monsterKey
+                    const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
+                    const role = roleMap[monsterData.role] || 'TANK'
+
+                    // New stat calculation using utility
+                    const stats = calculateStats(
+                        { hp: monsterData.baseStats.hp, atk: monsterData.baseStats.atk, def: monsterData.baseStats.def },
+                        level,
+                        rarity
+                    )
+
+                    playerHp = stats.hp
+                    playerMaxHp = stats.hp
+                    playerAtk = stats.atk
+                    playerDef = stats.def
+                    selectedMonsterType = monsterRoleId
 
                     monsterName = monsterData.name
                     playerMonsterImage = monsterData.iconUrl
+
+                    // Apply Passive Skills
+
+                    const skills = getUnlockableSkills(monsterRoleId, role, level)
+                    const passiveSkills = skills.filter((s: any) => s.type === 'PASSIVE')
+                    const initialLogs = [`${monsterName}이(가) ${enemy.name}과(와)의 전투를 시작했습니다!`]
+
+                    passiveSkills.forEach((skill: any) => {
+                        if (skill.effect.type === 'BUFF') {
+
+                            // Getting robust:
+                            if (skill.name.includes('방어') || skill.description.includes('방어')) {
+                                const defBonus = Math.floor(stats.def * (skill.effect.value / 100))
+                                playerDef += defBonus
+                                initialLogs.push(`${skill.emoji} [${skill.name}] 효과로 방어력이 ${defBonus} 증가했습니다.`)
+                            } else {
+                                const atkBonus = Math.floor(stats.atk * (skill.effect.value / 100))
+                                playerAtk += atkBonus
+                                initialLogs.push(`${skill.emoji} [${skill.name}] 효과로 공격력이 ${atkBonus} 증가했습니다.`)
+                            }
+                        }
+                    })
+
+                    set({
+                        activeDungeon: dungeonId,
+                        battleState: {
+                            isBattling: true,
+                            playerHp,
+                            playerMaxHp,
+                            enemyId,
+                            enemyHp: enemy.hp,
+                            enemyMaxHp: enemy.hp,
+                            enemyImage: MONSTERS[enemyId]?.iconUrl,
+                            turn: 1,
+                            logs: initialLogs,
+                            result: null,
+                            rewards: {},
+                            selectedMonsterId: playerMonsterId || null,
+                            selectedMonsterType,
+                            playerAtk,
+                            playerDef,
+                            playerMonsterImage,
+                            enemyAtk: enemy.attack,
+                            enemyDef: enemy.defense
+                        }
+                    })
+                    return // Important: Return here to avoid setting state twice or using old variables
                 }
             }
         }
@@ -533,7 +597,9 @@ export const useGameStore = create<GameState>((set, get) => ({
                 playerAtk,
 
                 playerDef,
-                playerMonsterImage
+                playerMonsterImage,
+                enemyAtk: enemy.attack,
+                enemyDef: enemy.defense
             }
         })
     },
@@ -541,27 +607,92 @@ export const useGameStore = create<GameState>((set, get) => ({
     processTurn: () => set((state) => {
         if (!state.battleState || state.battleState.result) return state
 
-        const { playerHp, enemyHp, logs, enemyId, playerAtk, playerDef, selectedMonsterType } = state.battleState
+        const { playerHp, enemyHp, logs, enemyId, playerAtk, playerDef, selectedMonsterType, playerMaxHp, selectedMonsterId, enemyAtk, enemyDef } = state.battleState
+        const { playerMonsters } = useAlchemyStore.getState()
 
-        // Get monster name for logs
+        // Monster & Skill Data Setup
+        const selectedMonster = selectedMonsterId ? playerMonsters.find(m => m.id === selectedMonsterId) : null
         const monsterData = selectedMonsterType ? MONSTERS[selectedMonsterType] : null
         const monsterName = monsterData?.name || '플레이어'
+
+        let currentLevel = 1
+        let role: RoleType = 'TANK'
+
+        if (selectedMonster && monsterData) {
+            currentLevel = selectedMonster.level || 1
+            const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
+            role = roleMap[monsterData.role] || 'TANK'
+        }
+
+        // Get Unlockable Skills (Need to import this dynamically or move logic here to avoid circular dependencies if possible, 
+        // but importing from data/monsterSkillData should be fine as it's just data/utils)
+
+        const skills = (selectedMonster && monsterData)
+            ? getUnlockableSkills(selectedMonsterType!, role, currentLevel)
+            : []
+
+        const activeSkills = skills.filter((s: any) => s.type === 'ACTIVE')
+
+        // Skill Activation Logic (30% Chance)
+        let skillLog: string | null = null
+        let skillBonusDmg = 0
+        let skillHeal = 0
+        let skillBuffValue = 0 // Adds to ATK for this turn
+
+        const canTriggerSkill = activeSkills.length > 0 && Math.random() < 0.3
+
+        if (canTriggerSkill) {
+            const skill = activeSkills[Math.floor(Math.random() * activeSkills.length)]
+
+            // Skill Effect
+            if (skill.effect.type === 'DAMAGE') {
+                // value is percentage (e.g., 120 -> 1.2x damage)
+                skillBonusDmg = Math.floor(playerAtk * (skill.effect.value / 100))
+                skillLog = `${skill.emoji} [${skill.name}] 발동! 강력한 일격!`
+            } else if (skill.effect.type === 'HEAL') {
+                // value is percentage of Max HP
+                skillHeal = Math.floor(playerMaxHp * (skill.effect.value / 100))
+                skillLog = `${skill.emoji} [${skill.name}] 발동! 체력을 ${skillHeal} 회복했습니다.`
+            } else if (skill.effect.type === 'BUFF') {
+                // value is percentage increase
+                skillBuffValue = Math.floor(playerAtk * (skill.effect.value / 100))
+                skillLog = `${skill.emoji} [${skill.name}] 발동! 공격력이 증가했습니다!`
+            } else if (skill.effect.type === 'DEBUFF') {
+                // Simplified: Just bonus damage for now as debuffs need state
+                skillBonusDmg = Math.floor(playerAtk * 0.5)
+                skillLog = `${skill.emoji} [${skill.name}] 발동! 적을 약화시킵니다!`
+            } else if (skill.effect.type === 'SPECIAL') {
+                skillBonusDmg = Math.floor(playerAtk * 0.3)
+                skillLog = `${skill.emoji} [${skill.name}] 발동! 특수 효과!`
+            }
+        }
 
         // Get enemy data for defense
         const dungeon = DUNGEONS.find(d => d.id === state.activeDungeon)
         const enemy = dungeon?.enemies.find(e => e.id === enemyId)
-        const enemyDef = enemy?.defense || 0
+        // enemyDef is now from state (real-time)
+        // const enemyDef = enemy?.defense || 0
 
-        // Calculate damage with stats and randomness
-        const basePlayerDmg = playerAtk + Math.floor(Math.random() * 6) - 3 // atk ± 3
+        // Calculate Damage
+        // Player Turn
+        const finalPlayerAtk = playerAtk + skillBuffValue
+        const basePlayerDmg = finalPlayerAtk + Math.floor(Math.random() * 6) - 3 + skillBonusDmg
         const playerDmg = Math.max(1, basePlayerDmg - enemyDef) // Apply enemy defense
 
-        const baseEnemyDmg = (enemy?.attack || 5) + Math.floor(Math.random() * 6) - 3
+        // Enemy Turn
+        const baseEnemyDmg = enemyAtk + Math.floor(Math.random() * 6) - 3
         const enemyDmg = Math.max(1, baseEnemyDmg - playerDef) // Apply player defense
 
+        // Apply Results
         const newEnemyHp = Math.max(0, enemyHp - playerDmg)
-        const newPlayerHp = Math.max(0, playerHp - enemyDmg)
-        const newLogs = [...logs, `${monsterName}이(가) ${playerDmg}의 피해를 입혔습니다!`, `${enemy?.name || '적'}이(가) ${enemyDmg}의 피해를 입혔습니다!`]
+        let newPlayerHp = Math.max(0, playerHp - enemyDmg + skillHeal)
+        newPlayerHp = Math.min(newPlayerHp, playerMaxHp) // Cap at Max HP
+
+        const newLogs = [...logs]
+        if (skillLog) newLogs.push(skillLog)
+
+        newLogs.push(`[PLAYER]${monsterName}이(가) {{RED|${playerDmg}}}의 피해를 입혔습니다!`)
+        newLogs.push(`[ENEMY]${enemy?.name || '적'}이(가) {{RED|${enemyDmg}}}의 피해를 입혔습니다!`)
 
         let result: 'victory' | 'defeat' | null = null
         let rewards: Record<string, number> = {}
@@ -570,9 +701,6 @@ export const useGameStore = create<GameState>((set, get) => ({
             result = 'victory'
 
             // Calculate drops on victory
-            const dungeon = DUNGEONS.find(d => d.id === state.activeDungeon)
-            const enemy = dungeon?.enemies.find(e => e.id === enemyId)
-
             if (enemy) {
                 // Drop Logic
                 for (const drop of enemy.drops) {
@@ -586,7 +714,6 @@ export const useGameStore = create<GameState>((set, get) => ({
                 }
 
                 // Monster EXP Logic
-                const { selectedMonsterId } = state.battleState
                 const userId = useAlchemyStore.getState().userId
 
                 if (selectedMonsterId && userId) {
@@ -595,29 +722,41 @@ export const useGameStore = create<GameState>((set, get) => ({
 
                     if (playerMonster) {
                         const earnedExp = enemy.exp
-                        newLogs.push(`획득 경험치: ${earnedExp} XP`)
-
+                        if (earnedExp > 0) {
+                            newLogs.push(`획득 경험치: {{GREEN|${earnedExp} XP}}`)
+                        }
                         // Update DB and Local State (Async)
                         import('../lib/monsterApi').then(async ({ updateMonsterExp }) => {
                             try {
-                                const { level, leveledUp } = await updateMonsterExp(
+                                const selectedMonsterType = useGameStore.getState().battleState?.selectedMonsterType
+                                const monsterData = selectedMonsterType ? MONSTERS[selectedMonsterType] : null
+                                const rarity = (monsterData?.rarity || 'N') as RarityType
+                                const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
+                                const role = monsterData ? (roleMap[monsterData.role] || 'TANK') : 'TANK'
+
+                                // Fix: Pass explicit undefined for level/exp since we are just adding exp
+                                const { level, leveledUp, newSkills } = await updateMonsterExp(
                                     userId,
                                     selectedMonsterId,
                                     playerMonster.level,
                                     playerMonster.exp,
-                                    earnedExp
+                                    earnedExp,
+                                    rarity,
+                                    selectedMonsterType || undefined,
+                                    role
                                 )
 
                                 if (leveledUp) {
-                                    // Use a callback or store action to push log if possible, 
-                                    // but state might have changed. Ideally logs should be updated here.
-                                    // For now, we will just update the playerMonsters list.
                                     useGameStore.setState(s => {
                                         if (s.battleState && s.battleState.isBattling) {
+                                            const newLogs = [...s.battleState.logs, `🎉 레벨 업! Lv.${level} 달성!`]
+                                            if (newSkills && newSkills.length > 0) {
+                                                newLogs.push(`✨ 새로운 스킬을 배웠습니다!`)
+                                            }
                                             return {
                                                 battleState: {
                                                     ...s.battleState,
-                                                    logs: [...s.battleState.logs, `🎉 레벨 업! Lv.${level} 달성!`]
+                                                    logs: newLogs
                                                 }
                                             }
                                         }
@@ -638,10 +777,14 @@ export const useGameStore = create<GameState>((set, get) => ({
                 if (Object.keys(rewards).length > 0) {
                     const dropMessages = Object.entries(rewards)
                         .map(([id, qty]) => {
-                            const materialName = MATERIALS[id]?.name || id
-                            return `${materialName} x${qty}`
+                            const material = MATERIALS[id]
+                            const materialName = material?.name || id
+                            const rarity = material?.rarity || 'N'
+                            return `{{R_${rarity}|${materialName}}} x${qty}`
                         })
                         .join(', ')
+
+                    // Fix: Add drop message properly
                     newLogs.push(`전리품: ${dropMessages}`)
                 }
             }
@@ -650,7 +793,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
 
         if (result) {
-            newLogs.push(result === 'victory' ? '승리했습니다!' : '패배했습니다...')
+            newLogs.push(result === 'victory' ? '🔥🔥 승리했습니다! 🔥🔥' : '💀 패배했습니다... 💀')
         }
 
         return {
@@ -658,7 +801,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 ...state.battleState,
                 playerHp: newPlayerHp,
                 enemyHp: newEnemyHp,
-                logs: newLogs.slice(-6), // Keep last 6 logs to show drops
+                logs: newLogs.slice(-50), // Keep last 50 logs to show more history
                 turn: state.battleState.turn + 1,
                 result,
                 rewards

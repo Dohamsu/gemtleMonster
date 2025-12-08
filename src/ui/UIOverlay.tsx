@@ -5,6 +5,7 @@ import { useBatchSync } from '../hooks/useBatchSync'
 import { useEventBasedSync } from '../hooks/useEventBasedSync'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { isMobileView } from '../utils/responsiveUtils'
+import { supabase } from '../lib/supabase'
 import IdleFacilityList from './idle/IdleFacilityList'
 import AlchemyLayout from './alchemy/AlchemyLayout'
 
@@ -12,6 +13,7 @@ export default function UIOverlay() {
     const { user, loading: authLoading } = useAuth()
     const { activeTab, setActiveTab, resources } = useGameStore()
     const [isMobile, setIsMobile] = useState(isMobileView())
+    const [nickname, setNickname] = useState<string | null>(null)
 
     // Phase 1: 배치 동기화 시스템
     const { queueUpdate, queueFacilityUpdate, forceSyncNow } = useBatchSync(user?.id, {
@@ -56,6 +58,35 @@ export default function UIOverlay() {
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
     }, [])
+
+    // 닉네임 가져오기
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (!user?.id) return
+
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('nickname')
+                    .eq('id', user.id)
+                    .single()
+
+                if (data?.nickname) {
+                    setNickname(data.nickname)
+                } else if (!error) {
+                    // 프로필이 없는 경우 (기존 유저 등), 트리거가 동작하지 않았거나 타이밍 이슈일 수 있음
+                    // 여기서 명시적으로 생성 시도하면 좋지만, 일단은 ID 표시로 대체하거나 
+                    // 다음 로드 시 트리거에 의해 생성되길 기대함.
+                    // (migration 스크립트에서 기존 유저 backfill 함)
+                }
+            } catch (error) {
+                console.error('Failed to fetch profile:', error)
+            }
+        }
+
+        fetchProfile()
+    }, [user?.id])
+
 
     // 콜백 등록 (user?.id 변경 시에만)
     useEffect(() => {
@@ -107,17 +138,22 @@ export default function UIOverlay() {
                 marginBottom: isMobile ? '10px' : '15px',
                 boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
             }}>
-                <h2 style={{
-                    margin: '0 0 8px 0',
-                    color: '#fff',
-                    fontSize: isMobile ? '1.1em' : '1.2em'
-                }}>GemtleMonster</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <h2 style={{
+                        margin: 0,
+                        color: '#fff',
+                        fontSize: isMobile ? '1.1em' : '1.2em'
+                    }}>GemtleMonster</h2>
+                    {/* Logout Button (Optional) */}
+                </div>
+
                 <div style={{
-                    fontSize: isMobile ? '0.8em' : '0.85em',
-                    color: '#aaa',
-                    marginBottom: isMobile ? '8px' : '10px'
+                    fontSize: isMobile ? '0.9em' : '1em',
+                    color: '#e2e8f0', // 밝은 회색으로 변경
+                    marginBottom: isMobile ? '8px' : '10px',
+                    fontWeight: 'bold'
                 }}>
-                    ID: {user?.id.slice(0, 8)}...
+                    {nickname ? `👋 ${nickname}` : `ID: ${user?.id.slice(0, 8)}...`}
                 </div>
                 <div style={{
                     fontSize: isMobile ? '0.9em' : '0.95em',

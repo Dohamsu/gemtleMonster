@@ -19,6 +19,8 @@ export interface BattleState {
   playerAtk: number
   playerDef: number
   playerMonsterImage?: string
+  enemyAtk: number
+  enemyDef: number
 }
 
 export interface Enemy {

@@ -136,45 +136,74 @@ export async function toggleMonsterLock(
 }
 
 /**
- * 몬스터 경험치 업데이트
+ * 몬스터 경험치 업데이트 (개선된 레벨링 시스템)
  *
  * @param userId - 사용자 ID
  * @param monsterId - 몬스터 ID (UUID)
  * @param currentLevel - 현재 레벨
  * @param currentExp - 현재 경험치
  * @param addedExp - 추가할 경험치
- * @returns 업데이트된 레벨과 경험치
+ * @param rarity - 몬스터 레어도 (N, R, SR, SSR)
+ * @param monsterTypeId - 몬스터 타입 ID (스킬 해금용)
+ * @param role - 몬스터 역할 (스킬 해금용)
+ * @returns 업데이트된 레벨, 경험치, 레벨업 여부, 새로 해금된 스킬
  */
 export async function updateMonsterExp(
   userId: string,
   monsterId: string,
   currentLevel: number,
   currentExp: number,
-  addedExp: number
-): Promise<{ level: number; exp: number; leveledUp: boolean }> {
-  let newLevel = currentLevel
-  let newExp = currentExp + addedExp
-  let leveledUp = false
+  addedExp: number,
+  rarity: 'N' | 'R' | 'SR' | 'SSR' = 'N',
+  monsterTypeId?: string,
+  role?: 'TANK' | 'DPS' | 'SUPPORT' | 'HYBRID' | 'PRODUCTION'
+): Promise<{
+  level: number
+  exp: number
+  leveledUp: boolean
+  levelsGained: number
+  newSkills: string[]
+}> {
+  // 레벨업 유틸리티 동적 임포트 (순환 참조 방지)
+  const { processLevelUp } = await import('./monsterLevelUtils')
+  const { getNewlyUnlockedSkills } = await import('../data/monsterSkillData')
 
-  // 간단한 레벨업 로직 loop (한 번에 여러 레벨업 가능)
-  // 필요 경험치 = 레벨 * 100
-  while (true) {
-    const requiredExp = newLevel * 100
-    if (newExp >= requiredExp) {
-      newExp -= requiredExp
-      newLevel++
-      leveledUp = true
-    } else {
-      break
+  // 지수형 경험치 곡선 적용된 레벨업 처리
+  const result = processLevelUp(currentLevel, currentExp, addedExp, rarity)
+  const { newLevel, newExp, leveledUp, levelsGained } = result
+
+  // 새로 해금된 스킬 수집
+  const newSkills: string[] = []
+  if (leveledUp && monsterTypeId && role) {
+    for (let lv = currentLevel + 1; lv <= newLevel; lv++) {
+      const skills = getNewlyUnlockedSkills(monsterTypeId, role, lv)
+      newSkills.push(...skills.map(s => s.id))
     }
+  }
+
+  // DB 업데이트 (스킬 해금 포함)
+  const updateData: Record<string, unknown> = {
+    level: newLevel,
+    exp: newExp
+  }
+
+  // 새 스킬이 있으면 unlocked_skills 배열에 추가
+  if (newSkills.length > 0) {
+    const { data: currentData } = await supabase
+      .from('player_monster')
+      .select('unlocked_skills')
+      .eq('id', monsterId)
+      .eq('user_id', userId)
+      .single()
+
+    const existingSkills = currentData?.unlocked_skills || []
+    const allSkills = [...new Set([...existingSkills, ...newSkills])]
+    updateData.unlocked_skills = allSkills
   }
 
   const { error } = await supabase
     .from('player_monster')
-    .update({
-      level: newLevel,
-      exp: newExp
-    })
+    .update(updateData)
     .eq('id', monsterId)
     .eq('user_id', userId)
 
@@ -183,5 +212,13 @@ export async function updateMonsterExp(
     throw error
   }
 
-  return { level: newLevel, exp: newExp, leveledUp }
+  if (leveledUp) {
+    console.log(`🎉 레벨업! Lv.${currentLevel} → Lv.${newLevel} (+${levelsGained})`)
+    if (newSkills.length > 0) {
+      console.log(`✨ 새 스킬 해금: ${newSkills.join(', ')}`)
+    }
+  }
+
+  return { level: newLevel, exp: newExp, leveledUp, levelsGained, newSkills }
 }
+

@@ -39,7 +39,7 @@ export const SLIME_DUNGEON: Dungeon = {
             hp: 30,
             attack: 5,
             defense: 1,
-            exp: 10,
+            exp: 10000,
             drops: [
                 { materialId: 'slime_fluid', chance: 80, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'herb_common', chance: 40, minQuantity: 1, maxQuantity: 1 },

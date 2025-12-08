@@ -15,6 +15,13 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
     const { playerMonsters, loadPlayerMonsters, userId } = useAlchemyStore()
     const [selectedMonsterId, setSelectedMonsterId] = useState<string | null>(null)
     const [selectedDungeonId, setSelectedDungeonId] = useState<string | null>(null)
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768)
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
 
     // Load monsters when modal opens
     useEffect(() => {
@@ -56,15 +63,16 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 2000,
-            padding: '20px'
+            padding: '0px'
         }}>
             <div style={{
-                width: '90%',
+                width: isMobile ? '100%' : '90%',
+                height: isMobile ? '100%' : 'auto',
                 maxWidth: '800px',
-                maxHeight: '90vh',
+                maxHeight: isMobile ? '100%' : '95vh',
                 background: '#1e293b',
-                borderRadius: '16px',
-                border: '2px solid #475569',
+                borderRadius: isMobile ? '0' : '16px',
+                border: isMobile ? 'none' : '2px solid #475569',
                 display: 'flex',
                 flexDirection: 'column',
                 boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
