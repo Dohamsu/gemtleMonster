@@ -7,6 +7,7 @@ import { initializePlayer } from './lib/initializePlayer'
 import { useGameStore } from './store/useGameStore'
 import { useResources } from './hooks/useResources'
 import { useFacilities } from './hooks/useFacilities'
+import InstallPrompt from './ui/common/InstallPrompt'
 
 function App() {
     const { user } = useAuth()
@@ -234,6 +235,8 @@ function App() {
             }}>
                 <UIOverlay />
             </div>
+
+            <InstallPrompt />
         </div>
     )
 }
