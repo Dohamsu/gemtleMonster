@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { supabase } from '../lib/supabase'
 import { MATERIALS } from '../data/alchemyData'
 

@@ -1,4 +1,4 @@
-
+/* eslint-disable no-console */
 import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 import { ROLE_SKILLS, MONSTER_UNIQUE_SKILLS } from './monsterSkillData'

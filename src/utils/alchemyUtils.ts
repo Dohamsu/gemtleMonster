@@ -2,6 +2,7 @@
  * Alchemy 유틸리티 함수
  */
 
+/* eslint-disable no-console */
 import { ALCHEMY, RARITY_EXP } from '../constants/game'
 import { MATERIALS } from '../data/alchemyData'
 

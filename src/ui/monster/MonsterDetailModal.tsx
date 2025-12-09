@@ -209,7 +209,7 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                             background: '#0f172a', padding: '15px', borderRadius: '12px',
                             color: '#cbd5e1', fontSize: '0.9em', lineHeight: '1.6', fontStyle: 'italic'
                         }}>
-                            "{data.description}"
+                            &quot;{data.description}&quot;
                         </div>
                     </div>
 

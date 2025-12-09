@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Alchemy API
  * 연금술 관련 데이터베이스 작업 및 통합 API

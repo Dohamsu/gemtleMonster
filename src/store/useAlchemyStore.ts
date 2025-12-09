@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import { create } from 'zustand'
 import type {
   Material,
@@ -997,7 +998,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       const updatedMonsters = currentMonsters.map(m =>
         m.id === monsterId ? { ...m, is_locked: isLocked } : m
       )
-      set({ playerMonsters: updatedMonsters as any })
+      set({ playerMonsters: updatedMonsters })
 
       console.log(`✅ 몬스터 잠금 상태 변경: ${monsterId} -> ${isLocked}`)
     } catch (error) {

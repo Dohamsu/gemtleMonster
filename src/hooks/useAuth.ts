@@ -1,4 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 

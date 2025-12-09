@@ -14,7 +14,7 @@ export default function InstallPrompt() {
     useEffect(() => {
         // 1. 이미 설치되었는지 확인 (Standalone 모드)
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-            (window.navigator as any).standalone === true
+            (window.navigator as unknown as { standalone?: boolean }).standalone === true
 
         if (isStandalone) {
             return
@@ -37,7 +37,7 @@ export default function InstallPrompt() {
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 
         // 4. iOS 감지 (단순 User Agent 체크)
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream
         if (isIOS) {
             setIsVisible(true)
             setShowIOSPrompt(true)
@@ -126,7 +126,7 @@ export default function InstallPrompt() {
                     lineHeight: '1.4'
                 }}>
                     하단의 <span style={{ fontSize: '16px' }}>📤</span> 공유 버튼을 누르고<br />
-                    <strong>'홈 화면에 추가'</strong>를 선택하세요.
+                    <strong>&apos;홈 화면에 추가&apos;</strong>를 선택하세요.
                 </div>
             ) : (
                 <button

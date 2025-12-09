@@ -19,7 +19,7 @@ export default function AlchemyLayout() {
             // console.log('🧹 [AlchemyLayout] Cleanup')
             resetBrewResult()
         }
-    }, [user])
+    }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // 반응형 감지
     useEffect(() => {

@@ -1,4 +1,5 @@
-import type { Recipe, RecipeCondition } from '../lib/alchemyApi'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Recipe, RecipeCondition } from '../types'
 import type { AlchemyContext } from '../types/alchemy'
 
 // ==========================================

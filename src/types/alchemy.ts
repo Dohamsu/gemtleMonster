@@ -102,11 +102,11 @@ export interface RecipeCondition {
     condition_type?: RecipeConditionType | string
     type?: RecipeConditionType // Legacy client format
     conditionType?: RecipeConditionType // Seed data format
-    value?: any // Legacy single-field payloads
+    value?: unknown // Legacy single-field payloads
     value_int?: number
     value_float?: number
     value_text?: string
-    value_json?: any
+    value_json?: unknown
     value_bool?: boolean
     description?: string // For UI hint (e.g., "비 오는 날")
 }

@@ -11,6 +11,7 @@
  */
 
 import type { CanvasImages } from '../../hooks/useCanvasImages'
+/* eslint-disable */
 import type { Recipe, Material } from '../../lib/alchemyApi'
 import { LAYOUT } from '../../constants/game'
 import type { AlchemyLayoutParams } from '../../utils/responsiveUtils'

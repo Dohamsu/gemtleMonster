@@ -79,7 +79,7 @@ interface DBRecipeSeed {
         timeStart?: string
         timeEnd?: string
         languageCode?: string
-        value_json?: any
+        value_json?: unknown
         value_text?: string
     }>
 }

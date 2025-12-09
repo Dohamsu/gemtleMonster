@@ -10,6 +10,7 @@ export interface FacilityLevel {
         intervalSeconds: number
         bundlesPerTick: number
         dropRates: Record<string, number>
+        capacity?: number
     }
     upgradeCost: Record<string, number>
 }

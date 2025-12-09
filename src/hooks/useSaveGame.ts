@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useGameStore } from '../store/useGameStore'

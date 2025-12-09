@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { supabase } from './supabase'
 
 export async function initializePlayer(userId: string) {

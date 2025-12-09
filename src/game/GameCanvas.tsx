@@ -237,7 +237,8 @@ export default function GameCanvas() {
         brewStartTime,
         brewProgress,
         playerAlchemy,
-        materialScrollOffset
+        materialScrollOffset,
+        mobileTab
     ])
 
     // Animation frame loop

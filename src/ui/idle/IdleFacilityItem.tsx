@@ -39,7 +39,7 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
     const [collectedResources, setCollectedResources] = useState<string[]>([])
 
     // Collection progress
-    const intervalSeconds = (levelData?.stats as any)?.intervalSeconds || 1
+    const intervalSeconds = levelData?.stats.intervalSeconds || 1
     // Use unique key for each level
     const progress = useCollectionProgress(
         facility.id,
@@ -163,7 +163,7 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
 
             {/* Collection Progress Bar */}
             {/* Collection Progress Bar - Only show if intervalSeconds exists */}
-            {(levelData.stats as any).intervalSeconds && (
+            {levelData.stats.intervalSeconds && (
                 <div style={{ marginTop: '8px', marginBottom: '8px' }}>
                     <div style={{
                         width: '100%',
@@ -191,18 +191,18 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                 </div>
             )}
 
-            {(levelData.stats as any).dropRates && (
+            {levelData.stats.dropRates && (
                 <div style={{ fontSize: '0.9em', color: '#aaa', margin: '5px 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <span>생산:</span>
-                    {Object.keys((levelData.stats as any).dropRates).map(key => (
+                    {Object.keys(levelData.stats.dropRates).map(key => (
                         <ResourceIcon key={key} resourceId={key} size={18} />
                     ))}
                 </div>
             )}
 
-            {(levelData.stats as any).capacity && (
+            {levelData.stats.capacity && (
                 <div style={{ fontSize: '0.9em', color: '#aaa', margin: '5px 0' }}>
-                    <span>수용량: {(levelData.stats as any).capacity}마리</span>
+                    <span>수용량: {levelData.stats.capacity}마리</span>
                 </div>
             )}
 

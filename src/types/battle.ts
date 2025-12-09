@@ -1,6 +1,7 @@
 /**
  * Battle (전투) 관련 타입 정의
  */
+import type { StatusEffect } from '../lib/battleUtils'
 
 export interface BattleState {
   isBattling: boolean
@@ -19,12 +20,12 @@ export interface BattleState {
   playerAtk: number
   playerDef: number
   playerMonsterImage?: string
-  playerElement?: string // New
-  playerStatusEffects?: any[] // Will be properly typed in store usage or by importing StatusEffect type if we move it to shared types
+  playerElement?: string
+  playerStatusEffects?: StatusEffect[]
   enemyAtk: number
   enemyDef: number
-  enemyElement?: string // New
-  enemyStatusEffects?: any[] // New
+  enemyElement?: string
+  enemyStatusEffects?: StatusEffect[]
 
   // Visual Queues
   floatingTexts: { id: string; x: number; y: number; text: string; color: string; life: number; target?: 'PLAYER' | 'ENEMY' }[]
@@ -53,5 +54,5 @@ export interface Dungeon {
   description: string
   enemies: Enemy[]
   requiredLevel: number
-  unlockConditions?: any[]
+  unlockConditions?: unknown[]
 }

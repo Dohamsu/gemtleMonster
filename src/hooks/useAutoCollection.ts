@@ -43,6 +43,48 @@ export function useAutoCollection(userId: string | undefined) {
         if (!userId) return
         if (canvasView === 'shop') return
 
+        // Helper to process drops
+        const collectFromFacility = (
+            _facilityId: string,
+            _level: number,
+            stats: FacilityLevelStats,
+            facilityKey: string,
+            now: number
+        ) => {
+            const drops: Record<string, number> = {}
+            let hasDrops = false
+
+            if (stats.dropRates) {
+                const random = Math.random()
+                let cumulativeProbability = 0
+
+                for (const [resource, rate] of Object.entries(stats.dropRates)) {
+                    cumulativeProbability += rate
+                    if (random < cumulativeProbability) {
+                        drops[resource] = stats.bundlesPerTick
+                        hasDrops = true
+                        break
+                    }
+                }
+            }
+
+            if (hasDrops) {
+                // 1. Update GameStore (UI)
+                addResources(drops, facilityKey)
+
+                // 2. Update AlchemyStore (Data)
+                Object.entries(drops).forEach(([materialId, amount]) => {
+                    useAlchemyStore.getState().addMaterial(materialId, amount)
+                })
+            } else {
+                // Missed drop
+                addResources({ 'empty': 1 }, facilityKey)
+            }
+
+            // Update timestamp
+            setLastCollectedAt(facilityKey, now)
+        }
+
         // Check every 1 second
         const tickRate = 1000
 
@@ -55,8 +97,6 @@ export function useAutoCollection(userId: string | undefined) {
                 if (currentLevel <= 0) return
 
                 // Check all active levels up to current level
-                // (Assumes production stacks, or we just check the highest? 
-                // The original code looped 1..currentLevel, implying stacking production)
                 for (let level = 1; level <= currentLevel; level++) {
                     const stats = currentStatsMap[facilityId]?.[level]
                     if (!stats || !stats.intervalSeconds) continue
@@ -66,10 +106,6 @@ export function useAutoCollection(userId: string | undefined) {
                     const elapsed = now - lastTime
                     const intervalMs = stats.intervalSeconds * 1000
 
-                    // Should collect?
-                    // We assume initial lastCollectedAt is 0, so it collects immediately on first load,
-                    // or we could sync it with server time.
-                    // For now, simple delta check.
                     if (elapsed >= intervalMs) {
                         collectFromFacility(facilityId, level, stats, facilityKey, now)
                     }
@@ -78,47 +114,5 @@ export function useAutoCollection(userId: string | undefined) {
         }, tickRate)
 
         return () => clearInterval(timer)
-    }, [userId, facilities, canvasView, lastCollectedAt, addResources, setLastCollectedAt]) // Dependencies needed
-
-    // Helper to process drops
-    const collectFromFacility = (
-        _facilityId: string,
-        _level: number,
-        stats: FacilityLevelStats,
-        facilityKey: string,
-        now: number
-    ) => {
-        const drops: Record<string, number> = {}
-        let hasDrops = false
-
-        if (stats.dropRates) {
-            const random = Math.random()
-            let cumulativeProbability = 0
-
-            for (const [resource, rate] of Object.entries(stats.dropRates)) {
-                cumulativeProbability += rate
-                if (random < cumulativeProbability) {
-                    drops[resource] = stats.bundlesPerTick
-                    hasDrops = true
-                    break
-                }
-            }
-        }
-
-        if (hasDrops) {
-            // 1. Update GameStore (UI)
-            addResources(drops, facilityKey)
-
-            // 2. Update AlchemyStore (Data)
-            Object.entries(drops).forEach(([materialId, amount]) => {
-                useAlchemyStore.getState().addMaterial(materialId, amount)
-            })
-        } else {
-            // Missed drop
-            addResources({ 'empty': 1 }, facilityKey)
-        }
-
-        // Update timestamp
-        setLastCollectedAt(facilityKey, now)
-    }
+    }, [userId, facilities, canvasView, lastCollectedAt, addResources, setLastCollectedAt])
 }

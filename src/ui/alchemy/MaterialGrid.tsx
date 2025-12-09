@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+/* eslint-disable no-console */
 import type { Material } from '../../lib/alchemyApi'
 import { isMobileView } from '../../utils/responsiveUtils'
 import { getFamilyColor, getRarityColor } from '../../utils/materialUtils'

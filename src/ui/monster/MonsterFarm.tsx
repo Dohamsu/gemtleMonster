@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useEffect, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
@@ -205,12 +206,13 @@ export default function MonsterFarm() {
                 return (b.level || 1) - (a.level || 1)
             case 'LEVEL_ASC':
                 return (a.level || 1) - (b.level || 1)
-            case 'RARITY_DESC':
+            case 'RARITY_DESC': {
                 const rA = rarityScore(dataA?.rarity)
                 const rB = rarityScore(dataB?.rarity)
                 if (rA !== rB) return rB - rA
                 // If same rarity, sort by level
                 return (b.level || 1) - (a.level || 1)
+            }
             case 'NEWEST':
                 return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
             case 'OLDEST':

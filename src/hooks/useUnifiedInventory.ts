@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 

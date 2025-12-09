@@ -22,7 +22,7 @@ export interface RecipeCondition {
   value_int?: number
   value_float?: number
   value_text?: string
-  value_json?: any
+  value_json?: unknown
   value_bool?: boolean
   description?: string
   created_at?: string

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Material API
  * 재료 관련 데이터베이스 작업

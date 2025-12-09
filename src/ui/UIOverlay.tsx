@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useGameStore } from '../store/useGameStore'
@@ -66,7 +67,7 @@ export default function UIOverlay() {
 
             try {
                 // 1. 프로필 조회
-                const { data, error } = await supabase
+                const { data } = await supabase
                     .from('profiles')
                     .select('nickname')
                     .eq('id', user.id)
@@ -81,7 +82,7 @@ export default function UIOverlay() {
 
                     const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)]
                     const randomAnimal = animals[Math.floor(Math.random() * animals.length)]
-                    const newNickname = `${randomAdjective} ${randomAnimal} ${Math.floor(Math.random() * 1000)}`
+                    const newNickname = `${randomAdjective} ${randomAnimal} ${Math.floor(Math.random() * 1000)} `
 
                     console.log('Profile not found, creating from client:', newNickname)
 
@@ -172,7 +173,7 @@ export default function UIOverlay() {
                     marginBottom: isMobile ? '8px' : '10px',
                     fontWeight: 'bold'
                 }}>
-                    {nickname ? `👋 ${nickname}` : (user?.id ? `ID: ${user.id.slice(0, 8)}...` : (authError ? `⚠️ ${authError}` : '로그인 중...'))}
+                    {nickname ? `👋 ${nickname} ` : (user?.id ? `ID: ${user.id.slice(0, 8)}...` : (authError ? `⚠️ ${authError} ` : '로그인 중...'))}
                 </div>
 
                 <div style={{

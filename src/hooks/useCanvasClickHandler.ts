@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useCallback } from 'react'
 import type { Material } from '../lib/alchemyApi'
 import type { CanvasView } from '../store/useGameStore'

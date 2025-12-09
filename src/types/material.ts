@@ -12,7 +12,7 @@ export interface Material {
   family: MaterialFamily
   rarity: MaterialRarity
   icon_url?: string
-  source_info?: any
+  source_info?: unknown
   is_special: boolean
   sell_price: number
 }

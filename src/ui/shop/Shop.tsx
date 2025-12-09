@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useEffect, useMemo, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
@@ -228,7 +229,7 @@ export default function Shop() {
                     try {
                         const api = await import('../../lib/alchemyApi')
                         await api.addGold(alchemyStore.userId, materialGoldEarned)
-                        console.log(`✅ 골드 DB 저장 성공: +${materialGoldEarned}G`)
+                        console.log(`✅ 골드 DB 저장 성공: +${materialGoldEarned} G`)
                     } catch (error) {
                         console.error('골드 DB 저장 실패:', error)
                     }
@@ -236,7 +237,7 @@ export default function Shop() {
             }
 
             if (successCount > 0) {
-                console.log(`일괄 판매 완료: ${successCount}건, +${totalGoldEarned}G`)
+                console.log(`일괄 판매 완료: ${successCount} 건, +${totalGoldEarned} G`)
             }
 
             // refreshInventory()를 호출하지 않음 - 로컬 상태가 이미 업데이트되었고,
@@ -417,7 +418,7 @@ export default function Shop() {
                         return (
                             <div key={item.id} style={{
                                 background: isSelected ? '#3a3520' : '#333',
-                                border: `2px solid ${isSelected ? '#eab308' : '#444'}`,
+                                border: `2px solid ${isSelected ? '#eab308' : '#444'} `,
                                 borderRadius: '6px',
                                 padding: '8px',
                                 transition: 'all 0.2s'

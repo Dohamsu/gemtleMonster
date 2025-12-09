@@ -3,6 +3,7 @@
  * 몬스터 관련 데이터베이스 작업
  */
 
+/* eslint-disable no-console */
 import { supabase } from './supabase'
 import type { PlayerMonster } from '../types'
 

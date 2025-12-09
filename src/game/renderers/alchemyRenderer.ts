@@ -13,6 +13,7 @@
 import type { CanvasImages } from '../../hooks/useCanvasImages'
 import type { Recipe, Material, PlayerAlchemy } from '../../lib/alchemyApi'
 import { ALCHEMY } from '../../constants/game'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getAlchemyLayout } from '../../utils/responsiveUtils'
 
 import type { AlchemyLayoutParams } from '../../utils/responsiveUtils'

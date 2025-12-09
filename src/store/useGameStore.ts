@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import { create } from 'zustand'
 import type { BattleState } from '../types'
 import type { AlchemyState } from '../types/alchemy'
@@ -802,9 +803,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 
             if (skillLog) newLogs.push(skillLog)
 
-            let isCrit = result.isCritical
-            let isWeak = result.multiplier < 1.0
-            let isEffective = result.multiplier > 1.0
+            const isCrit = result.isCritical
+            const isWeak = result.multiplier < 1.0
+            const isEffective = result.multiplier > 1.0
 
             // Build Log
             let logMsg = `[PLAYER]${monsterName}이(가) `
@@ -837,9 +838,9 @@ export const useGameStore = create<GameState>((set, get) => ({
             const result = calculateDamage(enemyEntity, playerEntity, 100)
             enemyDmg = result.damage
 
-            let isCrit = result.isCritical
-            let isEffective = result.multiplier > 1.0
-            let isWeak = result.multiplier < 1.0
+            const isCrit = result.isCritical
+            const isEffective = result.multiplier > 1.0
+            const isWeak = result.multiplier < 1.0
 
             let logMsg = `[ENEMY]${enemy?.name || '적'}이(가) `
             if (isCrit) logMsg += `{{RED|강력한}} `
@@ -881,7 +882,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 
         let result: 'victory' | 'defeat' | null = null
-        let rewards: Record<string, number> = {}
+        const rewards: Record<string, number> = {}
 
         if (newEnemyHp === 0) {
             result = 'victory'

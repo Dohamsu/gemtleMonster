@@ -15,7 +15,7 @@ export default function IdleFacilityGridItem({ facility, level, onClick, isPause
 
     // Calculate progress
     const levelData = facility.levels.find(l => l.level === level)
-    const intervalSeconds = (levelData?.stats as any)?.intervalSeconds || 1
+    const intervalSeconds = levelData?.stats.intervalSeconds || 1
     const facilityKey = `${facility.id}-${level}`
     const lastCollected = lastCollectedAt[facilityKey] || 0
 

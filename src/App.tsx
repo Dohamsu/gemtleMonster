@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useEffect, useState } from 'react'
 import GameCanvas from './game/GameCanvas'
 import UIOverlay from './ui/UIOverlay'

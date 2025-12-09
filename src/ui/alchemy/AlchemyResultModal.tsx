@@ -220,7 +220,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                                     color: '#e2e8f0',
                                     lineHeight: '1.5'
                                 }}>
-                                    <span style={{ color: '#facc15', fontWeight: 'bold' }}>'{hint.monsterName}'</span>의 조합법 힌트를 얻었다!<br />
+                                    <span style={{ color: '#facc15', fontWeight: 'bold' }}>&apos;{hint.monsterName}&apos;</span>의 조합법 힌트를 얻었다!<br />
                                     <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>{hint.materialName}</span>이(가) 확정적으로 들어가는 것 같다!
                                 </p>
                             </div>
