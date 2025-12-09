@@ -132,7 +132,7 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                     ) : !selectedDungeonId ? (
                         // Dungeon List View
                         <div style={{ padding: '20px', display: 'grid', gap: '15px' }}>
-                            {DUNGEONS.map(dungeon => (
+                            {[...DUNGEONS].sort((a, b) => a.recommendedLevel - b.recommendedLevel).map(dungeon => (
                                 <div
                                     key={dungeon.id}
                                     onClick={() => setSelectedDungeonId(dungeon.id)}

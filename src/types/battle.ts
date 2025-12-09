@@ -19,8 +19,15 @@ export interface BattleState {
   playerAtk: number
   playerDef: number
   playerMonsterImage?: string
+  playerElement?: string // New
+  playerStatusEffects?: any[] // Will be properly typed in store usage or by importing StatusEffect type if we move it to shared types
   enemyAtk: number
   enemyDef: number
+  enemyElement?: string // New
+  enemyStatusEffects?: any[] // New
+
+  // Visual Queues
+  floatingTexts: { id: string; x: number; y: number; text: string; color: string; life: number; target?: 'PLAYER' | 'ENEMY' }[]
 }
 
 export interface Enemy {
@@ -29,6 +36,7 @@ export interface Enemy {
   hp: number
   attack: number
   defense: number
+  element?: string // New
   drops: EnemyDrop[]
 }
 

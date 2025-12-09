@@ -3,15 +3,21 @@ import type { BattleState } from '../types'
 import type { AlchemyState } from '../types/alchemy'
 import { useAlchemyStore } from './useAlchemyStore'
 import { MATERIALS } from '../data/alchemyData'
+import { getUnlockableSkills } from '../data/monsterSkillData'
 import { DUNGEONS } from '../data/dungeonData'
 import { GAME_MONSTERS as MONSTERS } from '../data/monsterData'
 import { ALCHEMY } from '../constants/game'
 import { calculateStats, type RarityType } from '../lib/monsterLevelUtils'
 import type { RoleType } from '../types/alchemy'
 
-import { getUnlockableSkills } from '../data/monsterSkillData'
-
 // ... existing imports ...
+import {
+    calculateDamage,
+    processStatusEffects,
+    getElementalMultiplier,
+    type BattleEntity
+} from '../lib/battleUtils'
+
 
 
 export interface ResourceAddition {
@@ -66,6 +72,7 @@ interface GameState {
     battleState: BattleState | null
     startBattle: (dungeonId: string, enemyId: string, playerMonsterId?: string) => void
     processTurn: () => void
+    consumeFloatingTexts: () => void
     endBattle: () => void
 }
 
@@ -548,6 +555,16 @@ export const useGameStore = create<GameState>((set, get) => ({
                     const passiveSkills = skills.filter((s: any) => s.type === 'PASSIVE')
                     const initialLogs = [`${monsterName}이(가) ${enemy.name}과(와)의 전투를 시작했습니다!`]
 
+                    // Elemental Analysis Log
+                    const pEl = (monsterData.element || 'EARTH').toUpperCase() as any
+                    const eEl = ((enemy as any).element || 'EARTH').toUpperCase() as any
+                    const pMult = getElementalMultiplier(pEl, eEl)
+                    const eMult = getElementalMultiplier(eEl, pEl)
+
+                    if (pMult > 1.0) initialLogs.push(`{{GREEN|상성 우위!}} ${monsterName}의 공격이 효과적입니다.`)
+                    if (pMult < 1.0) initialLogs.push(`{{GRAY|상성 불리..}} ${monsterName}의 공격이 반감됩니다.`)
+                    if (eMult > 1.0) initialLogs.push(`{{RED|위험!}} 적의 속성이 우세합니다.`)
+
                     passiveSkills.forEach((skill: any) => {
                         if (skill.effect.type === 'BUFF') {
 
@@ -583,8 +600,13 @@ export const useGameStore = create<GameState>((set, get) => ({
                             playerAtk,
                             playerDef,
                             playerMonsterImage,
+                            playerElement: ((selectedMonsterType ? MONSTERS[selectedMonsterType]?.element : null) || 'EARTH').toUpperCase(),
+                            playerStatusEffects: [],
                             enemyAtk: enemy.attack,
-                            enemyDef: enemy.defense
+                            enemyDef: enemy.defense,
+                            enemyElement: ((enemy as any).element || 'EARTH').toUpperCase(),
+                            enemyStatusEffects: [],
+                            floatingTexts: []
                         }
                     })
                     return // Important: Return here to avoid setting state twice or using old variables
@@ -609,13 +631,18 @@ export const useGameStore = create<GameState>((set, get) => ({
                 selectedMonsterId: playerMonsterId || null,
                 selectedMonsterType,
                 playerAtk,
-
                 playerDef,
                 playerMonsterImage,
+                playerElement: ((selectedMonsterType ? MONSTERS[selectedMonsterType]?.element : null) || 'EARTH').toUpperCase(),
+                playerStatusEffects: [],
                 enemyAtk: enemy.attack,
-                enemyDef: enemy.defense
+                enemyDef: enemy.defense,
+                enemyElement: ((enemy as any).element || 'EARTH').toUpperCase(),
+                enemyStatusEffects: [],
+                floatingTexts: []
             }
         })
+
     },
 
     processTurn: () => set((state) => {
@@ -688,25 +715,170 @@ export const useGameStore = create<GameState>((set, get) => ({
         // const enemyDef = enemy?.defense || 0
 
         // Calculate Damage
-        // Player Turn
-        const finalPlayerAtk = playerAtk + skillBuffValue
-        const basePlayerDmg = finalPlayerAtk + Math.floor(Math.random() * 6) - 3 + skillBonusDmg
-        const playerDmg = Math.max(1, basePlayerDmg - enemyDef) // Apply enemy defense
+        // --------------------------------------------------------
+        // New Battle Logic using battleUtils
+        // --------------------------------------------------------
 
-        // Enemy Turn
-        const baseEnemyDmg = enemyAtk + Math.floor(Math.random() * 6) - 3
-        const enemyDmg = Math.max(1, baseEnemyDmg - playerDef) // Apply player defense
+        // 1. Construct Battle Entities
+        const playerEntity: BattleEntity = {
+            id: 'player',
+            name: monsterName,
+            hp: playerHp,
+            maxHp: playerMaxHp,
+            atk: playerAtk,
+            def: playerDef,
+            element: (state.battleState.playerElement || 'EARTH') as any,
+            isPlayer: true,
+            statusEffects: state.battleState.playerStatusEffects || []
+        }
 
-        // Apply Results
-        const newEnemyHp = Math.max(0, enemyHp - playerDmg)
-        let newPlayerHp = Math.max(0, playerHp - enemyDmg + skillHeal)
-        newPlayerHp = Math.min(newPlayerHp, playerMaxHp) // Cap at Max HP
+        const enemyEntity: BattleEntity = {
+            id: 'enemy',
+            name: enemy?.name || 'Unknown',
+            hp: enemyHp,
+            maxHp: state.battleState.enemyMaxHp,
+            atk: enemyAtk,
+            def: enemyDef,
+            element: (state.battleState.enemyElement || 'EARTH') as any,
+            isPlayer: false,
+            statusEffects: state.battleState.enemyStatusEffects || []
+        }
 
         const newLogs = [...logs]
-        if (skillLog) newLogs.push(skillLog)
+        const floatingTexts = [...(state.battleState.floatingTexts || [])]
+            .filter(ft => ft.life > 0)
+            .map(ft => ({ ...ft, life: ft.life - 1 })) // Reduce life of existing texts
 
-        newLogs.push(`[PLAYER]${monsterName}이(가) {{RED|${playerDmg}}}의 피해를 입혔습니다!`)
-        newLogs.push(`[ENEMY]${enemy?.name || '적'}이(가) {{RED|${enemyDmg}}}의 피해를 입혔습니다!`)
+        // 2. Process Status Effects (Start of Turn)
+        const playerStatusResult = processStatusEffects(playerEntity)
+        const enemyStatusResult = processStatusEffects(enemyEntity)
+
+        playerEntity.statusEffects = playerStatusResult.updatedEntity.statusEffects
+        enemyEntity.statusEffects = enemyStatusResult.updatedEntity.statusEffects
+
+        // Apply DoT Damage
+        if (playerStatusResult.damageTaken > 0) {
+            playerEntity.hp -= playerStatusResult.damageTaken
+            floatingTexts.push({
+                id: `dot-player-${Date.now()}`,
+                x: 0, y: 0,
+                text: `-${playerStatusResult.damageTaken}`,
+                color: '#a855f7', // Purple for poison/dot
+                life: 30,
+                target: 'PLAYER'
+            })
+        }
+        if (enemyStatusResult.damageTaken > 0) {
+            enemyEntity.hp -= enemyStatusResult.damageTaken
+            floatingTexts.push({
+                id: `dot-enemy-${Date.now()}`,
+                x: 0, y: 0,
+                text: `-${enemyStatusResult.damageTaken}`,
+                color: '#a855f7',
+                life: 30,
+                target: 'ENEMY'
+            })
+        }
+
+        newLogs.push(...playerStatusResult.logs)
+        newLogs.push(...enemyStatusResult.logs)
+
+        // Check Death from Status
+        if (playerEntity.hp <= 0 || enemyEntity.hp <= 0) {
+            // ... early exit handling will be done at end
+        }
+
+        // 3. Player Action
+        let playerDmg = 0
+        if (playerEntity.hp > 0) { // Only attack if alive
+            // Calculate Damage
+            const result = calculateDamage(playerEntity, enemyEntity, 100 + skillBuffValue)
+            playerDmg = result.damage + skillBonusDmg
+
+            // Apply Skill Effects (Heal, etc) is already handled in old logic variables (skillHeal)
+            // But we need to integrate new status effects from skills if any.
+            // For now, let's keep the random simple skills and just add specific Status Effects for testing if needed
+            // Future: Map skill effects to StatusEffectType
+
+            if (skillLog) newLogs.push(skillLog)
+
+            let isCrit = result.isCritical
+            let isWeak = result.multiplier < 1.0
+            let isEffective = result.multiplier > 1.0
+
+            // Build Log
+            let logMsg = `[PLAYER]${monsterName}이(가) `
+            if (isCrit) logMsg += `{{RED|치명타!}} `
+            logMsg += `{{RED|${playerDmg}}}의 피해를 입혔습니다!`
+
+            if (isEffective) logMsg += ` {{GREEN|(효과적!)}}`
+            if (isWeak) logMsg += ` {{GRAY|(반감됨)}}`
+
+            newLogs.push(logMsg)
+
+            // Apply Damage
+            enemyEntity.hp = Math.max(0, enemyEntity.hp - playerDmg)
+
+            // Add Floating Text
+            floatingTexts.push({
+                id: `dmg-enemy-${Date.now()}`,
+                x: 0, // Position handled by View
+                y: 0,
+                text: `${playerDmg}${isCrit ? '!' : ''}${isEffective ? '↑' : ''}${isWeak ? '↓' : ''}`,
+                color: isCrit ? '#ef4444' : (isEffective ? '#fbbf24' : (isWeak ? '#9ca3af' : 'white')),
+                life: 40,
+                target: 'ENEMY'
+            })
+        }
+
+        // 4. Enemy Action
+        let enemyDmg = 0
+        if (enemyEntity.hp > 0 && playerEntity.hp > 0) {
+            const result = calculateDamage(enemyEntity, playerEntity, 100)
+            enemyDmg = result.damage
+
+            let isCrit = result.isCritical
+            let isEffective = result.multiplier > 1.0
+            let isWeak = result.multiplier < 1.0
+
+            let logMsg = `[ENEMY]${enemy?.name || '적'}이(가) `
+            if (isCrit) logMsg += `{{RED|강력한}} `
+            logMsg += `{{RED|${enemyDmg}}}의 피해를 입혔습니다!`
+
+            if (isEffective) logMsg += ` {{RED|(아픔!)}}`
+            if (isWeak) logMsg += ` {{GRAY|(저항함)}}`
+
+            newLogs.push(logMsg)
+
+            playerEntity.hp = Math.max(0, playerEntity.hp - enemyDmg)
+
+            floatingTexts.push({
+                id: `dmg-player-${Date.now()}`,
+                x: 0,
+                y: 0,
+                text: `${enemyDmg}${isCrit ? '!' : ''}`,
+                color: isCrit ? '#ef4444' : (isEffective ? '#fbbf24' : 'white'),
+                life: 40,
+                target: 'PLAYER'
+            })
+        }
+
+        // Apply Heals
+        if (skillHeal > 0 && playerEntity.hp > 0) {
+            playerEntity.hp = Math.min(playerEntity.maxHp, playerEntity.hp + skillHeal)
+            floatingTexts.push({
+                id: `heal-player-${Date.now()}`,
+                x: 0, y: 0,
+                text: `+${skillHeal}`,
+                color: '#4ade80',
+                life: 40,
+                target: 'PLAYER'
+            })
+        }
+
+        const newEnemyHp = enemyEntity.hp
+        const newPlayerHp = playerEntity.hp
+
 
         let result: 'victory' | 'defeat' | null = null
         let rewards: Record<string, number> = {}
@@ -727,7 +899,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                     }
                 }
 
-                // Monster EXP Logic
+                // Monster EXP Logic (Async)
                 const userId = useAlchemyStore.getState().userId
 
                 if (selectedMonsterId && userId) {
@@ -739,16 +911,17 @@ export const useGameStore = create<GameState>((set, get) => ({
                         if (earnedExp > 0) {
                             newLogs.push(`획득 경험치: {{GREEN|${earnedExp} XP}}`)
                         }
-                        // Update DB and Local State (Async)
+
+                        // Async update - fire and forget, update state later if needed
                         import('../lib/monsterApi').then(async ({ updateMonsterExp }) => {
                             try {
-                                const selectedMonsterType = useGameStore.getState().battleState?.selectedMonsterType
+                                const state = useGameStore.getState()
+                                const selectedMonsterType = state.battleState?.selectedMonsterType
                                 const monsterData = selectedMonsterType ? MONSTERS[selectedMonsterType] : null
                                 const rarity = (monsterData?.rarity || 'N') as RarityType
                                 const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
                                 const role = monsterData ? (roleMap[monsterData.role] || 'TANK') : 'TANK'
 
-                                // Fix: Pass explicit undefined for level/exp since we are just adding exp
                                 const { level, leveledUp, newSkills } = await updateMonsterExp(
                                     userId,
                                     selectedMonsterId,
@@ -767,6 +940,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                                             if (newSkills && newSkills.length > 0) {
                                                 newLogs.push(`✨ 새로운 스킬을 배웠습니다!`)
                                             }
+                                            // Preserve all existing state, just update logs
                                             return {
                                                 battleState: {
                                                     ...s.battleState,
@@ -776,10 +950,10 @@ export const useGameStore = create<GameState>((set, get) => ({
                                         }
                                         return s
                                     })
-                                }
 
-                                // Reload monsters to update UI
-                                await useAlchemyStore.getState().loadPlayerMonsters(userId)
+                                    // Reload monsters to update UI
+                                    await useAlchemyStore.getState().loadPlayerMonsters(userId)
+                                }
                             } catch (e) {
                                 console.error('Failed to update monster exp', e)
                             }
@@ -787,7 +961,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                     }
                 }
 
-                // Add drop messages to logs
+                // Add drop messages to logs (Synchronous part)
                 if (Object.keys(rewards).length > 0) {
                     const dropMessages = Object.entries(rewards)
                         .map(([id, qty]) => {
@@ -798,27 +972,37 @@ export const useGameStore = create<GameState>((set, get) => ({
                         })
                         .join(', ')
 
-                    // Fix: Add drop message properly
                     newLogs.push(`전리품: ${dropMessages}`)
                 }
             }
         } else if (newPlayerHp === 0) {
             result = 'defeat'
+            newLogs.push('💀 패배했습니다... 💀')
         }
 
-        if (result) {
-            newLogs.push(result === 'victory' ? '🔥🔥 승리했습니다! 🔥🔥' : '💀 패배했습니다... 💀')
-        }
-
+        // Return new state synchronously
         return {
             battleState: {
                 ...state.battleState,
                 playerHp: newPlayerHp,
                 enemyHp: newEnemyHp,
-                logs: newLogs.slice(-50), // Keep last 50 logs to show more history
+                logs: newLogs.slice(-50),
                 turn: state.battleState.turn + 1,
                 result,
-                rewards
+                rewards,
+                playerStatusEffects: playerEntity.statusEffects,
+                enemyStatusEffects: enemyEntity.statusEffects,
+                floatingTexts: floatingTexts
+            }
+        }
+    }),
+
+    consumeFloatingTexts: () => set((state) => {
+        if (!state.battleState) return state
+        return {
+            battleState: {
+                ...state.battleState,
+                floatingTexts: []
             }
         }
     }),

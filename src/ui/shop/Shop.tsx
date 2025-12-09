@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
 import { isMobileView } from '../../utils/responsiveUtils'
+import { MATERIALS } from '../../data/alchemyData'
 
 const LEGACY_RESOURCE_NAMES: Record<string, string> = {
     gold: '골드',
@@ -417,26 +418,44 @@ export default function Shop() {
                             <div key={item.id} style={{
                                 background: isSelected ? '#3a3520' : '#333',
                                 border: `2px solid ${isSelected ? '#eab308' : '#444'}`,
-                                borderRadius: '8px',
-                                padding: '12px',
+                                borderRadius: '6px',
+                                padding: '8px',
                                 transition: 'all 0.2s'
                             }}>
-                                {/* Header: Checkbox + Name */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                                {/* Header: Checkbox + Image + Name */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                                     <input
                                         type="checkbox"
                                         checked={isSelected}
                                         onChange={() => toggleSelection(item.id)}
-                                        style={{ cursor: 'pointer', width: '18px', height: '18px', minWidth: '18px' }}
+                                        style={{ cursor: 'pointer', width: '16px', height: '16px', minWidth: '16px' }}
                                     />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                            <span style={{ fontWeight: 'bold', fontSize: '1.05em' }}>{item.name}</span>
+                                    {/* Material Image */}
+                                    {item.type === 'material' && (() => {
+                                        const material = MATERIALS[item.id]
+                                        const isImage = material?.iconUrl?.startsWith('/') || material?.iconUrl?.startsWith('http')
+                                        return (
+                                            <div style={{ width: '32px', height: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                {isImage ? (
+                                                    <img
+                                                        src={material.iconUrl}
+                                                        alt={item.name}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                    />
+                                                ) : (
+                                                    <span style={{ fontSize: '20px' }}>{material?.iconUrl || '📦'}</span>
+                                                )}
+                                            </div>
+                                        )
+                                    })()}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                                            <span style={{ fontWeight: 'bold', fontSize: '0.95em' }}>{item.name}</span>
                                             {item.rarity && (
                                                 <span style={{
-                                                    fontSize: '0.65em',
-                                                    padding: '2px 6px',
-                                                    borderRadius: '4px',
+                                                    fontSize: '0.6em',
+                                                    padding: '2px 4px',
+                                                    borderRadius: '3px',
                                                     background: getRarityColor(item.rarity),
                                                     color: 'white'
                                                 }}>
@@ -448,27 +467,27 @@ export default function Shop() {
                                 </div>
 
                                 {/* Info Row */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.9em', color: '#aaa' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.8em', color: '#aaa' }}>
                                     <span>보유: {formatNumber(item.count)}개</span>
                                     <span>단가: {item.price}G</span>
                                 </div>
 
                                 {/* Quantity Controls */}
-                                <div style={{ marginBottom: '10px' }}>
-                                    <div style={{ fontSize: '0.85em', color: '#aaa', marginBottom: '6px' }}>판매 수량</div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <div style={{ marginBottom: '6px' }}>
+                                    <div style={{ fontSize: '0.75em', color: '#aaa', marginBottom: '4px' }}>판매 수량</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         <button
                                             onClick={() => handleQuantityChange(item.id, sellQuantity - 1, item.count)}
                                             style={{
-                                                width: '36px',
-                                                height: '36px',
-                                                minHeight: '36px',
+                                                width: '32px',
+                                                height: '32px',
+                                                minHeight: '32px',
                                                 background: '#444',
                                                 color: 'white',
                                                 border: 'none',
-                                                borderRadius: '6px',
+                                                borderRadius: '4px',
                                                 cursor: 'pointer',
-                                                fontSize: '1.2em',
+                                                fontSize: '1.1em',
                                                 fontWeight: 'bold',
                                                 flexShrink: 0
                                             }}
@@ -484,25 +503,25 @@ export default function Shop() {
                                                 background: '#222',
                                                 color: 'white',
                                                 border: '1px solid #555',
-                                                borderRadius: '6px',
-                                                padding: '8px',
-                                                fontSize: '1em',
-                                                height: '36px',
-                                                minHeight: '36px'
+                                                borderRadius: '4px',
+                                                padding: '6px',
+                                                fontSize: '0.9em',
+                                                height: '32px',
+                                                minHeight: '32px'
                                             }}
                                         />
                                         <button
                                             onClick={() => handleQuantityChange(item.id, sellQuantity + 1, item.count)}
                                             style={{
-                                                width: '36px',
-                                                height: '36px',
-                                                minHeight: '36px',
+                                                width: '32px',
+                                                height: '32px',
+                                                minHeight: '32px',
                                                 background: '#444',
                                                 color: 'white',
                                                 border: 'none',
-                                                borderRadius: '6px',
+                                                borderRadius: '4px',
                                                 cursor: 'pointer',
-                                                fontSize: '1.2em',
+                                                fontSize: '1.1em',
                                                 fontWeight: 'bold',
                                                 flexShrink: 0
                                             }}
@@ -510,15 +529,15 @@ export default function Shop() {
                                         <button
                                             onClick={() => handleQuantityChange(item.id, item.count, item.count)}
                                             style={{
-                                                padding: '0 12px',
-                                                height: '36px',
-                                                minHeight: '36px',
+                                                padding: '0 10px',
+                                                height: '32px',
+                                                minHeight: '32px',
                                                 background: '#555',
                                                 color: 'white',
                                                 border: 'none',
-                                                borderRadius: '6px',
+                                                borderRadius: '4px',
                                                 cursor: 'pointer',
-                                                fontSize: '0.9em',
+                                                fontSize: '0.85em',
                                                 fontWeight: 'bold',
                                                 flexShrink: 0
                                             }}
@@ -529,12 +548,12 @@ export default function Shop() {
                                 {/* Total Value */}
                                 <div style={{
                                     background: '#222',
-                                    padding: '8px',
-                                    borderRadius: '6px',
+                                    padding: '6px',
+                                    borderRadius: '4px',
                                     textAlign: 'center',
                                     fontWeight: 'bold',
                                     color: '#eab308',
-                                    fontSize: '1em'
+                                    fontSize: '0.9em'
                                 }}>
                                     합계: {formatNumber(totalValue)}G
                                 </div>
@@ -592,6 +611,24 @@ export default function Shop() {
                                         </td>
                                         <td style={{ padding: '12px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                {/* Material Image */}
+                                                {item.type === 'material' && (() => {
+                                                    const material = MATERIALS[item.id]
+                                                    const isImage = material?.iconUrl?.startsWith('/') || material?.iconUrl?.startsWith('http')
+                                                    return (
+                                                        <div style={{ width: '32px', height: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            {isImage ? (
+                                                                <img
+                                                                    src={material.iconUrl}
+                                                                    alt={item.name}
+                                                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                                />
+                                                            ) : (
+                                                                <span style={{ fontSize: '20px' }}>{material?.iconUrl || '📦'}</span>
+                                                            )}
+                                                        </div>
+                                                    )
+                                                })()}
                                                 <span style={{ fontWeight: 'bold' }}>{item.name}</span>
                                                 {item.rarity && (
                                                     <span style={{

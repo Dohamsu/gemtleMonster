@@ -6,8 +6,74 @@ import { MATERIALS } from '../../data/alchemyData'
 import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
 
 export default function BattleView() {
-    const { battleState, processTurn, endBattle, activeDungeon } = useGameStore()
+    const { battleState, processTurn, endBattle, activeDungeon, consumeFloatingTexts } = useGameStore()
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+    const [animatingTexts, setAnimatingTexts] = useState<any[]>([])
+
+    // Animation Loop
+    useEffect(() => {
+        let animationFrameId: number
+        const animate = () => {
+            setAnimatingTexts(prev => {
+                if (prev.length === 0) return prev
+                return prev
+                    .map(t => ({
+                        ...t,
+                        life: t.life - 1,
+                        y: t.y - 1 // Float up 1px per frame
+                    }))
+                    .filter(t => t.life > 0)
+            })
+            animationFrameId = requestAnimationFrame(animate)
+        }
+        animationFrameId = requestAnimationFrame(animate)
+        return () => cancelAnimationFrame(animationFrameId)
+    }, [])
+
+    const playerAreaRef = useRef<HTMLDivElement>(null)
+    const enemyAreaRef = useRef<HTMLDivElement>(null)
+
+    // Consume new texts from store with Dynamic Positioning
+    useEffect(() => {
+        if (battleState?.floatingTexts && battleState.floatingTexts.length > 0) {
+            const containerRect = document.getElementById('battle-arena')?.getBoundingClientRect()
+
+            const newTexts = battleState.floatingTexts.map(t => {
+                let startX = t.x
+                let startY = t.y
+
+                // Calculate position relative to container
+                if (t.target && containerRect) {
+                    let targetRect: DOMRect | undefined
+
+                    if (t.target === 'PLAYER' && playerAreaRef.current) {
+                        targetRect = playerAreaRef.current.getBoundingClientRect()
+                    } else if (t.target === 'ENEMY' && enemyAreaRef.current) {
+                        targetRect = enemyAreaRef.current.getBoundingClientRect()
+                    }
+
+                    if (targetRect) {
+                        // Center of target relative to container
+                        startX = (targetRect.left + targetRect.width / 2) - containerRect.left
+                        startY = (targetRect.top + targetRect.height / 2) - containerRect.top
+
+                        // Add some randomness
+                        startX += (Math.random() * 40 - 20)
+                        startY += (Math.random() * 40 - 20)
+                    }
+                }
+
+                return {
+                    ...t,
+                    life: 60, // 60 frames (~1 sec)
+                    x: startX,
+                    y: startY
+                }
+            })
+            setAnimatingTexts(prev => [...prev, ...newTexts])
+            consumeFloatingTexts()
+        }
+    }, [battleState?.floatingTexts, consumeFloatingTexts])
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -92,15 +158,16 @@ export default function BattleView() {
             </div>
 
             {/* Battle Arena */}
-            <div style={{
+            <div id="battle-arena" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '20px',
-                padding: '0 20px'
+                padding: '0 20px',
+                position: 'relative'
             }}>
                 {/* Player */}
-                <div style={{ textAlign: 'center' }}>
+                <div ref={playerAreaRef} style={{ textAlign: 'center' }}>
                     {battleState.playerMonsterImage ? (
                         <img
                             src={battleState.playerMonsterImage}
@@ -145,6 +212,33 @@ export default function BattleView() {
                     }}>
                         <span>⚔️ {battleState.playerAtk}</span>
                         <span>🛡️ {battleState.playerDef}</span>
+                        <span>{battleState.playerElement === 'FIRE' ? '🔥' :
+                            battleState.playerElement === 'WATER' ? '💧' :
+                                battleState.playerElement === 'WIND' ? '🌪️' :
+                                    battleState.playerElement === 'EARTH' ? '🪨' :
+                                        battleState.playerElement === 'LIGHT' ? '✨' :
+                                            battleState.playerElement === 'DARK' ? '🌑' : '❓'}</span>
+                    </div>
+
+                    {/* Status Effects */}
+                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '4px', minHeight: '20px' }}>
+                        {battleState.playerStatusEffects?.map((effect, idx) => {
+                            let icon = ''
+                            let color = ''
+                            switch (effect.type) {
+                                case 'BURN': icon = '🔥'; color = '#ef4444'; break;
+                                case 'POISON': icon = '☠️'; color = '#a855f7'; break;
+                                case 'REGEN': icon = '🌿'; color = '#22c55e'; break;
+                                case 'STUN': icon = '💫'; color = '#eab308'; break;
+                                case 'ATK_BUFF': icon = '⚔️▲'; color = '#3b82f6'; break;
+                                case 'DEF_BUFF': icon = '🛡️▲'; color = '#6b7280'; break;
+                            }
+                            return (
+                                <span key={idx} title={`${effect.type} (${effect.duration} turns)`} style={{ color, fontSize: '14px' }}>
+                                    {icon}<sub style={{ fontSize: '10px' }}>{effect.duration}</sub>
+                                </span>
+                            )
+                        })}
                     </div>
 
                     {/* Level and Exp Bar */}
@@ -185,7 +279,7 @@ export default function BattleView() {
                 <div style={{ fontSize: '24px', color: '#aaa' }}>VS</div>
 
                 {/* Enemy */}
-                <div style={{ textAlign: 'center' }}>
+                <div ref={enemyAreaRef} style={{ textAlign: 'center' }}>
                     {battleState.enemyImage ? (
                         <img
                             src={battleState.enemyImage}
@@ -230,6 +324,33 @@ export default function BattleView() {
                     }}>
                         <span>⚔️ {battleState.enemyAtk}</span>
                         <span>🛡️ {battleState.enemyDef}</span>
+                        <span>{battleState.enemyElement === 'FIRE' ? '🔥' :
+                            battleState.enemyElement === 'WATER' ? '💧' :
+                                battleState.enemyElement === 'WIND' ? '🌪️' :
+                                    battleState.enemyElement === 'EARTH' ? '🪨' :
+                                        battleState.enemyElement === 'LIGHT' ? '✨' :
+                                            battleState.enemyElement === 'DARK' ? '🌑' : '❓'}</span>
+                    </div>
+
+                    {/* Status Effects */}
+                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '4px', minHeight: '20px' }}>
+                        {battleState.enemyStatusEffects?.map((effect, idx) => {
+                            let icon = ''
+                            let color = ''
+                            switch (effect.type) {
+                                case 'BURN': icon = '🔥'; color = '#ef4444'; break;
+                                case 'POISON': icon = '☠️'; color = '#a855f7'; break;
+                                case 'REGEN': icon = '🌿'; color = '#22c55e'; break;
+                                case 'STUN': icon = '💫'; color = '#eab308'; break;
+                                case 'ATK_BUFF': icon = '⚔️▲'; color = '#3b82f6'; break;
+                                case 'DEF_BUFF': icon = '🛡️▲'; color = '#6b7280'; break;
+                            }
+                            return (
+                                <span key={idx} title={`${effect.type} (${effect.duration} turns)`} style={{ color, fontSize: '14px' }}>
+                                    {icon}<sub style={{ fontSize: '10px' }}>{effect.duration}</sub>
+                                </span>
+                            )
+                        })}
                     </div>
                 </div>
             </div>
@@ -247,7 +368,8 @@ export default function BattleView() {
                     marginBottom: '20px',
                     textAlign: 'left',
                     fontSize: '13px',
-                    lineHeight: '1.5'
+                    lineHeight: '1.5',
+                    position: 'relative' // For floating text container context if needed
                 }}>
                 {battleState.logs.map((log, i) => {
                     // Normalize log to string just in case
@@ -299,6 +421,26 @@ export default function BattleView() {
                     )
                 })}
             </div>
+
+            {/* Floating Texts Overlay - Local Animation */}
+            {animatingTexts.map(ft => (
+                <div key={ft.id} style={{
+                    position: 'absolute',
+                    left: '0',
+                    top: '0',
+                    transform: `translate(${ft.x}px, ${ft.y}px)`,
+                    color: ft.color,
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    pointerEvents: 'none',
+                    textShadow: '0 0 4px black',
+                    opacity: Math.max(0, ft.life / 20), // Faster fade out at end
+                    zIndex: 100,
+                    whiteSpace: 'nowrap'
+                }}>
+                    {ft.text}
+                </div>
+            ))}
 
             {/* Result Actions */}
             {battleState.result && (

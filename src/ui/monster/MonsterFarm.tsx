@@ -5,11 +5,11 @@ import { useAuth } from '../../hooks/useAuth'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { MATERIALS } from '../../data/alchemyData'
 import { calculateStats, getRequiredExp, getExpProgress, getMaxLevel, type RarityType } from '../../lib/monsterLevelUtils'
-import { getUnlockableSkills, getNextSkillUnlockLevel } from '../../data/monsterSkillData'
+// import { getUnlockableSkills } from '../../data/monsterSkillData'
 import type { RoleType } from '../../types/alchemy'
+import type { PlayerMonster } from '../../types/monster'
 import CustomSelect from '../CustomSelect'
-import SkillDetailModal from './SkillDetailModal'
-import type { MonsterSkill } from '../../data/monsterSkillData'
+import MonsterDetailModal from './MonsterDetailModal'
 
 export default function MonsterFarm() {
     const { setCanvasView } = useGameStore()
@@ -24,7 +24,7 @@ export default function MonsterFarm() {
         rewards: Record<string, number>
         count: number
     } | null>(null)
-    const [selectedSkill, setSelectedSkill] = useState<MonsterSkill | null>(null)
+    const [selectedMonsterForModal, setSelectedMonsterForModal] = useState<PlayerMonster | null>(null)
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
@@ -60,8 +60,8 @@ export default function MonsterFarm() {
         setSelectedMonsters(newSelected)
     }
 
-    const handleLockToggle = async (monsterId: string, currentLocked: boolean, e: React.MouseEvent) => {
-        e.stopPropagation()
+    // Lock function passed to Modal
+    const handleLockToggleCore = async (monsterId: string, currentLocked: boolean) => {
         try {
             await toggleMonsterLock(monsterId, !currentLocked)
             // Reload monsters to reflect changes
@@ -71,6 +71,11 @@ export default function MonsterFarm() {
         } catch (error) {
             console.error('Failed to toggle lock:', error)
         }
+    }
+
+    const handleLockToggle = async (monsterId: string, currentLocked: boolean, e: React.MouseEvent) => {
+        e.stopPropagation()
+        await handleLockToggleCore(monsterId, currentLocked)
     }
 
     const handleDecompose = async () => {
@@ -421,8 +426,8 @@ export default function MonsterFarm() {
             ) : (
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                    gap: '15px',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', // Keep card width reasonable
+                    gap: '15px', // Reduced gap for tighter layout
                     padding: '10px',
                     overflowY: 'auto'
                 }}>
@@ -437,91 +442,67 @@ export default function MonsterFarm() {
                         // Calculated Stats
                         const level = monster.level || 1
                         const rarity = (data.rarity || 'N') as RarityType
-                        const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
-                        const role = roleMap[data.role] || 'TANK'
-                        const monsterTypeId = monster.monster_id.replace(/^monster_/, '')
+                        // const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
+                        // const role = roleMap[data.role] || 'TANK'
+                        // const monsterTypeId = monster.monster_id.replace(/^monster_/, '')
                         const stats = calculateStats({ hp: data.hp, atk: data.attack, def: data.defense }, level, rarity)
                         const expProgress = getExpProgress(monster.exp, level, rarity)
                         const requiredExp = getRequiredExp(level, rarity)
                         const maxLevel = getMaxLevel(rarity)
-                        const skills = getUnlockableSkills(monsterTypeId, role, level)
-                        const nextSkillLevel = getNextSkillUnlockLevel(monsterTypeId, role, level)
 
                         return (
                             <div key={monster.id} style={{
                                 background: isSelected ? 'rgba(220, 38, 38, 0.2)' : 'rgba(30, 41, 59, 0.8)',
                                 borderRadius: '12px',
                                 border: isSelected ? '2px solid #dc2626' : isLocked ? '2px solid #facc15' : '1px solid #334155',
-                                padding: '15px',
-                                display: 'flex', flexDirection: 'column', gap: '12px',
-                                transition: 'transform 0.2s', cursor: canSelect ? 'pointer' : 'default',
+                                padding: '12px', // Reduced padding
+                                display: 'flex', flexDirection: 'column', gap: '10px',
+                                transition: 'all 0.2s',
+                                cursor: 'pointer', // Always pointer
                                 opacity: (decomposeMode && isLocked) ? 0.5 : 1,
-                                position: 'relative'
+                                position: 'relative',
+                                transform: isSelected ? 'scale(0.98)' : 'scale(1)',
                             }}
-                                onClick={() => canSelect && toggleMonsterSelection(monster.id)}
+                                onClick={() => {
+                                    if (decomposeMode) {
+                                        if (canSelect) toggleMonsterSelection(monster.id)
+                                    } else {
+                                        setSelectedMonsterForModal(monster)
+                                    }
+                                }}
                             >
-                                {/* --- New Layout: Flex Row --- */}
-                                <div style={{ display: 'flex', gap: '15px' }}>
-                                    {/* Left: Image & Lock */}
+                                {/* --- Simplified Layout: Flex Row --- */}
+                                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                    {/* Left: Image */}
                                     <div style={{
-                                        flexShrink: 0, width: '80px', height: '80px', background: '#0f172a',
+                                        flexShrink: 0, width: '64px', height: '64px', background: '#0f172a', // Smaller Icon
                                         borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: '40px', border: '2px solid #475569', position: 'relative'
+                                        fontSize: '32px', border: '2px solid #475569', position: 'relative'
                                     }}>
                                         {data.iconUrl ? <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : data.emoji}
-                                        <button onClick={(e) => handleLockToggle(monster.id, isLocked, e)} style={{
-                                            position: 'absolute', top: '-5px', left: '-5px', background: 'rgba(0,0,0,0.7)', border: 'none',
-                                            borderRadius: '50%', width: '34px', height: '34px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            padding: 0
-                                        }}>
-                                            <img
-                                                src={isLocked ? '/assets/ui/locked.png' : '/assets/ui/unlocked.png'}
-                                                alt={isLocked ? 'Locked' : 'Unlocked'}
-                                                style={{
-                                                    width: '26px',
-                                                    height: '26px',
-                                                    objectFit: 'contain',
-                                                    // Use grayscale for locked state since we are using same image temporarily
-                                                    filter: isLocked
-                                                        ? 'grayscale(100%) brightness(70%) drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
-                                                        : 'drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
-                                                }}
-                                            />
-                                        </button>
+
                                         <div style={{
-                                            position: 'absolute', bottom: '-8px', width: '100%', textAlign: 'center'
+                                            position: 'absolute', bottom: '-6px', width: '100%', textAlign: 'center'
                                         }}>
                                             <span style={{
-                                                background: '#3b82f6', color: 'white', fontSize: '11px', fontWeight: 'bold',
-                                                padding: '2px 8px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                                                background: '#3b82f6', color: 'white', fontSize: '10px', fontWeight: 'bold',
+                                                padding: '1px 6px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
                                             }}>Lv.{level}</span>
                                         </div>
                                     </div>
 
-                                    {/* Right: Info */}
-                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                                        <div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-                                                <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.1em' }}>{data.name}</h3>
-                                                <span style={{
-                                                    fontSize: '0.75em', padding: '2px 8px', borderRadius: '4px',
-                                                    background: '#475569', color: '#cbd5e1', whiteSpace: 'nowrap'
-                                                }}>{data.role}</span>
-                                            </div>
-                                            <p style={{ margin: 0, fontSize: '0.85em', color: '#94a3b8', lineHeight: '1.3', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                                {data.description}
-                                            </p>
+                                    {/* Right: Info (Simplified) */}
+                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span style={{
+                                                fontSize: '0.7em', padding: '2px 6px', borderRadius: '4px',
+                                                background: '#475569', color: '#cbd5e1', whiteSpace: 'nowrap'
+                                            }}>{data.role}</span>
+                                            <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.05em' }}>{data.name}</h3>
                                         </div>
 
-                                        {/* EXP Bar (Mini) */}
-                                        <div style={{ marginTop: 'auto' }} title={`EXP: ${monster.exp} / ${requiredExp}`}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#64748b', marginBottom: '2px' }}>
-                                                <span>EXP</span>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    <span>{level >= maxLevel ? 'MAX' : `${Math.floor(expProgress)}%`}</span>
-                                                    {nextSkillLevel && <span style={{ color: '#fbbf24' }} title={`Lv.${nextSkillLevel}에서 스킬 해금`}>★</span>}
-                                                </div>
-                                            </div>
+                                        {/* EXP Bar (Mini) - Main visual indicator of progress */}
+                                        <div style={{ width: '100%' }} title={`EXP: ${monster.exp} / ${requiredExp}`}>
                                             <div style={{ height: '4px', background: '#1e293b', borderRadius: '2px', overflow: 'hidden' }}>
                                                 <div style={{
                                                     width: `${level >= maxLevel ? 100 : expProgress}%`, height: '100%',
@@ -529,60 +510,39 @@ export default function MonsterFarm() {
                                                 }} />
                                             </div>
                                         </div>
+
+                                        {/* Simplified Stats Row */}
+                                        <div style={{ display: 'flex', gap: '10px', fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                                            <span>❤️ {stats.hp}</span>
+                                            <span>⚔️ {stats.atk}</span>
+                                            <span>🛡️ {stats.def}</span>
+                                        </div>
                                     </div>
                                 </div>
+
+                                {/* Lock Button (Top-Right of Card) */}
+                                <button onClick={(e) => handleLockToggle(monster.id, isLocked, e)} style={{
+                                    position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', border: 'none',
+                                    borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    padding: 0, zIndex: 10
+                                }}>
+                                    <img
+                                        src={isLocked ? '/assets/ui/locked.png' : '/assets/ui/unlocked.png'}
+                                        alt={isLocked ? 'Locked' : 'Unlocked'}
+                                        style={{
+                                            width: '20px', height: '20px', objectFit: 'contain',
+                                            filter: isLocked
+                                                ? 'grayscale(100%) brightness(70%) drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
+                                                : 'drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
+                                        }}
+                                    />
+                                </button>
 
                                 {decomposeMode && isSelected && (
                                     <div style={{
                                         position: 'absolute', top: '10px', right: '10px', background: '#dc2626', color: 'white',
-                                        padding: '5px 10px', borderRadius: '6px', fontSize: '0.8em', fontWeight: 'bold', zIndex: 10
+                                        padding: '4px 8px', borderRadius: '6px', fontSize: '0.8em', fontWeight: 'bold', zIndex: 10
                                     }}>✓ 선택됨</div>
-                                )}
-
-                                {/* Stats Grid */}
-                                <div style={{
-                                    display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '5px',
-                                    background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '8px', textAlign: 'center'
-                                }}>
-                                    <div>
-                                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>HP</div>
-                                        <div style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '13px' }}>{stats.hp}</div>
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>ATK</div>
-                                        <div style={{ color: '#eab308', fontWeight: 'bold', fontSize: '13px' }}>{stats.atk}</div>
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '10px', color: '#94a3b8' }}>DEF</div>
-                                        <div style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '13px' }}>{stats.def}</div>
-                                    </div>
-                                </div>
-
-                                {/* Skills */}
-                                {skills.length > 0 && (
-                                    <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                                        {skills.slice(0, 3).map(skill => (
-                                            <div
-                                                key={skill.id}
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    setSelectedSkill(skill)
-                                                }}
-                                                style={{
-                                                    background: skill.type === 'ACTIVE' ? 'rgba(220, 38, 38, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-                                                    border: `1px solid ${skill.type === 'ACTIVE' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
-                                                    borderRadius: '4px', padding: '3px 6px', fontSize: '11px', color: '#e2e8f0',
-                                                    display: 'flex', alignItems: 'center', gap: '3px',
-                                                    cursor: 'pointer'
-                                                }}
-                                                title="스킬 상세 보기" // Simplified title
-                                            >
-                                                <span>{skill.emoji}</span>
-                                                <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80px' }}>{skill.name}</span>
-                                            </div>
-                                        ))}
-                                        {skills.length > 3 && <div style={{ fontSize: '11px', color: '#64748b', alignSelf: 'center' }}>+{skills.length - 3}</div>}
-                                    </div>
                                 )}
                             </div>
                         )
@@ -675,11 +635,12 @@ export default function MonsterFarm() {
                 </div>
             )}
 
-            {/* Skill Detail Modal */}
-            {selectedSkill && (
-                <SkillDetailModal
-                    skill={selectedSkill}
-                    onClose={() => setSelectedSkill(null)}
+            {/* Monster Detail Modal */}
+            {selectedMonsterForModal && (
+                <MonsterDetailModal
+                    monster={selectedMonsterForModal}
+                    onClose={() => setSelectedMonsterForModal(null)}
+                    onToggleLock={handleLockToggleCore}
                 />
             )}
         </div>
