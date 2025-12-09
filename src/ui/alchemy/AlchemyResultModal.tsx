@@ -4,6 +4,11 @@ import { getMonsterData } from '../../data/monsterData'
 interface AlchemyResultModalProps {
     isOpen: boolean
     success: boolean
+    hint?: {
+        monsterName: string
+        materialName: string
+        recipeId: string
+    }
     monsterId?: string
     onClose: () => void
 }
@@ -12,6 +17,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
     isOpen,
     success,
     monsterId,
+    hint,
     onClose
 }) => {
     if (!isOpen) return null
@@ -47,9 +53,12 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                 }}>
                     <div style={{
                         fontSize: '48px',
-                        marginBottom: '12px'
+                        marginBottom: '12px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
                     }}>
-                        {success ? '✅' : '❌'}
+                        {success ? '✅' : <img src="/assets/fail_alchemy.png" alt="Failed" style={{ width: '64px', height: '64px' }} />}
                     </div>
                     <h2 style={{
                         margin: 0,
@@ -179,8 +188,43 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                             lineHeight: '1.6'
                         }}>
                             연금술이 실패했습니다.<br />
-                            재료가 소모되었습니다.
+                            재료가 소모되었습니다.<br />
+                            <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>실패했지만 경험치는 획득했습니다!</span>
                         </p>
+
+                        {/* Hint Message */}
+                        {hint && (
+                            <div style={{
+                                marginTop: '20px',
+                                padding: '16px',
+                                background: 'rgba(251, 191, 36, 0.1)',
+                                border: '1px solid #fbbf24',
+                                borderRadius: '8px',
+                                animation: 'pulse 2s infinite'
+                            }}>
+                                <h4 style={{
+                                    margin: '0 0 8px 0',
+                                    color: '#fbbf24',
+                                    fontWeight: 'bold',
+                                    fontSize: '16px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px'
+                                }}>
+                                    <span>💡</span> 힌트 발견!
+                                </h4>
+                                <p style={{
+                                    margin: 0,
+                                    fontSize: '14px',
+                                    color: '#e2e8f0',
+                                    lineHeight: '1.5'
+                                }}>
+                                    <span style={{ color: '#facc15', fontWeight: 'bold' }}>'{hint.monsterName}'</span>의 조합법 힌트를 얻었다!<br />
+                                    <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>{hint.materialName}</span>이(가) 확정적으로 들어가는 것 같다!
+                                </p>
+                            </div>
+                        )}
                     </div>
                 )}
 

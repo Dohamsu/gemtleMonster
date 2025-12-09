@@ -169,7 +169,7 @@ export async function addAlchemyExperience(userId: string, exp: number): Promise
 export async function getLastCollectedAt(userId: string): Promise<Date | null> {
   const { data, error } = await supabase
     .from('player_resource')
-    .select('last_collected_at')
+    .select('amount')
     .eq('user_id', userId)
     .eq('resource_id', 'offline_reward_timestamp')
     .single()
@@ -178,7 +178,8 @@ export async function getLastCollectedAt(userId: string): Promise<Date | null> {
     return null
   }
 
-  return data?.last_collected_at ? new Date(data.last_collected_at) : null
+  // amount에 초 단위 타임스탬프가 저장됨
+  return data?.amount ? new Date(data.amount * 1000) : null
 }
 
 /**
@@ -189,17 +190,65 @@ export async function getLastCollectedAt(userId: string): Promise<Date | null> {
  */
 export async function updateLastCollectedAt(userId: string, timestamp?: Date): Promise<void> {
   const time = timestamp || new Date()
+  const seconds = Math.floor(time.getTime() / 1000)
 
   const { error } = await supabase
     .from('player_resource')
     .upsert({
       user_id: userId,
       resource_id: 'offline_reward_timestamp',
-      last_collected_at: time.toISOString()
+      amount: seconds
     }, { onConflict: 'user_id,resource_id' })
 
   if (error) {
     console.error('마지막 수집 시간 업데이트 실패:', error)
     throw error
   }
+}
+
+// ============================================
+// 실패 힌트 시스템 관련 API
+// ============================================
+
+/**
+ * 연속 실패 횟수 가져오기
+ */
+export async function getConsecutiveFailures(userId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('player_resource')
+    .select('amount')
+    .eq('user_id', userId)
+    .eq('resource_id', 'alchemy_consecutive_failures')
+    .single()
+
+  if (error) {
+    return 0
+  }
+
+  return data?.amount || 0
+}
+
+/**
+ * 연속 실패 횟수 업데이트
+ */
+export async function updateConsecutiveFailures(userId: string, count: number): Promise<void> {
+  const { error } = await supabase
+    .from('player_resource')
+    .upsert({
+      user_id: userId,
+      resource_id: 'alchemy_consecutive_failures',
+      amount: count
+    }, { onConflict: 'user_id,resource_id' })
+
+  if (error) {
+    console.error('연속 실패 횟수 업데이트 실패:', error)
+    // 에러가 나도 게임 진행을 막지 않음
+  }
+}
+
+/**
+ * 연속 실패 횟수 초기화
+ */
+export async function resetConsecutiveFailures(userId: string): Promise<void> {
+  await updateConsecutiveFailures(userId, 0)
 }

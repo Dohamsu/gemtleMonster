@@ -61,7 +61,11 @@ export default function GameCanvas() {
     const [showOfflineRewardModal, setShowOfflineRewardModal] = useState(false)
 
     const [showResultModal, setShowResultModal] = useState(false)
-    const [lastBrewResult, setLastBrewResult] = useState<{ success: boolean; monsterId?: string }>({
+    const [lastBrewResult, setLastBrewResult] = useState<{
+        success: boolean;
+        monsterId?: string;
+        hint?: { monsterName: string; materialName: string; recipeId: string }
+    }>({
         success: false
     })
     const [materialScrollOffset, setMaterialScrollOffset] = useState(0)
@@ -131,7 +135,8 @@ export default function GameCanvas() {
         if (brewResult.type !== 'idle') {
             setLastBrewResult({
                 success: brewResult.type === 'success',
-                monsterId: brewResult.monsterId
+                monsterId: brewResult.monsterId,
+                hint: brewResult.hint
             })
             setShowResultModal(true)
         }
@@ -323,6 +328,7 @@ export default function GameCanvas() {
                 isOpen={showResultModal}
                 success={lastBrewResult.success}
                 monsterId={lastBrewResult.monsterId}
+                hint={lastBrewResult.hint}
                 onClose={() => setShowResultModal(false)}
             />
 

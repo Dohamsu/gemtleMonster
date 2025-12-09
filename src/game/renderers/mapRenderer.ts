@@ -106,15 +106,11 @@ export function renderMapView({ ctx, canvas, images, facilities }: MapRendererPr
     }
 
     // Render Spirit Sanctum if owned (or for debugging)
-    // Use herb_farm image as a guaranteed placeholder
-    if (images.herb_farm && facilities && facilities['spirit_sanctum'] !== undefined) {
+    if (images.spirit_sanctum && facilities && facilities['spirit_sanctum'] !== undefined) {
         const sanctumX = canvas.width * 0.2 - 64
         const sanctumY = canvas.height * 0.2 - 64
 
-        // Use filter to give it a magical/spirit look (blue/purple tint)
-        ctx.filter = 'hue-rotate(180deg) brightness(1.2)'
-        ctx.drawImage(images.herb_farm, sanctumX, sanctumY, 128, 128)
-        ctx.filter = 'none'
+        ctx.drawImage(images.spirit_sanctum, sanctumX, sanctumY, 128, 128)
 
         ctx.fillStyle = '#a78bfa' // Light purple
         ctx.font = 'bold 14px Arial'

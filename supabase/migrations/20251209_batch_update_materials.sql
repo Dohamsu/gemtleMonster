@@ -1,7 +1,7 @@
 -- 배치를 통한 재료 일괄 추가 함수
 -- Usage: supabase.rpc('add_materials_batch', { p_user_id: '...', p_materials: { "herb_common": 10, "ore_iron": 5 } })
 
-create or replace function add_materials_batch(
+create or replace function batch_add_materials(
   p_user_id uuid,
   p_materials jsonb
 ) returns void as $$

@@ -103,11 +103,20 @@ export function useOfflineRewards(userId: string | undefined) {
               for (const [materialId, dropRate] of Object.entries(stats.dropRates)) {
                 cumulativeProbability += dropRate
                 if (random < cumulativeProbability) {
+                  // 일단 여기서는 원본 수량을 더하고 나중에 0.2 곱하겠습니다.
                   totalRewards[materialId] = (totalRewards[materialId] || 0) + stats.bundlesPerTick
                   break
                 }
               }
             }
+          }
+        }
+
+        // 전체 보상에 0.2 효율 적용 (정수로 내림)
+        for (const key of Object.keys(totalRewards)) {
+          totalRewards[key] = Math.floor(totalRewards[key] * 0.2)
+          if (totalRewards[key] <= 0) {
+            delete totalRewards[key]
           }
         }
 

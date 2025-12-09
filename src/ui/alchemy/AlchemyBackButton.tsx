@@ -43,7 +43,7 @@ export const AlchemyBackButton: React.FC<AlchemyBackButtonProps> = ({ onBack }) 
                 e.currentTarget.style.transform = 'translateY(0)'
             }}
         >
-            ⬅️ 나가기
+            ← 나가기
         </button>
     )
 }

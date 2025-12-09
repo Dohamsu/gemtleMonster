@@ -550,11 +550,11 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         description: '작고 가벼워 어디든 데리고 다닐 수 있는 슬라임. 모바일 환경에 최적화되어 있습니다.',
         role: '서포터',
         hp: 100,
-        attack: 40,
-        defense: 20,
+        attack: 70,
+        defense: 40,
         emoji: '📱',
         iconUrl: '/assets/monsters/slime_mobile.png',
-        rarity: 'N',
+        rarity: 'R',
         element: 'water'
     }
 }

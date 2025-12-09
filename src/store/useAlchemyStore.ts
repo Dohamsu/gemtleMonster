@@ -41,6 +41,11 @@ interface AlchemyState {
     monsterId?: string
     count?: number
     lostMaterials?: Record<string, number>
+    hint?: {
+      monsterName: string
+      materialName: string
+      recipeId: string
+    }
   }
 
   // 로딩 상태
@@ -560,7 +565,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   updateBrewProgress: (progress) => set({ brewProgress: progress }),
 
   completeBrewing: async (success, matchedRecipe) => {
-    const { userId, selectedRecipeId, allRecipes, selectedIngredients, playerMaterials, playerAlchemy } = get()
+    const { userId, selectedRecipeId, allRecipes, selectedIngredients, playerMaterials, playerAlchemy, allMaterials } = get()
     const gameStore = useGameStore.getState()
 
     if (!userId) return
@@ -582,10 +587,64 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       materialsUsed[materialId] = count
     }
 
+    // hint 객체 생성
+    let hint: { monsterName: string, materialName: string, recipeId: string } | undefined
+
+    // 힌트 시스템 처리
+    if (success) {
+      // 성공 시 실패 카운트 리셋
+      await alchemyApi.resetConsecutiveFailures(userId)
+    } else {
+      // 실패 시 카운트 증가
+      const failCount = (await alchemyApi.getConsecutiveFailures(userId)) + 1
+      await alchemyApi.updateConsecutiveFailures(userId, failCount)
+
+      console.log(`💔 연속 실패 ${failCount}회`)
+
+      // 3회 이상 실패 시 힌트 제공
+      if (failCount >= 3) {
+        // 아직 발견하지 못한 레시피 중에서
+        // 내가 방금 사용한 재료를 하나라도 포함하는 레시피 찾기
+
+        // 이미 발견한 레시피 목록 (ID)
+        const discoveredRecipeIds = Object.keys(get().playerRecipes)
+
+        // 발견하지 못한 레시피 필터링
+        const indiscoveredRecipes = allRecipes.filter(r => !discoveredRecipeIds.includes(r.id))
+
+        // 셔플을 위한 랜덤 정렬
+        const shuffledRecipes = [...indiscoveredRecipes].sort(() => 0.5 - Math.random())
+
+        // 사용된 재료 ID 목록
+        const usedMaterialIds = Object.keys(materialsUsed)
+
+        for (const undiscoveredRecipe of shuffledRecipes) {
+          // 이 레시피의 재료 중 사용된 재료가 포함되어 있는지 확인
+          const matchingIngredient = undiscoveredRecipe.ingredients?.find(ing => usedMaterialIds.includes(ing.material_id))
+
+          if (matchingIngredient) {
+            // 힌트 발견!
+            const materialName = allMaterials.find(m => m.id === matchingIngredient.material_id)?.name || matchingIngredient.material_id
+
+            hint = {
+              monsterName: undiscoveredRecipe.name.replace(' 레시피', '').replace(' 조합법', ''), // 이름만 추출
+              materialName: materialName,
+              recipeId: undiscoveredRecipe.id
+            }
+            console.log('💡 힌트 발견:', hint)
+
+            // 힌트 제공 시 실패 카운트 리셋 (선택사항, 너무 자주 뜨면 귀찮을 수 있으니 리셋 추천)
+            await alchemyApi.resetConsecutiveFailures(userId)
+            break
+          }
+        }
+      }
+    }
+
     // 결과 설정
     const brewResult = recipe && success
       ? { type: 'success' as const, monsterId: recipe.result_monster_id, count: recipe.result_count }
-      : { type: 'fail' as const, lostMaterials: materialsUsed }
+      : { type: 'fail' as const, lostMaterials: materialsUsed, hint }
 
     set({
       isBrewing: false,
@@ -596,6 +655,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       selectedIngredients: {},
       selectedRecipeId: null // 조합 완료 후 레시피 선택 해제
     })
+
+    // ... (rest of the function is mostly same, just ensuring hint is passed if any)
 
     // gameStore의 resources도 업데이트
     gameStore.setResources(newGameResources)
