@@ -201,6 +201,8 @@ function App() {
                     <UIOverlay />
                 </div>
             </div>
+
+            <InstallPrompt />
         )
     }
 
