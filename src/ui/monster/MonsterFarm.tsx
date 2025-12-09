@@ -501,6 +501,21 @@ export default function MonsterFarm() {
                                                 padding: '1px 6px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
                                             }}>Lv.{level}</span>
                                         </div>
+
+                                        {/* Stars */}
+                                        {(monster.awakening_level || 0) > 0 && (
+                                            <div style={{
+                                                position: 'absolute', top: '-6px', width: '100%', textAlign: 'center',
+                                                display: 'flex', justifyContent: 'center', gap: '1px'
+                                            }}>
+                                                {Array.from({ length: monster.awakening_level || 0 }).map((_, i) => (
+                                                    <span key={i} style={{
+                                                        fontSize: '10px', color: '#fbbf24',
+                                                        textShadow: '0 0 2px black'
+                                                    }}>★</span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Right: Info (Simplified) */}

@@ -1,0 +1,253 @@
+/* eslint-disable no-console */
+import { useState, useMemo } from 'react'
+import { MONSTER_DATA } from '../../data/monsterData'
+import { useAlchemyStore } from '../../store/useAlchemyStore'
+import { awakenMonster } from '../../lib/monsterApi'
+import { useAuth } from '../../hooks/useAuth'
+import type { PlayerMonster } from '../../types/monster'
+
+interface AwakeningModalProps {
+    targetMonster: PlayerMonster
+    onClose: () => void
+    onSuccess: () => void
+}
+
+export default function AwakeningModal({ targetMonster, onClose, onSuccess }: AwakeningModalProps) {
+    const { user } = useAuth()
+    const { playerMonsters, loadPlayerMonsters } = useAlchemyStore()
+    const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null)
+    const [isProcessing, setIsProcessing] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const [animationState, setAnimationState] = useState<'SELECT' | 'ANIMATING' | 'SUCCESS'>('SELECT')
+
+    // Filter available materials: Same monster_id, not locked, not the target itself
+    const availableMaterials = useMemo(() => {
+        return playerMonsters.filter(m =>
+            m.monster_id === targetMonster.monster_id && // Same species
+            m.id !== targetMonster.id && // Not self
+            !m.is_locked // Not locked
+        )
+    }, [playerMonsters, targetMonster])
+
+    const handleAwaken = async () => {
+        if (!user || !selectedMaterialId) return
+        setIsProcessing(true)
+        setError(null)
+        setAnimationState('ANIMATING')
+
+        try {
+            // Start animation (visual only first part)
+            await new Promise(resolve => setTimeout(resolve, 1500)) // Fake delay for build-up
+
+            // Actual API call
+            const result = await awakenMonster(user.id, targetMonster.id, selectedMaterialId)
+
+            if (result.success) {
+                // Success Flash
+                setAnimationState('SUCCESS')
+                await loadPlayerMonsters(user.id)
+
+                // Show success state for a moment
+                await new Promise(resolve => setTimeout(resolve, 1500))
+
+                onSuccess() // Trigger parent refresh
+                onClose()
+            } else {
+                setError(result.error || '초월에 실패했습니다.')
+                setAnimationState('SELECT')
+            }
+        } catch (err) {
+            console.error(err)
+            setError('시스템 오류가 발생했습니다.')
+            setAnimationState('SELECT')
+        } finally {
+            setIsProcessing(false)
+        }
+    }
+
+    const data = MONSTER_DATA[targetMonster.monster_id]
+    if (!data) return null
+
+    // Helper to get color
+    function getRarityColor(r: string) {
+        switch (r) {
+            case 'SSR': return '#fbbf24';
+            case 'SR': return '#c084fc';
+            case 'R': return '#60a5fa';
+            default: return '#94a3b8';
+        }
+    }
+
+    // Animation Styles
+    const animationStyles = `
+        @keyframes pulse-glow {
+            0% { transform: scale(1); filter: drop-shadow(0 0 10px ${getRarityColor(data.rarity || 'N')}); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 30px ${getRarityColor(data.rarity || 'N')}) brightness(1.5); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 10px ${getRarityColor(data.rarity || 'N')}); }
+        }
+        @keyframes success-pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes rays {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `
+
+    return (
+        <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(8px)',
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            zIndex: 1100, padding: '20px'
+        }} onClick={animationState === 'SELECT' ? onClose : undefined}>
+            <style>{animationStyles}</style>
+
+            <div style={{
+                background: '#1e293b',
+                width: '100%', maxWidth: '500px',
+                borderRadius: '16px',
+                border: `2px solid ${animationState === 'SELECT' ? '#fbbf24' : 'transparent'}`,
+                padding: '24px',
+                display: 'flex', flexDirection: 'column', gap: '20px',
+                position: 'relative',
+                boxShadow: animationState === 'ANIMATING' ? '0 0 100px rgba(251, 191, 36, 0.5)' : '0 0 30px rgba(0,0,0,0.5)',
+                transition: 'all 0.5s ease',
+                overflow: 'hidden'
+            }} onClick={e => e.stopPropagation()}>
+
+                {/* ANIMATING / SUCCESS VIEW */}
+                {(animationState === 'ANIMATING' || animationState === 'SUCCESS') && (
+                    <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        minHeight: '300px', gap: '20px'
+                    }}>
+                        {/* Background Rays */}
+                        <div style={{
+                            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                            width: '600px', height: '600px',
+                            background: `conic-gradient(from 0deg, transparent 0deg, ${getRarityColor(data.rarity || 'N')}20 30deg, transparent 60deg)`,
+                            animation: 'rays 4s linear infinite',
+                            pointerEvents: 'none', zIndex: 0
+                        }}></div>
+
+                        {/* Main Monster */}
+                        <div style={{
+                            fontSize: '100px',
+                            animation: animationState === 'ANIMATING' ? 'pulse-glow 1.5s infinite ease-in-out' : 'success-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                            filter: `drop-shadow(0 0 20px ${getRarityColor(data.rarity || 'N')})`,
+                            zIndex: 1, position: 'relative'
+                        }}>
+                            {data.iconUrl
+                                ? <img src={data.iconUrl} alt={data.name} style={{ width: '150px', height: '150px', objectFit: 'contain' }} />
+                                : data.emoji
+                            }
+                            {animationState === 'SUCCESS' && (
+                                <div style={{
+                                    position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)',
+                                    fontSize: '24px', color: '#fbbf24', textShadow: '0 0 10px #f59e0b',
+                                    whiteSpace: 'nowrap', fontWeight: 'bold'
+                                }}>
+                                    SUCCESS!
+                                </div>
+                            )}
+                        </div>
+
+                        <div style={{ zIndex: 1, color: '#cbd5e1', fontSize: '1.2em', fontWeight: 'bold' }}>
+                            {animationState === 'ANIMATING' ? '초월 진행 중...' : '초월 성공!'}
+                        </div>
+                    </div>
+                )}
+
+                {/* SELECTION VIEW */}
+                {animationState === 'SELECT' && (
+                    <>
+                        <h2 style={{ margin: 0, color: '#fbbf24', textAlign: 'center' }}>✨ 몬스터 초월</h2>
+
+                        <div style={{ textAlign: 'center', color: '#cbd5e1', fontSize: '0.95em' }}>
+                            <span style={{ color: '#93c5fd', fontWeight: 'bold' }}>{data.name}</span>을(를) 초월하시겠습니까?<br />
+                            <span style={{ fontSize: '0.85em', color: '#94a3b8' }}>재료로 사용된 몬스터는 <span style={{ color: '#f87171' }}>사라집니다.</span></span>
+                        </div>
+
+                        {/* Selection Area */}
+                        <div style={{
+                            background: 'rgba(15, 23, 42, 0.5)', borderRadius: '12px', padding: '15px',
+                            minHeight: '150px', maxHeight: '300px', overflowY: 'auto'
+                        }}>
+                            <h3 style={{ margin: '0 0 10px', fontSize: '0.9em', color: '#e2e8f0' }}>재료 선택 (중복 몬스터)</h3>
+
+                            {availableMaterials.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                                    사용 가능한 재료 몬스터가 없습니다.<br />
+                                    <span style={{ fontSize: '0.8em' }}>(잠금 해제된 동일 몬스터 필요)</span>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '10px' }}>
+                                    {availableMaterials.map(mat => (
+                                        <div key={mat.id}
+                                            onClick={() => setSelectedMaterialId(mat.id)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                border: selectedMaterialId === mat.id ? '2px solid #fbbf24' : '1px solid #334155',
+                                                borderRadius: '8px', padding: '5px',
+                                                background: selectedMaterialId === mat.id ? 'rgba(251, 191, 36, 0.2)' : 'rgba(30, 41, 59, 0.8)',
+                                                textAlign: 'center', transition: 'all 0.2s'
+                                            }}
+                                        >
+                                            <div style={{
+                                                width: '100%', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: '24px', overflow: 'hidden', padding: '5px', position: 'relative'
+                                            }}>
+                                                {data.iconUrl
+                                                    ? <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                    : data.emoji
+                                                }
+                                                <div style={{
+                                                    position: 'absolute', bottom: '0', right: '0',
+                                                    background: '#3b82f6', color: 'white', fontSize: '10px',
+                                                    padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold',
+                                                    boxShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                                }}>
+                                                    Lv.{mat.level}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {error && (
+                            <div style={{ color: '#ef4444', textAlign: 'center', fontSize: '0.9em', background: 'rgba(220, 38, 38, 0.1)', padding: '8px', borderRadius: '8px' }}>
+                                {error}
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                            <button onClick={onClose} style={{
+                                padding: '10px 20px', borderRadius: '8px', border: 'none',
+                                background: '#475569', color: 'white', cursor: 'pointer'
+                            }}>취소</button>
+
+                            <button
+                                onClick={handleAwaken}
+                                disabled={!selectedMaterialId || isProcessing || animationState !== 'SELECT'}
+                                style={{
+                                    padding: '10px 20px', borderRadius: '8px', border: 'none',
+                                    background: (!selectedMaterialId || isProcessing || animationState !== 'SELECT') ? '#94a3b8' : '#fbbf24',
+                                    color: (!selectedMaterialId || isProcessing || animationState !== 'SELECT') ? '#e2e8f0' : '#451a03',
+                                    cursor: (!selectedMaterialId || isProcessing || animationState !== 'SELECT') ? 'not-allowed' : 'pointer',
+                                    fontWeight: 'bold', display: 'flex', gap: '8px', alignItems: 'center'
+                                }}
+                            >
+                                {isProcessing ? '처리 중...' : '초월하기'}
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    )
+}

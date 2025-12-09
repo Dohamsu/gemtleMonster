@@ -1,6 +1,25 @@
 # 📋 변경 이력
 
 모든 주요 변경사항은 이 파일에 문서화됩니다.
+## [0.2.5] - 2025-12-09
+
+### ✨ New Features
+- **Awakening System**: 몬스터 초월 시스템 추가 (최대 5성).
+  - 동일한 몬스터를 재료로 사용하여 스탯 강화.
+  - 초월 레벨에 따른 별(★) 표시 및 상세 정보 UI.
+- **New Materials**: 속성 파편(불, 물, 대지, 바람, 빛, 어둠) 및 몬스터 정수 아이템 추가.
+
+### 🎨 UI/UX Improvements
+- **Awakening UI**: 초월 성공 시 화려한 연출 애니메이션 추가.
+- **Mobile Optimization**: 몬스터 상세 정보 모달이 모바일 환경에서 잘려 보이지 않도록 스크롤 및 레이아웃 개선.
+- **Visuals**: 속성 파편 아이템에 직관적인 이미지 적용.
+
+### 🎮 Content Updates
+- **Dungeon Drops**:
+  - 화산 요새: '불의 파편' 드랍 추가.
+  - 천공의 탑: '바람의 파편' 드랍 추가.
+  - 전역 드랍: 모든 던전 몬스터가 낮은 확률로 '몬스터 정수' 드랍.
+
 ## [0.2.4] - 2025-12-07
 ### ✨ New Features
 - **UI Overlay**: Added current gold display below player ID.

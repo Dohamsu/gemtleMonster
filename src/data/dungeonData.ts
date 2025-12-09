@@ -385,5 +385,37 @@ export const BEAST_DUNGEON: Dungeon = {
     ]
 }
 
-export const DUNGEONS = [SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON, BEAST_DUNGEON, CHRISTMAS_DUNGEON, VOLCANO_DUNGEON, SKY_DUNGEON]
+// Helper to add global drops
+function addGlobalDrops(dungeons: Dungeon[]): Dungeon[] {
+    return dungeons.map(dungeon => ({
+        ...dungeon,
+        enemies: dungeon.enemies.map(enemy => ({
+            ...enemy,
+            drops: [
+                ...enemy.drops,
+                // Global Low Chance Drop: Monster Essence
+                { materialId: 'essence', chance: 5, minQuantity: 1, maxQuantity: 1 }
+            ]
+        }))
+    }))
+}
+
+// Add specific shard drops manually where missing before exporting
+const VOLCANO_WITH_DROPS = {
+    ...VOLCANO_DUNGEON,
+    enemies: VOLCANO_DUNGEON.enemies.map(e => ({
+        ...e,
+        drops: [...e.drops, { materialId: 'shard_fire', chance: 30, minQuantity: 1, maxQuantity: 1 }]
+    }))
+}
+
+const SKY_WITH_DROPS = {
+    ...SKY_DUNGEON,
+    enemies: SKY_DUNGEON.enemies.map(e => ({
+        ...e,
+        drops: [...e.drops, { materialId: 'shard_wind', chance: 30, minQuantity: 1, maxQuantity: 1 }]
+    }))
+}
+
+export const DUNGEONS = addGlobalDrops([SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON, BEAST_DUNGEON, CHRISTMAS_DUNGEON, VOLCANO_WITH_DROPS, SKY_WITH_DROPS])
 

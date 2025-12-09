@@ -21,12 +21,12 @@ export const MATERIALS: Record<string, Material> = {
 
     // Decompose System Materials
     'essence': { id: 'essence', name: '몬스터 정수', type: 'SPECIAL', description: '몬스터의 생명력이 응축된 정수.', rarity: 'N', iconUrl: '/assets/materials/essence.png' },
-    'shard_fire': { id: 'shard_fire', name: '불의 파편', type: 'MINERAL', description: '불 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '🔴' },
-    'shard_water': { id: 'shard_water', name: '물의 파편', type: 'MINERAL', description: '물 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '🔵' },
-    'shard_earth': { id: 'shard_earth', name: '대지의 파편', type: 'MINERAL', description: '대지 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '🟤' },
-    'shard_wind': { id: 'shard_wind', name: '바람의 파편', type: 'MINERAL', description: '바람 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '🟢' },
-    'shard_light': { id: 'shard_light', name: '빛의 파편', type: 'MINERAL', description: '빛 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '🟡' },
-    'shard_dark': { id: 'shard_dark', name: '어둠의 파편', type: 'MINERAL', description: '어둠 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '🟣' },
+    'shard_fire': { id: 'shard_fire', name: '불의 파편', type: 'MINERAL', description: '불 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '/assets/materials/shard_fire.png' },
+    'shard_water': { id: 'shard_water', name: '물의 파편', type: 'MINERAL', description: '물 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '/assets/materials/shard_water.png' },
+    'shard_earth': { id: 'shard_earth', name: '대지의 파편', type: 'MINERAL', description: '대지 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '/assets/materials/shard_earth.png' },
+    'shard_wind': { id: 'shard_wind', name: '바람의 파편', type: 'MINERAL', description: '바람 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '/assets/materials/shard_wind.png' },
+    'shard_light': { id: 'shard_light', name: '빛의 파편', type: 'MINERAL', description: '빛 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '/assets/materials/shard_light.png' },
+    'shard_dark': { id: 'shard_dark', name: '어둠의 파편', type: 'MINERAL', description: '어둠 속성 몬스터의 힘이 담긴 파편.', rarity: 'R', iconUrl: '/assets/materials/shard_dark.png' },
 
     // Additional materials
     'seed_ancient': { id: 'seed_ancient', name: '고대의 씨앗', type: 'PLANT', description: '오래된 힘을 간직한 희귀한 씨앗', rarity: 'R', iconUrl: '/assets/materials/seed_ancient.png' },

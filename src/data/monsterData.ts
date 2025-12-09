@@ -542,7 +542,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         defense: 70,
         emoji: '🖥️',
         iconUrl: '/assets/monsters/golem_desktop.png',
-        rarity: 'SR',
+        rarity: 'SSR',
         element: 'earth'
     },
     'monster_slime_mobile': {

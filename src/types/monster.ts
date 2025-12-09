@@ -37,4 +37,5 @@ export interface PlayerMonster {
   exp: number
   created_at: string
   is_locked: boolean
+  awakening_level: number
 }

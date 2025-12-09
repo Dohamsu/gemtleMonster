@@ -1,9 +1,11 @@
 // import React from 'react'
+import { useState } from 'react'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { calculateStats, getExpProgress, getMaxLevel, getRequiredExp, type RarityType } from '../../lib/monsterLevelUtils'
 import { getNextSkillUnlockLevel, getUnlockableSkills } from '../../data/monsterSkillData'
 import type { PlayerMonster } from '../../types/monster'
 import type { RoleType } from '../../types/alchemy'
+import AwakeningModal from './AwakeningModal'
 
 interface MonsterDetailModalProps {
     monster: PlayerMonster
@@ -12,6 +14,7 @@ interface MonsterDetailModalProps {
 }
 
 export default function MonsterDetailModal({ monster, onClose, onToggleLock }: MonsterDetailModalProps) {
+    const [showAwakeningModal, setShowAwakeningModal] = useState(false)
     const data = MONSTER_DATA[monster.monster_id]
     if (!data) return null
 
@@ -21,9 +24,9 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
     const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
     const role = roleMap[data.role] || 'TANK'
     const monsterTypeId = monster.monster_id.replace(/^monster_/, '')
-    const stats = calculateStats({ hp: data.hp, atk: data.attack, def: data.defense }, level, rarity)
+    const stats = calculateStats({ hp: data.hp, atk: data.attack, def: data.defense }, level, rarity, monster.awakening_level || 0)
     const expProgress = getExpProgress(monster.exp, level, rarity)
-    const maxLevel = getMaxLevel(rarity)
+    const maxLevel = getMaxLevel(rarity, monster.awakening_level || 0)
     const skills = getUnlockableSkills(monsterTypeId, role, level)
     const nextSkillLevel = getNextSkillUnlockLevel(monsterTypeId, role, level)
 
@@ -38,23 +41,32 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
     }
     const rarityColor = getRarityColor(rarity)
 
+    // Awakening Logic
+    const awakeningLevel = monster.awakening_level || 0
+    const nextAwakeningLevel = awakeningLevel + 1
+    const canAwaken = awakeningLevel < 5 // Max 5 stars
+    const nextStats = canAwaken ? calculateStats({ hp: data.hp, atk: data.attack, def: data.defense }, level, rarity, nextAwakeningLevel) : stats
+
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
             display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 1000, padding: '20px'
+            zIndex: 1000, padding: '10px' // Reduced outer padding
         }} onClick={onClose}>
             <div style={{
                 background: '#1e293b',
-                width: '100%', maxWidth: '450px',
+                width: '100%', maxWidth: '450px', // Standard width
+                // On very small screens, ensure we don't overflow horizontally
+                minWidth: '300px',
                 borderRadius: '16px',
                 border: `2px solid ${rarityColor}`,
                 overflow: 'hidden',
                 boxShadow: `0 0 20px ${rarityColor}40`,
                 position: 'relative',
                 display: 'flex', flexDirection: 'column',
-                maxHeight: '90vh'
+                maxHeight: '90vh',
+                margin: 'auto' // Center if flex fails or for safety
             }} onClick={e => e.stopPropagation()}>
 
                 {/* Header / Top Section */}
@@ -113,6 +125,19 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                                 }}
                             />
                         </button>
+
+                        {/* Awakening Stars (Bottom Center) */}
+                        {awakeningLevel > 0 && (
+                            <div style={{
+                                position: 'absolute', bottom: '-15px', left: '50%', transform: 'translateX(-50%)',
+                                display: 'flex', gap: '2px',
+                                background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '10px'
+                            }}>
+                                {Array.from({ length: awakeningLevel }).map((_, i) => (
+                                    <span key={i} style={{ color: '#fbbf24', fontSize: '14px', textShadow: '0 0 5px #f59e0b' }}>★</span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Name & Basic Info */}
@@ -129,8 +154,8 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                     </div>
                 </div>
 
-                {/* Content Body */}
-                <div style={{ padding: '0 24px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {/* Content Body (Everything below Header scrolls) */}
+                <div style={{ padding: '0 20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
                     {/* Stats Grid */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
@@ -167,6 +192,41 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                                 다음 레벨까지: {getRequiredExp(level, rarity) - monster.exp} EXP
                             </div>
                         )}
+                    </div>
+
+                    {/* Awakening Section */}
+                    <div style={{
+                        background: 'linear-gradient(90deg, #1e1b4b 0%, #312e81 100%)',
+                        borderRadius: '12px', padding: '16px', border: '1px solid #4338ca'
+                    }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', gap: '10px' }}>
+                            <div style={{ color: '#fbbf24', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <span>⭐ 초월 ({awakeningLevel}/5)</span>
+                            </div>
+                            {canAwaken && (
+                                <button
+                                    onClick={() => setShowAwakeningModal(true)}
+                                    style={{
+                                        background: '#fbbf24', color: '#451a03',
+                                        border: 'none', padding: '6px 12px', borderRadius: '8px',
+                                        fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9em'
+                                    }}>
+                                    초월하기
+                                </button>
+                            )}
+                        </div>
+                        <div style={{ fontSize: '0.85em', color: '#c7d2fe', lineHeight: '1.4' }}>
+                            {canAwaken
+                                ? (
+                                    <div>
+                                        동일한 몬스터를 재료로 사용하여 스탯을 강화하세요.<br />
+                                        <span style={{ color: '#86efac', display: 'inline-block', marginTop: '4px' }}>
+                                            [예상] HP {stats.hp}→{nextStats.hp}, ATK {stats.atk}→{nextStats.atk}
+                                        </span>
+                                    </div>
+                                )
+                                : "최대 초월 레벨에 도달했습니다."}
+                        </div>
                     </div>
 
                     {/* Skills */}
@@ -214,7 +274,19 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                     </div>
 
                 </div>
+
             </div>
+
+            {showAwakeningModal && (
+                <AwakeningModal
+                    targetMonster={monster}
+                    onClose={() => setShowAwakeningModal(false)}
+                    onSuccess={() => {
+                        setShowAwakeningModal(false)
+                        onClose() // Close detail modal too to refresh list from outside
+                    }}
+                />
+            )}
         </div>
     )
 }

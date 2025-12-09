@@ -83,11 +83,14 @@ export function getExpProgress(currentExp: number, level: number, rarity: Rarity
     return Math.min(100, Math.floor((currentExp / required) * 100))
 }
 
+const AWAKENING_BONUS_PER_LEVEL = 0.05 // 5% stats per awakening
+const AWAKENING_MAX_LEVEL_BONUS = 5    // +5 max level per awakening
+
 /**
- * 최대 레벨 가져오기
+ * 최대 레벨 가져오기 (초월 포함)
  */
-export function getMaxLevel(rarity: RarityType): number {
-    return RARITY_CONFIG[rarity].maxLevel
+export function getMaxLevel(rarity: RarityType, awakeningLevel: number = 0): number {
+    return RARITY_CONFIG[rarity].maxLevel + (awakeningLevel * AWAKENING_MAX_LEVEL_BONUS)
 }
 
 // ==========================================
@@ -96,25 +99,27 @@ export function getMaxLevel(rarity: RarityType): number {
 
 /**
  * 레벨에 따른 스탯 계산
- * 공식: baseStat × (1 + (level - 1) × 0.08 × growthRate)
+ * 공식: baseStat × (1 + (level - 1) × 0.08 × growthRate) × (1 + awakeningLevel × 0.05)
  * 
- * @example (N등급, 기본 HP 100)
- * Lv.1: 100
- * Lv.10: 172
- * Lv.30: 332
+ * @example (N등급, 기본 HP 100, 초월 1강)
+ * Lv.1: 100 * 1.05 = 105
  */
 export function calculateStats(
     baseStats: MonsterStats,
     level: number,
-    rarity: RarityType = 'N'
+    rarity: RarityType = 'N',
+    awakeningLevel: number = 0
 ): MonsterStats {
     const config = RARITY_CONFIG[rarity]
-    const multiplier = 1 + (level - 1) * BASE_STAT_GROWTH_PER_LEVEL * config.growthRate
+    const levelMultiplier = 1 + (level - 1) * BASE_STAT_GROWTH_PER_LEVEL * config.growthRate
+    const awakeningMultiplier = 1 + (awakeningLevel * AWAKENING_BONUS_PER_LEVEL)
+
+    const finalMultiplier = levelMultiplier * awakeningMultiplier
 
     return {
-        hp: Math.floor(baseStats.hp * multiplier),
-        atk: Math.floor(baseStats.atk * multiplier),
-        def: Math.floor(baseStats.def * multiplier)
+        hp: Math.floor(baseStats.hp * finalMultiplier),
+        atk: Math.floor(baseStats.atk * finalMultiplier),
+        def: Math.floor(baseStats.def * finalMultiplier)
     }
 }
 
@@ -126,7 +131,8 @@ export function processLevelUp(
     currentLevel: number,
     currentExp: number,
     addedExp: number,
-    rarity: RarityType = 'N'
+    rarity: RarityType = 'N',
+    awakeningLevel: number = 0
 ): {
     newLevel: number
     newExp: number
@@ -136,7 +142,7 @@ export function processLevelUp(
     let newLevel = currentLevel
     let newExp = currentExp + addedExp
     let levelsGained = 0
-    const maxLevel = getMaxLevel(rarity)
+    const maxLevel = getMaxLevel(rarity, awakeningLevel)
 
     // 레벨업 루프 (최대 레벨 도달 시 중단)
     while (newLevel < maxLevel) {

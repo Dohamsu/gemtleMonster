@@ -51,7 +51,7 @@ export async function addMonsterToPlayer(
 export async function getPlayerMonsters(userId: string): Promise<PlayerMonster[]> {
   const { data, error } = await supabase
     .from('player_monster')
-    .select('id, monster_id, level, exp, created_at, is_locked')
+    .select('id, monster_id, level, exp, created_at, is_locked, awakening_level')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
@@ -170,10 +170,43 @@ export async function updateMonsterExp(
   const { getNewlyUnlockedSkills } = await import('../data/monsterSkillData')
 
   // 지수형 경험치 곡선 적용된 레벨업 처리
-  const result = processLevelUp(currentLevel, currentExp, addedExp, rarity)
+  // Note: updateMonsterExp에서는 현재 초월 레벨을 알 수 없어 기본 maxLevel을 사용합니다.
+  // 정확한 처리를 위해서는 awakening_level을 인자로 받아야 하지만, 
+  // 기존 코드 호환성을 위해 우선 기본 maxLevel 로직을 유지하거나, 필요한 경우 DB 조회를 해야 합니다.
+  // 여기서는 getMaxLevel 호출 시 awakeningLevel을 0으로 가정하거나, 호출처에서 처리해야 합니다.
+  // processLevelUp 내부에서 getMaxLevel을 호출하므로, processLevelUp도 수정이 필요할 수 있습니다.
+  // 하지만 monsterLevelUtils.ts의 processLevelUp은 내부적으로 getMaxLevel(rarity)를 호출합니다.
+  // 이를 awakeningLevel을 받도록 수정해야 완벽하지만, 일단은 0으로 처리됩니다.
+  // *Critical Fix*: processLevelUp이 내부적으로 getMaxLevel(rarity)만 호출하면 초월로 늘어난 만렙을 인식 못함.
+  // 따라서 processLevelUp에 awakeningLevel 인자를 추가해야 함 (lib 수정 필요).
+  // 일단 여기서는 기존 로직대로 호출하고, 추후 processLevelUp 시그니처 변경에 대응해야 합니다.
+
+  // For now, let's assume awakeningLevel is 0 here to avoid breaking without reading current awakening.
+  // DB에서 읽어오는게 가장 안전.
+  const { data: currentMonster } = await supabase
+    .from('player_monster')
+    .select('awakening_level')
+    .eq('id', monsterId)
+    .single()
+
+  const currentAwakeningLevel = currentMonster?.awakening_level || 0
+
+  // We need to update processLevelUp to accept awakeningLevel.
+  // Since I haven't updated processLevelUp signature in step 2 (I only updated getMaxLevel/calculateStats),
+  // I must update processLevelUp in monsterLevelUtils.ts FIRST or pass a custom maxLevel if possible.
+  // Let's look at monsterLevelUtils.ts again... I missed processLevelUp in previous step.
+  // I will fix monsterLevelUtils.ts in next step or use a workaround.
+  // Workaround: processLevelUp imports getMaxLevel, but I changed getMaxLevel signature to (rarity, awakening=0).
+  // So existing processLevelUp using getMaxLevel(rarity) works but uses 0 awakening.
+  // This means leveled up monsters won't reach expanded cap. THIS IS A BUG.
+  // I will fix monsterLevelUtils.ts processLevelUp in a separate tool call.
+
+  const result = processLevelUp(currentLevel, currentExp, addedExp, rarity, currentAwakeningLevel)
   const { newLevel, newExp, leveledUp, levelsGained } = result
 
-  // 새로 해금된 스킬 수집
+  // ... (Rest of function)
+
+  // 새로 해금된 스킬 수집 (No changes needed)
   const newSkills: string[] = []
   if (leveledUp && monsterTypeId && role) {
     for (let lv = currentLevel + 1; lv <= newLevel; lv++) {
@@ -188,7 +221,14 @@ export async function updateMonsterExp(
     exp: newExp
   }
 
-  // 새 스킬이 있으면 unlocked_skills 배열에 추가
+  // ... (Rest of function remains similar)
+
+  // (Omitted existing code for brevity, will rely on replace_file checks to be safe, 
+  // actually I should just append the new function at the end)
+
+  // ... (Actually, let's just append awakenMonster at the end of the file)
+
+  // DB update part
   if (newSkills.length > 0) {
     const { data: currentData } = await supabase
       .from('player_monster')
@@ -221,5 +261,75 @@ export async function updateMonsterExp(
   }
 
   return { level: newLevel, exp: newExp, leveledUp, levelsGained, newSkills }
+}
+
+
+/**
+ * 몬스터 초월 (Awakening)
+ * 
+ * @param userId - 사용자 ID
+ * @param targetMonsterId - 초월할 몬스터 ID (UUID)
+ * @param materialMonsterId - 재료로 쓸 몬스터 ID (UUID)
+ */
+export async function awakenMonster(
+  userId: string,
+  targetMonsterId: string,
+  materialMonsterId: string
+): Promise<{ success: boolean; newAwakeningLevel: number; error?: string }> {
+  // 1. Validate ownership
+  const { data: monsters, error: fetchError } = await supabase
+    .from('player_monster')
+    .select('id, monster_id, awakening_level, is_locked')
+    .in('id', [targetMonsterId, materialMonsterId])
+    .eq('user_id', userId)
+
+  if (fetchError || !monsters || monsters.length !== 2) {
+    return { success: false, newAwakeningLevel: 0, error: '몬스터 정보를 찾을 수 없습니다.' }
+  }
+
+  const target = monsters.find(m => m.id === targetMonsterId)
+  const material = monsters.find(m => m.id === materialMonsterId)
+
+  if (!target || !material) return { success: false, newAwakeningLevel: 0, error: '몬스터 정보 오류' }
+
+  // 2. Validate conditions
+  if (target.monster_id !== material.monster_id) {
+    return { success: false, newAwakeningLevel: 0, error: '동일한 종류의 몬스터만 재료로 사용할 수 있습니다.' }
+  }
+  if (material.is_locked) {
+    return { success: false, newAwakeningLevel: 0, error: '잠금 상태인 몬스터는 재료로 사용할 수 없습니다.' }
+  }
+  if (target.awakening_level >= 5) {
+    return { success: false, newAwakeningLevel: 0, error: '이미 최대 초월 레벨입니다.' }
+  }
+
+  // 3. Execute Transaction (Simulate with sequential calls since we don't have a specific RPC yet)
+  // Delete material
+  const { error: deleteError } = await supabase
+    .from('player_monster')
+    .delete()
+    .eq('id', materialMonsterId)
+    .eq('user_id', userId)
+
+  if (deleteError) {
+    return { success: false, newAwakeningLevel: 0, error: '재료 몬스터 소모 중 오류가 발생했습니다.' }
+  }
+
+  // Update target
+  const newAwakeningLevel = target.awakening_level + 1
+  const { error: updateError } = await supabase
+    .from('player_monster')
+    .update({ awakening_level: newAwakeningLevel })
+    .eq('id', targetMonsterId)
+    .eq('user_id', userId)
+
+  if (updateError) {
+    // Critical: Material was deleted but target update failed. 
+    // In a real production app, this should be an SQL Transaction or RPC.
+    console.error('CRITICAL: Material deleted but Awakening failed', { targetMonsterId, materialMonsterId })
+    return { success: false, newAwakeningLevel: 0, error: '초월 업데이트 중 오류가 발생했습니다.' }
+  }
+
+  return { success: true, newAwakeningLevel }
 }
 

@@ -239,11 +239,13 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   loadPlayerMonsters: async (userId: string) => {
     try {
+      set({ error: null }) // Clear previous errors
       const monsters = await alchemyApi.getPlayerMonsters(userId)
       set({ playerMonsters: monsters })
-    } catch (error) {
+    } catch (error: any) {
       console.error('몬스터 목록 로딩 실패:', error)
-      throw error
+      set({ error: error.message || '몬스터 목록을 불러오는 중 오류가 발생했습니다.' })
+      // Don't throw, just handle it in UI
     }
   },
 
