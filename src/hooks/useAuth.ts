@@ -7,6 +7,7 @@ import type { User } from '@supabase/supabase-js'
 export function useAuth() {
     const [user, setUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const isInitializing = useRef(false)
 
     useEffect(() => {
@@ -32,56 +33,63 @@ export function useAuth() {
         }
 
         const signInWithDevice = async () => {
-            const deviceId = getDeviceId()
-            const email = `user_${deviceId}@gemtlemonster.com`
-            const password = `pwd_${deviceId}` // Simple password based on device ID
+            try {
+                const deviceId = getDeviceId()
+                const email = `user_${deviceId}@gemtlemonster.com`
+                const password = `pwd_${deviceId}` // Simple password based on device ID
 
-            // Try to sign in
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            })
-
-            if (signInError) {
-                // If sign in fails, try to sign up
-                console.log('Device account not found, creating...')
-                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                // Try to sign in
+                const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
                     email,
                     password,
-                    options: {
-                        emailRedirectTo: undefined, // Disable email confirmation
-                    }
                 })
 
-                if (signUpError) {
-                    // If user already exists (race condition), try to sign in again
-                    if (signUpError.message.includes('already registered')) {
-                        console.log('User already exists, retrying sign in...')
-                        const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-                            email,
-                            password,
-                        })
+                if (signInError) {
+                    // If sign in fails, try to sign up
+                    console.log('Device account not found, creating...')
+                    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                        email,
+                        password,
+                        options: {
+                            emailRedirectTo: undefined, // Disable email confirmation
+                        }
+                    })
 
-                        if (retryError) {
-                            console.error('Failed to sign in after retry:', retryError)
+                    if (signUpError) {
+                        // If user already exists (race condition), try to sign in again
+                        if (signUpError.message.includes('already registered')) {
+                            console.log('User already exists, retrying sign in...')
+                            const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+                                email,
+                                password,
+                            })
+
+                            if (retryError) {
+                                console.error('Failed to sign in after retry:', retryError)
+                                setError(retryError.message)
+                                setLoading(false)
+                                return
+                            }
+
+                            setUser(retryData.user)
+                            console.log('Signed in with device ID (retry):', retryData.user?.id)
+                        } else {
+                            console.error('Failed to create device account:', signUpError)
+                            setError(signUpError.message)
                             setLoading(false)
                             return
                         }
-
-                        setUser(retryData.user)
-                        console.log('Signed in with device ID (retry):', retryData.user?.id)
                     } else {
-                        console.error('Failed to create device account:', signUpError)
-                        setLoading(false)
-                        return
+                        setUser(signUpData.user)
+                        console.log('Device account created:', signUpData.user?.id)
                     }
                 } else {
-                    setUser(signUpData.user)
-                    console.log('Device account created:', signUpData.user?.id)
+                    setUser(signInData.user)
+                    console.log('Signed in with device ID:', signInData.user?.id)
                 }
-            } else {
-                setUser(signInData.user)
-                console.log('Signed in with device ID:', signInData.user?.id)
+            } catch (err: any) {
+                console.error('Unexpected auth error:', err)
+                setError(err.message || 'Unknown error occurred')
             }
 
             setLoading(false)
@@ -105,6 +113,6 @@ export function useAuth() {
         return () => subscription.unsubscribe()
     }, [])
 
-    return { user, loading }
+    return { user, loading, error }
 }
 

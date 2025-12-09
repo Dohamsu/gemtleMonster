@@ -10,7 +10,7 @@ import IdleFacilityList from './idle/IdleFacilityList'
 import AlchemyLayout from './alchemy/AlchemyLayout'
 
 export default function UIOverlay() {
-    const { user, loading: authLoading } = useAuth()
+    const { user, loading: authLoading, error: authError } = useAuth()
     const { activeTab, setActiveTab, resources } = useGameStore()
     const [isMobile, setIsMobile] = useState(isMobileView())
     const [nickname, setNickname] = useState<string | null>(null)
@@ -59,12 +59,13 @@ export default function UIOverlay() {
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
-    // 닉네임 가져오기
+    // 닉네임 가져오기 및 프로필 생성 (백필)
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchOrStepUpProfile = async () => {
             if (!user?.id) return
 
             try {
+                // 1. 프로필 조회
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('nickname')
@@ -73,18 +74,36 @@ export default function UIOverlay() {
 
                 if (data?.nickname) {
                     setNickname(data.nickname)
-                } else if (!error) {
-                    // 프로필이 없는 경우 (기존 유저 등), 트리거가 동작하지 않았거나 타이밍 이슈일 수 있음
-                    // 여기서 명시적으로 생성 시도하면 좋지만, 일단은 ID 표시로 대체하거나 
-                    // 다음 로드 시 트리거에 의해 생성되길 기대함.
-                    // (migration 스크립트에서 기존 유저 backfill 함)
+                } else {
+                    // 2. 프로필이 없으면 클라이언트에서 생성 (Trigger 실패 대비)
+                    const adjectives = ['용감한', '날쌘', '똑똑한', '배고픈', '졸린', '행복한', '슬픈', '신난', '황금', '무지개']
+                    const animals = ['호랑이', '사자', '토끼', '고양이', '강아지', '곰', '여우', '판다', '펭귄', '드래곤']
+
+                    const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)]
+                    const randomAnimal = animals[Math.floor(Math.random() * animals.length)]
+                    const newNickname = `${randomAdjective} ${randomAnimal} ${Math.floor(Math.random() * 1000)}`
+
+                    console.log('Profile not found, creating from client:', newNickname)
+
+                    const { error: insertError } = await supabase
+                        .from('profiles')
+                        .insert({
+                            id: user.id,
+                            nickname: newNickname
+                        })
+
+                    if (!insertError) {
+                        setNickname(newNickname)
+                    } else {
+                        console.error('Failed to create profile client-side:', insertError)
+                    }
                 }
             } catch (error) {
-                console.error('Failed to fetch profile:', error)
+                console.error('Failed to fetch/create profile:', error)
             }
         }
 
-        fetchProfile()
+        fetchOrStepUpProfile()
     }, [user?.id])
 
 
@@ -149,12 +168,13 @@ export default function UIOverlay() {
 
                 <div style={{
                     fontSize: isMobile ? '0.9em' : '1em',
-                    color: '#e2e8f0', // 밝은 회색으로 변경
+                    color: '#e2e8f0',
                     marginBottom: isMobile ? '8px' : '10px',
                     fontWeight: 'bold'
                 }}>
-                    {nickname ? `👋 ${nickname}` : `ID: ${user?.id.slice(0, 8)}...`}
+                    {nickname ? `👋 ${nickname}` : (user?.id ? `ID: ${user.id.slice(0, 8)}...` : (authError ? `⚠️ ${authError}` : '로그인 중...'))}
                 </div>
+
                 <div style={{
                     fontSize: isMobile ? '0.9em' : '0.95em',
                     color: '#ffd700',
@@ -214,6 +234,6 @@ export default function UIOverlay() {
                 {activeTab === 'facilities' && <IdleFacilityList />}
                 {activeTab === 'alchemy' && <AlchemyLayout />}
             </div>
-        </div>
+        </div >
     )
 }

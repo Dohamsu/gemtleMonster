@@ -106,103 +106,105 @@ function App() {
     if (isMobile) {
         // 모바일 레이아웃: 전체 화면 Canvas + 하단 슬라이드업 UI Overlay
         return (
-            <div style={{
-                position: 'relative',
-                width: '100vw',
-                height: '100vh',
-                overflow: 'hidden',
-                backgroundColor: '#000'
-            }}>
-                {/* Game Area (Full Screen) */}
+            <>
                 <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: '#2c3e50',
-                    overflow: 'hidden'
+                    position: 'relative',
+                    width: '100vw',
+                    height: '100vh',
+                    overflow: 'hidden',
+                    backgroundColor: '#000'
                 }}>
-                    <GameCanvas />
-                </div>
-
-                {/* Hamburger Button */}
-                <button
-                    onClick={() => setIsOverlayOpen(!isOverlayOpen)}
-                    style={{
+                    {/* Game Area (Full Screen) */}
+                    <div style={{
                         position: 'absolute',
-                        top: '20px',
-                        right: '20px',
-                        width: '50px',
-                        height: '50px',
-                        backgroundColor: 'rgba(26, 26, 26, 0.9)',
-                        border: '2px solid #444',
-                        borderRadius: '8px',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: '#2c3e50',
+                        overflow: 'hidden'
+                    }}>
+                        <GameCanvas />
+                    </div>
+
+                    {/* Hamburger Button */}
+                    <button
+                        onClick={() => setIsOverlayOpen(!isOverlayOpen)}
+                        style={{
+                            position: 'absolute',
+                            top: '20px',
+                            right: '20px',
+                            width: '50px',
+                            height: '50px',
+                            backgroundColor: 'rgba(26, 26, 26, 0.9)',
+                            border: '2px solid #444',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '5px',
+                            cursor: 'pointer',
+                            zIndex: 20,
+                            padding: 0,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                            transition: 'background-color 0.2s'
+                        }}
+                        onMouseDown={(e) => e.currentTarget.style.backgroundColor = 'rgba(60, 60, 60, 0.9)'}
+                        onMouseUp={(e) => e.currentTarget.style.backgroundColor = 'rgba(26, 26, 26, 0.9)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(26, 26, 26, 0.9)'}
+                    >
+                        <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
+                        <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
+                        <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
+                    </button>
+
+                    {/* UI Overlay (Bottom Slide-up Panel) */}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        width: '100%',
+                        maxHeight: '80%',
+                        backgroundColor: '#1a1a1a',
+                        borderTop: '2px solid #333',
                         display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '5px',
-                        cursor: 'pointer',
-                        zIndex: 20,
-                        padding: 0,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                        transition: 'background-color 0.2s'
-                    }}
-                    onMouseDown={(e) => e.currentTarget.style.backgroundColor = 'rgba(60, 60, 60, 0.9)'}
-                    onMouseUp={(e) => e.currentTarget.style.backgroundColor = 'rgba(26, 26, 26, 0.9)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(26, 26, 26, 0.9)'}
-                >
-                    <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
-                    <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
-                    <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
-                </button>
-
-                {/* UI Overlay (Bottom Slide-up Panel) */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    width: '100%',
-                    maxHeight: '80%',
-                    backgroundColor: '#1a1a1a',
-                    borderTop: '2px solid #333',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    zIndex: 15,
-                    boxShadow: '0 -4px 12px rgba(0,0,0,0.5)',
-                    overflowY: 'auto',
-                    transform: isOverlayOpen ? 'translateY(0)' : 'translateY(100%)',
-                    transition: 'transform 0.3s ease-in-out'
-                }}>
-                    {/* Close button inside overlay */}
-                    <div style={{
-                        padding: '10px',
-                        borderBottom: '1px solid #333',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
+                        zIndex: 15,
+                        boxShadow: '0 -4px 12px rgba(0,0,0,0.5)',
+                        overflowY: 'auto',
+                        transform: isOverlayOpen ? 'translateY(0)' : 'translateY(100%)',
+                        transition: 'transform 0.3s ease-in-out'
                     }}>
-                        <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>메뉴</span>
-                        <button
-                            onClick={() => setIsOverlayOpen(false)}
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#fff',
-                                fontSize: '24px',
-                                cursor: 'pointer',
-                                padding: '5px 10px'
-                            }}
-                        >
-                            ✕
-                        </button>
+                        {/* Close button inside overlay */}
+                        <div style={{
+                            padding: '10px',
+                            borderBottom: '1px solid #333',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <span style={{ color: '#fff', fontSize: '16px', fontWeight: 'bold' }}>메뉴</span>
+                            <button
+                                onClick={() => setIsOverlayOpen(false)}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#fff',
+                                    fontSize: '24px',
+                                    cursor: 'pointer',
+                                    padding: '5px 10px'
+                                }}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <UIOverlay />
                     </div>
-                    <UIOverlay />
                 </div>
-            </div>
 
-            <InstallPrompt />
+                <InstallPrompt />
+            </>
         )
     }
 
