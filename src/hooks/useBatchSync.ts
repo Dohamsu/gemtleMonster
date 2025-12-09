@@ -83,15 +83,15 @@ export function useBatchSync(
     onSyncStartRef.current?.()
 
     try {
-      // 1. 재료 동기화
-      for (const [materialId, quantity] of Object.entries(updates)) {
-        if (quantity === 0) continue
-
-        await supabase.rpc('add_materials', {
+      // 1. 재료 동기화 (Batch RPC 사용)
+      if (Object.keys(updates).length > 0) {
+        // console.log(`🔄 [BatchSync] 재료 일괄 저장 중...`, updates)
+        const { error } = await supabase.rpc('add_materials_batch', {
           p_user_id: userId,
-          p_material_id: materialId,
-          p_quantity: quantity
+          p_materials: updates
         })
+
+        if (error) throw error
       }
 
       // 2. 시설 동기화

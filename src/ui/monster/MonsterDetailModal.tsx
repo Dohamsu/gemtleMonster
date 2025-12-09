@@ -1,4 +1,4 @@
-import React from 'react'
+// import React from 'react'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { calculateStats, getExpProgress, getMaxLevel, getRequiredExp, type RarityType } from '../../lib/monsterLevelUtils'
 import { getNextSkillUnlockLevel, getUnlockableSkills } from '../../data/monsterSkillData'

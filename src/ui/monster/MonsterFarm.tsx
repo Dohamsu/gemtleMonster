@@ -6,7 +6,7 @@ import { MONSTER_DATA } from '../../data/monsterData'
 import { MATERIALS } from '../../data/alchemyData'
 import { calculateStats, getRequiredExp, getExpProgress, getMaxLevel, type RarityType } from '../../lib/monsterLevelUtils'
 // import { getUnlockableSkills } from '../../data/monsterSkillData'
-import type { RoleType } from '../../types/alchemy'
+// import type { RoleType } from '../../types/alchemy'
 import type { PlayerMonster } from '../../types/monster'
 import CustomSelect from '../CustomSelect'
 import MonsterDetailModal from './MonsterDetailModal'
@@ -64,10 +64,20 @@ export default function MonsterFarm() {
     const handleLockToggleCore = async (monsterId: string, currentLocked: boolean) => {
         try {
             await toggleMonsterLock(monsterId, !currentLocked)
-            // Reload monsters to reflect changes
-            if (user) {
-                await loadPlayerMonsters(user.id)
+
+            // Update the modal's monster state immediately to reflect the change in UI
+            if (selectedMonsterForModal && selectedMonsterForModal.id === monsterId) {
+                setSelectedMonsterForModal({
+                    ...selectedMonsterForModal,
+                    is_locked: !currentLocked
+                })
             }
+
+            // Reload monsters to reflect changes in the list - REMOVED for optimization
+            // The store's toggleMonsterLock already updates the local state optimistically.
+            // if (user) {
+            //     await loadPlayerMonsters(user.id)
+            // }
         } catch (error) {
             console.error('Failed to toggle lock:', error)
         }
