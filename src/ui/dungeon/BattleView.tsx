@@ -36,30 +36,36 @@ export default function BattleView() {
     // Consume new texts from store with Dynamic Positioning
     useEffect(() => {
         if (battleState?.floatingTexts && battleState.floatingTexts.length > 0) {
-            const containerRect = document.getElementById('battle-arena')?.getBoundingClientRect()
+            // const containerRect = document.getElementById('battle-arena')?.getBoundingClientRect()
 
             const newTexts = battleState.floatingTexts.map(t => {
                 let startX = t.x
                 let startY = t.y
 
                 // Calculate position relative to container
-                if (t.target && containerRect) {
-                    let targetRect: DOMRect | undefined
+                if (t.target) {
+                    const arena = document.getElementById('battle-arena')
+                    let targetElement: HTMLElement | null = null
 
-                    if (t.target === 'PLAYER' && playerAreaRef.current) {
-                        targetRect = playerAreaRef.current.getBoundingClientRect()
-                    } else if (t.target === 'ENEMY' && enemyAreaRef.current) {
-                        targetRect = enemyAreaRef.current.getBoundingClientRect()
+                    if (t.target === 'PLAYER') {
+                        targetElement = document.getElementById('player-name-anchor')
+                    } else if (t.target === 'ENEMY') {
+                        targetElement = document.getElementById('enemy-name-anchor')
                     }
 
-                    if (targetRect) {
-                        // Center of target relative to container
-                        startX = (targetRect.left + targetRect.width / 2) - containerRect.left
-                        startY = (targetRect.top + targetRect.height / 2) - containerRect.top
+                    if (arena && targetElement) {
+                        const arenaRect = arena.getBoundingClientRect()
+                        const targetRect = targetElement.getBoundingClientRect()
+
+                        // Calculate relative position
+                        // X: Center of target relative to arena
+                        startX = (targetRect.left - arenaRect.left) + (targetRect.width / 2)
+                        // Y: Top of target relative to arena (minus offset for floating)
+                        startY = (targetRect.top - arenaRect.top) - 35 // 35px above name
 
                         // Add some randomness
                         startX += (Math.random() * 40 - 20)
-                        startY += (Math.random() * 40 - 20)
+                        startY += (Math.random() * 20 - 10)
                     }
                 }
 
@@ -164,8 +170,28 @@ export default function BattleView() {
                 alignItems: 'center',
                 marginBottom: '20px',
                 padding: '0 20px',
-                position: 'relative'
+                position: 'relative',
+                overflow: 'visible'  // 플로팅 텍스트가 영역 밖으로 나갈 수 있도록
             }}>
+                {/* Floating Texts Overlay - 반드시 battle-arena 내부에서 렌더링되어야 함 */}
+                {animatingTexts.map(ft => (
+                    <div key={ft.id} style={{
+                        position: 'absolute',
+                        left: '0',
+                        top: '0',
+                        transform: `translate(${ft.x}px, ${ft.y}px) translateX(-50%)`,
+                        color: ft.color,
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        pointerEvents: 'none',
+                        textShadow: '0 0 4px black',
+                        opacity: Math.max(0, ft.life / 20), // Faster fade out at end
+                        zIndex: 100,
+                        whiteSpace: 'nowrap'
+                    }}>
+                        {ft.text}
+                    </div>
+                ))}
                 {/* Player */}
                 <div ref={playerAreaRef} style={{ textAlign: 'center' }}>
                     {battleState.playerMonsterImage ? (
@@ -183,7 +209,7 @@ export default function BattleView() {
                     ) : (
                         <div style={{ fontSize: '40px', marginBottom: '10px' }}>🧙‍♂️</div>
                     )}
-                    <div style={{ fontWeight: 'bold' }}>{monsterName}</div>
+                    <div id="player-name-anchor" style={{ fontWeight: 'bold' }}>{monsterName}</div>
                     <div style={{
                         width: '100px',
                         height: '10px',
@@ -295,7 +321,7 @@ export default function BattleView() {
                     ) : (
                         <div style={{ fontSize: '40px', marginBottom: '10px' }}>🦠</div>
                     )}
-                    <div style={{ fontWeight: 'bold' }}>{enemy?.name || 'Unknown'}</div>
+                    <div id="enemy-name-anchor" style={{ fontWeight: 'bold' }}>{enemy?.name || 'Unknown'}</div>
                     <div style={{
                         width: '100px',
                         height: '10px',
@@ -354,6 +380,7 @@ export default function BattleView() {
                     </div>
                 </div>
             </div>
+
 
             {/* Battle Logs */}
             <div
@@ -422,25 +449,7 @@ export default function BattleView() {
                 })}
             </div>
 
-            {/* Floating Texts Overlay - Local Animation */}
-            {animatingTexts.map(ft => (
-                <div key={ft.id} style={{
-                    position: 'absolute',
-                    left: '0',
-                    top: '0',
-                    transform: `translate(${ft.x}px, ${ft.y}px)`,
-                    color: ft.color,
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    pointerEvents: 'none',
-                    textShadow: '0 0 4px black',
-                    opacity: Math.max(0, ft.life / 20), // Faster fade out at end
-                    zIndex: 100,
-                    whiteSpace: 'nowrap'
-                }}>
-                    {ft.text}
-                </div>
-            ))}
+
 
             {/* Result Actions */}
             {battleState.result && (
