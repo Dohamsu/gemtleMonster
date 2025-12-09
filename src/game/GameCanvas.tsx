@@ -353,12 +353,13 @@ export default function GameCanvas() {
                     padding: isMobile ? '20px' : '0'
                 }}>
                     <div style={{
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        background: '#1e293b', // Slate-900
+                        border: '2px solid #4a5568', // Slate-600
                         borderRadius: isMobile ? '16px' : '20px',
                         padding: isMobile ? '24px' : '40px',
                         maxWidth: isMobile ? '100%' : '500px',
                         width: isMobile ? '100%' : 'auto',
-                        color: 'white',
+                        color: '#f1f5f9', // Slate-100
                         boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
                         textAlign: 'center',
                         maxHeight: isMobile ? '90vh' : 'none',
@@ -366,17 +367,19 @@ export default function GameCanvas() {
                     }}>
                         <h2 style={{
                             margin: '0 0 16px 0',
-                            fontSize: isMobile ? '1.5em' : '2em'
+                            fontSize: isMobile ? '1.5em' : '2em',
+                            color: '#fbbf24' // Amber-400 for title
                         }}>🎁 오프라인 보상!</h2>
                         <p style={{
                             margin: '0 0 20px 0',
                             fontSize: isMobile ? '1em' : '1.1em',
-                            opacity: 0.9
+                            color: '#94a3b8' // Slate-400
                         }}>
                             {Math.floor(elapsedTime / 60)}분 동안 시설이 자원을 생산했습니다!
                         </p>
                         <div style={{
-                            background: 'rgba(255,255,255,0.1)',
+                            background: 'rgba(15, 23, 42, 0.4)', // Slate-950 alpha
+                            border: '1px solid #334155', // Slate-700
                             borderRadius: isMobile ? '8px' : '10px',
                             padding: isMobile ? '16px' : '20px',
                             marginBottom: isMobile ? '20px' : '30px'
@@ -386,8 +389,9 @@ export default function GameCanvas() {
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     padding: isMobile ? '6px 0' : '8px 0',
-                                    borderBottom: '1px solid rgba(255,255,255,0.1)',
-                                    fontSize: isMobile ? '0.9em' : '1em'
+                                    borderBottom: '1px solid #334155', // Slate-700
+                                    fontSize: isMobile ? '0.9em' : '1em',
+                                    color: '#e2e8f0' // Slate-200
                                 }}>
                                     <span>{MATERIALS[materialId]?.name || materialId}</span>
                                     <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>+{quantity}</span>
@@ -397,8 +401,8 @@ export default function GameCanvas() {
                         <button
                             onClick={() => setShowOfflineRewardModal(false)}
                             style={{
-                                background: 'white',
-                                color: '#667eea',
+                                background: '#3b82f6', // Blue-500
+                                color: 'white',
                                 border: 'none',
                                 borderRadius: isMobile ? '8px' : '10px',
                                 padding: isMobile ? '14px 32px' : '15px 40px',
@@ -407,9 +411,16 @@ export default function GameCanvas() {
                                 fontWeight: 'bold',
                                 cursor: 'pointer',
                                 transition: 'transform 0.2s',
+                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
                             }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)'
+                                e.currentTarget.style.background = '#2563eb' // Blue-600
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)'
+                                e.currentTarget.style.background = '#3b82f6' // Blue-500
+                            }}
                         >
                             확인
                         </button>

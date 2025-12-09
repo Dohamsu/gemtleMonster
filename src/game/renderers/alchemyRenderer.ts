@@ -266,7 +266,9 @@ function renderXPBar(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, p
     ctx.fillRect(xpBarX + 3, xpBarY + 3, progressWidth, xpBarH - 6)
 
     // Text
-    ctx.fillStyle = '#f0d090'
+    ctx.shadowColor = 'rgba(0,0,0,0.8)'
+    ctx.shadowBlur = 4
+    ctx.fillStyle = '#ffffff'
     ctx.font = 'bold 14px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -275,6 +277,8 @@ function renderXPBar(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, p
         xpBarX + xpBarW / 2,
         xpBarY + xpBarH / 2
     )
+    ctx.shadowColor = 'transparent'
+    ctx.shadowBlur = 0
 }
 
 // ============================================
@@ -476,7 +480,9 @@ function renderXPBarMobile(
     ctx.fillRect(xpBarX + 3, xpBarY + 3, progressWidth, xpBarH - 6)
 
     // Text
-    ctx.fillStyle = '#b07500ff'
+    ctx.shadowColor = 'rgba(0,0,0,0.8)'
+    ctx.shadowBlur = 4
+    ctx.fillStyle = '#ffffff'
     ctx.font = 'bold 13px Arial'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -485,4 +491,6 @@ function renderXPBarMobile(
         xpBarX + xpBarW / 2,
         xpBarY + xpBarH / 2
     )
+    ctx.shadowColor = 'transparent'
+    ctx.shadowBlur = 0
 }

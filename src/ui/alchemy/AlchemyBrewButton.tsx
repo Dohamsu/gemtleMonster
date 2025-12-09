@@ -121,7 +121,12 @@ export default function AlchemyBrewButton({
             }}
         >
             {isBrewing && <div style={progressBarStyle} />}
-            <span style={{ position: 'relative', zIndex: 1 }}>
+            <span style={{
+                position: 'relative',
+                zIndex: 1,
+                color: isBrewing ? '#ffffff' : (isEnabled ? '#f0d090' : '#666'),
+                textShadow: isBrewing ? '0 1px 3px rgba(0,0,0,0.8)' : 'none'
+            }}>
                 {isBrewing ? `⚗️ 제조 중... ${Math.floor(brewProgress * 100)}%` : btnText}
             </span>
         </button>

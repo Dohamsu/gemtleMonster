@@ -22,6 +22,11 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
             return `/assets/facility/mine_${imageLevel}.png`
         }
 
+        if (id === 'spirit_sanctum') {
+            // spirit_sanctum has a single image (note: filename has typo 'santuary' instead of 'sanctuary')
+            return `/assets/facility/spirit_santuary.png`
+        }
+
         // For other facilities, you can add similar logic when images are available
         // For now, return null to show a fallback
         return null
