@@ -728,7 +728,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         // 여기서는 간단히 'shard_type'이나 'essence_type'이 포함되어 있으면 그 속성을 힌트로 줌
 
         const elementMap: Record<string, string> = {
-          'shard_fire': '불', 'fire_core': '불', 'phoenix_ash': '불',
+          'shard_fire': '불', 'fire_core': '불', 'phoenix_feather': '불',
           'shard_water': '물', 'ice_shard': '물', 'frozen_dew': '물',
           'shard_earth': '대지', 'ore_iron': '대지', 'golem_heart': '대지',
           'shard_wind': '바람', 'feather': '바람',

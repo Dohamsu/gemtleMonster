@@ -27,8 +27,31 @@ export function useOfflineRewards(userId: string | undefined) {
 
   const isCalculatingRef = useRef(false)
 
+  // 시설 데이터가 DB에서 로드되었는지 확인 (기본값 이상이어야 함)
+  // 기본값: { herb_farm: 1, monster_farm: 1 }
+  // DB 로드 후에는 광산 등 다른 시설도 포함됨
+  const facilitiesLoadedRef = useRef(false)
+
+  useEffect(() => {
+    // 기본값 2개보다 많은 시설이 있거나, 기본 시설 레벨이 1보다 높으면 로드된 것으로 판단
+    const facilityIds = Object.keys(facilities)
+    const isLoaded = facilityIds.length > 2 ||
+      facilityIds.some(id => facilities[id] > 1 && id !== 'herb_farm' && id !== 'monster_farm')
+
+    if (isLoaded && !facilitiesLoadedRef.current) {
+      facilitiesLoadedRef.current = true
+      console.log('✅ [OfflineRewards] 시설 데이터 로드 완료:', facilities)
+    }
+  }, [facilities])
+
   useEffect(() => {
     if (!userId || claimed || isCalculatingRef.current) return
+
+    // 시설 데이터가 로드될 때까지 대기
+    if (!facilitiesLoadedRef.current) {
+      console.log('⏳ [OfflineRewards] 시설 데이터 로드 대기 중...')
+      return
+    }
 
     const calculateAndClaimRewards = async () => {
       try {

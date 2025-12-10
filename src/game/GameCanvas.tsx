@@ -380,7 +380,7 @@ export default function GameCanvas() {
                             margin: '0 0 16px 0',
                             fontSize: isMobile ? '1.5em' : '2em',
                             color: '#fbbf24' // Amber-400 for title
-                        }}>🎁 오프라인 보상!</h2>
+                        }}>오프라인 보상!</h2>
                         <p style={{
                             margin: '0 0 20px 0',
                             fontSize: isMobile ? '1em' : '1.1em',
@@ -398,13 +398,42 @@ export default function GameCanvas() {
                             {Object.entries(rewards).map(([materialId, quantity]) => (
                                 <div key={materialId} style={{
                                     display: 'flex',
-                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    gap: '10px',
                                     padding: isMobile ? '6px 0' : '8px 0',
                                     borderBottom: '1px solid #334155', // Slate-700
                                     fontSize: isMobile ? '0.9em' : '1em',
                                     color: '#e2e8f0' // Slate-200
                                 }}>
-                                    <span>{MATERIALS[materialId]?.name || materialId}</span>
+                                    {/* Material Image */}
+                                    <div style={{
+                                        width: '28px',
+                                        height: '28px',
+                                        borderRadius: '4px',
+                                        background: '#1e293b',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        overflow: 'hidden',
+                                        flexShrink: 0
+                                    }}>
+                                        {MATERIALS[materialId]?.iconUrl ? (
+                                            <img
+                                                src={MATERIALS[materialId].iconUrl}
+                                                alt={materialId}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'contain'
+                                                }}
+                                            />
+                                        ) : (
+                                            <span style={{ fontSize: '14px' }}>📦</span>
+                                        )}
+                                    </div>
+                                    {/* Material Name */}
+                                    <span style={{ flex: 1 }}>{MATERIALS[materialId]?.name || materialId}</span>
+                                    {/* Quantity */}
                                     <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>+{quantity}</span>
                                 </div>
                             ))}

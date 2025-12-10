@@ -55,13 +55,14 @@ export const MATERIALS: Record<string, Material> = {
 
     // New Materials for SR/SSR Monsters
     'dragon_scale': { id: 'dragon_scale', name: '용의 비늘', type: 'BEAST', description: '드래곤의 단단한 비늘. 화염에도 녹지 않는다.', rarity: 'SSR', iconUrl: '/assets/materials/dragon_scale.png' },
+    'dragon_horn': { id: 'dragon_horn', name: '용의 뿔', type: 'BEAST', description: '드래곤의 단단한 뿔.', rarity: 'SSR', iconUrl: '/assets/materials/dragon_horn.png' },
     'angel_feather': { id: 'angel_feather', name: '천사의 깃털', type: 'SPIRIT', description: '천사의 날개에서 떨어진 깃털. 신성한 기운을 뿜는다.', rarity: 'SSR', iconUrl: '/assets/materials/angel_feather.png' },
     'demon_horn': { id: 'demon_horn', name: '악마의 뿔', type: 'BEAST', description: '고위 악마의 뿔. 강력한 마력이 응축되어 있다.', rarity: 'SSR', iconUrl: '/assets/materials/demon_horn.png' },
     'kraken_ink': { id: 'kraken_ink', name: '크라켄 먹물', type: 'SLIME', description: '심해의 어둠을 담은 짙은 먹물.', rarity: 'SSR', iconUrl: '/assets/materials/kraken_ink.png' },
     'spectral_ectoplasm': { id: 'spectral_ectoplasm', name: '유령의 기운', type: 'SPIRIT', description: '만질 수 없는 유령의 잔재.', rarity: 'SR', iconUrl: '/assets/materials/spectral_ectoplasm.png' },
     'goblin_totem': { id: 'goblin_totem', name: '고블린 토템', type: 'SPECIAL', description: '고블린 주술사가 사용하는 기이한 토템.', rarity: 'SR', iconUrl: '/assets/materials/goblin_totem.png' },
     'assassin_dagger': { id: 'assassin_dagger', name: '암살자의 단검', type: 'SPECIAL', description: '피 묻은 녹슨 단검.', rarity: 'SR', iconUrl: '/assets/materials/assassin_dagger.png' },
-    'phoenix_ash': { id: 'phoenix_ash', name: '불사조의 재', type: 'SPIRIT', description: '꺼지지 않는 불씨가 남아있는 재.', rarity: 'SR', iconUrl: '/assets/materials/phoenix_ash.png' },
+    'phoenix_feather': { id: 'phoenix_feather', name: '불사조의 깃털', type: 'SPIRIT', description: '꺼지지 않는 불씨가 남아있는 깃털.', rarity: 'SR', iconUrl: '/assets/materials/phoenix_feather.png' },
     'yeti_fur': { id: 'yeti_fur', name: '예티의 털', type: 'BEAST', description: '추위를 완벽하게 막아주는 두꺼운 털.', rarity: 'SR', iconUrl: '/assets/materials/yeti_fur.png' },
 }
 
@@ -786,7 +787,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 60,
         ingredients: [
-            { materialId: 'phoenix_ash', quantity: 1, isCatalyst: false },
+            { materialId: 'phoenix_feather', quantity: 1, isCatalyst: false },
             { materialId: 'shard_fire', quantity: 5, isCatalyst: false },
             { materialId: 'herb_special', quantity: 3, isCatalyst: false }
         ],

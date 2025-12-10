@@ -61,7 +61,16 @@ export default function RecipeList({
             return
         }
 
-        // 3. Toggle selection
+        // 3. Check materials
+        const hasAllMaterials = recipe.ingredients?.every(
+            ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
+        ) ?? true
+
+        if (!hasAllMaterials) {
+            return
+        }
+
+        // 4. Toggle selection
         if (selectedRecipeId === recipe.id) {
             onSelectRecipe(null)
         } else {
@@ -70,9 +79,17 @@ export default function RecipeList({
         }
     }
 
+    // Number formatter for large quantities (e.g. 2300 -> 2.3k)
+    const formatNumber = (num: number) => {
+        if (num >= 1000) {
+            return `${(num / 1000).toFixed(1)}k`
+        }
+        return num.toString()
+    }
+
     return (
         <div style={{
-            width: isMobile ? '100%' : '260px',
+            width: isMobile ? '100%' : '320px',
             height: '100%',
             background: '#3a2520',
             border: '2px solid #7a5040',
@@ -135,16 +152,22 @@ export default function RecipeList({
                     // Condition validation
                     const isValid = isRecipeValid(recipe, alchemyContext)
 
-                    const canInteract = !isBrewing && isSelectable && isValid
+                    const canInteract = !isBrewing && isSelectable && isValid && hasAllMaterials
 
                     // Visual states
-                    const opacity = canInteract ? (hasAllMaterials ? 1 : 0.7) : 0.5
+                    const opacity = canInteract ? 1 : 0.5
                     const cursor = canInteract ? 'pointer' : 'not-allowed'
 
-                    // Border color logic
+                    // Border & Background logic
                     let borderColor = '#4a3520' // default brown
-                    if (isSelected) borderColor = '#fbbf24' // active yellow
-                    else if (!isValid) borderColor = '#ef4444' // invalid red (condition mismatch)
+                    let backgroundColor = isSelected ? 'rgba(251, 191, 36, 0.1)' : 'rgba(0, 0, 0, 0.2)'
+
+                    if (isSelected) {
+                        borderColor = '#fbbf24' // active yellow
+                    } else if (!isValid) {
+                        borderColor = '#ef4444' // invalid red
+                        backgroundColor = 'rgba(239, 68, 68, 0.05)' // subtle red tint
+                    }
 
                     return (
                         <div
@@ -152,44 +175,30 @@ export default function RecipeList({
                             onClick={() => handleRecipeClick(recipe)}
                             style={{
                                 display: 'flex',
-                                alignItems: 'center',
+                                flexDirection: 'column',
                                 padding: '10px',
-                                background: isSelected ? 'rgba(251, 191, 36, 0.1)' : 'rgba(0, 0, 0, 0.2)',
+                                background: backgroundColor,
                                 borderRadius: '8px',
                                 border: `1px solid ${borderColor}`,
                                 cursor: cursor,
                                 opacity: opacity,
                                 transition: 'all 0.2s',
-                                position: 'relative',
-                                marginBottom: isMobile ? '6px' : '8px', // Keep margin for spacing between items
+                                marginBottom: isMobile ? '6px' : '8px',
                             }}
                         >
-                            {/* 미발견 아이콘 */}
-                            {!isDiscovered && (
-                                <div style={{
-                                    position: 'absolute',
-                                    right: '10px',
-                                    top: '10px',
-                                    fontSize: '16px'
-                                }}>
-                                    {areAllIngredientsRevealed ? '🔓' : '🔒'}
-                                </div>
-                            )}
-
-                            {/* Recipe Name Area with Image */}
+                            {/* Top Row: Image, Name, Lock Icon */}
                             <div style={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                marginBottom: '6px'
+                                marginBottom: '6px',
+                                width: '100%'
                             }}>
                                 {/* Monster Image */}
                                 <div style={{
                                     width: '32px',
                                     height: '32px',
                                     borderRadius: '4px',
-                                    // background: '#1a1010',
-                                    // border: '1px solid #5a4030',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
@@ -204,7 +213,7 @@ export default function RecipeList({
                                                 width: '100%',
                                                 height: '100%',
                                                 objectFit: 'contain',
-                                                filter: isDiscovered ? 'none' : 'brightness(0) contrast(100%)', // 미발견 시 실루엣(검정)
+                                                filter: isDiscovered ? 'none' : 'brightness(0) contrast(100%)',
                                                 opacity: isDiscovered ? 1 : 0.7
                                             }}
                                         />
@@ -220,21 +229,30 @@ export default function RecipeList({
                                     fontSize: isMobile ? '13px' : '14px',
                                     fontWeight: 'bold',
                                     color: isDiscovered ? '#f0d090' : '#aaa',
+                                    flex: 1 // Take remaining space
                                 }}>
                                     {displayName}
                                 </div>
+
+                                {/* Lock/Unlock Status (Aligned to right via flex) */}
+                                {!isDiscovered && (
+                                    <div style={{
+                                        fontSize: '16px',
+                                        marginLeft: 'auto',
+                                        color: areAllIngredientsRevealed ? '#fbbf24' : '#64748b'
+                                    }}>
+                                        {areAllIngredientsRevealed ? '🔓' : '🔒'}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Required Materials */}
                             {recipe.ingredients && recipe.ingredients.length > 0 && (
-                                <div style={{ marginTop: '6px' }}>
+                                <div style={{ paddingLeft: '40px' }}> {/* Indent under name */}
                                     {recipe.ingredients.map((ing, idx) => {
                                         const mat = materials.find(m => m.id === ing.material_id)
                                         const owned = playerMaterials[ing.material_id] || 0
                                         const hasEnough = owned >= ing.quantity
-
-                                        // 재료 발견 여부
-                                        // 레시피가 발견되었거나, 이 재료가 발견된 재료 목록에 있을 때
                                         const isIngredientDiscovered = isDiscovered || discoveredIngredients.includes(ing.material_id)
                                         const matName = isIngredientDiscovered ? (mat?.name || ing.material_id) : '???'
 
@@ -244,10 +262,17 @@ export default function RecipeList({
                                                 style={{
                                                     fontSize: isMobile ? '10px' : '11px',
                                                     color: isIngredientDiscovered ? (hasEnough ? '#aaa' : '#ff6666') : '#666',
-                                                    marginBottom: '2px'
+                                                    marginBottom: '2px',
+                                                    // display: 'flex', // Removed flex space-between
+                                                    // justifyContent: 'space-between'
                                                 }}
                                             >
-                                                {matName} {isIngredientDiscovered ? `${owned}/${ing.quantity}` : ''}
+                                                <span>{matName} </span>
+                                                {isIngredientDiscovered && (
+                                                    <span style={{ color: hasEnough ? '#4ade80' : '#ff6666', marginLeft: '4px' }}>
+                                                        {ing.quantity} / {formatNumber(owned)}
+                                                    </span>
+                                                )}
                                             </div>
                                         )
                                     })}
@@ -260,9 +285,10 @@ export default function RecipeList({
                                     fontSize: '10px',
                                     color: '#88aaff',
                                     marginTop: '4px',
+                                    paddingLeft: '40px',
                                     fontStyle: 'italic'
                                 }}>
-                                    힌트: {recipe.conditions[0].description || '특별한 조건 필요'}
+                                    💡 {recipe.conditions[0].description || '특별한 조건 필요'}
                                 </div>
                             )}
 
@@ -271,9 +297,10 @@ export default function RecipeList({
                                 <div style={{
                                     fontSize: isMobile ? '9px' : '10px',
                                     color: '#facc15',
-                                    marginTop: '4px'
+                                    marginTop: '4px',
+                                    paddingLeft: '40px'
                                 }}>
-                                    필요 레벨: {recipe.required_alchemy_level}
+                                    ⚠️ Lv.{recipe.required_alchemy_level} 필요
                                 </div>
                             )}
                         </div>
