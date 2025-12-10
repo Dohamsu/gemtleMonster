@@ -619,14 +619,14 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       // 0. Filter Undiscovered Recipes for Hint Candidates
       // 이미 발견한 레시피 목록 (ID)을 먼저 추출하여 모든 힌트 로직에서 제외
       const discoveredRecipeIds = Object.keys(get().playerRecipes).filter(id => get().playerRecipes[id].is_discovered)
-      // 발견하지 못한 레시피만 후보군으로 사용
-      const undiscoveredCandidates = allRecipes.filter(r => !discoveredRecipeIds.includes(r.id))
+      // 힌트 대상: 숨겨진 레시피(is_hidden: true)이면서 아직 발견하지 못한(discoveredRecipeIds에 없는) 레시피
+      const hintCandidates = allRecipes.filter(r => r.is_hidden && !discoveredRecipeIds.includes(r.id))
 
       // 1. Check for Near-Miss (Ratio Mismatch)
       // 재료 종류는 모두 일치하지만 수량이 안 맞는 레시피 찾기
       const usedMaterialIds = Object.keys(materialsUsed).sort()
 
-      const nearMissRecipe = undiscoveredCandidates.find(r => {
+      const nearMissRecipe = hintCandidates.find(r => {
         if (!r.ingredients) return false
         const recipeMaterialIds = r.ingredients.map(i => i.material_id).sort()
         return JSON.stringify(usedMaterialIds) === JSON.stringify(recipeMaterialIds)
@@ -644,7 +644,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       // 2. Check for Condition Mismatch
       // 재료와 수량이 모두 정확한데 실패했다면 조건(시간 등) 불일치
       if (!hint) {
-        const conditionMissRecipe = undiscoveredCandidates.find(r => {
+        const conditionMissRecipe = hintCandidates.find(r => {
           if (!r.ingredients) return false
           // 재료와 수량 모두 확인
           const isMatch = r.ingredients.every(ing => materialsUsed[ing.material_id] === ing.quantity) &&
@@ -665,7 +665,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       // 3회 이상 실패 시, 그리고 더 중요한 힌트가 없을 때
       if (!hint && failCount >= 3) {
         // 셔플을 위한 랜덤 정렬
-        const shuffledRecipes = [...undiscoveredCandidates].sort(() => 0.5 - Math.random())
+        const shuffledRecipes = [...hintCandidates].sort(() => 0.5 - Math.random())
 
         for (const undiscoveredRecipe of shuffledRecipes) {
           // 이 레시피의 재료 중 사용된 재료가 포함되어 있는지 확인
@@ -740,7 +740,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
           const detectedElement = Object.keys(elementMap).find(key => matId.includes(key) || elementMap[matId])
           if (detectedElement) {
             const msg = elementMap[detectedElement] || (elementMap[matId] || '알 수 없는')
-            console.log('🔮 속성 공명 힌트:', msg)
+            console.log('속성 공명 힌트:', msg)
             hint = {
               type: 'ELEMENT_MATCH',
               message: msg,

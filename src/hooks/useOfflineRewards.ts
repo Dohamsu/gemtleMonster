@@ -112,9 +112,15 @@ export function useOfflineRewards(userId: string | undefined) {
           }
         }
 
-        // 전체 보상에 0.2 효율 적용 (정수로 내림)
+        // 전체 보상에 0.2 효율 적용 (확률적 반올림)
         for (const key of Object.keys(totalRewards)) {
-          totalRewards[key] = Math.floor(totalRewards[key] * 0.2)
+          const rawAmount = totalRewards[key] * 0.2
+          const integerPart = Math.floor(rawAmount)
+          const decimalPart = rawAmount - integerPart
+
+          // 소수점 확률에 따라 +1
+          totalRewards[key] = integerPart + (Math.random() < decimalPart ? 1 : 0)
+
           if (totalRewards[key] <= 0) {
             delete totalRewards[key]
           }

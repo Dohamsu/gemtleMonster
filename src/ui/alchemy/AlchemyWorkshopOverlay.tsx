@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { Recipe, Material, PlayerAlchemy, PlayerRecipe } from '../../lib/alchemyApi'
+import type { AlchemyContext } from '../../types/alchemy'
 import { isMobileView } from '../../utils/responsiveUtils'
 import RecipeList from './RecipeList'
 import MaterialGrid from './MaterialGrid'
@@ -23,7 +24,9 @@ interface AlchemyWorkshopOverlayProps {
     onStartFreeFormBrewing: () => Promise<void>
     mobileTab?: 'recipes' | 'materials'
     onMobileTabChange?: (tab: 'recipes' | 'materials') => void
+    alchemyContext: AlchemyContext | null
 }
+
 
 export default function AlchemyWorkshopOverlay({
     recipes,
@@ -40,7 +43,8 @@ export default function AlchemyWorkshopOverlay({
     onStartBrewing,
     onStartFreeFormBrewing,
     mobileTab = 'recipes',
-    onMobileTabChange
+    onMobileTabChange,
+    alchemyContext
 }: AlchemyWorkshopOverlayProps) {
     const [isMobile, setIsMobile] = useState(isMobileView())
     const setCanvasView = useGameStore((state) => state.setCanvasView)
@@ -147,6 +151,7 @@ export default function AlchemyWorkshopOverlay({
                                 selectedRecipeId={selectedRecipeId}
                                 isBrewing={isBrewing}
                                 onSelectRecipe={onSelectRecipe}
+                                alchemyContext={alchemyContext}
                             />
                         ) : (
                             <MaterialGrid
@@ -218,6 +223,7 @@ export default function AlchemyWorkshopOverlay({
                     selectedRecipeId={selectedRecipeId}
                     isBrewing={isBrewing}
                     onSelectRecipe={onSelectRecipe}
+                    alchemyContext={alchemyContext}
                 />
             </div>
 

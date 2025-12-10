@@ -331,6 +331,7 @@ export default function GameCanvas() {
                     onStartFreeFormBrewing={startFreeFormBrewing}
                     mobileTab={mobileTab}
                     onMobileTabChange={setMobileTab}
+                    alchemyContext={alchemyContext}
                 />
             )}
 

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
-import type { Recipe, Material, PlayerRecipe } from '../../lib/alchemyApi'
-import { isMobileView } from '../../utils/responsiveUtils'
+import type { Recipe, Material, PlayerRecipe } from '../../types'
+import type { AlchemyContext } from '../../types/alchemy'
+import { isRecipeValid } from '../../lib/alchemyLogic'
 import { MONSTER_DATA } from '../../data/monsterData'
+import { isMobileView } from '../../utils/responsiveUtils'
 
 interface RecipeListProps {
     recipes: Recipe[]
@@ -11,6 +13,7 @@ interface RecipeListProps {
     selectedRecipeId: string | null
     isBrewing: boolean
     onSelectRecipe: (recipeId: string | null) => void
+    alchemyContext: AlchemyContext | null
 }
 
 export default function RecipeList({
@@ -20,7 +23,8 @@ export default function RecipeList({
     playerRecipes,
     selectedRecipeId,
     isBrewing,
-    onSelectRecipe
+    onSelectRecipe,
+    alchemyContext
 }: RecipeListProps) {
     const [isMobile, setIsMobile] = useState(isMobileView())
 
@@ -36,18 +40,33 @@ export default function RecipeList({
     // 단, hidden이면서 발견하지 못한 경우 ??? 처리
     const visibleRecipes = recipes
 
-    const handleRecipeClick = (recipeId: string) => {
+    const handleRecipeClick = (recipe: Recipe) => {
         if (isBrewing) return
 
-        // 미발견 레시피도 클릭은 가능하게 할지? 
-        // -> 재료를 확인하려면 클릭해야 함. 하지만 ??? 인 재료는 보여주면 안됨.
-        // -> 클릭 가능하게 하고 상세에서 처리
+        // 1. Check if recipe is discoverable/selectable
+        const isDiscovered = (!recipe.is_hidden) || (playerRecipes[recipe.id]?.is_discovered)
+        const areAllIngredientsRevealed = recipe.ingredients?.every(ing => {
+            const discovered = playerRecipes[recipe.id]?.discovered_ingredients || []
+            return discovered.includes(ing.material_id)
+        }) ?? false
 
-        // Toggle selection
-        if (selectedRecipeId === recipeId) {
+        if (!isDiscovered && !areAllIngredientsRevealed) {
+            return // Can't select unknown hidden recipes
+        }
+
+        // 2. Check if valid in current context (Time, Device, etc.)
+        const isValid = isRecipeValid(recipe, alchemyContext)
+        if (!isValid) {
+            // Maybe show a toast or shake animation? For now just block.
+            return
+        }
+
+        // 3. Toggle selection
+        if (selectedRecipeId === recipe.id) {
             onSelectRecipe(null)
         } else {
-            onSelectRecipe(recipeId)
+            // Check materials for auto-fill preview (optional visual feedback, but click logic handles selection)
+            onSelectRecipe(recipe.id)
         }
     }
 
@@ -101,27 +120,48 @@ export default function RecipeList({
                     // 이름 표시
                     const displayName = isDiscovered ? `${recipe.name} (${recipe.craft_time_sec}s)` : '???'
 
+                    // 히든 레시피 선택 조건: 이미 발견했거나, 모든 재료가 공개되었을 때
+                    const areAllIngredientsRevealed = recipe.ingredients?.every(
+                        ing => discoveredIngredients.includes(ing.material_id)
+                    ) ?? true
+
+                    const isSelectable = isDiscovered || areAllIngredientsRevealed
+
                     // 재료 충족 여부 (미발견이어도 계산은 함 - 스타일은 다르게)
                     const hasAllMaterials = recipe.ingredients?.every(
                         ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
                     ) ?? true
 
+                    // Condition validation
+                    const isValid = isRecipeValid(recipe, alchemyContext)
+
+                    const canInteract = !isBrewing && isSelectable && isValid
+
+                    // Visual states
+                    const opacity = canInteract ? (hasAllMaterials ? 1 : 0.7) : 0.5
+                    const cursor = canInteract ? 'pointer' : 'not-allowed'
+
+                    // Border color logic
+                    let borderColor = '#4a3520' // default brown
+                    if (isSelected) borderColor = '#fbbf24' // active yellow
+                    else if (!isValid) borderColor = '#ef4444' // invalid red (condition mismatch)
+
                     return (
                         <div
                             key={recipe.id}
-                            onClick={() => handleRecipeClick(recipe.id)}
+                            onClick={() => handleRecipeClick(recipe)}
                             style={{
-                                marginBottom: isMobile ? '6px' : '8px',
-                                padding: isMobile ? '8px' : '10px',
-                                background: hasAllMaterials
-                                    ? (isSelected ? '#5a4030' : '#4a3020')
-                                    : '#2a201a',
-                                border: isSelected ? '2px solid #facc15' : '1px solid transparent',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                opacity: hasAllMaterials ? 1 : 0.7,
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '10px',
+                                background: isSelected ? 'rgba(251, 191, 36, 0.1)' : 'rgba(0, 0, 0, 0.2)',
+                                borderRadius: '8px',
+                                border: `1px solid ${borderColor}`,
+                                cursor: cursor,
+                                opacity: opacity,
                                 transition: 'all 0.2s',
-                                position: 'relative'
+                                position: 'relative',
+                                marginBottom: isMobile ? '6px' : '8px', // Keep margin for spacing between items
                             }}
                         >
                             {/* 미발견 아이콘 */}
@@ -132,7 +172,7 @@ export default function RecipeList({
                                     top: '10px',
                                     fontSize: '16px'
                                 }}>
-                                    🔒
+                                    {areAllIngredientsRevealed ? '🔓' : '🔒'}
                                 </div>
                             )}
 
