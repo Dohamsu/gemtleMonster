@@ -58,7 +58,7 @@ export const MATERIALS: Record<string, Material> = {
     'dragon_horn': { id: 'dragon_horn', name: '용의 뿔', type: 'BEAST', description: '드래곤의 단단한 뿔.', rarity: 'SSR', iconUrl: '/assets/materials/dragon_horn.png' },
     'angel_feather': { id: 'angel_feather', name: '천사의 깃털', type: 'SPIRIT', description: '천사의 날개에서 떨어진 깃털. 신성한 기운을 뿜는다.', rarity: 'SSR', iconUrl: '/assets/materials/angel_feather.png' },
     'demon_horn': { id: 'demon_horn', name: '악마의 뿔', type: 'BEAST', description: '고위 악마의 뿔. 강력한 마력이 응축되어 있다.', rarity: 'SSR', iconUrl: '/assets/materials/demon_horn.png' },
-    'kraken_ink': { id: 'kraken_ink', name: '크라켄 먹물', type: 'SLIME', description: '심해의 어둠을 담은 짙은 먹물.', rarity: 'SSR', iconUrl: '/assets/materials/kraken_ink.png' },
+    'kraken_leg': { id: 'kraken_leg', name: '크라켄 다리', type: 'BEAST', description: '심해의 거대 괴수 크라켄의 다리. 강력한 힘이 꿈틀거린다.', rarity: 'SSR', iconUrl: '/assets/materials/kraken_leg.png' },
     'spectral_ectoplasm': { id: 'spectral_ectoplasm', name: '유령의 기운', type: 'SPIRIT', description: '만질 수 없는 유령의 잔재.', rarity: 'SR', iconUrl: '/assets/materials/spectral_ectoplasm.png' },
     'goblin_totem': { id: 'goblin_totem', name: '고블린 토템', type: 'SPECIAL', description: '고블린 주술사가 사용하는 기이한 토템.', rarity: 'SR', iconUrl: '/assets/materials/goblin_totem.png' },
     'assassin_dagger': { id: 'assassin_dagger', name: '암살자의 단검', type: 'SPECIAL', description: '피 묻은 녹슨 단검.', rarity: 'SR', iconUrl: '/assets/materials/assassin_dagger.png' },
@@ -713,7 +713,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: true,
         priority: 50,
         ingredients: [
-            { materialId: 'kraken_ink', quantity: 1, isCatalyst: false },
+            { materialId: 'kraken_leg', quantity: 1, isCatalyst: false },
             { materialId: 'shard_water', quantity: 10, isCatalyst: false },
             { materialId: 'gem_fragment', quantity: 5, isCatalyst: true }
         ],
