@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Recipe, Material, PlayerAlchemy } from '../../lib/alchemyApi'
+import type { Recipe, Material, PlayerAlchemy, PlayerRecipe } from '../../lib/alchemyApi'
 import { isMobileView } from '../../utils/responsiveUtils'
 import RecipeList from './RecipeList'
 import MaterialGrid from './MaterialGrid'
@@ -11,6 +11,7 @@ interface AlchemyWorkshopOverlayProps {
     recipes: Recipe[]
     materials: Material[]
     playerMaterials: Record<string, number>
+    playerRecipes: Record<string, PlayerRecipe>
     selectedRecipeId: string | null
     selectedIngredients: Record<string, number>
     isBrewing: boolean
@@ -28,6 +29,7 @@ export default function AlchemyWorkshopOverlay({
     recipes,
     materials,
     playerMaterials,
+    playerRecipes,
     selectedRecipeId,
     selectedIngredients,
     isBrewing,
@@ -141,6 +143,7 @@ export default function AlchemyWorkshopOverlay({
                                 recipes={recipes}
                                 materials={materials}
                                 playerMaterials={playerMaterials}
+                                playerRecipes={playerRecipes}
                                 selectedRecipeId={selectedRecipeId}
                                 isBrewing={isBrewing}
                                 onSelectRecipe={onSelectRecipe}
@@ -211,6 +214,7 @@ export default function AlchemyWorkshopOverlay({
                     recipes={recipes}
                     materials={materials}
                     playerMaterials={playerMaterials}
+                    playerRecipes={playerRecipes}
                     selectedRecipeId={selectedRecipeId}
                     isBrewing={isBrewing}
                     onSelectRecipe={onSelectRecipe}

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import * as alchemyApi from '../lib/alchemyApi'
 import { useAlchemyStore } from '../store/useAlchemyStore'
@@ -25,11 +25,14 @@ export function useOfflineRewards(userId: string | undefined) {
   const [elapsedTime, setElapsedTime] = useState(0)
   const { facilities } = useGameStore()
 
+  const isCalculatingRef = useRef(false)
+
   useEffect(() => {
-    if (!userId || claimed) return
+    if (!userId || claimed || isCalculatingRef.current) return
 
     const calculateAndClaimRewards = async () => {
       try {
+        isCalculatingRef.current = true
         console.log('🎁 [OfflineRewards] 오프라인 보상 계산 시작...')
 
         // 1. 마지막 수집 시간 가져오기
@@ -93,8 +96,6 @@ export function useOfflineRewards(userId: string | undefined) {
             // 이 레벨이 경과 시간 동안 몇 번 생산했는지 계산
             const productionCount = Math.floor(cappedSeconds / intervalSeconds)
 
-            console.log(`📊 ${facilityId} Lv.${level}: ${productionCount}회 생산`)
-
             // 각 생산마다 확률 기반으로 재료 선택
             for (let i = 0; i < productionCount; i++) {
               const random = Math.random()
@@ -103,7 +104,6 @@ export function useOfflineRewards(userId: string | undefined) {
               for (const [materialId, dropRate] of Object.entries(stats.dropRates)) {
                 cumulativeProbability += dropRate
                 if (random < cumulativeProbability) {
-                  // 일단 여기서는 원본 수량을 더하고 나중에 0.2 곱하겠습니다.
                   totalRewards[materialId] = (totalRewards[materialId] || 0) + stats.bundlesPerTick
                   break
                 }
@@ -129,17 +129,14 @@ export function useOfflineRewards(userId: string | undefined) {
           // 로컬 상태 업데이트
           const alchemyStore = useAlchemyStore.getState()
           const gameStore = useGameStore.getState()
-
-          const newPlayerMaterials = { ...alchemyStore.playerMaterials }
           const newGameResources = { ...gameStore.resources }
 
           for (const [materialId, quantity] of Object.entries(totalRewards)) {
-            newPlayerMaterials[materialId] = (newPlayerMaterials[materialId] || 0) + quantity
             newGameResources[materialId] = (newGameResources[materialId] || 0) + quantity
           }
 
-          alchemyStore.loadPlayerData(userId) // 재로드하여 동기화
           gameStore.setResources(newGameResources)
+          await alchemyStore.loadPlayerData(userId) // 재로드하여 동기화
 
           console.log('✅ [OfflineRewards] 보상 지급 완료')
         } else {
@@ -150,12 +147,13 @@ export function useOfflineRewards(userId: string | undefined) {
         await alchemyApi.updateLastCollectedAt(userId, now)
 
         setRewards(totalRewards)
-        setClaimed(true)
-
         console.log('🎉 [OfflineRewards] 오프라인 보상 처리 완료')
+
       } catch (error) {
         console.error('❌ [OfflineRewards] 오프라인 보상 처리 실패:', error)
-        setClaimed(true) // 실패해도 다시 시도하지 않도록
+      } finally {
+        setClaimed(true)
+        isCalculatingRef.current = false
       }
     }
 

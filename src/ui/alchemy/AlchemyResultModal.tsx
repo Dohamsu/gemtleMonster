@@ -5,9 +5,12 @@ interface AlchemyResultModalProps {
     isOpen: boolean
     success: boolean
     hint?: {
-        monsterName: string
-        materialName: string
-        recipeId: string
+        type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH' | 'ELEMENT_MATCH'
+        monsterName?: string
+        materialName?: string
+        recipeId?: string
+        element?: string
+        message?: string
     }
     monsterId?: string
     onClose: () => void
@@ -23,6 +26,72 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
     if (!isOpen) return null
 
     const monster = monsterId ? getMonsterData(monsterId) : null
+
+    const getHintContent = () => {
+        if (!hint) return null
+
+        switch (hint.type) {
+            case 'NEAR_MISS':
+                return (
+                    <>
+                        <h4 style={{ margin: '0 0 8px 0', color: '#fbbf24', fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <span>⚖️</span> 배합 비율 힌트
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#e2e8f0', lineHeight: '1.5' }}>
+                            재료의 종류는 맞는 것 같지만...<br />
+                            <span style={{ color: '#facc15', fontWeight: 'bold' }}>배합 비율</span>이 조금 어긋난 것 같습니다.
+                        </p>
+                    </>
+                )
+            case 'CONDITION_MISMATCH':
+                return (
+                    <>
+                        <h4 style={{ margin: '0 0 8px 0', color: '#60a5fa', fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <span>🕰️</span> 환경 조건 힌트
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#e2e8f0', lineHeight: '1.5' }}>
+                            재료와 비율은 완벽한 것 같지만...<br />
+                            <span style={{ color: '#60a5fa', fontWeight: 'bold' }}>타이밍이나 환경</span>이 맞지 않는 것 같습니다.
+                        </p>
+                    </>
+                )
+            case 'ELEMENT_MATCH': {
+                const elementColor = {
+                    'fire': '#ef4444',
+                    'water': '#3b82f6',
+                    'earth': '#22c55e',
+                    'wind': '#a855f7',
+                    'light': '#eab308',
+                    'dark': '#64748b'
+                }[hint.element || ''] || '#cbd5e1'
+
+                return (
+                    <>
+                        <h4 style={{ margin: '0 0 8px 0', color: elementColor, fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <span>🔮</span> 속성 공명
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#e2e8f0', lineHeight: '1.5' }}>
+                            조합 실패 속에서...<br />
+                            강한 <span style={{ color: elementColor, fontWeight: 'bold' }}>{hint.message}</span> 기운이 느껴집니다.
+                        </p>
+                    </>
+                )
+            }
+            case 'INGREDIENT_REVEAL':
+            default:
+                return (
+                    <>
+                        <h4 style={{ margin: '0 0 8px 0', color: '#fbbf24', fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            <span>💡</span> 힌트 발견!
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#e2e8f0', lineHeight: '1.5' }}>
+                            <span style={{ color: '#facc15', fontWeight: 'bold' }}>&apos;{hint.monsterName}&apos;</span>의 조합법 힌트를 얻었다!<br />
+                            <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>{hint.materialName}</span>이(가) 확정적으로 들어가는 것 같다!
+                        </p>
+                    </>
+                )
+        }
+    }
 
     return (
         <div style={{
@@ -202,27 +271,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                                 borderRadius: '8px',
                                 animation: 'pulse 2s infinite'
                             }}>
-                                <h4 style={{
-                                    margin: '0 0 8px 0',
-                                    color: '#fbbf24',
-                                    fontWeight: 'bold',
-                                    fontSize: '16px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px'
-                                }}>
-                                    <span>💡</span> 힌트 발견!
-                                </h4>
-                                <p style={{
-                                    margin: 0,
-                                    fontSize: '14px',
-                                    color: '#e2e8f0',
-                                    lineHeight: '1.5'
-                                }}>
-                                    <span style={{ color: '#facc15', fontWeight: 'bold' }}>&apos;{hint.monsterName}&apos;</span>의 조합법 힌트를 얻었다!<br />
-                                    <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>{hint.materialName}</span>이(가) 확정적으로 들어가는 것 같다!
-                                </p>
+                                {getHintContent()}
                             </div>
                         )}
                     </div>

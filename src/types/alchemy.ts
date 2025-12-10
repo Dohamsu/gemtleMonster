@@ -32,6 +32,15 @@ export interface Monster {
     }
 }
 
+export interface PlayerRecipe {
+    recipe_id: string
+    is_discovered: boolean
+    first_discovered_at: string | null
+    craft_count: number
+    success_count: number
+    discovered_ingredients?: string[] // jsonb array of material IDs
+}
+
 export interface Recipe {
     id: string
     name: string

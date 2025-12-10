@@ -46,6 +46,7 @@ export default function GameCanvas() {
         autoFillIngredients,
         loadAllData,
         playerAlchemy,
+        playerRecipes,
         brewResult,
         setAlchemyContext,
     } = useAlchemyStore()
@@ -64,7 +65,14 @@ export default function GameCanvas() {
     const [lastBrewResult, setLastBrewResult] = useState<{
         success: boolean;
         monsterId?: string;
-        hint?: { monsterName: string; materialName: string; recipeId: string }
+        hint?: {
+            type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH' | 'ELEMENT_MATCH'
+            monsterName?: string
+            materialName?: string
+            recipeId?: string
+            element?: string
+            message?: string
+        }
     }>({
         success: false
     })
@@ -318,6 +326,7 @@ export default function GameCanvas() {
                     onAddIngredient={addIngredient}
                     brewProgress={brewProgress}
                     playerAlchemy={playerAlchemy}
+                    playerRecipes={playerRecipes}
                     onStartBrewing={startBrewing}
                     onStartFreeFormBrewing={startFreeFormBrewing}
                     mobileTab={mobileTab}

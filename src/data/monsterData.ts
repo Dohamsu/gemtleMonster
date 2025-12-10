@@ -47,9 +47,9 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         name: '돌 골렘',
         description: '고대 성채의 파편으로 빚어낸 돌 골렘. 거대한 몸으로 일행 앞을 막아서 모든 공격을 받아냅니다.',
         role: '탱커',
-        hp: 250,
-        attack: 250,
-        defense: 60,
+        hp: 300,
+        attack: 40,
+        defense: 75,
         emoji: '🗿',
         iconUrl: '/assets/monsters/stoneGolem.png',
         rarity: 'R',
@@ -60,9 +60,9 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         name: '정령 요정',
         description: '숲의 바람과 속삭이는 정령 요정. 아군의 상처를 치유하고 능력을 일시적으로 끌어올려 줍니다.',
         role: '서포터',
-        hp: 80,
-        attack: 15,
-        defense: 20,
+        hp: 95,
+        attack: 20,
+        defense: 25,
         emoji: '🧚',
         iconUrl: '/assets/monsters/fairySpirit.png',
         rarity: 'R',
@@ -72,9 +72,9 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         name: '어둠 늑대',
         description: '달빛조차 스며들지 않는 그림자 속을 달리는 늑대. 어둠 속에서 찌르는 한 방의 치명타로 적을 쓰러뜨립니다.',
         role: '딜러',
-        hp: 120,
-        attack: 60,
-        defense: 25,
+        hp: 150,
+        attack: 75,
+        defense: 35,
         emoji: '🐺',
         iconUrl: '/assets/monsters/hound_basic.png',
         rarity: 'SR',
@@ -555,6 +555,124 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '📱',
         iconUrl: '/assets/monsters/slime_mobile.png',
         rarity: 'R',
+        element: 'water'
+    },
+
+    // ==========================================
+    // New High-Grade Monsters (SR/SSR Expansion)
+    // ==========================================
+
+    // SSR Monsters
+    'monster_dragon_inferno': {
+        name: '인페르노 드래곤',
+        description: '지옥의 화염을 휘감은 전설의 드래곤. 입에서 뿜어내는 브레스는 모든 것을 태워버리는 절대적인 위력을 자랑합니다.',
+        role: '딜러',
+        hp: 450,
+        attack: 120,
+        defense: 60,
+        emoji: '🐲',
+        iconUrl: '/assets/monsters/dragon_inferno.png',
+        rarity: 'SSR',
+        element: 'fire',
+        factoryTrait: { targetFacility: 'blacksmith', effect: '제작 속도 대폭 증가', value: 25 }
+    },
+    'monster_angel_arch': {
+        name: '아크 엔젤',
+        description: '천상의 빛을 머금은 고위 천사. 존재만으로도 아군에게 축복을 내리며, 기적 같은 치유력으로 전장을 구원합니다.',
+        role: '서포터',
+        hp: 380,
+        attack: 50,
+        defense: 55,
+        emoji: '👼',
+        iconUrl: '/assets/monsters/angel_arch.png',
+        rarity: 'SSR',
+        element: 'light',
+        factoryTrait: { targetFacility: 'cathedral', effect: '성스러운 기운 증가', value: 20 }
+    },
+    'monster_demon_lord': {
+        name: '마왕',
+        description: '심연의 끝에서 돌아온 어둠의 군주. 압도적인 카리스마와 파괴적인 마력으로 적들을 공포에 떨게 합니다.',
+        role: '딜러',
+        hp: 500,
+        attack: 110,
+        defense: 70,
+        emoji: '😈',
+        iconUrl: '/assets/monsters/demon_lord.png',
+        rarity: 'SSR',
+        element: 'dark'
+    },
+    'monster_kraken_abyss': {
+        name: '심연의 크라켄',
+        description: '깊은 바다 속에서 잠자던 거대 괴수. 수많은 다리로 적을 휘감으며 절대 뚫리지 않는 방벽이 되어줍니다.',
+        role: '탱커',
+        hp: 600,
+        attack: 60,
+        defense: 90,
+        emoji: '🐙',
+        iconUrl: '/assets/monsters/kraken_abyss.png',
+        rarity: 'SSR',
+        element: 'water'
+    },
+
+    // SR Monsters
+    'monster_knight_spectral': {
+        name: '유령 기사',
+        description: '육체는 사라졌으나 맹세는 남은 기사. 물리적인 공격을 무시하며, 전우를 지키기 위해 영원히 싸웁니다.',
+        role: '탱커',
+        hp: 280,
+        attack: 50,
+        defense: 70,
+        emoji: '👻',
+        iconUrl: '/assets/monsters/knight_spectral.png',
+        rarity: 'SR',
+        element: 'dark'
+    },
+    'monster_shaman_goblin': {
+        name: '고블린 대주술사',
+        description: '부족의 지혜를 이어받은 늙은 고블린. 기이한 주문으로 아군의 잠재력을 끌어올리는 강력한 서포터입니다.',
+        role: '서포터',
+        hp: 160,
+        attack: 30,
+        defense: 30,
+        emoji: '👺',
+        iconUrl: '/assets/monsters/shaman_goblin.png',
+        rarity: 'SR',
+        element: 'earth'
+    },
+    'monster_assassin_shadow': {
+        name: '그림자 암살자',
+        description: '소리 없이 다가와 적의 숨통을 끊는 암살자. 눈에 보이지 않는 속도로 전장을 누비며 치명타를 날립니다.',
+        role: '딜러',
+        hp: 140,
+        attack: 85,
+        defense: 25,
+        emoji: '🥷',
+        iconUrl: '/assets/monsters/assassin_shadow.png',
+        rarity: 'SR',
+        element: 'dark'
+    },
+    'monster_phoenix_baby': {
+        name: '아기 불사조',
+        description: '영원한 생명을 품은 불사조의 유체. 작지만 따스한 불꽃으로 아군의 체력을 지속적으로 회복시켜 줍니다.',
+        role: '서포터',
+        hp: 180,
+        attack: 40,
+        defense: 35,
+        emoji: '🐦',
+        iconUrl: '/assets/monsters/phoenix_baby.png',
+        rarity: 'SR',
+        element: 'fire'
+    },
+    'monster_yeti_ancient': {
+        name: '고대 예티',
+        description: '설산의 전설로 내려오는 거대한 유인원. 두꺼운 가죽과 얼음 같은 근육으로 어떤 공격도 버텨냅니다.',
+        role: '탱커',
+        hp: 350,
+        attack: 55,
+        defense: 60,
+        emoji: '🦍',
+        iconUrl: '/assets/monsters/yeti_ancient.png',
+        rarity: 'SR',
         element: 'water'
     }
 }

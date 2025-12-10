@@ -62,7 +62,7 @@ export async function getRecipeById(recipeId: string): Promise<Recipe | null> {
 export async function getPlayerRecipes(userId: string): Promise<PlayerRecipe[]> {
   const { data, error } = await supabase
     .from('player_recipe')
-    .select('recipe_id, is_discovered, first_discovered_at, craft_count, success_count')
+    .select('recipe_id, is_discovered, first_discovered_at, craft_count, success_count, discovered_ingredients')
     .eq('user_id', userId)
 
   if (error) {
@@ -117,4 +117,30 @@ export async function updateRecipeCraftCount(
     console.error('레시피 조합 횟수 업데이트 실패:', error)
     throw error
   }
+}
+/**
+ * 레시피 재료 발견 처리
+ *
+ * @param userId - 사용자 ID
+ * @param recipeId - 레시피 ID
+ * @param materialId - 발견한 재료 ID
+ */
+export async function discoverRecipeIngredient(
+  userId: string,
+  recipeId: string,
+  materialId: string
+): Promise<string[]> {
+  const { data, error } = await supabase.rpc('discover_recipe_ingredient', {
+    p_user_id: userId,
+    p_recipe_id: recipeId,
+    p_material_id: materialId
+  })
+
+  if (error) {
+    console.error('레시피 재료 발견 처리 실패:', error)
+    // 에러 발생 시 빈 배열 반환하여 게임 진행 방해 최소화
+    return []
+  }
+
+  return data || []
 }

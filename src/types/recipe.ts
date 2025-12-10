@@ -51,4 +51,5 @@ export interface PlayerRecipe {
   first_discovered_at?: string
   craft_count: number
   success_count: number
+  discovered_ingredients?: string[] // jsonb array of material IDs
 }
