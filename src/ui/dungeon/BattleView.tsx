@@ -35,7 +35,7 @@ export default function BattleView() {
             setTimeout(() => setEnemyShake(false), 500)
         }
         prevEnemyHpRef.current = battleState.enemyHp
-    }, [battleState?.playerHp, battleState?.enemyHp])
+    }, [battleState])
 
     // Animation Loop
     useEffect(() => {
@@ -204,7 +204,7 @@ export default function BattleView() {
                 {animatingTexts.map(ft => {
                     let className = ''
                     let fontSize = '24px'
-                    let zIndex = 100
+                    const zIndex = 100
                     let icon = ''
 
                     switch (ft.type) {

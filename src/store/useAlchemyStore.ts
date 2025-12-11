@@ -9,11 +9,12 @@ import type {
   PlayerMonster
 } from '../types'
 import * as alchemyApi from '../lib/alchemyApi'
+import type { AlchemyResult } from '../lib/alchemyApi'
 import { isRecipeValid, findMatchingRecipe } from '../lib/alchemyLogic'
 import { ALCHEMY } from '../constants/game'
 import { useGameStore } from './useGameStore'
 import { supabase } from '../lib/supabase'
-import { calculateFailureExp, calculateNewLevel } from '../utils/alchemyUtils'
+
 
 interface AlchemyState {
   // 마스터 데이터
@@ -81,7 +82,7 @@ interface AlchemyState {
   startFreeFormBrewing: () => Promise<void>
   startBrewing: (recipeId: string) => Promise<void>
   updateBrewProgress: (progress: number) => void
-  completeBrewing: (success: boolean, matchedRecipe?: Recipe | null) => Promise<void>
+  completeBrewing: (result: AlchemyResult, matchedRecipe?: Recipe | null) => Promise<void>
   resetBrewResult: () => void
 
   // Actions - 테스트용
@@ -109,6 +110,9 @@ interface AlchemyState {
     error?: string
   }>
   toggleMonsterLock: (monsterId: string, isLocked: boolean) => Promise<void>
+
+  // Actions - Error Handling
+  resetError: () => void
 }
 
 export const useAlchemyStore = create<AlchemyState>((set, get) => ({
@@ -134,6 +138,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   // 배치 동기화 콜백 (useBatchMaterialSync에서 설정)
   batchSyncCallback: null as ((materialId: string, quantity: number) => void) | null,
   forceSyncCallback: null as (() => Promise<void>) | null,
+
+  resetError: () => set({ error: null }),
 
   // ============================================
   // 데이터 로딩
@@ -286,7 +292,6 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // 값이 0이면 키를 추가하지 않음
     if (newAmount === 0) {
-      console.log(`⚠️ 재료 추가 실패: ${materialId} - 보유량 부족`)
       return
     }
 
@@ -453,21 +458,37 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     // 재료 조합으로 레시피 찾기
     const matchedRecipe = findMatchingRecipe(selectedIngredients, alchemyContext || null, allRecipes)
 
-    const duration = matchedRecipe ? matchedRecipe.craft_time_sec * 1000 : ALCHEMY.DEFAULT_CRAFT_TIME_MS
+    if (!matchedRecipe) {
+      // 레시피가 없으면 조합 불가 (서버 로직과 일치시키기 위해)
+      // 기존에는 실패 처리했으나, RPC가 recipeId를 요구하므로 여기서는 막거나,
+      // 추후 별도 '실험' RPC가 필요. 현재는 안전하게 차단.
+      console.warn('일치하는 레시피가 없습니다.')
+      set({ error: '일치하는 레시피를 찾을 수 없습니다.' })
+      return
+    }
+
+    const duration = matchedRecipe.craft_time_sec * 1000
 
     console.log('🧪 자유 조합 시작:', {
       재료: selectedIngredients,
-      매칭된레시피: matchedRecipe?.name || '없음',
+      매칭된레시피: matchedRecipe.name,
       소요시간: duration / 1000 + '초'
     })
 
+    const { userId } = get()
+    let rpcPromise: Promise<AlchemyResult> | null = null
+
+    // 1. API 호출 시작
+    if (userId) {
+      rpcPromise = alchemyApi.performAlchemy(userId, matchedRecipe.id, selectedIngredients, matchedRecipe.base_success_rate)
+    }
 
     set({
       isBrewing: true,
       brewStartTime: Date.now(),
       brewProgress: 0,
       brewResult: { type: 'idle' },
-      selectedRecipeId: matchedRecipe?.id || null // 매칭된 레시피 설정
+      selectedRecipeId: matchedRecipe.id
     })
 
     // 진행 바 시뮬레이션
@@ -475,25 +496,40 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     const step = interval / duration
 
     let timer: NodeJS.Timeout | null = null
-    timer = setInterval(() => {
+    timer = setInterval(async () => {
       const state = get()
       if (!state.isBrewing) {
         if (timer) clearInterval(timer)
         return
       }
 
-      const newProgress = Math.min(1, state.brewProgress + step)
+      // API 응답을 기다리기 위해 95%까지만 진행
+      const targetProgress = rpcPromise ? 0.95 : 1
+      const newProgress = Math.min(targetProgress, state.brewProgress + step)
       set({ brewProgress: newProgress })
 
-      if (newProgress >= 1) {
-        if (timer) clearInterval(timer)
-        // 조합 완료
-        if (matchedRecipe) {
-          const success = Math.random() * 100 < matchedRecipe.base_success_rate
-          get().completeBrewing(success, matchedRecipe)
+      // 완료 조건: 95% 도달 + API 응답 완료 (혹은 userId 없어서 로컬 테스트인 경우)
+      if (newProgress >= targetProgress) {
+        if (rpcPromise) {
+          try {
+            const result = await rpcPromise
+            if (timer) clearInterval(timer)
+            get().updateBrewProgress(1)
+            await get().completeBrewing(result, matchedRecipe)
+          } catch (e: any) {
+            console.error('Alchemy RPC failed', e)
+            if (timer) clearInterval(timer)
+            const errorMessage = e.message || 'Unknown network error'
+            set({
+              isBrewing: false,
+              error: `서버 통신 오류: ${errorMessage}. 잠시 후 다시 시도해주세요.`
+            })
+          }
         } else {
-          // 레시피 없으면 실패 (경험치는 여전히 획득)
-          get().completeBrewing(false, null)
+          // userId 없는 경우 (테스트)
+          // Cannot support server logic without user, just fail or mock
+          if (timer) clearInterval(timer)
+          set({ isBrewing: false })
         }
       }
     }, interval)
@@ -535,8 +571,20 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       isBrewing: true,
       brewStartTime: Date.now(),
       brewProgress: 0,
-      brewResult: { type: 'idle' }
+      brewResult: { type: 'idle' },
+      error: null // Clear previous errors
     })
+
+    const { userId, selectedIngredients } = get()
+    let rpcPromise: Promise<AlchemyResult> | null = null
+
+    if (userId) {
+      // startBrewing에서는 selectedIngredients가 비어있을 수 있음(레시피 클릭해서 시작하는 경우)
+      // 하지만 canCraft 체크를 통과했으므로 selectedIngredients에 이미 세팅되어 있거나,
+      // 혹은 auto-fill이 필요한데, 현재 로직상 startBrewing 호출 전 selectedIngredients가 채워져 있어야 함.
+      // store의 selectedIngredients를 사용.
+      rpcPromise = alchemyApi.performAlchemy(userId, recipeId, selectedIngredients, recipe.base_success_rate)
+    }
 
     // 진행 바 시뮬레이션
     const duration = recipe.craft_time_sec * 1000
@@ -544,22 +592,40 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     const step = interval / duration
 
     let timer: NodeJS.Timeout | null = null
-    timer = setInterval(() => {
+    timer = setInterval(async () => {
       const state = get()
       if (!state.isBrewing) {
         if (timer) clearInterval(timer)
         return
       }
 
-      const newProgress = Math.min(1, state.brewProgress + step)
+      const targetProgress = rpcPromise ? 0.95 : 1
+      const newProgress = Math.min(targetProgress, state.brewProgress + step)
       set({ brewProgress: newProgress })
 
-      if (newProgress >= 1) {
-        if (timer) clearInterval(timer)
-
-        // 조합 완료 처리
-        const success = Math.random() * 100 < recipe.base_success_rate
-        get().completeBrewing(success, recipe)
+      if (newProgress >= targetProgress) {
+        if (rpcPromise) {
+          try {
+            const result = await rpcPromise
+            if (timer) clearInterval(timer)
+            get().updateBrewProgress(1)
+            get().updateBrewProgress(1)
+            await get().completeBrewing(result, recipe)
+          } catch (e: any) {
+            console.error('Alchemy RPC failed', e)
+            if (timer) clearInterval(timer)
+            const errorMessage = e.message || 'Unknown network error'
+            set({
+              isBrewing: false,
+              error: `서버 통신 오류: ${errorMessage}. 잠시 후 다시 시도해주세요.`
+            })
+          }
+        } else {
+          // userId 없는 경우 (테스트)
+          // Cannot support server logic without user, just fail or mock
+          if (timer) clearInterval(timer)
+          set({ isBrewing: false })
+        }
       }
     }, interval)
 
@@ -570,7 +636,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   updateBrewProgress: (progress) => set({ brewProgress: progress }),
 
-  completeBrewing: async (success, matchedRecipe) => {
+  completeBrewing: async (result, matchedRecipe) => {
     const { userId, selectedRecipeId, allRecipes, selectedIngredients, playerMaterials, playerAlchemy, allMaterials } = get()
     const gameStore = useGameStore.getState()
 
@@ -579,16 +645,17 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     // 매칭된 레시피 또는 선택된 레시피 사용
     const recipe = matchedRecipe || (selectedRecipeId ? allRecipes.find(r => r.id === selectedRecipeId) : null)
 
-    // 두 스토어 모두에서 재료 소모 (성공/실패 관계없이 소모)
+    // 1. 재료 소모 (서버 결과 반영)
+    // 서버에서는 이미 차감되었으므로 로컬 상태만 동기화
+    // (exact sync would require re-fetching, but for performance we replicate the deduction logic or use result data if widely available)
+    // 여기서는 selectedIngredients만큼 차감 (서버 로직과 동일하다고 가정)
+
     const newPlayerMaterials = { ...playerMaterials }
     const newGameResources = { ...gameStore.resources }
     const materialsUsed: Record<string, number> = {}
 
-    // 실제 사용한 재료 소모
     for (const [materialId, count] of Object.entries(selectedIngredients)) {
-      // alchemyStore에서 소모
       newPlayerMaterials[materialId] = Math.max(0, (newPlayerMaterials[materialId] || 0) - count)
-      // gameStore에서도 소모
       newGameResources[materialId] = Math.max(0, (newGameResources[materialId] || 0) - count)
       materialsUsed[materialId] = count
     }
@@ -603,27 +670,32 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       message?: string
     } | undefined
 
-    // 힌트 시스템 처리
-    if (success) {
-      // 성공 시 실패 카운트 리셋
-      await alchemyApi.resetConsecutiveFailures(userId)
+    // 2. 힌트 시스템 처리 (실패 시에만)
+    if (result.success) {
+      // 성공 시에는 별도 힌트 처리 없음 (서버에서 이미 failCount 리셋됨)
+      console.log(`✅ 연금술 성공! +${result.exp_gain} XP`)
     } else {
-      // 실패 시 카운트 증가
-      const failCount = (await alchemyApi.getConsecutiveFailures(userId)) + 1
-      await alchemyApi.updateConsecutiveFailures(userId, failCount)
+      console.log('Alchemy Failed Debug:', result) // DEBUG
+      if (result.error) console.error('Alchemy Error:', result.error)
+
+      let failCount = result.fail_count
+
+      // Fallback: If RPC returned undefined/null (older DB function), fetch manually
+      if (failCount === undefined || failCount === null) {
+        try {
+          failCount = await alchemyApi.getConsecutiveFailures(userId)
+        } catch (e) {
+          failCount = 0
+        }
+      }
 
       console.log(`💔 연속 실패 ${failCount}회`)
 
       // --- Enhanced Hint Logic ---
+      // (기존 로직 유지)
 
-      // 0. Filter Undiscovered Recipes for Hint Candidates
-      // 이미 발견한 레시피 목록 (ID)을 먼저 추출하여 모든 힌트 로직에서 제외
       const discoveredRecipeIds = Object.keys(get().playerRecipes).filter(id => get().playerRecipes[id].is_discovered)
-      // 힌트 대상: 숨겨진 레시피(is_hidden: true)이면서 아직 발견하지 못한(discoveredRecipeIds에 없는) 레시피
       const hintCandidates = allRecipes.filter(r => r.is_hidden && !discoveredRecipeIds.includes(r.id))
-
-      // 1. Check for Near-Miss (Ratio Mismatch)
-      // 재료 종류는 모두 일치하지만 수량이 안 맞는 레시피 찾기
       const usedMaterialIds = Object.keys(materialsUsed).sort()
 
       const nearMissRecipe = hintCandidates.find(r => {
@@ -633,100 +705,46 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       })
 
       if (nearMissRecipe) {
-        // 정확히 이 레시피인데 수량이 틀린 경우
-        console.log('⚖️ 비율 힌트 (Near-Miss) 발견:', nearMissRecipe.name)
-        hint = {
-          type: 'NEAR_MISS',
-          recipeId: nearMissRecipe.id
-        }
-      }
-
-      // 2. Check for Condition Mismatch
-      // 재료와 수량이 모두 정확한데 실패했다면 조건(시간 등) 불일치
-      if (!hint) {
+        hint = { type: 'NEAR_MISS', recipeId: nearMissRecipe.id }
+      } else {
         const conditionMissRecipe = hintCandidates.find(r => {
           if (!r.ingredients) return false
-          // 재료와 수량 모두 확인
           const isMatch = r.ingredients.every(ing => materialsUsed[ing.material_id] === ing.quantity) &&
             Object.keys(materialsUsed).length === r.ingredients.length
           return isMatch
         })
 
         if (conditionMissRecipe) {
-          console.log('🕰️ 조건 불일치 힌트 발견:', conditionMissRecipe.name)
-          hint = {
-            type: 'CONDITION_MISMATCH',
-            recipeId: conditionMissRecipe.id
-          }
+          hint = { type: 'CONDITION_MISMATCH', recipeId: conditionMissRecipe.id }
         }
       }
 
       // 3. Ingredient Reveal (Fallback / Progressive)
-      // 3회 이상 실패 시, 그리고 더 중요한 힌트가 없을 때
       if (!hint && failCount >= 3) {
-        // 셔플을 위한 랜덤 정렬
         const shuffledRecipes = [...hintCandidates].sort(() => 0.5 - Math.random())
 
         for (const undiscoveredRecipe of shuffledRecipes) {
-          // 이 레시피의 재료 중 사용된 재료가 포함되어 있는지 확인
           const matchingIngredient = undiscoveredRecipe.ingredients?.find(ing => usedMaterialIds.includes(ing.material_id))
 
           if (matchingIngredient) {
-            // 힌트 발견!
             const materialName = allMaterials.find(m => m.id === matchingIngredient.material_id)?.name || matchingIngredient.material_id
 
             hint = {
               type: 'INGREDIENT_REVEAL',
-              monsterName: undiscoveredRecipe.name.replace(' 레시피', '').replace(' 조합법', ''), // 이름만 추출
+              monsterName: undiscoveredRecipe.name.replace(' 레시피', '').replace(' 조합법', ''),
               materialName: materialName,
               recipeId: undiscoveredRecipe.id
             }
-            console.log('💡 재료 공개 힌트 발견:', hint)
 
-            // DB에 발견 정보 저장
-            const currentDiscovered = await alchemyApi.discoverRecipeIngredient(userId, undiscoveredRecipe.id, matchingIngredient.material_id)
-
-            // 로컬 상태 업데이트 (playerRecipes)
-            const playerRecipes = get().playerRecipes
-            const currentRecipe = playerRecipes[undiscoveredRecipe.id] || {
-              recipe_id: undiscoveredRecipe.id,
-              is_discovered: false,
-              first_discovered_at: null,
-              craft_count: 0,
-              success_count: 0,
-              discovered_ingredients: []
-            }
-
-            // 이미 있는지 확인 후 추가
-            const newDiscoveredIngredients = currentDiscovered.length > 0 ? currentDiscovered : [
-              ...(currentRecipe.discovered_ingredients || []),
-              matchingIngredient.material_id
-            ].filter((v, i, a) => a.indexOf(v) === i) // 중복 제거 fallback
-
-            set({
-              playerRecipes: {
-                ...playerRecipes,
-                [undiscoveredRecipe.id]: {
-                  ...currentRecipe,
-                  discovered_ingredients: newDiscoveredIngredients
-                }
-              }
-            })
-
-            // 힌트 제공 시 실패 카운트 리셋
-            await alchemyApi.resetConsecutiveFailures(userId)
-            break // 하나 찾았으면 중단
+            // DB 발견 정보 저장 (클라이언트 편의상 유지, 서버와 중복될 수 있으나 안전함)
+            await alchemyApi.discoverRecipeIngredient(userId, undiscoveredRecipe.id, matchingIngredient.material_id)
+            break
           }
         }
       }
 
-      // 4. Element Resonance (Fallback if nothing else)
-      // 3회차 미만이라도, 혹은 힌트가 없다면 속성 힌트 제공
+      // 4. Element Resonance
       if (!hint) {
-        // 사용된 재료들의 속성을 파악 (현재는 Material에 속성이 명시적이지 않으므로, 파편 이름 등으로 유추하거나 미리 정의된 맵핑 사용)
-        // 간단히: shard_fire -> FIRE, ore_iron -> EARTH 등
-        // 여기서는 간단히 'shard_type'이나 'essence_type'이 포함되어 있으면 그 속성을 힌트로 줌
-
         const elementMap: Record<string, string> = {
           'shard_fire': '불', 'fire_core': '불', 'phoenix_feather': '불',
           'shard_water': '물', 'ice_shard': '물', 'frozen_dew': '물',
@@ -740,11 +758,10 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
           const detectedElement = Object.keys(elementMap).find(key => matId.includes(key) || elementMap[matId])
           if (detectedElement) {
             const msg = elementMap[detectedElement] || (elementMap[matId] || '알 수 없는')
-            console.log('속성 공명 힌트:', msg)
             hint = {
               type: 'ELEMENT_MATCH',
               message: msg,
-              element: Object.entries(elementMap).find(([, v]) => v === msg)?.[0].split('_')[1] || 'earth' // map to css color key
+              element: Object.entries(elementMap).find(([, v]) => v === msg)?.[0].split('_')[1] || 'earth'
             }
             break
           }
@@ -753,10 +770,11 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     }
 
     // 결과 설정
-    const brewResult = recipe && success
-      ? { type: 'success' as const, monsterId: recipe.result_monster_id, count: recipe.result_count }
+    const brewResult = result.success
+      ? { type: 'success' as const, monsterId: result.result_monster_id || (recipe?.result_monster_id), count: recipe?.result_count || 1 }
       : { type: 'fail' as const, lostMaterials: materialsUsed, hint }
 
+    // 3. 로컬 상태 업데이트
     set({
       isBrewing: false,
       brewStartTime: null,
@@ -764,135 +782,24 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       brewResult,
       playerMaterials: newPlayerMaterials,
       selectedIngredients: {},
-      selectedRecipeId: null // 조합 완료 후 레시피 선택 해제
+      selectedRecipeId: null,
+      playerAlchemy: playerAlchemy ? {
+        ...playerAlchemy,
+        experience: result.new_total_exp, // 서버 값 사용
+        level: result.new_level // 서버 값 사용
+      } : null
     })
 
-    // ... (rest of the function is mostly same, just ensuring hint is passed if any)
-
-    // gameStore의 resources도 업데이트
+    // gameStore 동기화
     gameStore.setResources(newGameResources)
 
-    console.log(recipe && success ? `✅ 연금술 성공! ${recipe.name} 획득!` : '❌ 연금술 실패... 재료를 잃었습니다.')
-
-    // 서버에 데이터 저장
-    try {
-      // 재료 소모 DB 반영 (항상 실행)
-      await alchemyApi.consumeMaterials(userId, materialsUsed)
-
-      if (recipe && success) {
-        // 1. 조합 기록 저장
-        await alchemyApi.recordAlchemyHistory(
-          userId,
-          recipe.id,
-          success,
-          recipe.base_success_rate,
-          materialsUsed,
-          recipe.result_monster_id
-        )
-
-        // 2. 레시피 카운트 업데이트
-        await alchemyApi.updateRecipeCraftCount(userId, recipe.id, success)
-
-        // 3. 경험치 추가
-        await alchemyApi.addAlchemyExperience(userId, recipe.exp_gain)
-
-        // 4. 몬스터 인벤토리에 추가
-        for (let i = 0; i < recipe.result_count; i++) {
-          await alchemyApi.addMonsterToPlayer(userId, recipe.result_monster_id)
-        }
-
-        // 5. 로컬 상태 업데이트 (XP)
-        if (playerAlchemy) {
-          const { newLevel, newExp } = calculateNewLevel(playerAlchemy.experience, recipe.exp_gain)
-          set({
-            playerAlchemy: {
-              ...playerAlchemy,
-              experience: newExp,
-              level: newLevel
-            }
-          })
-        }
-
-        // 6. 몬스터 목록 새로고침
-        await get().loadPlayerMonsters(userId)
-
-        console.log(`✅ 연금술 성공! +${recipe.exp_gain} XP`)
-      } else if (recipe) {
-        // 실패했지만 레시피는 있는 경우 (조합 실패)
-        console.log('💔 [Alchemy] 조합 실패 - 경험치 계산 시작')
-
-        await alchemyApi.recordAlchemyHistory(
-          userId,
-          recipe.id,
-          false,
-          recipe.base_success_rate,
-          materialsUsed,
-          undefined
-        )
-        await alchemyApi.updateRecipeCraftCount(userId, recipe.id, false)
-
-        // 실패 시에도 재료 등급에 따라 경험치 획득
-        const failureExp = calculateFailureExp(materialsUsed)
-        console.log(`💔 [Alchemy] 실패 경험치 계산 완료: ${failureExp} XP`)
-
-        if (failureExp > 0) {
-          console.log(`💔 [Alchemy] 경험치 지급 시작...`)
-          await alchemyApi.addAlchemyExperience(userId, failureExp)
-
-          // 로컬 상태 업데이트 (XP)
-          if (playerAlchemy) {
-            const { newLevel, newExp } = calculateNewLevel(playerAlchemy.experience, failureExp)
-            set({
-              playerAlchemy: {
-                ...playerAlchemy,
-                experience: newExp,
-                level: newLevel
-              }
-            })
-            console.log(`💔 [Alchemy] 로컬 상태 업데이트 완료: ${playerAlchemy.experience} → ${newExp} XP`)
-          } else {
-            console.warn('⚠️ [Alchemy] playerAlchemy가 null입니다!')
-          }
-
-          console.log(`💔 연금술 실패... 하지만 +${failureExp} XP 획득!`)
-        } else {
-          console.log(`⚠️ [Alchemy] 실패 경험치가 0입니다.`)
-        }
-      } else {
-        // recipe가 null인 경우 = 잘못된 조합
-        console.log('💔 [Alchemy] 잘못된 조합 - 경험치 계산 시작')
-
-        // 잘못된 조합이어도 재료 등급에 따라 경험치 획득
-        const failureExp = calculateFailureExp(materialsUsed)
-        console.log(`💔 [Alchemy] 잘못된 조합 경험치 계산 완료: ${failureExp} XP`)
-
-        if (failureExp > 0) {
-          console.log(`💔 [Alchemy] 경험치 지급 시작...`)
-          await alchemyApi.addAlchemyExperience(userId, failureExp)
-
-          // 로컬 상태 업데이트 (XP)
-          if (playerAlchemy) {
-            const { newLevel, newExp } = calculateNewLevel(playerAlchemy.experience, failureExp)
-            set({
-              playerAlchemy: {
-                ...playerAlchemy,
-                experience: newExp,
-                level: newLevel
-              }
-            })
-            console.log(`💔 [Alchemy] 로컬 상태 업데이트 완료: ${playerAlchemy.experience} → ${newExp} XP`)
-          } else {
-            console.warn('⚠️ [Alchemy] playerAlchemy가 null입니다!')
-          }
-
-          console.log(`💔 잘못된 조합... 하지만 +${failureExp} XP 획득!`)
-        } else {
-          console.log(`⚠️ [Alchemy] 잘못된 조합 경험치가 0입니다.`)
-        }
-      }
-    } catch (error) {
-      console.error('연금술 결과 저장 실패:', error)
+    // 4. 데이터 리로드 (결과 반영 보장을 위해)
+    // 몬스터 목록이나 레시피 카운트 등은 다시 불러오는 것이 안전함
+    if (result.success && result.result_monster_id) {
+      await get().loadPlayerMonsters(userId)
     }
+    // 레시피 정보도 업데이트 (craft count 등)
+    await get().loadPlayerData(userId)
   },
 
   resetBrewResult: () => {

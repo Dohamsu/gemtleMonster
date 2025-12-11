@@ -253,3 +253,55 @@ export async function updateConsecutiveFailures(userId: string, count: number): 
 export async function resetConsecutiveFailures(userId: string): Promise<void> {
   await updateConsecutiveFailures(userId, 0)
 }
+
+// ============================================
+// Server-Side Alchemy Logic (RPC)
+// ============================================
+
+export interface AlchemyResult {
+  success: boolean
+  exp_gain: number
+  new_level: number
+  new_total_exp: number
+  result_monster_id: string | null
+  fail_count: number
+  error?: string
+}
+
+/**
+ * Perform alchemy crafting via server-side RPC
+ * 
+ * @param userId - User ID
+ * @param recipeId - Recipe ID to craft
+ * @param ingredients - Dictionary of materials to consume { materialId: quantity }
+ * @param successRate - Displayed success rate (for logging purposes)
+ * @returns Result of the alchemy operation
+ */
+export async function performAlchemy(
+  userId: string,
+  recipeId: string,
+  ingredients: Record<string, number>,
+  successRate: number
+): Promise<AlchemyResult> {
+  const { data, error } = await supabase.rpc('perform_alchemy', {
+    p_user_id: userId,
+    p_recipe_id: recipeId,
+    p_ingredients: ingredients,
+    p_success_rate: successRate
+  })
+
+  if (error) {
+    console.error('Failed to perform alchemy:', error)
+    return {
+      success: false,
+      exp_gain: 0,
+      new_level: 0,
+      new_total_exp: 0,
+      result_monster_id: null,
+      fail_count: 0,
+      error: error.message
+    }
+  }
+
+  return data as AlchemyResult
+}

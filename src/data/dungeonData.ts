@@ -13,6 +13,8 @@ export interface DungeonEnemy {
     attack: number
     defense: number
     exp: number
+    image?: string
+    element?: string
     drops: DungeonDrop[]
 }
 

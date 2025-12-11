@@ -5,6 +5,7 @@ import type { StatusEffect } from '../lib/battleUtils'
 
 export type FloatingTextType = 'DAMAGE' | 'HEAL' | 'CRIT' | 'MISS' | 'BUFF' | 'WEAK' | 'RESIST'
 
+
 export interface FloatingText {
   id: string
   x: number
@@ -47,6 +48,7 @@ export interface BattleState {
 export interface Enemy {
   id: string
   name: string
+  image?: string
   hp: number
   attack: number
   defense: number

@@ -7,6 +7,7 @@ import MaterialGrid from './MaterialGrid'
 import AlchemyBrewButton from './AlchemyBrewButton'
 import { AlchemyBackButton } from './AlchemyBackButton'
 import { useGameStore } from '../../store/useGameStore'
+import { useAlchemyStore } from '../../store/useAlchemyStore'
 
 interface AlchemyWorkshopOverlayProps {
     recipes: Recipe[]
@@ -76,6 +77,43 @@ export default function AlchemyWorkshopOverlay({
                 flexDirection: 'column'
             }}>
                 <AlchemyBackButton onBack={handleBack} />
+
+                {/* Error Toast */}
+                {/* We use a simple inline style for the toast. In a real app, use a proper Toast component. */}
+                {useAlchemyStore((state) => state.error) && (
+                    <div style={{
+                        position: 'absolute',
+                        top: '60px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'rgba(239, 68, 68, 0.95)',
+                        color: 'white',
+                        padding: '12px 24px',
+                        borderRadius: '8px',
+                        zIndex: 100,
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        minWidth: '300px',
+                        justifyContent: 'space-between'
+                    }}>
+                        <span>⚠️ {useAlchemyStore.getState().error}</span>
+                        <button
+                            onClick={useAlchemyStore.getState().resetError}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'white',
+                                fontSize: '20px',
+                                cursor: 'pointer',
+                                padding: '0 4px'
+                            }}
+                        >
+                            ×
+                        </button>
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <div style={{
@@ -208,6 +246,43 @@ export default function AlchemyWorkshopOverlay({
             gap: '20px'
         }}>
             <AlchemyBackButton onBack={handleBack} />
+
+            {/* Error Toast (Desktop) */}
+            {useAlchemyStore((state: any) => state.error) && (
+                <div style={{
+                    position: 'absolute',
+                    top: '80px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(239, 68, 68, 0.95)',
+                    color: 'white',
+                    padding: '12px 24px',
+                    borderRadius: '8px',
+                    zIndex: 100,
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    minWidth: '400px',
+                    justifyContent: 'space-between',
+                    pointerEvents: 'auto'
+                }}>
+                    <span style={{ fontSize: '15px', fontWeight: 500 }}>⚠️ {useAlchemyStore.getState().error}</span>
+                    <button
+                        onClick={useAlchemyStore.getState().resetError}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'white',
+                            fontSize: '20px',
+                            cursor: 'pointer',
+                            padding: '0 4px'
+                        }}
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
 
             {/* Left Panel - Recipe List */}
             <div style={{
