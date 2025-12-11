@@ -113,6 +113,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 55,
         defense: 35,
         emoji: '👻',
+        iconUrl: '/assets/monsters/monster_slime_nightmare.png',
         rarity: 'R',
         element: 'dark'
     },
@@ -124,6 +125,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 20,
         defense: 25,
         emoji: '✨',
+        iconUrl: '/assets/monsters/monster_fairy_dawn.png',
         rarity: 'R',
         element: 'light'
     },
@@ -135,6 +137,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 90,
         defense: 50,
         emoji: '🐯',
+        iconUrl: '/assets/monsters/monster_guardian_tiger.png',
         rarity: 'SSR',
         element: 'light'
     },

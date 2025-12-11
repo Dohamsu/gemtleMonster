@@ -3,6 +3,19 @@
  */
 import type { StatusEffect } from '../lib/battleUtils'
 
+export type FloatingTextType = 'DAMAGE' | 'HEAL' | 'CRIT' | 'MISS' | 'BUFF' | 'WEAK' | 'RESIST'
+
+export interface FloatingText {
+  id: string
+  x: number
+  y: number
+  text: string
+  color: string
+  life: number
+  target?: 'PLAYER' | 'ENEMY'
+  type?: FloatingTextType
+}
+
 export interface BattleState {
   isBattling: boolean
   playerHp: number
@@ -28,7 +41,7 @@ export interface BattleState {
   enemyStatusEffects?: StatusEffect[]
 
   // Visual Queues
-  floatingTexts: { id: string; x: number; y: number; text: string; color: string; life: number; target?: 'PLAYER' | 'ENEMY' }[]
+  floatingTexts: FloatingText[]
 }
 
 export interface Enemy {

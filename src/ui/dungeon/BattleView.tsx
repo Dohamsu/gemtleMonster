@@ -11,6 +11,32 @@ export default function BattleView() {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
     const [animatingTexts, setAnimatingTexts] = useState<any[]>([])
 
+    // Shake Logic
+    const [playerShake, setPlayerShake] = useState(false)
+    const [enemyShake, setEnemyShake] = useState(false)
+    const prevPlayerHpRef = useRef<number>(0)
+    const prevEnemyHpRef = useRef<number>(0)
+
+    useEffect(() => {
+        if (!battleState) return
+
+        // Initialize refs on start
+        if (prevPlayerHpRef.current === 0) prevPlayerHpRef.current = battleState.playerHp
+        if (prevEnemyHpRef.current === 0) prevEnemyHpRef.current = battleState.enemyHp
+
+        if (battleState.playerHp < prevPlayerHpRef.current) {
+            setPlayerShake(true)
+            setTimeout(() => setPlayerShake(false), 500)
+        }
+        prevPlayerHpRef.current = battleState.playerHp
+
+        if (battleState.enemyHp < prevEnemyHpRef.current) {
+            setEnemyShake(true)
+            setTimeout(() => setEnemyShake(false), 500)
+        }
+        prevEnemyHpRef.current = battleState.enemyHp
+    }, [battleState?.playerHp, battleState?.enemyHp])
+
     // Animation Loop
     useEffect(() => {
         let animationFrameId: number
@@ -175,26 +201,53 @@ export default function BattleView() {
                 overflow: 'visible'  // 플로팅 텍스트가 영역 밖으로 나갈 수 있도록
             }}>
                 {/* Floating Texts Overlay - 반드시 battle-arena 내부에서 렌더링되어야 함 */}
-                {animatingTexts.map(ft => (
-                    <div key={ft.id} style={{
-                        position: 'absolute',
-                        left: '0',
-                        top: '0',
-                        transform: `translate(${ft.x}px, ${ft.y}px) translateX(-50%)`,
-                        color: ft.color,
-                        fontSize: '24px',
-                        fontWeight: 'bold',
-                        pointerEvents: 'none',
-                        textShadow: '0 0 4px black',
-                        opacity: Math.max(0, ft.life / 20), // Faster fade out at end
-                        zIndex: 100,
-                        whiteSpace: 'nowrap'
-                    }}>
-                        {ft.text}
-                    </div>
-                ))}
+                {animatingTexts.map(ft => {
+                    let className = ''
+                    let fontSize = '24px'
+                    let zIndex = 100
+                    let icon = ''
+
+                    switch (ft.type) {
+                        case 'CRIT':
+                            className = 'floating-text-crit'
+                            icon = '💥'
+                            break
+                        case 'WEAK':
+                            className = 'floating-text-weak'
+                            icon = '🔥'
+                            break
+                        case 'RESIST':
+                            fontSize = '18px'
+                            ft.color = '#9ca3af' // Force gray
+                            break
+                        case 'HEAL':
+                            className = 'floating-text-heal'
+                            icon = '➕'
+                            break
+                    }
+
+                    return (
+                        <div key={ft.id} className={className} style={{
+                            position: 'absolute',
+                            left: '0',
+                            top: '0',
+                            transform: `translate(${ft.x}px, ${ft.y}px) translateX(-50%)`,
+                            color: ft.color,
+                            fontSize: className ? undefined : fontSize,
+                            fontWeight: 'bold',
+                            pointerEvents: 'none',
+                            textShadow: '0 0 4px black',
+                            opacity: Math.max(0, ft.life / 20),
+                            zIndex,
+                            whiteSpace: 'nowrap',
+                            transition: 'transform 0.1s'
+                        }}>
+                            {icon} {ft.text}
+                        </div>
+                    )
+                })}
                 {/* Player */}
-                <div ref={playerAreaRef} style={{ textAlign: 'center' }}>
+                <div ref={playerAreaRef} className={playerShake ? 'shake' : ''} style={{ textAlign: 'center' }}>
                     {battleState.playerMonsterImage ? (
                         <img
                             src={battleState.playerMonsterImage}
@@ -303,10 +356,28 @@ export default function BattleView() {
                     )}
                 </div>
 
-                <div style={{ fontSize: '24px', color: '#aaa' }}>VS</div>
+                <div style={{ fontSize: '24px', color: '#aaa', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                    <span>VS</span>
+                    {/* Elemental Advantage Indicator */}
+                    {(() => {
+                        const pEl = battleState.playerElement
+                        const eEl = battleState.enemyElement
+                        // Simple helper to check advantage (Logic duplicated from util for UI simplicity)
+                        const getRelation = (a: string, b: string) => {
+                            if ((a === 'FIRE' && b === 'EARTH') || (a === 'EARTH' && b === 'WIND') || (a === 'WIND' && b === 'WATER') || (a === 'WATER' && b === 'FIRE') || (a === 'LIGHT' && b === 'DARK') || (a === 'DARK' && b === 'LIGHT')) return 'ADV'
+                            if ((a === 'FIRE' && b === 'WATER') || (a === 'EARTH' && b === 'FIRE') || (a === 'WIND' && b === 'EARTH') || (a === 'WATER' && b === 'WIND')) return 'DIS'
+                            return 'NEUTRAL'
+                        }
+                        const relation = getRelation(pEl!, eEl!)
+
+                        if (relation === 'ADV') return <div style={{ fontSize: '12px', color: '#4ade80', background: 'rgba(74, 222, 128, 0.2)', padding: '2px 6px', borderRadius: '4px' }}>유리함!</div>
+                        if (relation === 'DIS') return <div style={{ fontSize: '12px', color: '#ef4444', background: 'rgba(239, 68, 68, 0.2)', padding: '2px 6px', borderRadius: '4px' }}>불리함...</div>
+                        return null
+                    })()}
+                </div>
 
                 {/* Enemy */}
-                <div ref={enemyAreaRef} style={{ textAlign: 'center' }}>
+                <div ref={enemyAreaRef} className={enemyShake ? 'shake' : ''} style={{ textAlign: 'center' }}>
                     {battleState.enemyImage ? (
                         <img
                             src={battleState.enemyImage}
