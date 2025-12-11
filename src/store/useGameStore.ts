@@ -11,12 +11,14 @@ import type { BattleEntity } from '../lib/battleUtils'
 import type { FloatingText, BattleState } from '../types/battle'
 import type { RoleType } from '../types/monster'
 
+export type CanvasView = 'map' | 'dungeon' | 'alchemy_workshop' | 'shop' | 'awakening' | 'monster_farm'
+
 interface GameState {
-    canvasView: 'map' | 'dungeon' | 'alchemy_workshop' | 'shop' | 'awakening' | 'monster_farm'
+    canvasView: CanvasView
     activeDungeon: string | null
     battleState: BattleState | null
 
-    setCanvasView: (view: 'map' | 'dungeon' | 'alchemy_workshop' | 'shop' | 'awakening' | 'monster_farm') => void
+    setCanvasView: (view: CanvasView) => void
     startDungeon: (dungeonId: string) => void
     leaveDungeon: () => void
 
@@ -29,11 +31,14 @@ interface GameState {
     endBattle: () => void
     consumeFloatingTexts: () => void // New action to clear texts after reading
     addResources: (rewards: Record<string, number>, source: string) => void
-    recentAdditions: { facilityKey: string, resourceId: string }[]
-    setRecentAdditions: (additions: { facilityKey: string, resourceId: string }[]) => void
+    // Recent Additions (for animations)
+    recentAdditions: { id: string, facilityKey: string, resourceId: string, amount: number }[]
+    setRecentAdditions: (additions: { id: string, facilityKey: string, resourceId: string, amount: number }[]) => void
+    removeRecentAddition: (id: string) => void
 
     resources: Record<string, number>
     setResources: (resources: Record<string, number>) => void
+    sellResource: (resourceId: string, quantity: number, price: number) => Promise<boolean>
 
     // Facilities (Idle)
     facilities: Record<string, number>
@@ -118,8 +123,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         // 2. Add to Recent Additions (for Animation)
         if (source) {
             const newAdditions = Object.keys(rewards).map(id => ({
+                id: Math.random().toString(36).substr(2, 9),
                 facilityKey: source,
-                resourceId: id
+                resourceId: id,
+                amount: rewards[id]
             }))
 
             set(state => ({
@@ -137,6 +144,25 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     recentAdditions: [],
     setRecentAdditions: (additions) => set({ recentAdditions: additions }),
+    removeRecentAddition: (id) => set(state => ({
+        recentAdditions: state.recentAdditions.filter(item => item.id !== id)
+    })),
+
+    sellResource: async (resourceId, quantity, price) => {
+        const state = get()
+        const currentAmount = state.resources[resourceId] || 0
+        if (currentAmount < quantity) return false
+
+        // Update local state
+        const newResources = { ...state.resources }
+        newResources[resourceId] = currentAmount - quantity
+        // Add Gold? Using simplified logic here as we don't have a backend for legacy resources
+        const earnedGold = quantity * price
+        newResources['gold'] = (newResources['gold'] || 0) + earnedGold
+
+        set({ resources: newResources })
+        return true
+    },
 
     startBattle: (dungeonId, enemyId, playerMonsterId) => {
         console.log(`[GameStore] startBattle called: dungeon=${dungeonId}, enemy=${enemyId}, playerMonster=${playerMonsterId}`)
