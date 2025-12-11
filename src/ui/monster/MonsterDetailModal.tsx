@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { calculateStats, getExpProgress, getMaxLevel, getRequiredExp, type RarityType } from '../../lib/monsterLevelUtils'
-import { getNextSkillUnlockLevel, getUnlockableSkills } from '../../data/monsterSkillData'
+import { getNextSkillUnlockLevel, getSkillIconUrl, getUnlockableSkills } from '../../data/monsterSkillData'
 import type { PlayerMonster } from '../../types/monster'
 import type { RoleType } from '../../types/alchemy'
 import AwakeningModal from './AwakeningModal'
@@ -150,7 +150,23 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                             {rarity} GRADE
                         </div>
                         <h2 style={{ margin: '0 0 4px', color: '#f8fafc', fontSize: '1.5em' }}>{data.name}</h2>
-                        <div style={{ color: '#94a3b8', fontSize: '0.9em' }}>Lv.{level} {data.role}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.9em', color: '#94a3b8' }}>
+                            <span>Lv.{level}</span>
+                            <span style={{
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                fontSize: '0.85em',
+                                fontWeight: 'bold',
+                                color: 'white',
+                                background: role === 'TANK' ? '#3b82f6' :
+                                    role === 'DPS' ? '#ef4444' :
+                                        role === 'SUPPORT' ? '#10b981' :
+                                            role === 'HYBRID' ? '#a855f7' :
+                                                '#f59e0b' // Production
+                            }}>
+                                {data.role}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -195,15 +211,15 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                     </div>
 
                     {/* Awakening Section */}
-                    <div style={{
-                        background: 'linear-gradient(90deg, #1e1b4b 0%, #312e81 100%)',
-                        borderRadius: '12px', padding: '16px', border: '1px solid #4338ca'
-                    }}>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', gap: '10px' }}>
-                            <div style={{ color: '#fbbf24', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <span>⭐ 초월 ({awakeningLevel}/5)</span>
-                            </div>
-                            {canAwaken && (
+                    {canAwaken && (
+                        <div style={{
+                            background: 'linear-gradient(90deg, #1e1b4b 0%, #312e81 100%)',
+                            borderRadius: '12px', padding: '16px', border: '1px solid #4338ca'
+                        }}>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', gap: '10px' }}>
+                                <div style={{ color: '#fbbf24', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <span>⭐ 초월 ({awakeningLevel}/5)</span>
+                                </div>
                                 <button
                                     onClick={() => setShowAwakeningModal(true)}
                                     style={{
@@ -213,21 +229,17 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                                     }}>
                                     초월하기
                                 </button>
-                            )}
+                            </div>
+                            <div style={{ fontSize: '0.85em', color: '#c7d2fe', lineHeight: '1.4' }}>
+                                <div>
+                                    동일한 몬스터를 재료로 사용하여 스탯을 강화하세요.<br />
+                                    <span style={{ color: '#86efac', display: 'inline-block', marginTop: '4px' }}>
+                                        [예상] HP {stats.hp}→{nextStats.hp}, ATK {stats.atk}→{nextStats.atk}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div style={{ fontSize: '0.85em', color: '#c7d2fe', lineHeight: '1.4' }}>
-                            {canAwaken
-                                ? (
-                                    <div>
-                                        동일한 몬스터를 재료로 사용하여 스탯을 강화하세요.<br />
-                                        <span style={{ color: '#86efac', display: 'inline-block', marginTop: '4px' }}>
-                                            [예상] HP {stats.hp}→{nextStats.hp}, ATK {stats.atk}→{nextStats.atk}
-                                        </span>
-                                    </div>
-                                )
-                                : "최대 초월 레벨에 도달했습니다."}
-                        </div>
-                    </div>
+                    )}
 
                     {/* Skills */}
                     <div>
@@ -243,7 +255,13 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                                         background: 'rgba(30, 41, 59, 0.5)', borderRadius: '8px', padding: '12px',
                                         display: 'flex', gap: '12px', alignItems: 'flex-start'
                                     }}>
-                                        <div style={{ fontSize: '24px' }}>{skill.emoji}</div>
+                                        <div style={{ width: '32px', height: '32px', flexShrink: 0, background: 'rgba(0,0,0,0.3)', borderRadius: '6px', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <img
+                                                src={getSkillIconUrl(skill)}
+                                                alt={skill.name}
+                                                style={{ width: '100%', height: '100%', objectFit: 'contain', imageRendering: 'pixelated' }}
+                                            />
+                                        </div>
                                         <div>
                                             <div style={{ fontWeight: 'bold', color: '#e2e8f0', fontSize: '0.95em', marginBottom: '2px' }}>{skill.name}</div>
                                             <div style={{ fontSize: '0.85em', color: '#94a3b8' }}>{skill.description}</div>

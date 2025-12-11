@@ -41,11 +41,20 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
     if (!isOpen) return null
 
     const handleStartBattle = (enemyId: string) => {
+        console.log(`[DungeonModal] handleStartBattle clicked for enemy: ${enemyId}`)
+        console.log(`[DungeonModal] Current State: selectedMonsterId=${selectedMonsterId}, selectedDungeonId=${selectedDungeonId}`)
+
         if (!selectedMonsterId) {
+            console.warn('[DungeonModal] No monster selected')
             alert('몬스터를 먼저 선택해주세요!')
             return
         }
-        if (!selectedDungeonId) return
+        if (!selectedDungeonId) {
+            console.error('[DungeonModal] No dungeon selected (unexpected)')
+            return
+        }
+
+        console.log('[DungeonModal] Calling startBattle...')
         startBattle(selectedDungeonId, enemyId, selectedMonsterId)
     }
 
@@ -240,7 +249,7 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                     flexWrap: 'wrap',
                                     gap: '8px',
                                     marginBottom: '20px',
-                                    maxHeight: '140px',
+                                    maxHeight: '300px',
                                     overflowY: 'auto',
                                     padding: '4px'
                                 }}>
@@ -253,7 +262,10 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                         return (
                                             <div
                                                 key={monster.id}
-                                                onClick={() => setSelectedMonsterId(monster.id)}
+                                                onClick={() => {
+                                                    console.log('[DungeonModal] Selecting monster:', monster.id)
+                                                    setSelectedMonsterId(monster.id)
+                                                }}
                                                 style={{
                                                     display: 'flex',
                                                     flexDirection: 'column',
@@ -359,7 +371,10 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                                                 </div>
                                             </div>
                                             <button
-                                                onClick={() => handleStartBattle(enemy.id)}
+                                                onClick={() => {
+                                                    console.log('[DungeonModal] Battle button clicked!')
+                                                    handleStartBattle(enemy.id)
+                                                }}
                                                 disabled={!selectedMonsterId}
                                                 style={{
                                                     padding: '6px 12px',

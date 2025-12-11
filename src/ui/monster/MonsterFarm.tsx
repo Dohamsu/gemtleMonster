@@ -523,7 +523,12 @@ export default function MonsterFarm() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                             <span style={{
                                                 fontSize: '0.7em', padding: '2px 6px', borderRadius: '4px',
-                                                background: '#475569', color: '#cbd5e1', whiteSpace: 'nowrap'
+                                                color: 'white', whiteSpace: 'nowrap', fontWeight: 'bold',
+                                                background: data.role === '탱커' ? '#3b82f6' :
+                                                    data.role === '딜러' ? '#ef4444' :
+                                                        data.role === '서포터' ? '#10b981' :
+                                                            data.role === '하이브리드' ? '#a855f7' :
+                                                                '#f59e0b' // 생산
                                             }}>{data.role}</span>
                                             <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.05em' }}>{data.name}</h3>
                                         </div>

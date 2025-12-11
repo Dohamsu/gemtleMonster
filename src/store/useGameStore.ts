@@ -24,7 +24,7 @@ interface GameState {
     activeTab: 'facilities' | 'alchemy'
     setActiveTab: (tab: 'facilities' | 'alchemy') => void
 
-    startBattle: (enemyId: string, playerMonsterId: string) => void
+    startBattle: (dungeonId: string, enemyId: string, playerMonsterId: string) => void
     processTurn: () => Promise<void>
     endBattle: () => void
     consumeFloatingTexts: () => void // New action to clear texts after reading
@@ -65,8 +65,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     upgradeFacility: async (facilityId, _cost) => {
         const state = get()
-        const _currentResources = { ...state.resources }
-        const _currentGold = state.resources.gold || 0
 
         // Check if affordable
         // Note: cost logic might need to be more robust, assuming cost contains materialIds and gold
@@ -140,20 +138,40 @@ export const useGameStore = create<GameState>((set, get) => ({
     recentAdditions: [],
     setRecentAdditions: (additions) => set({ recentAdditions: additions }),
 
-    startBattle: (enemyId, playerMonsterId) => {
-        const state = get()
-        const dungeon = DUNGEONS.find(d => d.id === state.activeDungeon)
-        if (!dungeon) return
+    startBattle: (dungeonId, enemyId, playerMonsterId) => {
+        console.log(`[GameStore] startBattle called: dungeon=${dungeonId}, enemy=${enemyId}, playerMonster=${playerMonsterId}`)
+
+        const dungeon = DUNGEONS.find(d => d.id === dungeonId)
+        if (!dungeon) {
+            return
+        }
 
         const enemy = dungeon.enemies.find(e => e.id === enemyId)
-        if (!enemy) return
+        if (!enemy) {
+            return
+        }
+
+        // Set active dungeon
+        set({ activeDungeon: dungeonId })
 
         const { playerMonsters } = useAlchemyStore.getState()
-        const playerMonster = playerMonsters.find(m => m.id === playerMonsterId)
-        if (!playerMonster) return
 
-        const monsterData = MONSTERS[playerMonster.monster_id]
-        if (!monsterData) return
+        const playerMonster = playerMonsters.find(m => m.id === playerMonsterId)
+        if (!playerMonster) {
+            console.error(`❌ Player monster not found: ${playerMonsterId}`)
+            return
+        }
+
+        // Fix: Strip 'monster_' prefix if present to match MONSTERS keys
+        const monsterKey = playerMonster.monster_id.replace('monster_', '')
+        const monsterData = MONSTERS[monsterKey]
+
+        if (!monsterData) {
+            console.error(`❌ Monster data not found for Key: ${monsterKey} (Original: ${playerMonster.monster_id})`)
+            return
+        }
+
+        console.log('✅ Battle Initialized successfully')
 
         // Calculate Stats based on Level
         // Calculate Stats based on Level
@@ -163,11 +181,15 @@ export const useGameStore = create<GameState>((set, get) => ({
         const playerAtk = Math.floor(monsterData.baseStats.atk * levelMultiplier)
         const playerDef = Math.floor(monsterData.baseStats.def * levelMultiplier)
 
-        // Enemy Stats (Fixed for now, could scale)
+        // Enemy Stats
         const enemyHp = enemy.hp
         const enemyMaxHp = enemy.hp
         const enemyAtk = enemy.attack
         const enemyDef = enemy.defense
+
+        // Fix: Look up enemy image from MONSTERS data if not present on enemy object
+        const enemyMonsterData = MONSTERS[enemyId]
+        const enemyImage = enemy.image || enemyMonsterData?.iconUrl
 
         set({
             battleState: {
@@ -183,7 +205,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 enemyId,
                 enemyHp,
                 enemyMaxHp,
-                enemyImage: enemy.image,
+                enemyImage, // Now correctly populated
                 turn: 1,
                 logs: [`전투 시작! ${enemy.name}이(가) 나타났다!`],
                 result: null,

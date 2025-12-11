@@ -12,10 +12,17 @@ export default function BattleView() {
     const [animatingTexts, setAnimatingTexts] = useState<any[]>([])
 
     // Shake Logic
-    const [playerShake, setPlayerShake] = useState(false)
-    const [enemyShake, setEnemyShake] = useState(false)
+    const [playerShakeClass, setPlayerShakeClass] = useState('')
+    const [enemyShakeClass, setEnemyShakeClass] = useState('')
     const prevPlayerHpRef = useRef<number>(0)
     const prevEnemyHpRef = useRef<number>(0)
+
+    const getShakeClass = (damage: number, maxHp: number) => {
+        const percent = (damage / maxHp) * 100
+        if (percent < 5) return 'shake-light'
+        if (percent < 20) return 'shake-medium'
+        return 'shake-heavy'
+    }
 
     useEffect(() => {
         if (!battleState) return
@@ -25,14 +32,18 @@ export default function BattleView() {
         if (prevEnemyHpRef.current === 0) prevEnemyHpRef.current = battleState.enemyHp
 
         if (battleState.playerHp < prevPlayerHpRef.current) {
-            setPlayerShake(true)
-            setTimeout(() => setPlayerShake(false), 500)
+            const damage = prevPlayerHpRef.current - battleState.playerHp
+            const shakeClass = getShakeClass(damage, battleState.playerMaxHp)
+            setPlayerShakeClass(shakeClass)
+            setTimeout(() => setPlayerShakeClass(''), 500)
         }
         prevPlayerHpRef.current = battleState.playerHp
 
         if (battleState.enemyHp < prevEnemyHpRef.current) {
-            setEnemyShake(true)
-            setTimeout(() => setEnemyShake(false), 500)
+            const damage = prevEnemyHpRef.current - battleState.enemyHp
+            const shakeClass = getShakeClass(damage, battleState.enemyMaxHp)
+            setEnemyShakeClass(shakeClass)
+            setTimeout(() => setEnemyShakeClass(''), 500)
         }
         prevEnemyHpRef.current = battleState.enemyHp
     }, [battleState])
@@ -247,21 +258,23 @@ export default function BattleView() {
                     )
                 })}
                 {/* Player */}
-                <div ref={playerAreaRef} className={playerShake ? 'shake' : ''} style={{ textAlign: 'center' }}>
+                <div ref={playerAreaRef} style={{ textAlign: 'center' }}>
                     {battleState.playerMonsterImage ? (
-                        <img
-                            src={battleState.playerMonsterImage}
-                            alt={monsterName}
-                            style={{
-                                width: isMobile ? '120px' : '80px',
-                                height: isMobile ? '120px' : '80px',
-                                objectFit: 'contain',
-                                marginBottom: '10px',
-                                filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))'
-                            }}
-                        />
+                        <div className={playerShakeClass} style={{ display: 'inline-block' }}>
+                            <img
+                                src={battleState.playerMonsterImage}
+                                alt={monsterName}
+                                style={{
+                                    width: isMobile ? '120px' : '80px',
+                                    height: isMobile ? '120px' : '80px',
+                                    objectFit: 'contain',
+                                    marginBottom: '10px',
+                                    filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))'
+                                }}
+                            />
+                        </div>
                     ) : (
-                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>🧙‍♂️</div>
+                        <div className={playerShakeClass} style={{ fontSize: '40px', marginBottom: '10px', display: 'inline-block' }}>🧙‍♂️</div>
                     )}
                     <div id="player-name-anchor" style={{ fontWeight: 'bold' }}>{monsterName}</div>
                     <div style={{
@@ -377,21 +390,26 @@ export default function BattleView() {
                 </div>
 
                 {/* Enemy */}
-                <div ref={enemyAreaRef} className={enemyShake ? 'shake' : ''} style={{ textAlign: 'center' }}>
+                <div ref={enemyAreaRef} style={{ textAlign: 'center' }}>
                     {battleState.enemyImage ? (
-                        <img
-                            src={battleState.enemyImage}
-                            alt={enemy?.name}
-                            style={{
-                                width: isMobile ? '120px' : '80px',
-                                height: isMobile ? '120px' : '80px',
-                                objectFit: 'contain',
-                                marginBottom: '10px',
-                                filter: 'drop-shadow(0 0 10px rgba(255,0,0,0.3))'
-                            }}
-                        />
+                        <div className={enemyShakeClass} style={{ display: 'inline-block' }}>
+                            <img
+                                src={battleState.enemyImage}
+                                alt={enemy?.name}
+                                style={{
+                                    width: isMobile ? '120px' : '80px',
+                                    height: isMobile ? '120px' : '80px',
+                                    objectFit: 'contain',
+                                    marginBottom: '10px',
+                                    transition: 'filter 0.5s ease',
+                                    filter: battleState.enemyHp <= 0
+                                        ? 'grayscale(100%) brightness(50%) opacity(0.8)'
+                                        : 'drop-shadow(0 0 10px rgba(255,0,0,0.3))'
+                                }}
+                            />
+                        </div>
                     ) : (
-                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>🦠</div>
+                        <div className={enemyShakeClass} style={{ fontSize: '40px', marginBottom: '10px', display: 'inline-block' }}>🦠</div>
                     )}
                     <div id="enemy-name-anchor" style={{ fontWeight: 'bold' }}>{enemy?.name || 'Unknown'}</div>
                     <div style={{
