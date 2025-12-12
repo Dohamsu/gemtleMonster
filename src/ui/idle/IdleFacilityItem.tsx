@@ -3,6 +3,8 @@ import { useCollectionProgress } from '../../hooks/useCollectionProgress'
 import { useGameStore } from '../../store/useGameStore'
 import ResourceIcon from '../ResourceIcon'
 import CollectionAnimation from '../CollectionAnimation'
+import FacilityIcon from '../FacilityIcon'
+import { MATERIALS } from '../../data/alchemyData'
 import { useState, useEffect } from 'react'
 
 interface Props {
@@ -30,7 +32,25 @@ const RESOURCE_NAMES: Record<string, string> = {
     crack_stone_fragment: '균열석 파편'
 }
 
-import FacilityIcon from '../FacilityIcon'
+
+
+// Helper to get localized resource name
+const getResourceName = (key: string) => {
+    // Special overrides or fallback specific to idle game currency
+    if (RESOURCE_NAMES[key]) return RESOURCE_NAMES[key]
+    if (MATERIALS[key]) return MATERIALS[key].name
+    return key
+}
+
+// Helper to get action text
+const getActionText = (facilityId: string) => {
+    switch (facilityId) {
+        case 'blacksmith': return '제련 중...'
+        case 'mine': return '채광 중...'
+        case 'herb_farm': return '채집 중...'
+        default: return '생산 중...' // Default changed from '채집 중' to cover general cases
+    }
+}
 
 export default function IdleFacilityItem({ facility, currentLevel, isHighestLevel, resources, onUpgrade, isPaused = false }: Props) {
     const { lastCollectedAt, recentAdditions } = useGameStore()
@@ -103,7 +123,7 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                         <div style={{ display: 'flex', gap: '10px', fontSize: '0.85em', flexWrap: 'wrap' }}>
                             {Object.entries(nextLevelData.upgradeCost).map(([res, cost]) => (
                                 <span key={res} style={{ color: (resources[res] || 0) >= cost ? '#8f8' : '#f88' }}>
-                                    {RESOURCE_NAMES[res] || res}: {cost}
+                                    {getResourceName(res)}: {cost}
                                 </span>
                             ))}
                         </div>
@@ -186,7 +206,7 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                         }} />
                     </div>
                     <div style={{ fontSize: '0.75em', color: '#888', marginTop: '2px', textAlign: 'center' }}>
-                        {isPaused ? '⏸️ 일시정지' : `채집 중... ${Math.floor(progress)}%`}
+                        {isPaused ? '⏸️ 일시정지' : `${getActionText(facility.id)} ${Math.floor(progress)}%`}
                     </div>
                 </div>
             )}
@@ -212,7 +232,7 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                     <div style={{ display: 'flex', gap: '10px', fontSize: '0.85em', flexWrap: 'wrap' }}>
                         {Object.entries(nextLevelData.upgradeCost).map(([res, cost]) => (
                             <span key={res} style={{ color: (resources[res] || 0) >= cost ? '#8f8' : '#f88' }}>
-                                {RESOURCE_NAMES[res] || res}: {cost}
+                                {getResourceName(res)}: {cost}
                             </span>
                         ))}
                     </div>

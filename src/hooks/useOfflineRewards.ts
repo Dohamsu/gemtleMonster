@@ -9,6 +9,7 @@ interface FacilityLevelStats {
   intervalSeconds: number
   bundlesPerTick: number
   dropRates: Record<string, number>
+  cost?: Record<string, number>
 }
 
 const MAX_OFFLINE_HOURS = 8 // 최대 8시간 보상
@@ -103,6 +104,14 @@ export function useOfflineRewards(userId: string | undefined) {
           return
         }
 
+        // Fetch current materials for cost calculation
+        const playerMaterials = await alchemyApi.getPlayerMaterials(userId)
+        // Convert array to record for faster lookup: { material_id: quantity }
+        const currentMaterials: Record<string, number> = {}
+        playerMaterials.forEach(m => {
+          currentMaterials[m.material_id] = m.quantity
+        })
+
         // 4. 각 시설/레벨별 생산량 계산
         const totalRewards: Record<string, number> = {}
 
@@ -116,11 +125,42 @@ export function useOfflineRewards(userId: string | undefined) {
             const stats = levelData.stats as FacilityLevelStats
             const intervalSeconds = stats.intervalSeconds
 
-            // 이 레벨이 경과 시간 동안 몇 번 생산했는지 계산
-            const productionCount = Math.floor(cappedSeconds / intervalSeconds)
+            // 1. 이론상 최대 생산 횟수 (시간 기준)
+            const maxProductionByTime = Math.floor(cappedSeconds / intervalSeconds)
+            if (maxProductionByTime <= 0) continue
 
+            let actualProductionCount = maxProductionByTime
+
+            // 2. 비용이 있는 경우, 자원 기준 최대 생산 횟수 계산
+            if (stats.cost && Object.keys(stats.cost).length > 0) {
+              let maxAffordable = maxProductionByTime
+
+              for (const [costId, costAmount] of Object.entries(stats.cost)) {
+                const available = currentMaterials[costId] || 0
+                const affordable = Math.floor(available / costAmount)
+                maxAffordable = Math.min(maxAffordable, affordable)
+              }
+
+              actualProductionCount = maxAffordable
+            }
+
+            if (actualProductionCount <= 0) continue
+
+            // 3. 자원 소모 기록 (비용이 있는 경우)
+            if (stats.cost) {
+              for (const [costId, costAmount] of Object.entries(stats.cost)) {
+                // 소모량은 음수로 기록
+                const totalCost = costAmount * actualProductionCount
+                totalRewards[costId] = (totalRewards[costId] || 0) - totalCost
+
+                // 로컬 계산용 잔여 자원 차감 (같은 루프 내 다른 시설 영향을 위해)
+                currentMaterials[costId] = (currentMaterials[costId] || 0) - totalCost
+              }
+            }
+
+            // 4. 생산품 추가
             // 각 생산마다 확률 기반으로 재료 선택
-            for (let i = 0; i < productionCount; i++) {
+            for (let i = 0; i < actualProductionCount; i++) {
               const random = Math.random()
               let cumulativeProbability = 0
 
@@ -136,15 +176,24 @@ export function useOfflineRewards(userId: string | undefined) {
         }
 
         // 전체 보상에 0.2 효율 적용 (확률적 반올림)
+        // 단, 소모 비용(음수)은 효율 감소 없이 그대로 적용 (100% 소모)
         for (const key of Object.keys(totalRewards)) {
-          const rawAmount = totalRewards[key] * 0.2
+          const value = totalRewards[key]
+
+          // 소모 비용(음수)은 건너뜀 (이미 정확한 양으로 계산됨)
+          if (value < 0) continue
+
+          const rawAmount = value * 0.2
           const integerPart = Math.floor(rawAmount)
           const decimalPart = rawAmount - integerPart
 
+          // 소모된 비용은 유지하고, 생산된 보상만 효율 적용 후 덮어쓰기
           // 소수점 확률에 따라 +1
-          totalRewards[key] = integerPart + (Math.random() < decimalPart ? 1 : 0)
+          const finalAmount = integerPart + (Math.random() < decimalPart ? 1 : 0)
 
-          if (totalRewards[key] <= 0) {
+          if (finalAmount > 0) {
+            totalRewards[key] = finalAmount
+          } else {
             delete totalRewards[key]
           }
         }

@@ -27,6 +27,11 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
             return `/assets/facility/spirit_santuary.png`
         }
 
+        if (id === 'blacksmith') {
+            const imageLevel = Math.min(level, 5)
+            return `/assets/facility/blacksmith_${imageLevel}.png`
+        }
+
         // For other facilities, you can add similar logic when images are available
         // For now, return null to show a fallback
         return null
@@ -56,6 +61,16 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
             const colors = ['#4ade80', '#22c55e', '#16a34a', '#15803d', '#facc15']
             const color = colors[Math.min(level - 1, 4)]
             return { emoji: '🌿', color }
+        }
+        if (id === 'monster_farm') {
+            const colors = ['#fca5a5', '#f87171', '#ef4444', '#dc2626', '#facc15']
+            const color = colors[Math.min(level - 1, 4)]
+            return { emoji: '🏡', color }
+        }
+        if (id === 'blacksmith') {
+            const colors = ['#fdba74', '#fb923c', '#f97316', '#ea580c', '#c2410c'] // Orange/Fire
+            const color = colors[Math.min(level - 1, 4)]
+            return { emoji: '⚒️', color }
         }
         if (id === 'mine') {
             const colors = ['#9ca3af', '#d1d5db', '#e5e7eb', '#f3f4f6', '#facc15']

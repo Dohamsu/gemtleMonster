@@ -73,6 +73,20 @@ export function renderMapView({ ctx, canvas, images, facilities }: MapRendererPr
         ctx.shadowBlur = 0
     }
 
+    // Render blacksmith
+    if (images.blacksmith) {
+        const blacksmithX = canvas.width * 0.8 - 64
+        const blacksmithY = canvas.height * 0.25 - 64
+        ctx.drawImage(images.blacksmith, blacksmithX, blacksmithY, 128, 128)
+
+        ctx.fillStyle = 'white'
+        ctx.font = 'bold 14px Arial'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 4
+        ctx.fillText('대장간', blacksmithX + 40, blacksmithY + 140)
+        ctx.shadowBlur = 0
+    }
+
     // Render dungeon entrance
     if (images.dungeon_forest) {
         const dungeonX = canvas.width * 0.15 - 64

@@ -80,10 +80,19 @@ const RESOURCE_ICONS: Record<string, string> = {
     herb_yggdrasil: '/assets/materials/herb_yggdrasil.png',
 
     // Elemental Essences
-    essence_fire: '🔥',
-    essence_water: '💧',
-    essence_earth: '🪨',
-    essence_wind: '🌪️',
+    // Elemental Essences Removed
+    essence_fire: '🔥', // Kept as emoji fallback if needed, or remove?
+    // Actually removing them is safer so we know if we missed something.
+    // essence_fire: '🔥',
+    // essence_water: '💧',
+    // essence_earth: '🪨',
+    // essence_wind: '🌪️',
+    // Ingots
+    ingot_copper: '/assets/materials/coper_ingot.png',
+    ingot_iron: '/assets/materials/iron_ingot.png',
+    ingot_silver: '/assets/materials/silver_ingot.png',
+    ingot_gold: '/assets/materials/gold_ingot.png',
+    ingot_platinum: '💠', // No image available yet
 }
 
 export default function ResourceIcon({ resourceId, size = 20, iconUrl }: Props) {

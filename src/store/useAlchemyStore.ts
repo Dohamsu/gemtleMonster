@@ -93,6 +93,7 @@ interface AlchemyState {
 
   // Actions - 시설 생산
   addMaterial: (materialId: string, quantity: number) => Promise<void>
+  consumeMaterials: (materials: Record<string, number>) => Promise<boolean>
   batchSyncCallback: ((materialId: string, quantity: number) => void) | null
   forceSyncCallback: (() => Promise<void>) | null
   setBatchSyncCallback: (callback: ((materialId: string, quantity: number) => void) | null) => void
@@ -932,6 +933,59 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         // console.log(`✅ 재료 추가 완료 (DB - 즉시): ${materialId} +${quantity}`)
       } catch (error) {
         console.error(`❌ 재료 DB 저장 실패 (로컬은 유지):`, materialId, error)
+      }
+    }
+  },
+
+  consumeMaterials: async (materials) => {
+    const { userId, playerMaterials, batchSyncCallback } = get()
+    if (!userId) return false
+
+    // Phase 2: 소비 전 배치된 변경사항 먼저 동기화 (중요: 소비는 즉시성이 중요함)
+    // 하지만 배치 시스템이 단순히 delta를 관리한다면, 마이너스 delta를 추가하는 것이 더 효율적일 수 있음.
+    // 여기서는 안전을 위해 기존 consumeMaterials(즉시 DB 위임) 방식을 따르되, 배치 콜백을 우선 사용가능한지 확인.
+
+    // Check sufficiency locally first
+    for (const [id, amount] of Object.entries(materials)) {
+      if ((playerMaterials[id] || 0) < amount) {
+        console.error(`❌ [AlchemyStore] 재료 부족: ${id}`)
+        return false
+      }
+    }
+
+    // 로컬 상태 업데이트
+    const newPlayerMaterials = { ...playerMaterials }
+    const gameStore = useGameStore.getState()
+    const newGameResources = { ...gameStore.resources }
+
+    Object.entries(materials).forEach(([id, amount]) => {
+      const after = Math.max(0, (newPlayerMaterials[id] || 0) - amount)
+      newPlayerMaterials[id] = after
+      newGameResources[id] = after
+    })
+
+    set({ playerMaterials: newPlayerMaterials })
+    gameStore.setResources(newGameResources)
+
+    // 배치 콜백이 있으면 음수 수량으로 처리
+    if (batchSyncCallback) {
+      Object.entries(materials).forEach(([id, amount]) => {
+        batchSyncCallback(id, -amount)
+      })
+      return true
+    } else {
+      // 배치 시스템이 없으면 즉시 DB 처리
+      try {
+        const success = await alchemyApi.consumeMaterials(userId, materials)
+        if (!success) {
+          // 롤백? (복잡함, 여기서는 실패 로그만)
+          console.error(`❌ 재료 소비 DB 반영 실패 (로컬은 이미 차감됨)`)
+          return false
+        }
+        return true
+      } catch (e) {
+        console.error(e)
+        return false
       }
     }
   },

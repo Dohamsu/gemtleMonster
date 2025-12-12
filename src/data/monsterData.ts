@@ -481,7 +481,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'wind',
         drops: [
             { materialId: 'dragon_scale', chance: 100, min: 1, max: 1 },
-            { materialId: 'essence_wind', chance: 60, min: 2, max: 4 },
+            { materialId: 'shard_wind', chance: 60, min: 2, max: 4 },
             { materialId: 'feather_common', chance: 50, min: 3, max: 5 }, // Hatchling feathers
             { materialId: 'gem_fragment', chance: 30, min: 2, max: 3 }
         ]
@@ -622,7 +622,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         factoryTrait: { targetFacility: 'cathedral', effect: '성스러운 기운 증가', value: 20 },
         drops: [
             { materialId: 'angel_feather', chance: 100, min: 1, max: 1 },
-            { materialId: 'essence_light', chance: 50, min: 2, max: 3 },
+            { materialId: 'shard_light', chance: 50, min: 2, max: 3 },
             { materialId: 'rune_world', chance: 20, min: 1, max: 1 }
         ]
     },
@@ -721,6 +721,67 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/yeti_ancient.png',
         rarity: 'SR',
         element: 'water'
+    },
+    // New Craftable Monsters (Using new materials)
+    'monster_skeleton_soldier': {
+        name: '해골 병사',
+        description: '부서진 뼈를 모아 탄생시킨 언데드 병사. 두려움을 모르고 명령에 절대 복종합니다.',
+        role: '딜러',
+        hp: 90,
+        attack: 40,
+        defense: 10,
+        emoji: '💀',
+        iconUrl: '/assets/monsters/skeleton.png',
+        rarity: 'N',
+        element: 'dark'
+    },
+    'monster_scarecrow': {
+        name: '허수아비',
+        description: '나뭇가지와 헌 옷으로 만든 허수아비. 마력이 깃들어 스스로 움직이며 까마귀를 쫓아냅니다.',
+        role: '서포터',
+        hp: 120,
+        attack: 15,
+        defense: 15,
+        emoji: '🌾',
+        iconUrl: '/assets/monsters/scarecrow.png',
+        rarity: 'N',
+        element: 'earth'
+    },
+    'monster_copper_golem': {
+        name: '구리 골렘',
+        description: '구리로 만들어진 소형 골렘. 녹이 슬기 쉽지만 전이 잘 통해 번개에 강합니다.',
+        role: '탱커',
+        hp: 180,
+        attack: 25,
+        defense: 35,
+        emoji: '🥉',
+        iconUrl: '/assets/monsters/ironGolem.png',
+        rarity: 'N',
+        element: 'earth'
+    },
+    'monster_silver_wolf': {
+        name: '은빛 늑대',
+        description: '은 광석의 기운을 받아 털이 은빛으로 빛나는 늑대. 달빛 아래서 더욱 빨라집니다.',
+        role: '딜러',
+        hp: 130,
+        attack: 55,
+        defense: 20,
+        emoji: '🥈',
+        iconUrl: '/assets/monsters/ice_wolf.png',
+        rarity: 'R',
+        element: 'light'
+    },
+    'monster_golden_bat': {
+        name: '황금 박쥐',
+        description: '황금을 탐하다 온몸이 황금으로 변해버린 박쥐. 행운을 불러온다고 알려져 있습니다.',
+        role: '서포터',
+        hp: 100,
+        attack: 30,
+        defense: 30,
+        emoji: '🦇',
+        iconUrl: '/assets/monsters/bat_golden.png',
+        rarity: 'SR',
+        element: 'wind'
     }
 }
 

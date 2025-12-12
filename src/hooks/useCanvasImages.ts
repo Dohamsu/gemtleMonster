@@ -12,6 +12,7 @@ export interface CanvasImages {
     cauldron_pixel: HTMLImageElement | null
     dungeon_forest: HTMLImageElement | null
     spirit_sanctum: HTMLImageElement | null
+    blacksmith: HTMLImageElement | null
     materials: Record<string, HTMLImageElement>
 }
 
@@ -30,6 +31,7 @@ export function useCanvasImages() {
         cauldron_pixel: null,
         dungeon_forest: null,
         spirit_sanctum: null,
+        blacksmith: null,
         materials: {}
     })
 
@@ -69,9 +71,10 @@ export function useCanvasImages() {
             loadImage('/assets/cauldron_pixel.png'),
             loadImage('/assets/dungeon_entrance.png'),
             loadImage('/assets/facility/spirit_santuary.png'),
+            loadImage('/assets/blacksmith.png'),
             loadMaterialImages()
         ])
-            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, dungeonForest, spiritSanctum, materials]) => {
+            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, dungeonForest, spiritSanctum, blacksmith, materials]) => {
                 setImages({
                     background: bg as HTMLImageElement,
                     herb_farm: herbFarm as HTMLImageElement,
@@ -82,6 +85,7 @@ export function useCanvasImages() {
                     cauldron_pixel: cauldronPixel as HTMLImageElement,
                     dungeon_forest: dungeonForest as HTMLImageElement,
                     spirit_sanctum: spiritSanctum as HTMLImageElement,
+                    blacksmith: blacksmith as HTMLImageElement,
                     materials: materials as Record<string, HTMLImageElement>
                 })
             })

@@ -39,7 +39,7 @@ export const MATERIALS: Record<string, Material> = {
     'bone_dragon': { id: 'bone_dragon', name: '용의 뼈', type: 'BEAST', description: '고대 용의 강력한 뼈', rarity: 'SSR', iconUrl: '/assets/materials/bone_dragon.png' },
     'slime_mutant': { id: 'slime_mutant', name: '변이 점액', type: 'SLIME', description: '특이하게 변이한 슬라임의 점액', rarity: 'R', iconUrl: '/assets/materials/slime_mutant.png' },
     'soul_fragment': { id: 'soul_fragment', name: '영혼 파편', type: 'SPIRIT', description: '영혼의 일부가 결정화된 파편', rarity: 'R', iconUrl: '/assets/materials/soul_fragment.png' },
-    'essence_light': { id: 'essence_light', name: '빛의 정수', type: 'SPIRIT', description: '순수한 빛의 힘', rarity: 'SR', iconUrl: '/assets/materials/essence_light.png' },
+    // 'essence_light' replaced by 'shard_light'
     'rune_world': { id: 'rune_world', name: '세계의 룬', type: 'SPIRIT', description: '세계를 지키는 고대 룬', rarity: 'SSR', iconUrl: '/assets/materials/rune_world.png' },
     'flower_moonlight': { id: 'flower_moonlight', name: '월광 꽃', type: 'PLANT', description: '달빛 아래서만 피는 신비한 꽃', rarity: 'R', iconUrl: '/assets/materials/flower_moonlight.png' },
     'scale_serpent': { id: 'scale_serpent', name: '뱀의 비늘', type: 'BEAST', description: '강인한 뱀 몬스터의 비늘', rarity: 'R', iconUrl: '/assets/materials/scale_serpent.png' },
@@ -61,7 +61,14 @@ export const MATERIALS: Record<string, Material> = {
     'wood_branch': { id: 'wood_branch', name: '나뭇가지', type: 'PLANT', description: '마력이 깃든 나뭇가지.', rarity: 'N', iconUrl: '/assets/materials/wood_branch.png' },
 
     // Mining Tiers
-    'stone': { id: 'stone', name: '돌멩이', type: 'MINERAL', description: '광산에서 캐낸 흔한 돌.', rarity: 'N', iconUrl: '/assets/materials/stone.png' },
+    'stone': { id: 'stone', name: '돌멩이', type: 'MINERAL', description: '흔히 볼 수 있는 돌멩이입니다. 단단해서 던지면 아픕니다.', rarity: 'N', iconUrl: '/assets/materials/stone.png' },
+
+    // Ingots (Refined from Ores)
+    'ingot_copper': { id: 'ingot_copper', name: '구리 주괴', type: 'MINERAL', description: '불순물을 제거하고 제련한 구리 덩어리입니다.', rarity: 'N', iconUrl: '/assets/materials/ingot_copper.png' },
+    'ingot_iron': { id: 'ingot_iron', name: '철 주괴', type: 'MINERAL', description: '단단하게 제련된 철 덩어리입니다.', rarity: 'N', iconUrl: '/assets/materials/ingot_iron.png' },
+    'ingot_silver': { id: 'ingot_silver', name: '은 주괴', type: 'MINERAL', description: '은은하게 빛나는 순은 덩어리입니다.', rarity: 'R', iconUrl: '/assets/materials/ingot_silver.png' },
+    'ingot_gold': { id: 'ingot_gold', name: '금 주괴', type: 'MINERAL', description: '묵직하고 화려한 순금 덩어리입니다.', rarity: 'SR', iconUrl: '/assets/materials/ingot_gold.png' },
+    'ingot_platinum': { id: 'ingot_platinum', name: '백금 주괴', type: 'MINERAL', description: '변하지 않는 빛을 가진 귀한 백금 덩어리입니다.', rarity: 'SSR', iconUrl: '/assets/materials/ingot_platinum.png' },
     'ore_copper': { id: 'ore_copper', name: '구리 광석', type: 'MINERAL', description: '붉은 빛이 도는 광석.', rarity: 'N', iconUrl: '/assets/materials/ore_copper.png' },
     'ore_silver': { id: 'ore_silver', name: '은 광석', type: 'MINERAL', description: '반짝이는 은빛 광석.', rarity: 'R', iconUrl: '/assets/materials/ore_silver.png' },
     'ore_gold': { id: 'ore_gold', name: '금 광석', type: 'MINERAL', description: '눈부신 황금빛 광석.', rarity: 'SR', iconUrl: '/assets/materials/ore_gold.png' },
@@ -73,11 +80,8 @@ export const MATERIALS: Record<string, Material> = {
     'herb_mystic': { id: 'herb_mystic', name: '신비의 약초', type: 'PLANT', description: '신비로운 힘을 가진 희귀 약초.', rarity: 'SR', iconUrl: '/assets/materials/herb_mystic.png' },
     'herb_yggdrasil': { id: 'herb_yggdrasil', name: '세계수의 잎', type: 'PLANT', description: '세계수의 생명력을 담은 잎사귀.', rarity: 'SSR', iconUrl: '/assets/materials/herb_yggdrasil.png' },
 
-    // Elemental Essences (Replaces generic shards for specific recipes)
-    'essence_fire': { id: 'essence_fire', name: '불의 정수', type: 'SPECIAL', description: '타오르는 불의 기운.', rarity: 'R', iconUrl: '/assets/materials/essence_fire.png' },
-    'essence_water': { id: 'essence_water', name: '물의 정수', type: 'SPECIAL', description: '차가운 물의 기운.', rarity: 'R', iconUrl: '/assets/materials/essence_water.png' },
-    'essence_earth': { id: 'essence_earth', name: '대지의 정수', type: 'SPECIAL', description: '단단한 대지의 기운.', rarity: 'R', iconUrl: '/assets/materials/essence_earth.png' },
-    'essence_wind': { id: 'essence_wind', name: '바람의 정수', type: 'SPECIAL', description: '날카로운 바람의 기운.', rarity: 'R', iconUrl: '/assets/materials/essence_wind.png' },
+    // Elemental Essences Removed
+    // 'essence_fire', 'essence_water', 'essence_earth', 'essence_wind' replaced by shards
 
     // ... existing SR materials ...
     'dragon_scale': { id: 'dragon_scale', name: '용의 비늘', type: 'BEAST', description: '드래곤의 단단한 비늘. 화염에도 녹지 않는다.', rarity: 'SSR', iconUrl: '/assets/materials/dragon_scale.png' },
@@ -168,10 +172,8 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 85,
         ingredients: [
-            { materialId: 'ore_iron', quantity: 5, isCatalyst: false },
-            { materialId: 'stone', quantity: 5, isCatalyst: false }, // Use Stone (placeholder if not exists) -> Let's use ore_iron more or new item? 
-            // Actually I didn't add 'stone' in alchemyData.ts, let's use 'ore_iron' & 'crystal_mana'
-            { materialId: 'crystal_mana', quantity: 1, isCatalyst: false }
+            { materialId: 'stone', quantity: 10, isCatalyst: false },
+            { materialId: 'ore_iron', quantity: 1, isCatalyst: false }
         ],
         conditions: []
     },
@@ -188,7 +190,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         priority: 88,
         ingredients: [
             { materialId: 'spirit_dust', quantity: 3, isCatalyst: false },
-            { materialId: 'essence_wind', quantity: 1, isCatalyst: false }, // Logic: Wind Element
+            { materialId: 'shard_wind', quantity: 1, isCatalyst: false }, // Replaced essence_wind with shard_wind
             { materialId: 'flower_moonlight', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -207,7 +209,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         ingredients: [
             { materialId: 'beast_fang', quantity: 3, isCatalyst: false },
             { materialId: 'scrap_leather', quantity: 3, isCatalyst: false },
-            { materialId: 'essence_dark', quantity: 1, isCatalyst: false } // Need to check if essence_dark exists or use shard_dark
+            { materialId: 'shard_dark', quantity: 1, isCatalyst: false } // Replaced essence_dark with shard_dark
         ],
         conditions: []
     },
@@ -242,7 +244,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         priority: 70,
         ingredients: [
             { materialId: 'ore_iron', quantity: 8, isCatalyst: false },
-            { materialId: 'essence_fire', quantity: 3, isCatalyst: false },
+            { materialId: 'shard_fire', quantity: 3, isCatalyst: false },
             { materialId: 'fire_core', quantity: 1, isCatalyst: true }
         ],
         conditions: []
@@ -284,7 +286,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         priority: 68,
         ingredients: [
             { materialId: 'spirit_dust', quantity: 4, isCatalyst: false },
-            { materialId: 'essence_light', quantity: 1, isCatalyst: false },
+            { materialId: 'shard_light', quantity: 1, isCatalyst: false },
             { materialId: 'herb_common', quantity: 3, isCatalyst: false }
         ],
         conditions: [
@@ -331,7 +333,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         priority: 89,
         ingredients: [
             { materialId: 'slime_fluid', quantity: 2, isCatalyst: false },
-            { materialId: 'essence_water', quantity: 1, isCatalyst: false },
+            { materialId: 'shard_water', quantity: 1, isCatalyst: false },
             { materialId: 'herb_common', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -367,7 +369,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         priority: 86,
         ingredients: [
             { materialId: 'wood_branch', quantity: 10, isCatalyst: false },
-            { materialId: 'essence_earth', quantity: 2, isCatalyst: false },
+            { materialId: 'shard_earth', quantity: 2, isCatalyst: false },
             { materialId: 'spirit_dust', quantity: 3, isCatalyst: false }
         ],
         conditions: []
@@ -384,7 +386,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 95,
         ingredients: [
-            { materialId: 'herb_common', quantity: 3, isCatalyst: false },
+            { materialId: 'herb_roots', quantity: 3, isCatalyst: false },
             { materialId: 'slime_fluid', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -706,7 +708,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         priority: 50,
         ingredients: [
             { materialId: 'angel_feather', quantity: 1, isCatalyst: false },
-            { materialId: 'essence_light', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_light', quantity: 5, isCatalyst: false },
             { materialId: 'rune_world', quantity: 1, isCatalyst: true }
         ],
         conditions: []
@@ -836,6 +838,95 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
             { materialId: 'yeti_fur', quantity: 1, isCatalyst: false },
             { materialId: 'ice_shard', quantity: 10, isCatalyst: false },
             { materialId: 'ore_iron', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    // New Recipes for Added Monsters
+    {
+        id: 'recipe_skeleton_soldier',
+        resultMonsterId: 'monster_skeleton_soldier',
+        resultCount: 1,
+        baseSuccessRate: 95,
+        craftTimeSec: 10,
+        costGold: 30,
+        requiredAlchemyLevel: 1,
+        expGain: 15,
+        isHidden: false,
+        priority: 95,
+        ingredients: [
+            { materialId: 'bone_fragment', quantity: 5, isCatalyst: false },
+            { materialId: 'scrap_leather', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_scarecrow',
+        resultMonsterId: 'monster_scarecrow',
+        resultCount: 1,
+        baseSuccessRate: 95,
+        craftTimeSec: 15,
+        costGold: 20,
+        requiredAlchemyLevel: 1,
+        expGain: 15,
+        isHidden: false,
+        priority: 96,
+        ingredients: [
+            { materialId: 'wood_branch', quantity: 5, isCatalyst: false },
+            { materialId: 'scrap_cloth', quantity: 3, isCatalyst: false },
+            { materialId: 'herb_roots', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_copper_golem',
+        resultMonsterId: 'monster_copper_golem',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 30,
+        costGold: 100,
+        requiredAlchemyLevel: 2,
+        expGain: 30,
+        isHidden: false,
+        priority: 90,
+        ingredients: [
+            { materialId: 'ore_copper', quantity: 8, isCatalyst: false },
+            { materialId: 'stone', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_silver_wolf',
+        resultMonsterId: 'monster_silver_wolf',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 60,
+        costGold: 300,
+        requiredAlchemyLevel: 4,
+        expGain: 50,
+        isHidden: false,
+        priority: 80,
+        ingredients: [
+            { materialId: 'ore_silver', quantity: 3, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 5, isCatalyst: false },
+            { materialId: 'scrap_leather', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_golden_bat',
+        resultMonsterId: 'monster_golden_bat',
+        resultCount: 1,
+        baseSuccessRate: 80,
+        craftTimeSec: 120,
+        costGold: 800,
+        requiredAlchemyLevel: 6,
+        expGain: 100,
+        isHidden: false,
+        priority: 70,
+        ingredients: [
+            { materialId: 'ore_gold', quantity: 3, isCatalyst: false },
+            { materialId: 'ore_copper', quantity: 5, isCatalyst: false },
+            { materialId: 'scrap_cloth', quantity: 5, isCatalyst: false }
         ],
         conditions: []
     }

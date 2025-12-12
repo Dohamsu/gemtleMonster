@@ -98,7 +98,7 @@
                     "upgradeCost": {
                         "gold": 20000,
                         "herb_mystic": 200,
-                        "essence_earth": 50
+                        "shard_earth": 50
                     }
                 }
             ]
@@ -217,6 +217,99 @@
                         "gold": 50000,
                         "ore_gold": 500,
                         "ore_platinum": 100
+                    }
+                }
+            ]
+        },
+        {
+            "id": "blacksmith",
+            "name": "대장간",
+            "category": "resource_production",
+            "unlockConditions": [
+                {
+                    "type": "facilityLevel",
+                    "facilityId": "mine",
+                    "min": 2
+                }
+            ],
+            "levels": [
+                {
+                    "level": 1,
+                    "name": "야외 화덕",
+                    "stats": {
+                        "intervalSeconds": 20,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "ingot_copper": 1.0
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 500,
+                        "stone": 20
+                    }
+                },
+                {
+                    "level": 2,
+                    "name": "마을 대장간",
+                    "stats": {
+                        "intervalSeconds": 18,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "ingot_iron": 0.9,
+                            "ingot_copper": 0.1
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 2000,
+                        "ore_copper": 50
+                    }
+                },
+                {
+                    "level": 3,
+                    "name": "전문 제련소",
+                    "stats": {
+                        "intervalSeconds": 15,
+                        "bundlesPerTick": 2,
+                        "dropRates": {
+                            "ingot_silver": 0.8,
+                            "ingot_iron": 0.2
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 10000,
+                        "ore_iron": 50
+                    }
+                },
+                {
+                    "level": 4,
+                    "name": "왕실 대장간",
+                    "stats": {
+                        "intervalSeconds": 12,
+                        "bundlesPerTick": 2,
+                        "dropRates": {
+                            "ingot_gold": 0.7,
+                            "ingot_silver": 0.3
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 50000,
+                        "ore_silver": 50
+                    }
+                },
+                {
+                    "level": 5,
+                    "name": "전설의 용광로",
+                    "stats": {
+                        "intervalSeconds": 10,
+                        "bundlesPerTick": 3,
+                        "dropRates": {
+                            "ingot_platinum": 0.6,
+                            "ingot_gold": 0.4
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 200000,
+                        "ore_gold": 50
                     }
                 }
             ]
@@ -465,7 +558,7 @@
                         "bundlesPerTick": 1,
                         "dropRates": {
                             "spirit_dust": 0.9,
-                            "essence_light": 0.1
+                            "shard_light": 0.1
                         },
                         "runeWorldDropRate": 0.0001
                     },
@@ -480,7 +573,7 @@
                         "bundlesPerTick": 1,
                         "dropRates": {
                             "spirit_dust": 0.85,
-                            "essence_light": 0.15
+                            "shard_light": 0.15
                         },
                         "runeWorldDropRate": 0.0002
                     },
@@ -497,7 +590,7 @@
                         "bundlesPerTick": 2,
                         "dropRates": {
                             "spirit_dust": 0.8,
-                            "essence_light": 0.18,
+                            "shard_light": 0.18,
                             "soul_fragment": 0.02
                         },
                         "runeWorldDropRate": 0.0005
