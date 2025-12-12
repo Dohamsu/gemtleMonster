@@ -186,19 +186,25 @@ export default function IdleFacilityList() {
                                     {facility.name} {currentLevel === 0 && <span style={{ fontSize: '0.8em', color: '#fbbf24', marginLeft: '8px' }}>(미보유)</span>}
                                 </summary>
                                 <div style={{ marginTop: '10px' }}>
-                                    {levelsToShow.map(level => (
-                                        <details key={`${facility.id}-${level}`} open={true} style={{ marginBottom: '8px', background: '#3a3a3a', padding: '6px', borderRadius: '4px' }}>
-                                            <summary style={{ color: '#ddd', cursor: 'pointer' }}>{level === 0 ? '건설 필요' : `Level ${level}`}</summary>
-                                            <IdleFacilityItem
-                                                facility={facility}
-                                                currentLevel={level}
-                                                isHighestLevel={level === currentLevel}
-                                                resources={materialCounts}
-                                                onUpgrade={async (fid, cost) => upgradeFacility(fid, cost)}
-                                                isPaused={isPaused}
-                                            />
-                                        </details>
-                                    ))}
+                                    {levelsToShow.map(level => {
+                                        // Find specific level data to get the custom name
+                                        const levelData = facility.levels.find(l => l.level === level);
+                                        const displayName = levelData?.name ? `${levelData.name} (Lv.${level})` : `Level ${level}`;
+
+                                        return (
+                                            <details key={`${facility.id}-${level}`} open={true} style={{ marginBottom: '8px', background: '#3a3a3a', padding: '6px', borderRadius: '4px' }}>
+                                                <summary style={{ color: '#ddd', cursor: 'pointer' }}>{level === 0 ? '건설 필요' : displayName}</summary>
+                                                <IdleFacilityItem
+                                                    facility={facility}
+                                                    currentLevel={level}
+                                                    isHighestLevel={level === currentLevel}
+                                                    resources={materialCounts}
+                                                    onUpgrade={async (fid, cost) => upgradeFacility(fid, cost)}
+                                                    isPaused={isPaused}
+                                                />
+                                            </details>
+                                        );
+                                    })}
                                 </div>
                             </details>
                         );

@@ -83,17 +83,22 @@ async function seedFacilities() {
 
             // 3. Upsert Levels
             for (const level of facility.levels) {
+                console.log(`  > Seeding level ${level.level}, name: "${level.name || '(no name)'}"`)
+
                 const { error: levelError } = await supabase
                     .from('facility_level')
                     .upsert({
                         facility_id: facility.id,
                         level: level.level,
+                        name: level.name || null, // Level-specific name (e.g., "Copper Mine")
                         stats: level.stats,
                         upgrade_cost: level.upgradeCost
                     }, { onConflict: 'facility_id, level' })
 
                 if (levelError) {
-                    console.error(`Error upserting level ${level.level} for ${facility.id}:`, levelError)
+                    console.error(`  ❌ Error upserting level ${level.level} for ${facility.id}:`, levelError)
+                } else {
+                    console.log(`  ✅ Level ${level.level} upserted successfully`)
                 }
             }
         }

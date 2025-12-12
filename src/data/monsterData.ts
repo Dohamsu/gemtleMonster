@@ -17,6 +17,12 @@ export interface MonsterData {
         effect: string
         value: number
     }
+    drops?: Array<{
+        materialId: string
+        chance: number // 0~100 (%)
+        min: number
+        max: number
+    }>
 }
 
 export const MONSTER_DATA: Record<string, MonsterData> = {
@@ -30,7 +36,11 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🟢',
         iconUrl: '/assets/monsters/slime_basic.png',
         rarity: 'N',
-        factoryTrait: { targetFacility: 'herb_farm', effect: '생산량 증가', value: 5 }
+        factoryTrait: { targetFacility: 'herb_farm', effect: '생산량 증가', value: 5 },
+        drops: [
+            { materialId: 'slime_fluid', chance: 100, min: 1, max: 2 },
+            { materialId: 'slime_gel', chance: 30, min: 1, max: 1 }
+        ]
     },
     'monster_hound_fang': {
         name: '송곳니 하운드',
@@ -41,7 +51,11 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         defense: 15,
         emoji: '🐺',
         iconUrl: '/assets/monsters/hound_basic.png',
-        rarity: 'N'
+        rarity: 'N',
+        drops: [
+            { materialId: 'beast_fang', chance: 100, min: 1, max: 1 },
+            { materialId: 'scrap_leather', chance: 40, min: 1, max: 1 }
+        ]
     },
     'monster_golem_stone': {
         name: '돌 골렘',
@@ -54,7 +68,11 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/stoneGolem.png',
         rarity: 'R',
         element: 'earth',
-        factoryTrait: { targetFacility: 'mine', effect: '생산량 증가', value: 10 }
+        factoryTrait: { targetFacility: 'mine', effect: '생산량 증가', value: 10 },
+        drops: [
+            { materialId: 'ore_iron', chance: 100, min: 1, max: 3 },
+            { materialId: 'stone', chance: 50, min: 2, max: 5 }
+        ]
     },
     'monster_fairy_spirit': {
         name: '정령 요정',
@@ -460,7 +478,13 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐉',
         iconUrl: '/assets/monsters/sky_dragon.png',
         rarity: 'SSR',
-        element: 'wind'
+        element: 'wind',
+        drops: [
+            { materialId: 'dragon_scale', chance: 100, min: 1, max: 1 },
+            { materialId: 'essence_wind', chance: 60, min: 2, max: 4 },
+            { materialId: 'feather_common', chance: 50, min: 3, max: 5 }, // Hatchling feathers
+            { materialId: 'gem_fragment', chance: 30, min: 2, max: 3 }
+        ]
     },
     // Beast Forest Monsters (짐승의 숲)
     'monster_scar_bear': {
@@ -577,7 +601,12 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/dragon_inferno.png',
         rarity: 'SSR',
         element: 'fire',
-        factoryTrait: { targetFacility: 'blacksmith', effect: '제작 속도 대폭 증가', value: 25 }
+        factoryTrait: { targetFacility: 'blacksmith', effect: '제작 속도 대폭 증가', value: 25 },
+        drops: [
+            { materialId: 'dragon_scale', chance: 100, min: 1, max: 1 },
+            { materialId: 'dragon_horn', chance: 50, min: 1, max: 1 },
+            { materialId: 'fire_core', chance: 30, min: 1, max: 1 }
+        ]
     },
     'monster_angel_arch': {
         name: '아크 엔젤',
@@ -590,7 +619,12 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/angel_arch.png',
         rarity: 'SSR',
         element: 'light',
-        factoryTrait: { targetFacility: 'cathedral', effect: '성스러운 기운 증가', value: 20 }
+        factoryTrait: { targetFacility: 'cathedral', effect: '성스러운 기운 증가', value: 20 },
+        drops: [
+            { materialId: 'angel_feather', chance: 100, min: 1, max: 1 },
+            { materialId: 'essence_light', chance: 50, min: 2, max: 3 },
+            { materialId: 'rune_world', chance: 20, min: 1, max: 1 }
+        ]
     },
     'monster_demon_lord': {
         name: '마왕',
@@ -602,7 +636,12 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '😈',
         iconUrl: '/assets/monsters/demon_lord.png',
         rarity: 'SSR',
-        element: 'dark'
+        element: 'dark',
+        drops: [
+            { materialId: 'demon_horn', chance: 100, min: 1, max: 1 },
+            { materialId: 'dark_crystal', chance: 60, min: 2, max: 4 },
+            { materialId: 'soul_fragment', chance: 30, min: 1, max: 2 }
+        ]
     },
     'monster_kraken_abyss': {
         name: '심연의 크라켄',
@@ -614,7 +653,12 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐙',
         iconUrl: '/assets/monsters/kraken_abyss.png',
         rarity: 'SSR',
-        element: 'water'
+        element: 'water',
+        drops: [
+            { materialId: 'kraken_leg', chance: 100, min: 1, max: 1 },
+            { materialId: 'shard_water', chance: 60, min: 5, max: 8 },
+            { materialId: 'gem_fragment', chance: 30, min: 2, max: 3 }
+        ]
     },
 
     // SR Monsters

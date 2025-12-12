@@ -20,7 +20,7 @@ const RESOURCE_ICONS: Record<string, string> = {
     leather_beast: '/assets/materials/hide_tough.png', // Reusing tough hide image for now
     ore_iron: '/assets/materials/ore_iron.png',
     ore_magic: '/assets/materials/ore_magic.png',
-    stone: '🪨',
+
 
     // 보석류
     gem_fragment: '/assets/materials/gem_fragment.png',
@@ -57,7 +57,33 @@ const RESOURCE_ICONS: Record<string, string> = {
 
     // 기타
     gold: '💰',
-    training_token: '🎖️'
+    training_token: '🎖️',
+
+    // New Basic Materials (Placeholders)
+    scrap_leather: '/assets/materials/scrap_leather.png',
+    scrap_cloth: '/assets/materials/scrap_cloth.png',
+    feather_common: '/assets/materials/feather_common.png',
+    bone_fragment: '/assets/materials/bone_fragment.png',
+    wood_branch: '/assets/materials/wood_branch.png',
+
+    // Mining
+    stone: '/assets/materials/stone.png',
+    ore_copper: '/assets/materials/ore_copper.png',
+    ore_silver: '/assets/materials/ore_silver.png',
+    ore_gold: '/assets/materials/ore_gold.png',
+    ore_platinum: '/assets/materials/ore_platinum.png',
+    diamond: '/assets/materials/diamond.png',
+
+    // Herbs
+    herb_roots: '/assets/materials/herb_roots.png',
+    herb_mystic: '/assets/materials/herb_mystic.png',
+    herb_yggdrasil: '/assets/materials/herb_yggdrasil.png',
+
+    // Elemental Essences
+    essence_fire: '🔥',
+    essence_water: '💧',
+    essence_earth: '🪨',
+    essence_wind: '🌪️',
 }
 
 export default function ResourceIcon({ resourceId, size = 20, iconUrl }: Props) {

@@ -6,11 +6,17 @@ export interface UnlockCondition {
 
 export interface FacilityLevel {
     level: number
+    name?: string // Level-specific name (e.g., "Copper Mine")
     stats: {
         intervalSeconds: number
         bundlesPerTick: number
         dropRates: Record<string, number>
         capacity?: number
+        questSeedDropRate?: number
+        crackStoneFragmentDropRate?: number
+        ancientRelicFragmentDropRate?: number
+        // Add other potential stats here as optional
+        [key: string]: any
     }
     upgradeCost: Record<string, number>
 }

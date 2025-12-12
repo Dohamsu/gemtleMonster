@@ -36,7 +36,8 @@ async function seedMonsters() {
                 base_def: data.defense,
                 icon_url: data.iconUrl || null,
                 // Default values for fields not in monsterData.ts
-                is_special: data.rarity === 'SSR' || data.rarity === 'SR'
+                is_special: data.rarity === 'SSR' || data.rarity === 'SR',
+                drops: data.drops || [] // Seed drops data
             }
 
             const { error } = await supabase

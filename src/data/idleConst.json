@@ -18,12 +18,12 @@
             "levels": [
                 {
                     "level": 1,
+                    "name": "야생 들판",
                     "stats": {
                         "intervalSeconds": 10,
                         "bundlesPerTick": 1,
                         "dropRates": {
-                            "herb_common": 0.96,
-                            "herb_rare": 0.04
+                            "herb_common": 1.0
                         },
                         "questSeedDropRate": 0.0005
                     },
@@ -33,84 +33,72 @@
                 },
                 {
                     "level": 2,
+                    "name": "약초 정원",
                     "stats": {
                         "intervalSeconds": 8,
                         "bundlesPerTick": 1,
                         "dropRates": {
-                            "herb_common": 0.90,
-                            "herb_rare": 0.10
+                            "herb_common": 0.80,
+                            "herb_rare": 0.20
                         },
                         "questSeedDropRate": 0.0007
                     },
                     "upgradeCost": {
-                        "gold": 250
-                    }
-                },
-                {
-                    "level": 3,
-                    "stats": {
-                        "intervalSeconds": 6,
-                        "bundlesPerTick": 2,
-                        "dropRates": {
-                            "herb_common": 0.86,
-                            "herb_rare": 0.12,
-                            "herb_special": 0.02
-                        },
-                        "questSeedDropRate": 0.001
-                    },
-                    "upgradeCost": {
-                        "gold": 600,
+                        "gold": 250,
                         "herb_common": 50
                     }
                 },
                 {
+                    "level": 3,
+                    "name": "유리 온실",
+                    "stats": {
+                        "intervalSeconds": 6,
+                        "bundlesPerTick": 2,
+                        "dropRates": {
+                            "herb_rare": 0.70,
+                            "herb_special": 0.30
+                        },
+                        "questSeedDropRate": 0.001
+                    },
+                    "upgradeCost": {
+                        "gold": 1000,
+                        "herb_rare": 50
+                    }
+                },
+                {
                     "level": 4,
+                    "name": "신비의 숲",
                     "stats": {
                         "intervalSeconds": 5,
                         "bundlesPerTick": 2,
                         "dropRates": {
-                            "herb_common": 0.80,
-                            "herb_rare": 0.16,
-                            "herb_special": 0.04
+                            "herb_special": 0.60,
+                            "herb_mystic": 0.40
                         },
                         "questSeedDropRate": 0.002
                     },
                     "upgradeCost": {
-                        "gold": 1500,
-                        "herb_common": 150
+                        "gold": 5000,
+                        "herb_special": 100,
+                        "herb_mystic": 10
                     }
                 },
                 {
                     "level": 5,
+                    "name": "세계수의 둥지",
                     "stats": {
                         "intervalSeconds": 4,
                         "bundlesPerTick": 3,
                         "dropRates": {
-                            "herb_common": 0.70,
-                            "herb_rare": 0.20,
-                            "herb_special": 0.10
+                            "herb_mystic": 0.80,
+                            "herb_yggdrasil": 0.20
                         },
                         "questSeedDropRate": 0.005
                     },
                     "upgradeCost": {
-                        "gold": 4000,
-                        "herb_common": 400,
-                        "ore_magic": 20
-                    }
-                },
-                {
-                    "level": 12,
-                    "stats": {
-                        "intervalSeconds": 2,
-                        "bundlesPerTick": 5,
-                        "dropRates": {
-                            "herb_common": 1
-                        },
-                        "questSeedDropRate": 0
-                    },
-                    "upgradeCost": {
-                        "gold": 50000,
-                        "herb_common": 5000
+                        "gold": 20000,
+                        "herb_mystic": 200,
+                        "essence_earth": 50
                     }
                 }
             ]
@@ -123,16 +111,16 @@
             "levels": [
                 {
                     "level": 1,
+                    "name": "암석 광산",
                     "stats": {
                         "intervalSeconds": 15,
                         "bundlesPerTick": 1,
                         "dropRates": {
-                            "ore_iron": 0.8,
-                            "ore_magic": 0.18,
-                            "gem_fragment": 0.02
+                            "stone": 0.9,
+                            "ore_iron": 0.1
                         },
-                        "crackStoneFragmentDropRate": 0.003,
-                        "ancientRelicFragmentDropRate": 0.0005
+                        "crackStoneFragmentDropRate": 0.001,
+                        "ancientRelicFragmentDropRate": 0.0
                     },
                     "upgradeCost": {
                         "gold": 200
@@ -140,74 +128,95 @@
                 },
                 {
                     "level": 2,
+                    "name": "구리 광산",
                     "stats": {
                         "intervalSeconds": 12,
                         "bundlesPerTick": 1,
                         "dropRates": {
-                            "ore_iron": 0.78,
-                            "ore_magic": 0.19,
-                            "gem_fragment": 0.03
+                            "ore_copper": 0.8,
+                            "stone": 0.2
                         },
-                        "crackStoneFragmentDropRate": 0.004,
-                        "ancientRelicFragmentDropRate": 0.0007
+                        "crackStoneFragmentDropRate": 0.002,
+                        "ancientRelicFragmentDropRate": 0.0
                     },
                     "upgradeCost": {
-                        "gold": 500
+                        "gold": 500,
+                        "stone": 50
                     }
                 },
                 {
                     "level": 3,
+                    "name": "철 광산",
                     "stats": {
                         "intervalSeconds": 10,
                         "bundlesPerTick": 2,
                         "dropRates": {
-                            "ore_iron": 0.75,
-                            "ore_magic": 0.2,
-                            "gem_fragment": 0.05
+                            "ore_iron": 0.8,
+                            "ore_copper": 0.2
                         },
-                        "crackStoneFragmentDropRate": 0.005,
+                        "crackStoneFragmentDropRate": 0.003,
                         "ancientRelicFragmentDropRate": 0.001
                     },
                     "upgradeCost": {
                         "gold": 1200,
-                        "ore_iron": 50
+                        "ore_copper": 100
                     }
                 },
                 {
                     "level": 4,
+                    "name": "은 광산",
                     "stats": {
                         "intervalSeconds": 8,
                         "bundlesPerTick": 2,
                         "dropRates": {
-                            "ore_iron": 0.72,
-                            "ore_magic": 0.22,
-                            "gem_fragment": 0.06
+                            "ore_silver": 0.8,
+                            "ore_iron": 0.2
                         },
-                        "crackStoneFragmentDropRate": 0.007,
+                        "crackStoneFragmentDropRate": 0.004,
                         "ancientRelicFragmentDropRate": 0.0015
                     },
                     "upgradeCost": {
-                        "gold": 2500,
-                        "ore_iron": 150
+                        "gold": 3000,
+                        "ore_iron": 200
                     }
                 },
                 {
                     "level": 5,
+                    "name": "금 광산",
                     "stats": {
                         "intervalSeconds": 6,
                         "bundlesPerTick": 3,
                         "dropRates": {
-                            "ore_iron": 0.7,
-                            "ore_magic": 0.23,
-                            "gem_fragment": 0.07
+                            "ore_gold": 0.7,
+                            "ore_silver": 0.3
                         },
-                        "crackStoneFragmentDropRate": 0.01,
+                        "crackStoneFragmentDropRate": 0.005,
                         "ancientRelicFragmentDropRate": 0.002
                     },
                     "upgradeCost": {
-                        "gold": 6000,
-                        "ore_iron": 300,
+                        "gold": 10000,
+                        "ore_silver": 200,
                         "gem_fragment": 50
+                    }
+                },
+                {
+                    "level": 6,
+                    "name": "다이아몬드 광산",
+                    "stats": {
+                        "intervalSeconds": 5,
+                        "bundlesPerTick": 3,
+                        "dropRates": {
+                            "diamond": 0.5,
+                            "ore_platinum": 0.4,
+                            "ore_gold": 0.1
+                        },
+                        "crackStoneFragmentDropRate": 0.01,
+                        "ancientRelicFragmentDropRate": 0.005
+                    },
+                    "upgradeCost": {
+                        "gold": 50000,
+                        "ore_gold": 500,
+                        "ore_platinum": 100
                     }
                 }
             ]

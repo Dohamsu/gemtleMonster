@@ -17,19 +17,11 @@ export function useFacilities(userId: string | undefined) {
         if (!userId) return
 
         const fetchData = async () => {
-            // 1. Try to load from cache first
-            const cachedData = localStorage.getItem('facility_master_data')
-            if (cachedData) {
-                try {
-                    const parsed = JSON.parse(cachedData)
-                    setFacilities(parsed)
-                    setLoading(false) // Show cached data immediately
-                } catch (e) {
-                    console.error('Failed to parse cached facility data', e)
-                }
-            }
+            // Clear stale cache to force fresh fetch
+            localStorage.removeItem('facility_master_data')
+            console.log('[useFacilities] Cache cleared, fetching fresh data...')
 
-            // 2. Fetch fresh data (Stale-while-revalidate)
+            // 2. Fetch fresh data
             // Fetch facility master data
             const { data: facilitiesData } = await supabase
                 .from('facility')
@@ -38,7 +30,9 @@ export function useFacilities(userId: string | undefined) {
             // Fetch facility levels
             const { data: levelsData } = await supabase
                 .from('facility_level')
-                .select('facility_id, level, stats, upgrade_cost')
+                .select('facility_id, level, name, stats, upgrade_cost')
+
+            console.log('[useFacilities] Raw levelsData from DB:', JSON.stringify(levelsData?.slice(0, 5), null, 2)) // Log first 5 levels
 
             // Fetch player facilities
             const { data: playerFacilitiesData } = await supabase
@@ -57,11 +51,14 @@ export function useFacilities(userId: string | undefined) {
                         .filter(l => l.facility_id === facility.id)
                         .map(l => ({
                             level: l.level,
+                            name: l.name || undefined, // Level-specific name
                             stats: l.stats,
                             upgradeCost: l.upgrade_cost,
                         }))
                         .sort((a, b) => a.level - b.level),
                 }))
+
+                console.log('[useFacilities] Combined facility data (first facility levels):', JSON.stringify(combined[0]?.levels, null, 2))
 
                 // Update state and cache
                 setFacilities(combined)

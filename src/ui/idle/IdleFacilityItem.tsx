@@ -156,7 +156,7 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     <FacilityIcon id={facility.id} level={currentLevel} style={{ marginRight: '10px' }} />
-                    <h3 style={{ margin: 0 }}>{facility.name} (Lv.{currentLevel})</h3>
+                    <h3 style={{ margin: 0 }}>{levelData?.name || facility.name} (Lv.{currentLevel})</h3>
                 </div>
                 <span style={{ fontSize: '0.85em', color: '#aaa' }}>{intervalSeconds}초 / 회</span>
             </div>
