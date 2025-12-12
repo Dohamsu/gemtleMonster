@@ -74,7 +74,8 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
             justifyContent: 'center',
             background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)',
             fontFamily: "'Pretendard', 'Noto Sans KR', sans-serif",
-            overflow: 'hidden'
+            overflow: 'hidden',
+            zIndex: 9999
         }}>
             {/* 배경 장식 요소 - Floating Blobs */}
             <div style={{

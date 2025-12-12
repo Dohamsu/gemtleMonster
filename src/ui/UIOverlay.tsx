@@ -20,11 +20,21 @@ export default function UIOverlay() {
     const [showAccountLinkModal, setShowAccountLinkModal] = useState(false)
 
     // Phase 1: 배치 동기화 시스템
+    const { loadAllData } = useAlchemyStore()
     const { queueUpdate, queueFacilityUpdate, forceSyncNow } = useBatchSync(user?.id, {
         batchInterval: 30000, // 30초마다 자동 저장
         onSyncComplete: (success) => {
             if (success) {
                 console.log('✅ [UIOverlay] 배치 동기화 완료')
+            }
+        },
+        onSyncError: async (error: any) => {
+            // 치명적인 동기화 에러(예: 데이터 불일치) 발생 시 전체 데이터 리로드
+            if (error?.code === '23514' || error?.code === '23505') {
+                console.warn('⚠️ [UIOverlay] 데이터 불일치 감지. 서버 데이터로 동기화합니다.')
+                if (user?.id) {
+                    await loadAllData(user.id)
+                }
             }
         }
     })
@@ -200,7 +210,13 @@ export default function UIOverlay() {
                             </button>
                         )}
                         <button
-                            onClick={signOut}
+                            onClick={async () => {
+                                // 로그아웃 전에 저장되지 않은 변경사항 동기화
+                                await forceSyncNow()
+                                await signOut()
+                                // 깨끗한 상태 전환을 위해 페이지 새로고침
+                                window.location.reload()
+                            }}
                             style={{
                                 padding: '6px 10px',
                                 backgroundColor: 'transparent',

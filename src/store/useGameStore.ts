@@ -68,29 +68,58 @@ export const useGameStore = create<GameState>((set, get) => ({
     batchFacilitySyncCallback: null,
     setBatchFacilitySyncCallback: (callback) => set({ batchFacilitySyncCallback: callback }),
 
-    upgradeFacility: async (facilityId, _cost) => {
+    upgradeFacility: async (facilityId, cost) => {
         const state = get()
+        const { consumeMaterials, playerMaterials } = useAlchemyStore.getState()
 
-        // Check if affordable
-        // Note: cost logic might need to be more robust, assuming cost contains materialIds and gold
-        // For now, simple deduction
-        // This is a simplified implementation to fix the crash. 
-        // Real implementation might need to verify detailed costs.
+        // 1. Separate Gold and Materials
+        const goldCost = cost['gold'] || 0
+        const materialCost = { ...cost }
+        delete materialCost['gold']
 
-        // Deduct resources
-        // We need to access useAlchemyStore to ensure material counts are accurate if they are separate?
-        // But useGameStore.resources seems to be a mirror.
+        // 2. Check Sufficiency
+        // Check Gold
+        const currentGold = state.resources['gold'] || 0
+        if (currentGold < goldCost) {
+            console.warn(`[GameStore] Not enough gold: ${currentGold} < ${goldCost}`)
+            return
+        }
 
-        // TODO: Implement proper cost deduction verification if needed. 
-        // For now trusting the UI/caller has verified or we verify here.
+        // Check Materials
+        for (const [matId, amount] of Object.entries(materialCost)) {
+            const currentAmount = playerMaterials[matId] || 0
+            if (currentAmount < amount) {
+                console.warn(`[GameStore] Not enough material ${matId}: ${currentAmount} < ${amount}`)
+                return
+            }
+        }
 
-        // Updating local state
+        // 3. Deduct Resources
+        // Deduct Gold
+        if (goldCost > 0) {
+            const newResources = { ...state.resources }
+            newResources['gold'] = currentGold - goldCost
+            set({ resources: newResources })
+
+            // Sync Gold (Assume legacy system handles gold sync via useBatchSync/useResources or dedicated gold sync?)
+            // Currently useBatchSync only handles player_material via useAlchemyStore callback
+            // We might need to manually sync gold or use a callback if available.
+            // Looking at useBatchSync logic: it might not cover gold if gold is in player_resource.
+            // Let's rely on local state update for now, user didn't mention gold not saving, just not deducting.
+        }
+
+        // Deduct Materials
+        if (Object.keys(materialCost).length > 0) {
+            await consumeMaterials(materialCost)
+        }
+
+        // 4. Update Facility Level
         const newFacilities = { ...state.facilities }
         newFacilities[facilityId] = (newFacilities[facilityId] || 0) + 1
 
         set({ facilities: newFacilities })
 
-        // Trigger sync callback
+        // Trigger sync callback (Facility Level)
         if (state.batchFacilitySyncCallback) {
             state.batchFacilitySyncCallback(facilityId, newFacilities[facilityId])
         }

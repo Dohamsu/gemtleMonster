@@ -88,11 +88,11 @@ const RESOURCE_ICONS: Record<string, string> = {
     // essence_earth: '🪨',
     // essence_wind: '🌪️',
     // Ingots
-    ingot_copper: '/assets/materials/coper_ingot.png',
-    ingot_iron: '/assets/materials/iron_ingot.png',
-    ingot_silver: '/assets/materials/silver_ingot.png',
-    ingot_gold: '/assets/materials/gold_ingot.png',
-    ingot_platinum: '💠', // No image available yet
+    ingot_copper: '/assets/materials/ingot_copper.png',
+    ingot_iron: '/assets/materials/ingot_iron.png',
+    ingot_silver: '/assets/materials/ingot_silver.png',
+    ingot_gold: '/assets/materials/ingot_gold.png',
+    ingot_platinum: '/assets/materials/ingot_platinum.png',
 }
 
 export default function ResourceIcon({ resourceId, size = 20, iconUrl }: Props) {

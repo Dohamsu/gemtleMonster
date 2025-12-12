@@ -19,7 +19,6 @@ export function useFacilities(userId: string | undefined) {
         const fetchData = async () => {
             // Clear stale cache to force fresh fetch
             localStorage.removeItem('facility_master_data')
-            console.log('[useFacilities] Cache cleared, fetching fresh data...')
 
             // 2. Fetch fresh data
             // Fetch facility master data
@@ -31,8 +30,6 @@ export function useFacilities(userId: string | undefined) {
             const { data: levelsData } = await supabase
                 .from('facility_level')
                 .select('facility_id, level, name, stats, upgrade_cost')
-
-            console.log('[useFacilities] Raw levelsData from DB:', JSON.stringify(levelsData?.slice(0, 5), null, 2)) // Log first 5 levels
 
             // Fetch player facilities
             const { data: playerFacilitiesData } = await supabase
@@ -57,8 +54,6 @@ export function useFacilities(userId: string | undefined) {
                         }))
                         .sort((a, b) => a.level - b.level),
                 }))
-
-                console.log('[useFacilities] Combined facility data (first facility levels):', JSON.stringify(combined[0]?.levels, null, 2))
 
                 // Update state and cache
                 setFacilities(combined)
@@ -85,12 +80,15 @@ export function useFacilities(userId: string | undefined) {
         const currentLevel = playerFacilities[facilityId] || 0
         const newLevel = currentLevel + 1
 
-        // Update facility level
+        // Update or insert facility level (upsert 사용 - 레코드가 없어도 생성되도록)
         const { error: facilityError } = await supabase
             .from('player_facility')
-            .update({ current_level: newLevel })
-            .eq('user_id', userId)
-            .eq('facility_id', facilityId)
+            .upsert({
+                user_id: userId,
+                facility_id: facilityId,
+                current_level: newLevel,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id,facility_id' })
 
         if (facilityError) {
             console.error('Failed to upgrade facility:', facilityError)

@@ -95,13 +95,20 @@ export function useBatchSync(
         if (error) throw error
       }
 
-      // 2. 시설 동기화
-      for (const [facilityId, level] of Object.entries(facilityUpdates)) {
-        await supabase
+      // 2. 시설 동기화 (upsert 사용 - 레코드가 없어도 생성되도록)
+      if (Object.keys(facilityUpdates).length > 0) {
+        const facilityRecords = Object.entries(facilityUpdates).map(([facilityId, level]) => ({
+          user_id: userId,
+          facility_id: facilityId,
+          current_level: level,
+          updated_at: new Date().toISOString()
+        }))
+
+        const { error: facilityError } = await supabase
           .from('player_facility')
-          .update({ current_level: level })
-          .eq('user_id', userId)
-          .eq('facility_id', facilityId)
+          .upsert(facilityRecords, { onConflict: 'user_id,facility_id' })
+
+        if (facilityError) throw facilityError
       }
 
       // 성공 시 큐 초기화
@@ -109,11 +116,23 @@ export function useBatchSync(
       pendingFacilityUpdates.current = {}
       // console.log(`✅ [BatchSync] DB 동기화 완료!`, { materials: updates, facilities: facilityUpdates })
       onSyncCompleteRef.current?.(true, updates)
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ [BatchSync] DB 동기화 실패:', error)
+
+      // 제약 조건 위반 (예: 수량 부족으로 인한 음수 발생) 또는 치명적 오류
+      if (error?.code === '23514' || error?.code === '23505') {
+        console.warn('⚠️ [BatchSync] 해결 불가능한 데이터 불일치 감지. 배치를 폐기하고 상태를 초기화합니다.')
+        // 큐 초기화 (재시도 방지)
+        pendingUpdates.current = {}
+        pendingFacilityUpdates.current = {}
+
+        // TODO: 데이터 재동기화 트리거
+        // loadAllData(userId) 같은 것이 필요함
+      }
+
       onSyncErrorRef.current?.(error as Error)
       onSyncCompleteRef.current?.(false, updates)
-      // 실패 시에도 큐를 유지해서 다음 배치에 재시도
+      // 그 외 네트워크 오류 등은 큐를 유지해서 다음 배치에 재시도
     } finally {
       isSyncing.current = false
     }
