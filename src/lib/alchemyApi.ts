@@ -279,7 +279,7 @@ export interface AlchemyResult {
  */
 export async function performAlchemy(
   userId: string,
-  recipeId: string,
+  recipeId: string | null,
   ingredients: Record<string, number>,
   successRate: number
 ): Promise<AlchemyResult> {

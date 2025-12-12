@@ -459,19 +459,15 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     const matchedRecipe = findMatchingRecipe(selectedIngredients, alchemyContext || null, allRecipes)
 
     if (!matchedRecipe) {
-      // 레시피가 없으면 조합 불가 (서버 로직과 일치시키기 위해)
-      // 기존에는 실패 처리했으나, RPC가 recipeId를 요구하므로 여기서는 막거나,
-      // 추후 별도 '실험' RPC가 필요. 현재는 안전하게 차단.
-      console.warn('일치하는 레시피가 없습니다.')
-      set({ error: '일치하는 레시피를 찾을 수 없습니다.' })
-      return
+      console.log('⚠️ [startFreeFormBrewing] 일치하는 레시피 없음 - 실험 모드(실패)로 진행')
+      // 레시피가 없어도 진행 (실패 처리 및 힌트 제공을 위해)
     }
 
-    const duration = matchedRecipe.craft_time_sec * 1000
+    const duration = matchedRecipe ? matchedRecipe.craft_time_sec * 1000 : 3000 // 기본 3초
 
     console.log('🧪 자유 조합 시작:', {
       재료: selectedIngredients,
-      매칭된레시피: matchedRecipe.name,
+      매칭된레시피: matchedRecipe ? matchedRecipe.name : '없음 (실험)',
       소요시간: duration / 1000 + '초'
     })
 
@@ -480,7 +476,12 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // 1. API 호출 시작
     if (userId) {
-      rpcPromise = alchemyApi.performAlchemy(userId, matchedRecipe.id, selectedIngredients, matchedRecipe.base_success_rate)
+      rpcPromise = alchemyApi.performAlchemy(
+        userId,
+        matchedRecipe ? matchedRecipe.id : null,
+        selectedIngredients,
+        matchedRecipe ? matchedRecipe.base_success_rate : 0
+      )
     }
 
     set({
@@ -488,7 +489,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       brewStartTime: Date.now(),
       brewProgress: 0,
       brewResult: { type: 'idle' },
-      selectedRecipeId: matchedRecipe.id
+      selectedRecipeId: matchedRecipe ? matchedRecipe.id : null
     })
 
     // 진행 바 시뮬레이션
