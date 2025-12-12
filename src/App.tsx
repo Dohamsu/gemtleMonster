@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import GameCanvas from './game/GameCanvas'
 import UIOverlay from './ui/UIOverlay'
+import LoginScreen from './ui/LoginScreen'
 import { useAuth } from './hooks/useAuth'
 import { useAutoCollection } from './hooks/useAutoCollection'
 import { initializePlayer } from './lib/initializePlayer'
@@ -11,7 +12,7 @@ import { useFacilities } from './hooks/useFacilities'
 import InstallPrompt from './ui/common/InstallPrompt'
 
 function App() {
-    const { user } = useAuth()
+    const { user, loading: authLoading, signIn, signUp, signInAsGuest } = useAuth()
     const { setResources, setFacilities } = useGameStore()
 
     /**
@@ -103,6 +104,38 @@ function App() {
         window.addEventListener('resize', handleResize)
         return () => window.removeEventListener('resize', handleResize)
     }, [])
+
+    // 로딩 중 또는 비로그인 상태: 로그인 화면 표시 (전체 화면)
+    if (authLoading) {
+        return (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+                color: 'white',
+                fontSize: '18px',
+                zIndex: 9999
+            }}>
+                🧪 로딩 중...
+            </div>
+        )
+    }
+
+    if (!user) {
+        return (
+            <LoginScreen
+                onSignIn={signIn}
+                onSignUp={signUp}
+                onGuestLogin={signInAsGuest}
+            />
+        )
+    }
 
     if (isMobile) {
         // 모바일 레이아웃: 전체 화면 Canvas + 하단 슬라이드업 UI Overlay

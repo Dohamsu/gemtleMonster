@@ -9,12 +9,15 @@ import { isMobileView } from '../utils/responsiveUtils'
 import { supabase } from '../lib/supabase'
 import IdleFacilityList from './idle/IdleFacilityList'
 import AlchemyLayout from './alchemy/AlchemyLayout'
+import LoginScreen from './LoginScreen'
+import AccountLinkModal from './AccountLinkModal'
 
 export default function UIOverlay() {
-    const { user, loading: authLoading, error: authError } = useAuth()
+    const { user, loading: authLoading, error: authError, isGuest, signIn, signUp, signOut, signInAsGuest, linkEmailToAccount } = useAuth()
     const { activeTab, setActiveTab, resources } = useGameStore()
     const [isMobile, setIsMobile] = useState(isMobileView())
     const [nickname, setNickname] = useState<string | null>(null)
+    const [showAccountLinkModal, setShowAccountLinkModal] = useState(false)
 
     // Phase 1: 배치 동기화 시스템
     const { queueUpdate, queueFacilityUpdate, forceSyncNow } = useBatchSync(user?.id, {
@@ -132,11 +135,23 @@ export default function UIOverlay() {
         }
     }, [user?.id]) // queueUpdate, forceSyncNow 의존성 제거
 
+    // 로딩 중
     if (authLoading) {
         return (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'white' }}>
                 로딩 중...
             </div>
+        )
+    }
+
+    // 비로그인 상태: 로그인 화면 표시
+    if (!user) {
+        return (
+            <LoginScreen
+                onSignIn={signIn}
+                onSignUp={signUp}
+                onGuestLogin={signInAsGuest}
+            />
         )
     }
 
@@ -164,16 +179,64 @@ export default function UIOverlay() {
                         color: '#fff',
                         fontSize: isMobile ? '1.1em' : '1.2em'
                     }}>GemtleMonster</h2>
-                    {/* Logout Button (Optional) */}
+
+                    {/* 계정 관련 버튼들 */}
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        {isGuest && (
+                            <button
+                                onClick={() => setShowAccountLinkModal(true)}
+                                style={{
+                                    padding: '6px 12px',
+                                    backgroundColor: '#4f46e5',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    cursor: 'pointer',
+                                    fontWeight: 500
+                                }}
+                            >
+                                🔗 계정 연결
+                            </button>
+                        )}
+                        <button
+                            onClick={signOut}
+                            style={{
+                                padding: '6px 10px',
+                                backgroundColor: 'transparent',
+                                color: 'rgba(255,255,255,0.6)',
+                                border: '1px solid rgba(255,255,255,0.2)',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            로그아웃
+                        </button>
+                    </div>
                 </div>
 
                 <div style={{
                     fontSize: isMobile ? '0.9em' : '1em',
                     color: '#e2e8f0',
                     marginBottom: isMobile ? '8px' : '10px',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
                 }}>
                     {nickname ? `👋 ${nickname} ` : (user?.id ? `ID: ${user.id.slice(0, 8)}...` : (authError ? `⚠️ ${authError} ` : '로그인 중...'))}
+                    {isGuest && (
+                        <span style={{
+                            fontSize: '10px',
+                            padding: '2px 6px',
+                            backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                            color: '#fbbf24',
+                            borderRadius: '4px'
+                        }}>
+                            게스트
+                        </span>
+                    )}
                 </div>
 
                 <div style={{
@@ -231,10 +294,18 @@ export default function UIOverlay() {
             </div>
 
             {/* Content Area */}
-            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, overflow: showAccountLinkModal ? 'hidden' : 'auto', display: 'flex', flexDirection: 'column', pointerEvents: showAccountLinkModal ? 'none' : 'auto' }}>
                 {activeTab === 'facilities' && <IdleFacilityList />}
                 {activeTab === 'alchemy' && <AlchemyLayout />}
             </div>
+
+            {/* 계정 연결 모달 */}
+            {showAccountLinkModal && (
+                <AccountLinkModal
+                    onLink={linkEmailToAccount}
+                    onClose={() => setShowAccountLinkModal(false)}
+                />
+            )}
         </div >
     )
 }

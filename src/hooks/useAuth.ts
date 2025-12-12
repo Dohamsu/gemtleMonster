@@ -1,119 +1,211 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
-
+interface AuthState {
+    user: User | null
+    loading: boolean
+    error: string | null
+    isGuest: boolean
+}
 
 export function useAuth() {
-    const [user, setUser] = useState<User | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const [state, setState] = useState<AuthState>({
+        user: null,
+        loading: true,
+        error: null,
+        isGuest: false
+    })
     const isInitializing = useRef(false)
 
+    // 익명 사용자인지 확인 (Supabase의 is_anonymous 필드 또는 기존 가상 이메일 체크)
+    const checkIsGuest = (user: User | null): boolean => {
+        if (!user) return false
+        // Supabase Anonymous Auth 사용 시 is_anonymous 필드 확인
+        if ((user as any).is_anonymous === true) return true
+        // 기존 가상 이메일 방식도 호환성을 위해 유지
+        if (user.email?.endsWith('@gemtlemonster.com')) return true
+        return false
+    }
+
+    // 이메일/비밀번호로 로그인
+    const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+        setState(prev => ({ ...prev, loading: true, error: null }))
+
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            })
+
+            if (error) {
+                setState(prev => ({ ...prev, loading: false, error: error.message }))
+                return { success: false, error: error.message }
+            }
+
+            setState({
+                user: data.user,
+                loading: false,
+                error: null,
+                isGuest: checkIsGuest(data.user)
+            })
+            return { success: true }
+        } catch (err: any) {
+            const errorMsg = err.message || '로그인 중 오류가 발생했습니다.'
+            setState(prev => ({ ...prev, loading: false, error: errorMsg }))
+            return { success: false, error: errorMsg }
+        }
+    }, [])
+
+    // 이메일/비밀번호로 회원가입
+    const signUp = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+        setState(prev => ({ ...prev, loading: true, error: null }))
+
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    emailRedirectTo: undefined // 이메일 인증 비활성화
+                }
+            })
+
+            if (error) {
+                setState(prev => ({ ...prev, loading: false, error: error.message }))
+                return { success: false, error: error.message }
+            }
+
+            // Supabase에서 이메일 인증이 필요한 경우 user가 있지만 확인되지 않음
+            // 여기서는 이메일 인증을 비활성화했으므로 바로 로그인됨
+            if (data.user) {
+                setState({
+                    user: data.user,
+                    loading: false,
+                    error: null,
+                    isGuest: false
+                })
+                return { success: true }
+            }
+
+            setState(prev => ({ ...prev, loading: false }))
+            return { success: true }
+        } catch (err: any) {
+            const errorMsg = err.message || '회원가입 중 오류가 발생했습니다.'
+            setState(prev => ({ ...prev, loading: false, error: errorMsg }))
+            return { success: false, error: errorMsg }
+        }
+    }, [])
+
+    // 게스트로 로그인 (Anonymous Auth 사용)
+    const signInAsGuest = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+        setState(prev => ({ ...prev, loading: true, error: null }))
+
+        try {
+            // Supabase Anonymous Sign-in 사용
+            const { data, error } = await supabase.auth.signInAnonymously()
+
+            if (error) {
+                console.error('Anonymous sign-in error:', error)
+                setState(prev => ({ ...prev, loading: false, error: error.message }))
+                return { success: false, error: error.message }
+            }
+
+            setState({
+                user: data.user,
+                loading: false,
+                error: null,
+                isGuest: true
+            })
+            console.log('익명 로그인 성공:', data.user?.id)
+            return { success: true }
+        } catch (err: any) {
+            const errorMsg = err.message || '게스트 로그인 중 오류가 발생했습니다.'
+            setState(prev => ({ ...prev, loading: false, error: errorMsg }))
+            return { success: false, error: errorMsg }
+        }
+    }, [])
+
+    // 게스트 계정에 이메일/비밀번호 연결
+    const linkEmailToAccount = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+        if (!state.user) {
+            return { success: false, error: '로그인되어 있지 않습니다.' }
+        }
+
+        try {
+            // Supabase updateUser로 이메일 변경
+            const { error: updateError } = await supabase.auth.updateUser({
+                email,
+                password
+            })
+
+            if (updateError) {
+                return { success: false, error: updateError.message }
+            }
+
+            setState(prev => ({
+                ...prev,
+                isGuest: false
+            }))
+
+            console.log('계정 연결 성공:', email)
+            return { success: true }
+        } catch (err: any) {
+            return { success: false, error: err.message || '계정 연결 중 오류가 발생했습니다.' }
+        }
+    }, [state.user])
+
+    // 로그아웃
+    const signOut = useCallback(async (): Promise<void> => {
+        await supabase.auth.signOut()
+        setState({
+            user: null,
+            loading: false,
+            error: null,
+            isGuest: false
+        })
+    }, [])
+
+    // 초기화: 세션 확인
     useEffect(() => {
-        // Prevent duplicate execution (React StrictMode)
         if (isInitializing.current) return
         isInitializing.current = true
 
-        const getDeviceId = () => {
-            let deviceId = localStorage.getItem('gemtle_device_id')
-            if (!deviceId) {
-                // Fallback for environments where crypto.randomUUID is not available
-                if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-                    deviceId = crypto.randomUUID()
-                } else {
-                    deviceId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                        const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                        return v.toString(16);
-                    });
-                }
-                localStorage.setItem('gemtle_device_id', deviceId)
-            }
-            return deviceId
-        }
-
-        const signInWithDevice = async () => {
-            try {
-                const deviceId = getDeviceId()
-                const email = `user_${deviceId}@gemtlemonster.com`
-                const password = `pwd_${deviceId}` // Simple password based on device ID
-
-                // Try to sign in
-                const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
-                })
-
-                if (signInError) {
-                    // If sign in fails, try to sign up
-                    console.log('Device account not found, creating...')
-                    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-                        email,
-                        password,
-                        options: {
-                            emailRedirectTo: undefined, // Disable email confirmation
-                        }
-                    })
-
-                    if (signUpError) {
-                        // If user already exists (race condition), try to sign in again
-                        if (signUpError.message.includes('already registered')) {
-                            console.log('User already exists, retrying sign in...')
-                            const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-                                email,
-                                password,
-                            })
-
-                            if (retryError) {
-                                console.error('Failed to sign in after retry:', retryError)
-                                setError(retryError.message)
-                                setLoading(false)
-                                return
-                            }
-
-                            setUser(retryData.user)
-                            console.log('Signed in with device ID (retry):', retryData.user?.id)
-                        } else {
-                            console.error('Failed to create device account:', signUpError)
-                            setError(signUpError.message)
-                            setLoading(false)
-                            return
-                        }
-                    } else {
-                        setUser(signUpData.user)
-                        console.log('Device account created:', signUpData.user?.id)
-                    }
-                } else {
-                    setUser(signInData.user)
-                    console.log('Signed in with device ID:', signInData.user?.id)
-                }
-            } catch (err: any) {
-                console.error('Unexpected auth error:', err)
-                setError(err.message || 'Unknown error occurred')
-            }
-
-            setLoading(false)
-        }
-
-        // Check current session first
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
-                setUser(session.user)
-                setLoading(false)
+                setState({
+                    user: session.user,
+                    loading: false,
+                    error: null,
+                    isGuest: checkIsGuest(session.user)
+                })
             } else {
-                signInWithDevice()
+                // 세션이 없으면 로그인 화면으로 (loading: false로 설정)
+                setState(prev => ({ ...prev, loading: false }))
             }
         })
 
-        // Listen for auth changes
+        // 인증 상태 변경 리스너
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null)
+            setState(prev => ({
+                ...prev,
+                user: session?.user ?? null,
+                isGuest: checkIsGuest(session?.user ?? null)
+            }))
         })
 
         return () => subscription.unsubscribe()
     }, [])
 
-    return { user, loading, error }
+    return {
+        user: state.user,
+        loading: state.loading,
+        error: state.error,
+        isGuest: state.isGuest,
+        signIn,
+        signUp,
+        signOut,
+        signInAsGuest,
+        linkEmailToAccount
+    }
 }
-
