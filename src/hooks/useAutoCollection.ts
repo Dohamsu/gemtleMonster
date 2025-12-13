@@ -14,7 +14,7 @@ interface FacilityLevelStats {
 type FacilityStatsMap = Record<string, Record<number, FacilityLevelStats>>
 
 export function useAutoCollection(userId: string | undefined) {
-    const { facilities, lastCollectedAt, addResources, setLastCollectedAt, canvasView } = useGameStore()
+    const { facilities, lastCollectedAt, addResources, setLastCollectedAt, canvasView, isOfflineProcessing } = useGameStore()
     const statsRef = useRef<FacilityStatsMap>({})
     const processingRef = useRef<Set<string>>(new Set())
 
@@ -44,6 +44,7 @@ export function useAutoCollection(userId: string | undefined) {
     useEffect(() => {
         if (!userId) return
         if (canvasView === 'shop') return
+        if (isOfflineProcessing) return // 오프라인 보상 처리 중에는 자동 수집 일시 중지
 
         // Helper to process drops
         const collectFromFacility = async (
@@ -60,8 +61,10 @@ export function useAutoCollection(userId: string | undefined) {
             try {
                 // 1. Consumption (if cost exists)
                 if (stats.cost) {
+                    console.log(`🔄 [AutoCollection] ${facilityKey} 자원 소비 시도:`, stats.cost)
                     const consumed = await useAlchemyStore.getState().consumeMaterials(stats.cost)
                     if (!consumed) {
+                        console.log(`⚠️ [AutoCollection] ${facilityKey} 자원 부족으로 생산 건너뜀`)
                         // Not enough resources, skip production
                         // Do NOT update lastCollectedAt so it retries soon (or update to avoid spamming logic?)
                         // If we skip update, it retries every second. This checks DB/State every second.
@@ -69,6 +72,7 @@ export function useAutoCollection(userId: string | undefined) {
                         // We'll return early.
                         return
                     }
+                    console.log(`✅ [AutoCollection] ${facilityKey} 자원 소비 성공`)
                 }
 
                 const drops: Record<string, number> = {}
@@ -150,6 +154,14 @@ export function useAutoCollection(userId: string | undefined) {
                     const intervalMs = stats.intervalSeconds * 1000
 
                     if (elapsed >= intervalMs) {
+                        // Safety Check: If elapsed time is too long (> 10 mins), skip auto-collection.
+                        // This prevents race conditions with useOfflineRewards which handles long offline durations.
+                        // useOfflineRewards handles > 5 mins. We give a buffer (10 mins) to ensure no conflict.
+                        if (elapsed > 10 * 60 * 1000) {
+                            // console.warn(`[AutoCollection] Skipping ${facilityKey} (Elapsed: ${elapsed}ms) - Delegating to OfflineRewards`)
+                            continue
+                        }
+
                         collectFromFacility(facilityId, level, stats, facilityKey, now)
                     }
                 }
@@ -157,5 +169,5 @@ export function useAutoCollection(userId: string | undefined) {
         }, tickRate)
 
         return () => clearInterval(timer)
-    }, [userId, facilities, canvasView, lastCollectedAt, addResources, setLastCollectedAt])
+    }, [userId, facilities, canvasView, lastCollectedAt, addResources, setLastCollectedAt, isOfflineProcessing])
 }

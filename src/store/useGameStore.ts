@@ -22,6 +22,10 @@ interface GameState {
     startDungeon: (dungeonId: string) => void
     leaveDungeon: () => void
 
+    // Offline Processing State
+    isOfflineProcessing: boolean
+    setIsOfflineProcessing: (isProcessing: boolean) => void
+
     // UI State
     activeTab: 'facilities' | 'alchemy'
     setActiveTab: (tab: 'facilities' | 'alchemy') => void
@@ -57,6 +61,10 @@ interface GameState {
 export const useGameStore = create<GameState>((set, get) => ({
     canvasView: 'map',
     activeDungeon: null,
+
+    // Offline Processing State
+    isOfflineProcessing: false,
+    setIsOfflineProcessing: (isProcessing) => set({ isOfflineProcessing: isProcessing }),
 
     activeTab: 'facilities',
     setActiveTab: (activeTab) => set({ activeTab }),
@@ -110,18 +118,32 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         // Deduct Materials
         if (Object.keys(materialCost).length > 0) {
+            console.log(`🔧 [GameStore] 시설 업그레이드 재료 차감:`, materialCost)
             await consumeMaterials(materialCost)
         }
 
+        console.log(`🔧 [GameStore] 시설 업그레이드 완료: ${facilityId} -> Level ${(state.facilities[facilityId] || 0) + 1}`)
+
         // 4. Update Facility Level
         const newFacilities = { ...state.facilities }
-        newFacilities[facilityId] = (newFacilities[facilityId] || 0) + 1
+        const newLevel = (newFacilities[facilityId] || 0) + 1
+        newFacilities[facilityId] = newLevel
 
         set({ facilities: newFacilities })
 
-        // Trigger sync callback (Facility Level)
+        // 5. Initialize lastCollectedAt for the new level (CRITICAL: Prevents massive backlog processing)
+        // Without this, auto-collection would see elapsed time from epoch (1970) and try to process years worth of production
+        const now = Date.now()
+        for (let l = 1; l <= newLevel; l++) {
+            const key = `${facilityId}-${l}`
+            if (!state.lastCollectedAt[key]) {
+                get().setLastCollectedAt(key, now)
+            }
+        }
+
+        // 6. Trigger sync callback (Facility Level)
         if (state.batchFacilitySyncCallback) {
-            state.batchFacilitySyncCallback(facilityId, newFacilities[facilityId])
+            state.batchFacilitySyncCallback(facilityId, newLevel)
         }
     },
 

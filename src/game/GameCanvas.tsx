@@ -79,7 +79,7 @@ export default function GameCanvas() {
         success: false
     })
     const [materialScrollOffset, setMaterialScrollOffset] = useState(0)
-    const [mobileTab, setMobileTab] = useState<'recipes' | 'materials'>('recipes') // 모바일 탭 상태
+    const [mobileTab, setMobileTab] = useState<'recipes' | 'materials' | 'codex'>('recipes') // 모바일 탭 상태
     const [isMobile, setIsMobile] = useState(isMobileView())
 
     // 반응형 감지
@@ -124,13 +124,15 @@ export default function GameCanvas() {
             // LAYOUT 상수에서 탭 위치 가져오기 (중앙 집중식 관리)
             const tabY = LAYOUT.MOBILE_TAB_Y
             const tabHeight = LAYOUT.MOBILE_TAB_HEIGHT
-            const tabW = canvas.width / 2
+            const tabW = canvas.width / 3 // 3 tabs now
 
             if (y >= tabY && y <= tabY + tabHeight) {
                 if (x < tabW) {
                     setMobileTab('recipes')
-                } else {
+                } else if (x < tabW * 2) {
                     setMobileTab('materials')
+                } else {
+                    setMobileTab('codex')
                 }
                 return
             }

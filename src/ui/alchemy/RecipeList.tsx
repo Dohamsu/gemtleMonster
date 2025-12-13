@@ -120,7 +120,10 @@ export default function RecipeList({
                 overflowY: 'auto',
                 padding: isMobile ? '6px' : '8px',
                 opacity: isBrewing ? 0.4 : 1,
-                pointerEvents: isBrewing ? 'none' : 'auto'
+                pointerEvents: isBrewing ? 'none' : 'auto',
+                display: isMobile ? 'grid' : 'block',
+                gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'none',
+                gap: isMobile ? '6px' : '0',
             }}>
                 {visibleRecipes.map(recipe => {
                     const isSelected = selectedRecipeId === recipe.id
@@ -178,14 +181,15 @@ export default function RecipeList({
                             style={{
                                 display: 'flex',
                                 flexDirection: 'column',
-                                padding: '10px',
+                                padding: '8px', // Slightly reduced padding
                                 background: backgroundColor,
                                 borderRadius: '8px',
                                 border: `1px solid ${borderColor}`,
                                 cursor: cursor,
                                 opacity: opacity,
                                 transition: 'all 0.2s',
-                                marginBottom: isMobile ? '6px' : '8px',
+                                marginBottom: isMobile ? '0' : '8px', // Grid gap handles spacing on mobile
+                                height: isMobile ? '100%' : 'auto', // Ensure equal height in grid
                             }}
                         >
                             {/* Top Row: Image, Name, Lock Icon */}
@@ -250,7 +254,7 @@ export default function RecipeList({
 
                             {/* Required Materials */}
                             {recipe.ingredients && recipe.ingredients.length > 0 && (
-                                <div style={{ paddingLeft: '40px' }}> {/* Indent under name */}
+                                <div style={{ paddingLeft: isMobile ? '0' : '40px', marginTop: isMobile ? '4px' : '0' }}> {/* Remove indent on mobile, move below */}
                                     {recipe.ingredients.map((ing, idx) => {
                                         const mat = materials.find(m => m.id === ing.material_id)
                                         const owned = playerMaterials[ing.material_id] || 0
@@ -287,7 +291,7 @@ export default function RecipeList({
                                     fontSize: '10px',
                                     color: '#88aaff',
                                     marginTop: '4px',
-                                    paddingLeft: '40px',
+                                    paddingLeft: isMobile ? '0' : '40px',
                                     fontStyle: 'italic'
                                 }}>
                                     💡 {recipe.conditions[0].description || '특별한 조건 필요'}
@@ -300,7 +304,7 @@ export default function RecipeList({
                                     fontSize: isMobile ? '9px' : '10px',
                                     color: '#facc15',
                                     marginTop: '4px',
-                                    paddingLeft: '40px'
+                                    paddingLeft: isMobile ? '0' : '40px'
                                 }}>
                                     ⚠️ Lv.{recipe.required_alchemy_level} 필요
                                 </div>

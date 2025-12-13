@@ -189,17 +189,19 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   },
 
   loadPlayerData: async (userId: string) => {
-    // console.log(`🔄 [AlchemyStore] loadPlayerData 시작:`, userId)
+    console.log(`🔄 [AlchemyStore] loadPlayerData 시작:`, userId)
     try {
-      // 플레이어 재료
+      // 1. 플레이어 재료 로드
       const playerMats = await alchemyApi.getPlayerMaterials(userId)
-      // console.log(`📦 DB에서 로드한 재료:`, playerMats.length, '개')
+      console.log(`📦 [AlchemyStore] DB에서 로드한 재료:`, playerMats.length, '개')
+      console.log(`📦 [AlchemyStore] 서버 응답 (ore 관련):`, playerMats.filter(m => m.material_id.includes('ore')))
+
       const materialsMap: Record<string, number> = {}
       playerMats.forEach(m => {
         materialsMap[m.material_id] = m.quantity
       })
 
-      // 골드 로드 (player_resource 테이블에서)
+      // 2. 골드 로드 (player_resource 테이블에서)
       const { data: goldData } = await supabase
         .from('player_resource')
         .select('amount')
@@ -211,38 +213,39 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       materialsMap['gold'] = goldAmount
       // console.log(`💰 골드 로드:`, goldAmount)
 
-      // 플레이어 레시피
+      // 3. 누락된 재료 0으로 채우기 (클라이언트 잔존 데이터 제거용)
+      // MATERIALS 상수를 참조하여 모든 재료 키에 대해 값 설정
+      const { MATERIALS } = await import('../data/alchemyData')
+      Object.keys(MATERIALS).forEach(id => {
+        if (materialsMap[id] === undefined) {
+          materialsMap[id] = 0
+        }
+      })
+
+      // 4. 플레이어 레시피 로드
       const playerRecs = await alchemyApi.getPlayerRecipes(userId)
       const recipesMap: Record<string, PlayerRecipe> = {}
       playerRecs.forEach(r => {
         recipesMap[r.recipe_id] = r
       })
 
-      // 플레이어 연금술 정보
+      // 5. 플레이어 연금술 정보 로드
       const alchemyInfo = await alchemyApi.getPlayerAlchemy(userId)
 
+      // 6. 스토어 상태 업데이트
       set({
         playerMaterials: materialsMap,
         playerRecipes: recipesMap,
         playerAlchemy: alchemyInfo
       })
 
-
-
-      /*
-      console.log(`✅ [AlchemyStore] playerMaterials 업데이트:`, Object.keys(materialsMap).length, '종류')
-      console.log(`📊 주요 재료:`, {
-        ore_iron: materialsMap['ore_iron'] || 0,
-        ore_magic: materialsMap['ore_magic'] || 0,
-        gem_fragment: materialsMap['gem_fragment'] || 0
-      })
-      */
-
-      // gameStore.resources를 읽기 전용 캐시로 동기화 (UI 애니메이션용)
+      // 7. gameStore.resources 동기화 (UI용)
       const gameStore = useGameStore.getState()
       const currentResources = gameStore.resources
+      // 기존 리소스에 materialsMap(0 포함)을 덮어씌움으로써 없는 재료는 0이 됨
       gameStore.setResources({ ...currentResources, ...materialsMap })
       // console.log(`✅ [AlchemyStore] resources 캐시 동기화 완료`)
+
     } catch (error) {
       console.error('❌ [AlchemyStore] 플레이어 데이터 로딩 실패:', error)
       throw error
@@ -973,11 +976,20 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     // 여기서는 안전을 위해 기존 consumeMaterials(즉시 DB 위임) 방식을 따르되, 배치 콜백을 우선 사용가능한지 확인.
 
     // Check sufficiency locally first
+    console.log(`💰 [AlchemyStore] consumeMaterials 호출됨. 요청:`, materials)
+    console.log(`💰 [AlchemyStore] 현재 playerMaterials 상태:`,
+      Object.fromEntries(
+        Object.entries(materials).map(([id]) => [id, playerMaterials[id] || 0])
+      )
+    )
+
     for (const [id, amount] of Object.entries(materials)) {
-      if ((playerMaterials[id] || 0) < amount) {
-        console.error(`❌ [AlchemyStore] 재료 부족: ${id}`)
+      const current = playerMaterials[id] || 0
+      if (current < amount) {
+        console.error(`❌ [AlchemyStore] 재료 부족: ${id} (보유: ${current}, 필요: ${amount})`)
         return false
       }
+      console.log(`✅ [AlchemyStore] 재료 충분: ${id} (보유: ${current}, 필요: ${amount})`)
     }
 
     // 로컬 상태 업데이트

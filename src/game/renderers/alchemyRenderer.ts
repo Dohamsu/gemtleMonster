@@ -34,7 +34,7 @@ interface AlchemyRendererProps {
     materialScrollOffset: number
     MATERIAL_CELL_SIZE: number
     MATERIAL_GRID_PADDING: number
-    mobileTab?: 'recipes' | 'materials' // 모바일 탭 상태
+    mobileTab?: 'recipes' | 'materials' | 'codex' // 모바일 탭 상태
 }
 
 // Icon mapping for material families (재료 슬롯 렌더링용)

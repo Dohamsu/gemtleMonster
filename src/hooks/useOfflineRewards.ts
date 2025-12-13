@@ -57,6 +57,7 @@ export function useOfflineRewards(userId: string | undefined) {
     const calculateAndClaimRewards = async () => {
       try {
         isCalculatingRef.current = true
+        useGameStore.getState().setIsOfflineProcessing(true) // Start critical section
         console.log('🎁 [OfflineRewards] 오프라인 보상 계산 시작...')
 
         // 1. 마지막 수집 시간 가져오기
@@ -221,8 +222,23 @@ export function useOfflineRewards(userId: string | undefined) {
           console.log('ℹ️ [OfflineRewards] 지급할 보상 없음')
         }
 
-        // 6. 마지막 수집 시간 업데이트
+        // 6. 마지막 수집 시간 업데이트 (DB)
         await alchemyApi.updateLastCollectedAt(userId, now)
+
+        // 7. 로컬 스토어 수집 시간도 업데이트 (중요: useAutoCollection 중복 실행 방지)
+        const gameStore = useGameStore.getState()
+        const nowTime = now.getTime()
+        Object.keys(facilities).forEach(facilityId => {
+          const level = facilities[facilityId]
+          if (level > 0) {
+            // 모든 레벨의 키에 대해 업데이트 (useAutoCollection은 facilityId-level 키를 사용함)
+            // 하지만 useAutoCollection은 현재 활성화된 레벨만 체크하므로, 현재 레벨들만 업데이트해도 됨?
+            // useAutoCollection logic: iterates 1..currentLevel.
+            for (let l = 1; l <= level; l++) {
+              gameStore.setLastCollectedAt(`${facilityId}-${l}`, nowTime)
+            }
+          }
+        })
 
         setRewards(totalRewards)
         console.log('🎉 [OfflineRewards] 오프라인 보상 처리 완료')
@@ -232,6 +248,7 @@ export function useOfflineRewards(userId: string | undefined) {
       } finally {
         setClaimed(true)
         isCalculatingRef.current = false
+        useGameStore.getState().setIsOfflineProcessing(false) // End critical section
       }
     }
 

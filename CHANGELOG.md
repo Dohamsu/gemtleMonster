@@ -1,6 +1,20 @@
 # 📋 변경 이력
 
 모든 주요 변경사항은 이 파일에 문서화됩니다.
+## [0.3.0] - 2025-12-14
+
+### 🐛 Critical Bug Fixes (Facility Disappearance)
+- **Facility Disappearance Fixed**: 시설 업그레이드 시 DB 동기화 오류로 인해 시설이 사라지는 현상 해결.
+  - **Sync Race Condition**: 동기화 중 발생한 업데이트가 누락되는 문제 해결 (스냅샷 패턴 적용).
+  - **Offline Rewards Conflict**: 게임 시작 시 오프라인 보상 계산과 자동 수집이 동시에 실행되어 자원이 이중 차감되는 경쟁 상태 해결 (상호 배제 락 적용).
+  - **Upgrade Timestamp Initialization**: 시설 업그레이드 직후 수집 시간이 초기화되지 않아 막대한 자원이 차감되는 문제 해결.
+  - **Phantom Materials**: 일부 재료가 DB에 없는데 클라이언트에는 존재하는 데이터 불일치 자동 보정.
+  - **Negative Balance Protection**: `batch_add_materials` DB 함수에 음수 방지 로직(GREATEST) 추가.
+
+### 🔍 Debugging Tools
+- **Enhanced Logging**: 배치 동기화, 자동 수집, 시설 업그레이드 주요 로직에 상세 로깅 추가.
+- **Client-Server Data Verification**: `loadPlayerData` 시 서버 데이터와 클라이언트 데이터 비교 로깅 추가.
+
 ## [0.2.6] - 2025-12-13
 
 ### 🧪 Alchemy System Improvements
@@ -17,6 +31,7 @@
 - **Item Prices**: 재료의 판매 가격을 전반적으로 조정.
   - 가공된 아이템(주괴 등)의 가치를 원재료(광석)보다 대폭 상향 (예: 철광석 15G → 철 주괴 200G).
   - 희귀도에 따른 가격 차등화 적용.
+  - **DB Sync**: 상점 가격 데이터 베이스 동기화 완료 (구리 주괴 120G 등).
 
 ### 🎮 Content Updates
 - **Dungeon Drops**: 게임 내에서 얻을 수 없었던 재료들을 던전 드랍 테이블에 추가.

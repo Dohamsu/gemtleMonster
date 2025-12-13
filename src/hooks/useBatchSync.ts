@@ -40,7 +40,7 @@ export function useBatchSync(
     pendingUpdates.current[materialId] =
       (pendingUpdates.current[materialId] || 0) + quantity
 
-    // console.log(`📦 [BatchSync] 재료 큐에 추가: ${materialId} +${quantity}`)
+    console.log(`📦 [BatchSync] 재료 큐에 추가: ${materialId} ${quantity > 0 ? '+' : ''}${quantity} (누적: ${pendingUpdates.current[materialId]})`)
   }, [])
 
   /**
@@ -66,38 +66,42 @@ export function useBatchSync(
   /**
    * 누적된 변경사항을 DB에 저장
    */
+  /**
+   * 누적된 변경사항을 DB에 저장
+   */
   const syncToDatabase = useCallback(async () => {
     if (!userId || isSyncing.current) return
 
-    const updates = { ...pendingUpdates.current }
-    const facilityUpdates = { ...pendingFacilityUpdates.current }
-    const materialUpdateCount = Object.keys(updates).length
-    const facilityUpdateCount = Object.keys(facilityUpdates).length
+    // 1. Snapshot pending updates
+    const updatesSnapshot = { ...pendingUpdates.current }
+    const facilitySnapshot = { ...pendingFacilityUpdates.current }
 
-    if (materialUpdateCount === 0 && facilityUpdateCount === 0) {
-      // console.log('📭 [BatchSync] 저장할 변경사항 없음')
+    // Check if anything to sync
+    if (Object.keys(updatesSnapshot).length === 0 && Object.keys(facilitySnapshot).length === 0) {
       return
     }
 
+    // 2. Clear queues immediately (optimistic clear to capture new updates during sync)
+    pendingUpdates.current = {}
+    pendingFacilityUpdates.current = {}
+
     isSyncing.current = true
-    // console.log(`🔄 [BatchSync] DB 동기화 시작... (재료: ${materialUpdateCount}개, 시설: ${facilityUpdateCount}개)`)
     onSyncStartRef.current?.()
 
     try {
-      // 1. 재료 동기화 (Batch RPC 사용)
-      if (Object.keys(updates).length > 0) {
-        // console.log(`🔄 [BatchSync] 재료 일괄 저장 중...`, updates)
+      // 3. 재료 동기화 (Batch RPC 사용)
+      if (Object.keys(updatesSnapshot).length > 0) {
         const { error } = await supabase.rpc('batch_add_materials', {
           p_user_id: userId,
-          p_materials: updates
+          p_materials: updatesSnapshot
         })
 
         if (error) throw error
       }
 
-      // 2. 시설 동기화 (upsert 사용 - 레코드가 없어도 생성되도록)
-      if (Object.keys(facilityUpdates).length > 0) {
-        const facilityRecords = Object.entries(facilityUpdates).map(([facilityId, level]) => ({
+      // 4. 시설 동기화
+      if (Object.keys(facilitySnapshot).length > 0) {
+        const facilityRecords = Object.entries(facilitySnapshot).map(([facilityId, level]) => ({
           user_id: userId,
           facility_id: facilityId,
           current_level: level,
@@ -111,28 +115,41 @@ export function useBatchSync(
         if (facilityError) throw facilityError
       }
 
-      // 성공 시 큐 초기화
-      pendingUpdates.current = {}
-      pendingFacilityUpdates.current = {}
-      // console.log(`✅ [BatchSync] DB 동기화 완료!`, { materials: updates, facilities: facilityUpdates })
-      onSyncCompleteRef.current?.(true, updates)
+      // Success: Snapshots are successfully committed. 
+      // Do nothing to pendingUpdates.current (it holds new changes)
+      onSyncCompleteRef.current?.(true, updatesSnapshot)
+
     } catch (error: any) {
       console.error('❌ [BatchSync] DB 동기화 실패:', error)
+      console.error('❌ [BatchSync] 실패한 재료 Payload:', JSON.stringify(updatesSnapshot, null, 2))
+      console.error('❌ [BatchSync] 실패한 시설 Payload:', JSON.stringify(facilitySnapshot, null, 2))
 
-      // 제약 조건 위반 (예: 수량 부족으로 인한 음수 발생) 또는 치명적 오류
+      // 5. Error Handling & Restore
+      // 제약 조건 위반 (예: 수량 부족) - 해결 불가능하므로 스냅샷 폐기
       if (error?.code === '23514' || error?.code === '23505') {
-        console.warn('⚠️ [BatchSync] 해결 불가능한 데이터 불일치 감지. 배치를 폐기하고 상태를 초기화합니다.')
-        // 큐 초기화 (재시도 방지)
-        pendingUpdates.current = {}
-        pendingFacilityUpdates.current = {}
+        console.warn('⚠️ [BatchSync] 해결 불가능한 데이터 불일치 감지. 배치를 폐기합니다.')
+        // pendingUpdates.current는 건드리지 않음 (새로운 유효한 변경사항일 수 있으므로)
 
-        // TODO: 데이터 재동기화 트리거
-        // loadAllData(userId) 같은 것이 필요함
+        // 데이터 불일치 시 전체 리로드 트리거 필요 (onSyncError에서 처리)
+      } else {
+        // 일시적인 오류 (네트워크 등) - 스냅샷을 다시 큐에 복구
+        console.log('↩️ [BatchSync] 변경사항 복구 중...')
+
+        // Merge updatesSnapshot back into pendingUpdates
+        Object.entries(updatesSnapshot).forEach(([k, v]) => {
+          pendingUpdates.current[k] = (pendingUpdates.current[k] || 0) + v
+        })
+
+        // Restore facilitySnapshot (prevent overwriting newer updates)
+        Object.entries(facilitySnapshot).forEach(([k, v]) => {
+          if (pendingFacilityUpdates.current[k] === undefined) {
+            pendingFacilityUpdates.current[k] = v
+          }
+        })
       }
 
       onSyncErrorRef.current?.(error as Error)
-      onSyncCompleteRef.current?.(false, updates)
-      // 그 외 네트워크 오류 등은 큐를 유지해서 다음 배치에 재시도
+      onSyncCompleteRef.current?.(false, updatesSnapshot)
     } finally {
       isSyncing.current = false
     }

@@ -8,6 +8,7 @@ import AlchemyBrewButton from './AlchemyBrewButton'
 import { AlchemyBackButton } from './AlchemyBackButton'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
+import CodexPanel from './CodexPanel'
 
 interface AlchemyWorkshopOverlayProps {
     recipes: Recipe[]
@@ -23,8 +24,8 @@ interface AlchemyWorkshopOverlayProps {
     onAddIngredient: (materialId: string, quantity: number) => void
     onStartBrewing: (recipeId: string) => Promise<void>
     onStartFreeFormBrewing: () => Promise<void>
-    mobileTab?: 'recipes' | 'materials'
-    onMobileTabChange?: (tab: 'recipes' | 'materials') => void
+    mobileTab?: 'recipes' | 'materials' | 'codex'
+    onMobileTabChange?: (tab: 'recipes' | 'materials' | 'codex') => void
     alchemyContext: AlchemyContext | null
 }
 
@@ -48,6 +49,7 @@ export default function AlchemyWorkshopOverlay({
     alchemyContext
 }: AlchemyWorkshopOverlayProps) {
     const [isMobile, setIsMobile] = useState(isMobileView())
+    const [showCodexDesktop, setShowCodexDesktop] = useState(false)
     const setCanvasView = useGameStore((state) => state.setCanvasView)
 
     useEffect(() => {
@@ -64,7 +66,6 @@ export default function AlchemyWorkshopOverlay({
 
     if (isMobile) {
         // 모바일: 탭 기반 UI
-        // Canvas 버튼(height-130)과 XP바(height-65) 공간 확보를 위해 하단 150px 비워둠
         return (
             <div style={{
                 position: 'absolute',
@@ -78,8 +79,7 @@ export default function AlchemyWorkshopOverlay({
             }}>
                 <AlchemyBackButton onBack={handleBack} />
 
-                {/* Error Toast */}
-                {/* We use a simple inline style for the toast. In a real app, use a proper Toast component. */}
+                {/* Error Toast code... (omitting internal redundancy if possible, but replace_block needs context) */}
                 {useAlchemyStore((state) => state.error) && (
                     <div style={{
                         position: 'absolute',
@@ -115,19 +115,21 @@ export default function AlchemyWorkshopOverlay({
                     </div>
                 )}
 
-                {/* Tabs */}
+                {/* Main Content Area (Tabs) */}
                 <div style={{
                     position: 'absolute',
-                    bottom: '140px', // 버튼(130px) + XP바(65px) 공간 확보
+                    bottom: mobileTab === 'codex' ? '10px' : '140px',
                     left: 0,
                     width: '100%',
-                    height: 'calc(50% - 20px)', // 전체 50%에서 하단 공간 제외
+                    height: mobileTab === 'codex' ? 'calc(100% - 80px)' : 'calc(50% - 20px)',
+                    zIndex: mobileTab === 'codex' ? 20 : 'auto',
                     pointerEvents: 'auto',
                     background: 'transparent',
                     display: 'flex',
                     flexDirection: 'column',
                     padding: '10px',
-                    gap: '10px'
+                    gap: '10px',
+                    transition: 'all 0.3s ease-in-out'
                 }}>
                     {/* Tab Buttons */}
                     <div style={{
@@ -173,6 +175,24 @@ export default function AlchemyWorkshopOverlay({
                         >
                             🎒 재료
                         </button>
+                        <button
+                            onClick={() => onMobileTabChange?.('codex')}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                minHeight: '44px',
+                                background: mobileTab === 'codex' ? '#5a4030' : '#4a3020',
+                                border: mobileTab === 'codex' ? '2px solid #facc15' : 'none',
+                                borderRadius: '6px',
+                                color: '#f0d090',
+                                fontWeight: 'bold',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            📚 도감
+                        </button>
                     </div>
 
                     {/* Tab Content */}
@@ -191,7 +211,7 @@ export default function AlchemyWorkshopOverlay({
                                 onSelectRecipe={onSelectRecipe}
                                 alchemyContext={alchemyContext}
                             />
-                        ) : (
+                        ) : mobileTab === 'materials' ? (
                             <MaterialGrid
                                 materials={materials}
                                 playerMaterials={playerMaterials}
@@ -199,39 +219,48 @@ export default function AlchemyWorkshopOverlay({
                                 isBrewing={isBrewing}
                                 onAddIngredient={onAddIngredient}
                             />
+                        ) : (
+                            <CodexPanel
+                                materials={materials}
+                                recipes={recipes}
+                                playerMaterials={playerMaterials}
+                                playerRecipes={playerRecipes}
+                            />
                         )}
                     </div>
                 </div>
 
-                {/* Mobile Brew Button Container */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: '80px',
-                    left: 0,
-                    width: '100%',
-                    height: '60px',
-                    pointerEvents: 'auto',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 10
-                }}>
-                    <AlchemyBrewButton
-                        selectedRecipeId={selectedRecipeId}
-                        selectedIngredients={selectedIngredients}
-                        isBrewing={isBrewing}
-                        brewProgress={brewProgress}
-                        allRecipes={recipes}
-                        playerAlchemy={playerAlchemy}
-                        onStartBrewing={onStartBrewing}
-                        onStartFreeFormBrewing={onStartFreeFormBrewing}
-                    />
-                </div>
+                {/* Mobile Brew Button Container - Hide if Codex */}
+                {mobileTab !== 'codex' && (
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '80px',
+                        left: 0,
+                        width: '100%',
+                        height: '60px',
+                        pointerEvents: 'auto',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 10
+                    }}>
+                        <AlchemyBrewButton
+                            selectedRecipeId={selectedRecipeId}
+                            selectedIngredients={selectedIngredients}
+                            isBrewing={isBrewing}
+                            brewProgress={brewProgress}
+                            allRecipes={recipes}
+                            playerAlchemy={playerAlchemy}
+                            onStartBrewing={onStartBrewing}
+                            onStartFreeFormBrewing={onStartFreeFormBrewing}
+                        />
+                    </div>
+                )}
             </div>
         )
     }
 
-    // 데스크탑: 좌우 패널
+    // 데스크탑: 좌우 패널 + 도감 토글
     return (
         <div style={{
             position: 'absolute',
@@ -246,6 +275,37 @@ export default function AlchemyWorkshopOverlay({
             gap: '20px'
         }}>
             <AlchemyBackButton onBack={handleBack} />
+
+            {/* Desktop Codex Toggle Button */}
+            <div style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                pointerEvents: 'auto',
+                zIndex: 50
+            }}>
+                <button
+                    onClick={() => setShowCodexDesktop(!showCodexDesktop)}
+                    style={{
+                        background: showCodexDesktop ? '#fbbf24' : '#2d3748',
+                        color: showCodexDesktop ? '#1a202c' : '#f0d090',
+                        border: '2px solid #ed8936',
+                        borderRadius: '8px',
+                        padding: '10px 20px',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    <span>📚</span>
+                    <span>{showCodexDesktop ? '도감 닫기' : '도감 열기'}</span>
+                </button>
+            </div>
 
             {/* Error Toast (Desktop) */}
             {useAlchemyStore((state: any) => state.error) && (
@@ -284,11 +344,36 @@ export default function AlchemyWorkshopOverlay({
                 </div>
             )}
 
+            {/* Overlay Codex Panel for Desktop */}
+            {showCodexDesktop && (
+                <div style={{
+                    position: 'absolute',
+                    top: '80px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '90%',
+                    maxWidth: '1200px',
+                    height: 'calc(100% - 100px)',
+                    zIndex: 40,
+                    pointerEvents: 'auto'
+                }}>
+                    <CodexPanel
+                        materials={materials}
+                        recipes={recipes}
+                        playerMaterials={playerMaterials}
+                        playerRecipes={playerRecipes}
+                        onClose={() => setShowCodexDesktop(false)}
+                    />
+                </div>
+            )}
+
             {/* Left Panel - Recipe List */}
             <div style={{
                 pointerEvents: 'auto',
-                height: 'calc(100% - 150px)', // 높이 증가 (180 → 150)
-                marginTop: '70px' // 상단 마진 축소 (100 → 70)
+                height: 'calc(100% - 150px)',
+                marginTop: '70px',
+                opacity: showCodexDesktop ? 0.3 : 1, // Dim when codex is open
+                transition: 'opacity 0.2s'
             }}>
                 <RecipeList
                     recipes={recipes}
@@ -305,8 +390,10 @@ export default function AlchemyWorkshopOverlay({
             {/* Right Panel - Material Grid */}
             <div style={{
                 pointerEvents: 'auto',
-                height: 'calc(100% - 150px)', // 높이 증가 (180 → 150)
-                marginTop: '70px' // 상단 마진 축소 (100 → 70)
+                height: 'calc(100% - 150px)',
+                marginTop: '70px',
+                opacity: showCodexDesktop ? 0.3 : 1, // Dim when codex is open
+                transition: 'opacity 0.2s'
             }}>
                 <MaterialGrid
                     materials={materials}
@@ -323,8 +410,10 @@ export default function AlchemyWorkshopOverlay({
                 bottom: '80px',
                 left: '50%',
                 transform: 'translateX(-50%)',
-                pointerEvents: 'auto',
-                zIndex: 10
+                zIndex: 10,
+                opacity: showCodexDesktop ? 0 : 1, // Hide when codex is open
+                pointerEvents: showCodexDesktop ? 'none' : 'auto',
+                transition: 'opacity 0.2s'
             }}>
                 <AlchemyBrewButton
                     selectedRecipeId={selectedRecipeId}
