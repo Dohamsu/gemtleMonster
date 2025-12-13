@@ -362,7 +362,6 @@ export default function AlchemyWorkshopOverlay({
                         recipes={recipes}
                         playerMaterials={playerMaterials}
                         playerRecipes={playerRecipes}
-                        onClose={() => setShowCodexDesktop(false)}
                     />
                 </div>
             )}

@@ -8,7 +8,6 @@ interface CodexPanelProps {
     recipes: Recipe[]
     playerMaterials: Record<string, number>
     playerRecipes: Record<string, PlayerRecipe>
-    onClose?: () => void
 }
 
 type Tab = 'materials' | 'recipes'
@@ -17,8 +16,7 @@ export default function CodexPanel({
     materials,
     recipes,
     playerMaterials,
-    playerRecipes,
-    onClose
+    playerRecipes
 }: CodexPanelProps) {
     const [activeTab, setActiveTab] = useState<Tab>('materials')
     const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null)
