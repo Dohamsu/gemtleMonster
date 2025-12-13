@@ -70,6 +70,7 @@ async function seedAlchemy() {
                     family: material.family,
                     rarity: material.rarity,
                     icon_url: material.icon_url || null,
+                    sell_price: material.sellPrice || 0,
                     source_info: material.source_info || null,
                     is_special: material.is_special
                 }, { onConflict: 'id' })

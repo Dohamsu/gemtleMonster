@@ -589,7 +589,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       // 하지만 canCraft 체크를 통과했으므로 selectedIngredients에 이미 세팅되어 있거나,
       // 혹은 auto-fill이 필요한데, 현재 로직상 startBrewing 호출 전 selectedIngredients가 채워져 있어야 함.
       // store의 selectedIngredients를 사용.
-      rpcPromise = alchemyApi.performAlchemy(userId, recipeId, selectedIngredients, recipe.base_success_rate)
+      // 레시피를 선택해서 조합하는 경우 실패 확률 제거 (100% 성공)
+      rpcPromise = alchemyApi.performAlchemy(userId, recipeId, selectedIngredients, 100)
     }
 
     // 진행 바 시뮬레이션

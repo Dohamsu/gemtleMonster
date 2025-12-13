@@ -2,16 +2,16 @@ import type { Material, Recipe, RecipeCondition } from '../types/alchemy'
 import { MONSTER_DATA } from './monsterData'
 
 export const MATERIALS: Record<string, Material> = {
-    'herb_common': { id: 'herb_common', name: '일반 약초', type: 'PLANT', description: '흔하게 볼 수 있는 약초.', rarity: 'N', iconUrl: '/assets/materials/herb_common.png' },
-    'herb_rare': { id: 'herb_rare', name: '희귀 약초', type: 'PLANT', description: '희귀하게 자라는 약초.', rarity: 'R', iconUrl: '/assets/materials/herb_rare.png' },
-    'herb_special': { id: 'herb_special', name: '특수 약초', type: 'PLANT', description: '특수 효과를 가진 약초.', rarity: 'SR', iconUrl: '/assets/materials/herb_special.png' },
-    'slime_fluid': { id: 'slime_fluid', name: '슬라임 액체', type: 'SLIME', description: '슬라임의 끈적한 액체.', rarity: 'N', iconUrl: '/assets/materials/slime_fluid.png' },
+    'herb_common': { id: 'herb_common', name: '일반 약초', type: 'PLANT', description: '흔하게 볼 수 있는 약초.', rarity: 'N', iconUrl: '/assets/materials/herb_common.png', sellPrice: 10 },
+    'herb_rare': { id: 'herb_rare', name: '희귀 약초', type: 'PLANT', description: '희귀하게 자라는 약초.', rarity: 'R', iconUrl: '/assets/materials/herb_rare.png', sellPrice: 50 },
+    'herb_special': { id: 'herb_special', name: '특수 약초', type: 'PLANT', description: '특수 효과를 가진 약초.', rarity: 'SR', iconUrl: '/assets/materials/herb_special.png', sellPrice: 150 },
+    'slime_fluid': { id: 'slime_fluid', name: '슬라임 액체', type: 'SLIME', description: '슬라임의 끈적한 액체.', rarity: 'N', iconUrl: '/assets/materials/slime_fluid.png', sellPrice: 5 },
     'slime_gel': { id: 'slime_gel', name: '슬라임 젤', type: 'SLIME', description: '슬라임의 끈적한 젤.', rarity: 'N', iconUrl: '/assets/materials/slime_gel.png' },
-    'slime_core': { id: 'slime_core', name: '슬라임 코어', type: 'SLIME', description: '슬라임의 핵.', rarity: 'N', iconUrl: '/assets/materials/slime_core.png' },
+    'slime_core': { id: 'slime_core', name: '슬라임 코어', type: 'SLIME', description: '슬라임의 핵.', rarity: 'N', iconUrl: '/assets/materials/slime_core.png', sellPrice: 20 },
     'beast_fang': { id: 'beast_fang', name: '짐승 송곳니', type: 'BEAST', description: '날카로운 이빨.', rarity: 'N', iconUrl: '/assets/materials/beast_fang.png' },
-    'ore_iron': { id: 'ore_iron', name: '철광석', type: 'MINERAL', description: '단단한 철광석.', rarity: 'N', iconUrl: '/assets/materials/ore_iron.png' },
-    'ore_magic': { id: 'ore_magic', name: '마력 광석', type: 'MINERAL', description: '마력이 깃든 광석.', rarity: 'R', iconUrl: '/assets/materials/ore_magic.png' },
-    'gem_fragment': { id: 'gem_fragment', name: '보석 파편', type: 'MINERAL', description: '반짝이는 보석 조각.', rarity: 'R', iconUrl: '/assets/materials/gem_fragment.png' },
+    'ore_iron': { id: 'ore_iron', name: '철광석', type: 'MINERAL', description: '단단한 철광석.', rarity: 'N', iconUrl: '/assets/materials/ore_iron.png', sellPrice: 15 },
+    'ore_magic': { id: 'ore_magic', name: '마력 광석', type: 'MINERAL', description: '마력이 깃든 광석.', rarity: 'R', iconUrl: '/assets/materials/ore_magic.png', sellPrice: 80 },
+    'gem_fragment': { id: 'gem_fragment', name: '보석 파편', type: 'MINERAL', description: '반짝이는 보석 조각.', rarity: 'R', iconUrl: '/assets/materials/gem_fragment.png', sellPrice: 60 },
     'mushroom_blue': { id: 'mushroom_blue', name: '푸른 버섯', type: 'PLANT', description: '마력이 깃든 신비한 버섯', rarity: 'R', iconUrl: '/assets/materials/mushroom_blue.png' },
     'crack_stone_fragment': { id: 'crack_stone_fragment', name: '균열석 파편', type: 'SPECIAL', description: '차원의 균열에서 나온 돌조각.', rarity: 'SR', iconUrl: '/assets/materials/crack_stone_fragment.png' },
     'ancient_relic_fragment': { id: 'ancient_relic_fragment', name: '고대 유물 파편', type: 'SPECIAL', description: '알 수 없는 고대의 유물 조각.', rarity: 'SR', iconUrl: '/assets/materials/ancient_relic_fragment.png' },
@@ -61,19 +61,19 @@ export const MATERIALS: Record<string, Material> = {
     'wood_branch': { id: 'wood_branch', name: '나뭇가지', type: 'PLANT', description: '마력이 깃든 나뭇가지.', rarity: 'N', iconUrl: '/assets/materials/wood_branch.png' },
 
     // Mining Tiers
-    'stone': { id: 'stone', name: '돌멩이', type: 'MINERAL', description: '흔히 볼 수 있는 돌멩이입니다. 단단해서 던지면 아픕니다.', rarity: 'N', iconUrl: '/assets/materials/stone.png' },
+    'stone': { id: 'stone', name: '돌멩이', type: 'MINERAL', description: '흔히 볼 수 있는 돌멩이입니다. 단단해서 던지면 아픕니다.', rarity: 'N', iconUrl: '/assets/materials/stone.png', sellPrice: 1 },
 
     // Ingots (Refined from Ores)
-    'ingot_copper': { id: 'ingot_copper', name: '구리 주괴', type: 'MINERAL', description: '불순물을 제거하고 제련한 구리 덩어리입니다.', rarity: 'N', iconUrl: '/assets/materials/ingot_copper.png' },
-    'ingot_iron': { id: 'ingot_iron', name: '철 주괴', type: 'MINERAL', description: '단단하게 제련된 철 덩어리입니다.', rarity: 'N', iconUrl: '/assets/materials/ingot_iron.png' },
-    'ingot_silver': { id: 'ingot_silver', name: '은 주괴', type: 'MINERAL', description: '은은하게 빛나는 순은 덩어리입니다.', rarity: 'R', iconUrl: '/assets/materials/ingot_silver.png' },
-    'ingot_gold': { id: 'ingot_gold', name: '금 주괴', type: 'MINERAL', description: '묵직하고 화려한 순금 덩어리입니다.', rarity: 'SR', iconUrl: '/assets/materials/ingot_gold.png' },
-    'ingot_platinum': { id: 'ingot_platinum', name: '백금 주괴', type: 'MINERAL', description: '변하지 않는 빛을 가진 귀한 백금 덩어리입니다.', rarity: 'SSR', iconUrl: '/assets/materials/ingot_platinum.png' },
-    'ore_copper': { id: 'ore_copper', name: '구리 광석', type: 'MINERAL', description: '붉은 빛이 도는 광석.', rarity: 'N', iconUrl: '/assets/materials/ore_copper.png' },
-    'ore_silver': { id: 'ore_silver', name: '은 광석', type: 'MINERAL', description: '반짝이는 은빛 광석.', rarity: 'R', iconUrl: '/assets/materials/ore_silver.png' },
-    'ore_gold': { id: 'ore_gold', name: '금 광석', type: 'MINERAL', description: '눈부신 황금빛 광석.', rarity: 'SR', iconUrl: '/assets/materials/ore_gold.png' },
-    'ore_platinum': { id: 'ore_platinum', name: '백금 광석', type: 'MINERAL', description: '가치 있는 백금 광석.', rarity: 'SSR', iconUrl: '/assets/materials/ore_platinum.png' },
-    'diamond': { id: 'diamond', name: '다이아몬드', type: 'MINERAL', description: '가장 단단하고 빛나는 보석.', rarity: 'SSR', iconUrl: '/assets/materials/diamond.png' },
+    'ingot_copper': { id: 'ingot_copper', name: '구리 주괴', type: 'MINERAL', description: '불순물을 제거하고 제련한 구리 덩어리입니다.', rarity: 'N', iconUrl: '/assets/materials/ingot_copper.png', sellPrice: 120 },
+    'ingot_iron': { id: 'ingot_iron', name: '철 주괴', type: 'MINERAL', description: '단단하게 제련된 철 덩어리입니다.', rarity: 'N', iconUrl: '/assets/materials/ingot_iron.png', sellPrice: 200 },
+    'ingot_silver': { id: 'ingot_silver', name: '은 주괴', type: 'MINERAL', description: '은은하게 빛나는 순은 덩어리입니다.', rarity: 'R', iconUrl: '/assets/materials/ingot_silver.png', sellPrice: 500 },
+    'ingot_gold': { id: 'ingot_gold', name: '금 주괴', type: 'MINERAL', description: '묵직하고 화려한 순금 덩어리입니다.', rarity: 'SR', iconUrl: '/assets/materials/ingot_gold.png', sellPrice: 1500 },
+    'ingot_platinum': { id: 'ingot_platinum', name: '백금 주괴', type: 'MINERAL', description: '변하지 않는 빛을 가진 귀한 백금 덩어리입니다.', rarity: 'SSR', iconUrl: '/assets/materials/ingot_platinum.png', sellPrice: 3000 },
+    'ore_copper': { id: 'ore_copper', name: '구리 광석', type: 'MINERAL', description: '붉은 빛이 도는 광석.', rarity: 'N', iconUrl: '/assets/materials/ore_copper.png', sellPrice: 10 },
+    'ore_silver': { id: 'ore_silver', name: '은 광석', type: 'MINERAL', description: '반짝이는 은빛 광석.', rarity: 'R', iconUrl: '/assets/materials/ore_silver.png', sellPrice: 40 },
+    'ore_gold': { id: 'ore_gold', name: '금 광석', type: 'MINERAL', description: '눈부신 황금빛 광석.', rarity: 'SR', iconUrl: '/assets/materials/ore_gold.png', sellPrice: 120 },
+    'ore_platinum': { id: 'ore_platinum', name: '백금 광석', type: 'MINERAL', description: '가치 있는 백금 광석.', rarity: 'SSR', iconUrl: '/assets/materials/ore_platinum.png', sellPrice: 400 },
+    'diamond': { id: 'diamond', name: '다이아몬드', type: 'MINERAL', description: '가장 단단하고 빛나는 보석.', rarity: 'SSR', iconUrl: '/assets/materials/diamond.png', sellPrice: 5000 },
 
     // Farming Tiers
     'herb_roots': { id: 'herb_roots', name: '약초 뿌리', type: 'PLANT', description: '약효가 뛰어난 약초의 뿌리.', rarity: 'N', iconUrl: '/assets/materials/herb_roots.png' },
@@ -999,6 +999,7 @@ export function getMaterialsForDB() {
             family: family,
             rarity: rarity,
             icon_url: mat.iconUrl || null,
+            sellPrice: mat.sellPrice || 0,
             source_info: null, // sourceInfo는 필요시 추가
             is_special: isSpecial
         }
