@@ -5,7 +5,7 @@ interface AlchemyResultModalProps {
     isOpen: boolean
     success: boolean
     hint?: {
-        type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH' | 'ELEMENT_MATCH'
+        type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH'
         monsterName?: string
         materialName?: string
         recipeId?: string
@@ -13,6 +13,7 @@ interface AlchemyResultModalProps {
         message?: string
     }
     monsterId?: string
+    expGain?: number
     onClose: () => void
 }
 
@@ -21,6 +22,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
     success,
     monsterId,
     hint,
+    expGain,
     onClose
 }) => {
     if (!isOpen) return null
@@ -55,28 +57,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                         </p>
                     </>
                 )
-            case 'ELEMENT_MATCH': {
-                const elementColor = {
-                    'fire': '#ef4444',
-                    'water': '#3b82f6',
-                    'earth': '#22c55e',
-                    'wind': '#a855f7',
-                    'light': '#eab308',
-                    'dark': '#64748b'
-                }[hint.element || ''] || '#cbd5e1'
 
-                return (
-                    <>
-                        <h4 style={{ margin: '0 0 8px 0', color: elementColor, fontWeight: 'bold', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                            <span>🔮</span> 속성 공명
-                        </h4>
-                        <p style={{ margin: 0, fontSize: '14px', color: '#e2e8f0', lineHeight: '1.5' }}>
-                            조합 실패 속에서...<br />
-                            강한 <span style={{ color: elementColor, fontWeight: 'bold' }}>{hint.message}</span> 기운이 느껴집니다.
-                        </p>
-                    </>
-                )
-            }
             case 'INGREDIENT_REVEAL':
             default:
                 return (
@@ -85,8 +66,8 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                             <span>💡</span> 힌트 발견!
                         </h4>
                         <p style={{ margin: 0, fontSize: '14px', color: '#e2e8f0', lineHeight: '1.5' }}>
-                            <span style={{ color: '#facc15', fontWeight: 'bold' }}>&apos;{hint.monsterName}&apos;</span>의 조합법 힌트를 얻었다!<br />
-                            <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>{hint.materialName}</span>이(가) 확정적으로 들어가는 것 같다!
+                            <span style={{ color: '#facc15', fontWeight: 'bold' }}>&apos;{hint.monsterName || '???'}&apos;</span>의 조합법 힌트를 얻었다!<br />
+                            <span style={{ color: '#3b82f6', fontWeight: 'bold' }}>{hint.materialName || '???'}</span>이(가) 확정적으로 들어가는 것 같다!
                         </p>
                     </>
                 )
@@ -258,7 +239,9 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                         }}>
                             연금술이 실패했습니다.<br />
                             재료가 소모되었습니다.<br />
-                            <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>실패했지만 경험치는 획득했습니다!</span>
+                            <span style={{ color: '#22c55e', fontWeight: 'bold' }}>
+                                실패했지만 경험치는 획득했습니다! {expGain ? `(+${expGain} XP)` : ''}
+                            </span>
                         </p>
 
                         {/* Hint Message */}

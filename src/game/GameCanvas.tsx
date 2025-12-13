@@ -66,13 +66,15 @@ export default function GameCanvas() {
         success: boolean;
         monsterId?: string;
         hint?: {
-            type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH' | 'ELEMENT_MATCH'
+            type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH'
             monsterName?: string
             materialName?: string
             recipeId?: string
             element?: string
             message?: string
+            expGain?: number
         }
+        expGain?: number
     }>({
         success: false
     })
@@ -144,7 +146,8 @@ export default function GameCanvas() {
             setLastBrewResult({
                 success: brewResult.type === 'success',
                 monsterId: brewResult.monsterId,
-                hint: brewResult.hint
+                hint: brewResult.hint,
+                expGain: brewResult.expGain
             })
             setShowResultModal(true)
         }
@@ -340,6 +343,7 @@ export default function GameCanvas() {
                 success={lastBrewResult.success}
                 monsterId={lastBrewResult.monsterId}
                 hint={lastBrewResult.hint}
+                expGain={lastBrewResult.expGain}
                 onClose={() => setShowResultModal(false)}
             />
 

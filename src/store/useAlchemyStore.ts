@@ -14,6 +14,7 @@ import { isRecipeValid, findMatchingRecipe } from '../lib/alchemyLogic'
 import { ALCHEMY } from '../constants/game'
 import { useGameStore } from './useGameStore'
 import { supabase } from '../lib/supabase'
+import { getMonsterName } from '../data/monsterData'
 
 
 interface AlchemyState {
@@ -44,13 +45,14 @@ interface AlchemyState {
     count?: number
     lostMaterials?: Record<string, number>
     hint?: {
-      type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH' | 'ELEMENT_MATCH'
+      type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH'
       monsterName?: string
       materialName?: string
       recipeId?: string
       element?: string
       message?: string
     }
+    expGain?: number
   }
 
   // 로딩 상태
@@ -495,7 +497,6 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // 진행 바 시뮬레이션
     const interval = ALCHEMY.BREW_UPDATE_INTERVAL_MS
-    const step = interval / duration
 
     let timer: NodeJS.Timeout | null = null
     timer = setInterval(async () => {
@@ -505,9 +506,13 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         return
       }
 
+      // Time-based progress calculation
+      const elapsed = Date.now() - (state.brewStartTime || Date.now())
+      const progressFromTime = Math.min(elapsed / duration, 1)
+
       // API 응답을 기다리기 위해 95%까지만 진행
       const targetProgress = rpcPromise ? 0.95 : 1
-      const newProgress = Math.min(targetProgress, state.brewProgress + step)
+      const newProgress = Math.min(targetProgress, progressFromTime)
       set({ brewProgress: newProgress })
 
       // 완료 조건: 95% 도달 + API 응답 완료 (혹은 userId 없어서 로컬 테스트인 경우)
@@ -529,7 +534,6 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
           }
         } else {
           // userId 없는 경우 (테스트)
-          // Cannot support server logic without user, just fail or mock
           if (timer) clearInterval(timer)
           set({ isBrewing: false })
         }
@@ -591,7 +595,6 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     // 진행 바 시뮬레이션
     const duration = recipe.craft_time_sec * 1000
     const interval = ALCHEMY.BREW_UPDATE_INTERVAL_MS
-    const step = interval / duration
 
     let timer: NodeJS.Timeout | null = null
     timer = setInterval(async () => {
@@ -601,8 +604,12 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         return
       }
 
+      // Time-based progress calculation
+      const elapsed = Date.now() - (state.brewStartTime || Date.now())
+      const progressFromTime = Math.min(elapsed / duration, 1)
+
       const targetProgress = rpcPromise ? 0.95 : 1
-      const newProgress = Math.min(targetProgress, state.brewProgress + step)
+      const newProgress = Math.min(targetProgress, progressFromTime)
       set({ brewProgress: newProgress })
 
       if (newProgress >= targetProgress) {
@@ -639,7 +646,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   updateBrewProgress: (progress) => set({ brewProgress: progress }),
 
   completeBrewing: async (result, matchedRecipe) => {
-    const { userId, selectedRecipeId, allRecipes, selectedIngredients, playerMaterials, playerAlchemy, allMaterials } = get()
+    const { userId, selectedRecipeId, allRecipes, selectedIngredients, playerMaterials, playerAlchemy, allMaterials, playerRecipes } = get()
     const gameStore = useGameStore.getState()
 
     if (!userId) return
@@ -664,7 +671,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // hint 객체 생성
     let hint: {
-      type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH' | 'ELEMENT_MATCH',
+      type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH',
       monsterName?: string,
       materialName?: string,
       recipeId?: string,
@@ -679,6 +686,25 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     } else {
       console.log('Alchemy Failed Debug:', result) // DEBUG
       if (result.error) console.error('Alchemy Error:', result.error)
+
+      // Fallback XP Logic
+      if (!result.exp_gain || result.exp_gain === 0) {
+        const fallbackExp = recipe ? Math.max(Math.floor(recipe.exp_gain * 0.1), 1) : 5
+        console.log(`⚠️ 서버 XP 0 감지. 클라이언트 보정: +${fallbackExp} XP`)
+
+        // DB 동기화 (비동기)
+        alchemyApi.addAlchemyExperience(userId, fallbackExp).catch(console.error)
+
+        // 결과 객체 보정
+        result.exp_gain = fallbackExp
+
+        // 로컬 상태 보정
+        if (playerAlchemy) {
+          result.new_total_exp = playerAlchemy.experience + fallbackExp
+          // 레벨 재계산 (간단식)
+          result.new_level = Math.floor(result.new_total_exp / 100) + 1
+        }
+      }
 
       let failCount = result.fail_count
 
@@ -726,14 +752,37 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         const shuffledRecipes = [...hintCandidates].sort(() => 0.5 - Math.random())
 
         for (const undiscoveredRecipe of shuffledRecipes) {
-          const matchingIngredient = undiscoveredRecipe.ingredients?.find(ing => usedMaterialIds.includes(ing.material_id))
+          const matchingIngredient = undiscoveredRecipe.ingredients?.find(ing => {
+            // 1. 이번 조합에 사용된 재료여야 함
+            if (!usedMaterialIds.includes(ing.material_id)) return false
+
+            // 2. 이미 해당 레시피의 재료로 밝혀진 경우 제외 (중복 힌트 방지)
+            const knownIngredients = playerRecipes[undiscoveredRecipe.id]?.discovered_ingredients || []
+            if (knownIngredients.includes(ing.material_id)) return false
+
+            return true
+          })
 
           if (matchingIngredient) {
-            const materialName = allMaterials.find(m => m.id === matchingIngredient.material_id)?.name || matchingIngredient.material_id
+            const materialDef = allMaterials.find(m => m.id === matchingIngredient.material_id)
+            const materialName = materialDef?.name || matchingIngredient.material_id
+
+            // 몬스터 이름 조회 (레시피 이름 대신 실제 몬스터 이름 사용)
+            let baseName = getMonsterName(undiscoveredRecipe.result_monster_id) || undiscoveredRecipe.name
+
+            // Fallback cleanup if name still contains "recipe"
+            baseName = baseName.replace(/ 레시피| 조합법/g, '').trim()
+            if (!baseName) baseName = '알 수 없는 몬스터'
+
+            console.log('💡 힌트 생성:', {
+              recipe: undiscoveredRecipe.name,
+              target: baseName,
+              material: materialName
+            })
 
             hint = {
               type: 'INGREDIENT_REVEAL',
-              monsterName: undiscoveredRecipe.name.replace(' 레시피', '').replace(' 조합법', ''),
+              monsterName: baseName,
               materialName: materialName,
               recipeId: undiscoveredRecipe.id
             }
@@ -745,36 +794,13 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         }
       }
 
-      // 4. Element Resonance
-      if (!hint) {
-        const elementMap: Record<string, string> = {
-          'shard_fire': '불', 'fire_core': '불', 'phoenix_feather': '불',
-          'shard_water': '물', 'ice_shard': '물', 'frozen_dew': '물',
-          'shard_earth': '대지', 'ore_iron': '대지', 'golem_heart': '대지',
-          'shard_wind': '바람', 'feather': '바람',
-          'shard_light': '빛', 'essence_light': '빛',
-          'shard_dark': '어둠', 'dark_crystal': '어둠'
-        }
 
-        for (const matId of usedMaterialIds) {
-          const detectedElement = Object.keys(elementMap).find(key => matId.includes(key) || elementMap[matId])
-          if (detectedElement) {
-            const msg = elementMap[detectedElement] || (elementMap[matId] || '알 수 없는')
-            hint = {
-              type: 'ELEMENT_MATCH',
-              message: msg,
-              element: Object.entries(elementMap).find(([, v]) => v === msg)?.[0].split('_')[1] || 'earth'
-            }
-            break
-          }
-        }
-      }
     }
 
     // 결과 설정
     const brewResult = result.success
-      ? { type: 'success' as const, monsterId: result.result_monster_id || (recipe?.result_monster_id), count: recipe?.result_count || 1 }
-      : { type: 'fail' as const, lostMaterials: materialsUsed, hint }
+      ? { type: 'success' as const, monsterId: result.result_monster_id || (recipe?.result_monster_id), count: recipe?.result_count || 1, expGain: result.exp_gain }
+      : { type: 'fail' as const, lostMaterials: materialsUsed, hint, expGain: result.exp_gain }
 
     // 3. 로컬 상태 업데이트
     set({

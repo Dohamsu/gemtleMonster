@@ -184,8 +184,17 @@ export function findMatchingRecipes(
         return hasAllIngredients
     })
 
-    // 2. Filter by conditions
-    return candidates.filter(recipe => isRecipeValid(recipe, context))
+    // 2. Filter by conditions and level
+    return candidates.filter(recipe => {
+        // Level check
+        if (context && context.player?.alchemyLevel !== undefined) {
+            if (context.player.alchemyLevel < recipe.required_alchemy_level) {
+                return false
+            }
+        }
+
+        return isRecipeValid(recipe, context)
+    })
 }
 
 /**

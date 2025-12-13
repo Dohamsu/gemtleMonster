@@ -74,7 +74,8 @@ export const SLIME_DUNGEON: Dungeon = {
             exp: 100,
             drops: [
                 { materialId: 'slime_core', chance: 100, minQuantity: 1, maxQuantity: 2 },
-                { materialId: 'gem_fragment', chance: 50, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'gem_fragment', chance: 50, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'crown_fragment', chance: 10, minQuantity: 1, maxQuantity: 1 } // Rare drop
             ]
         }
     ]
@@ -113,7 +114,8 @@ export const LAKE_DUNGEON: Dungeon = {
                 { materialId: 'herb_common', chance: 60, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'shard_water', chance: 30, minQuantity: 1, maxQuantity: 1 },
                 { materialId: 'crystal_mana', chance: 10, minQuantity: 1, maxQuantity: 1 },
-                { materialId: 'spirit_dust', chance: 35, minQuantity: 1, maxQuantity: 2 }
+                { materialId: 'spirit_dust', chance: 35, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'herb_special', chance: 15, minQuantity: 1, maxQuantity: 1 }
             ]
         },
         {
@@ -151,7 +153,8 @@ export const CRYSTAL_DUNGEON: Dungeon = {
             exp: 30,
             drops: [
                 { materialId: 'ore_iron', chance: 60, minQuantity: 1, maxQuantity: 2 },
-                { materialId: 'crystal_mana', chance: 30, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'crystal_mana', chance: 30, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'ore_magic', chance: 20, minQuantity: 1, maxQuantity: 1 }
             ]
         },
         {
@@ -177,7 +180,8 @@ export const CRYSTAL_DUNGEON: Dungeon = {
             exp: 120,
             drops: [
                 { materialId: 'crystal_mana', chance: 100, minQuantity: 2, maxQuantity: 4 },
-                { materialId: 'gem_fragment', chance: 60, minQuantity: 1, maxQuantity: 2 }
+                { materialId: 'gem_fragment', chance: 60, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'ore_magic', chance: 50, minQuantity: 1, maxQuantity: 2 }
             ]
         }
     ]
@@ -242,7 +246,8 @@ export const CHRISTMAS_DUNGEON: Dungeon = {
             drops: [
                 { materialId: 'frozen_dew', chance: 80, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'frost_essence', chance: 50, minQuantity: 1, maxQuantity: 1 },
-                { materialId: 'herb_rare', chance: 40, minQuantity: 1, maxQuantity: 2 }
+                { materialId: 'herb_rare', chance: 40, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'wood_branch', chance: 60, minQuantity: 2, maxQuantity: 4 }
             ]
         },
         {
@@ -295,7 +300,8 @@ export const VOLCANO_DUNGEON: Dungeon = {
             drops: [
                 { materialId: 'ore_iron', chance: 100, minQuantity: 3, maxQuantity: 6 },
                 { materialId: 'gem_fragment', chance: 50, minQuantity: 1, maxQuantity: 2 },
-                { materialId: 'crystal_mana', chance: 30, minQuantity: 1, maxQuantity: 2 }
+                { materialId: 'crystal_mana', chance: 30, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'fire_core', chance: 20, minQuantity: 1, maxQuantity: 1 } // Core drop
             ]
         }
     ]
@@ -332,7 +338,8 @@ export const SKY_DUNGEON: Dungeon = {
             drops: [
                 { materialId: 'beast_fang', chance: 80, minQuantity: 2, maxQuantity: 4 },
                 { materialId: 'gem_fragment', chance: 40, minQuantity: 2, maxQuantity: 3 },
-                { materialId: 'crystal_mana', chance: 20, minQuantity: 1, maxQuantity: 2 }
+                { materialId: 'crystal_mana', chance: 20, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'feather_common', chance: 50, minQuantity: 3, maxQuantity: 5 }
             ]
         }
     ]
@@ -355,7 +362,9 @@ export const BEAST_DUNGEON: Dungeon = {
             exp: 60,
             drops: [
                 { materialId: 'beast_fang', chance: 70, minQuantity: 1, maxQuantity: 2 },
-                { materialId: 'claw_sharp', chance: 30, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'claw_sharp', chance: 30, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'shard_dark', chance: 25, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'bone_fragment', chance: 40, minQuantity: 1, maxQuantity: 2 }
             ]
         },
         {
@@ -381,7 +390,8 @@ export const BEAST_DUNGEON: Dungeon = {
             drops: [
                 { materialId: 'leather_beast', chance: 100, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'beast_fang', chance: 80, minQuantity: 2, maxQuantity: 4 },
-                { materialId: 'claw_sharp', chance: 50, minQuantity: 1, maxQuantity: 2 }
+                { materialId: 'claw_sharp', chance: 50, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'hide_tough', chance: 30, minQuantity: 1, maxQuantity: 1 }
             ]
         }
     ]

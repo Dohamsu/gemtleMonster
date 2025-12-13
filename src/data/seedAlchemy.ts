@@ -168,21 +168,23 @@ async function seedAlchemy() {
             await supabase.from('recipe_condition').delete().eq('recipe_id', recipe.id)
 
             if (recipe.conditions && recipe.conditions.length > 0) {
-                const conditions = recipe.conditions.map((cond) => {
-                    const mapped: Record<string, unknown> = {
-                        recipe_id: recipe.id,
-                        condition_type: cond.conditionType
-                    }
+                const conditions = recipe.conditions
+                    .filter(c => ['time_range', 'language'].includes(c.conditionType))
+                    .map((cond) => {
+                        const mapped: Record<string, unknown> = {
+                            recipe_id: recipe.id,
+                            condition_type: cond.conditionType
+                        }
 
-                    if (cond.conditionType === 'time_range') {
-                        mapped.time_start = cond.timeStart
-                        mapped.time_end = cond.timeEnd
-                    } else if (cond.conditionType === 'language') {
-                        mapped.language_code = cond.languageCode
-                    }
+                        if (cond.conditionType === 'time_range') {
+                            mapped.time_start = cond.timeStart
+                            mapped.time_end = cond.timeEnd
+                        } else if (cond.conditionType === 'language') {
+                            mapped.language_code = cond.languageCode
+                        }
 
-                    return mapped
-                })
+                        return mapped
+                    })
 
                 const { error: conditionError } = await supabase
                     .from('recipe_condition')

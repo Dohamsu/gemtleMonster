@@ -134,8 +134,10 @@ export default function RecipeList({
                     const isDiscovered = !recipe.is_hidden || (playerRecipe && playerRecipe.is_discovered)
                     const discoveredIngredients = playerRecipe?.discovered_ingredients || []
 
-                    // 이름 표시
-                    const displayName = isDiscovered ? `${recipe.name} (${recipe.craft_time_sec}s)` : '???'
+                    // 이름 표시: 발견했거나, 힌트로 재료가 하나라도 밝혀졌으면 이름 공개
+                    const displayName = (isDiscovered || discoveredIngredients.length > 0)
+                        ? `${recipe.name} (${recipe.craft_time_sec}s)`
+                        : '???'
 
                     // 히든 레시피 선택 조건: 이미 발견했거나, 모든 재료가 공개되었을 때
                     const areAllIngredientsRevealed = recipe.ingredients?.every(

@@ -2,8 +2,24 @@ import { useState, useEffect } from 'react'
 import type { AlchemyContext } from '../types/alchemy'
 import { isMobileView } from '../utils/responsiveUtils'
 
+import { useAlchemyStore } from '../store/useAlchemyStore'
+
 export function useAlchemyContext(): AlchemyContext {
+    const { playerAlchemy } = useAlchemyStore()
     const [context, setContext] = useState<AlchemyContext>(getInitialContext())
+
+    // Update player context when store data changes
+    useEffect(() => {
+        if (playerAlchemy) {
+            setContext(prev => ({
+                ...prev,
+                player: {
+                    ...prev.player,
+                    alchemyLevel: playerAlchemy.level
+                }
+            }))
+        }
+    }, [playerAlchemy])
 
     useEffect(() => {
         // Update time every minute
