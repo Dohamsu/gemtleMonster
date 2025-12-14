@@ -1,7 +1,9 @@
 /* eslint-disable no-console */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { isMobileView } from '../utils/responsiveUtils'
 import { getLocalizedError } from '../utils/errorUtils'
+import LottieLoader from './common/LottieLoader'
+import loadingAnimation from '../assets/lottie/loading.json'
 
 interface LoginScreenProps {
     onSignIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
@@ -16,7 +18,16 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
     const [confirmPassword, setConfirmPassword] = useState('')
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
+    const [rememberEmail, setRememberEmail] = useState(false)
     const isMobile = isMobileView()
+
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('savedEmail')
+        if (savedEmail) {
+            setEmail(savedEmail)
+            setRememberEmail(true)
+        }
+    }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -36,6 +47,12 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                 setError('비밀번호는 6자 이상이어야 합니다.')
                 return
             }
+        }
+
+        if (mode === 'login' && rememberEmail) {
+            localStorage.setItem('savedEmail', email)
+        } else {
+            localStorage.removeItem('savedEmail')
         }
 
         setLoading(true)
@@ -248,6 +265,34 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                         />
                     </div>
 
+                    {mode === 'login' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '4px' }}>
+                            <input
+                                type="checkbox"
+                                id="rememberEmail"
+                                checked={rememberEmail}
+                                onChange={(e) => setRememberEmail(e.target.checked)}
+                                style={{
+                                    width: '16px',
+                                    height: '16px',
+                                    accentColor: '#6366f1',
+                                    cursor: 'pointer'
+                                }}
+                            />
+                            <label
+                                htmlFor="rememberEmail"
+                                style={{
+                                    fontSize: '13px',
+                                    color: '#cbd5e1',
+                                    cursor: 'pointer',
+                                    userSelect: 'none'
+                                }}
+                            >
+                                아이디 저장
+                            </label>
+                        </div>
+                    )}
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: 500, marginLeft: '4px' }}>
                             비밀번호
@@ -387,6 +432,27 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                 >
                     게스트로 빠르게 시작
                 </button>
+
+                {loading && (
+                    <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(15, 23, 42, 0.7)',
+                        backdropFilter: 'blur(4px)',
+                        borderRadius: '24px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 20
+                    }}>
+                        <LottieLoader animationData={loadingAnimation} width={150} height={150} />
+
+                    </div>
+                )}
             </div>
             <style>{`
                 @keyframes float {

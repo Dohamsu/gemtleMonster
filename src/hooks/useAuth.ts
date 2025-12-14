@@ -10,6 +10,8 @@ interface AuthState {
     isGuest: boolean
 }
 
+const MIN_LOADING_TIME = 2000
+
 export function useAuth() {
     const [state, setState] = useState<AuthState>({
         user: null,
@@ -31,6 +33,7 @@ export function useAuth() {
 
     // 이메일/비밀번호로 로그인
     const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+        const startTime = Date.now()
         setState(prev => ({ ...prev, loading: true, error: null }))
 
         try {
@@ -42,6 +45,11 @@ export function useAuth() {
             if (error) {
                 setState(prev => ({ ...prev, loading: false, error: error.message }))
                 return { success: false, error: error.message }
+            }
+
+            const elapsed = Date.now() - startTime
+            if (elapsed < MIN_LOADING_TIME) {
+                await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsed))
             }
 
             setState({
@@ -60,6 +68,7 @@ export function useAuth() {
 
     // 이메일/비밀번호로 회원가입
     const signUp = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+        const startTime = Date.now()
         setState(prev => ({ ...prev, loading: true, error: null }))
 
         try {
@@ -79,6 +88,11 @@ export function useAuth() {
             // Supabase에서 이메일 인증이 필요한 경우 user가 있지만 확인되지 않음
             // 여기서는 이메일 인증을 비활성화했으므로 바로 로그인됨
             if (data.user) {
+                const elapsed = Date.now() - startTime
+                if (elapsed < MIN_LOADING_TIME) {
+                    await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsed))
+                }
+
                 setState({
                     user: data.user,
                     loading: false,
@@ -99,6 +113,7 @@ export function useAuth() {
 
     // 게스트로 로그인 (Anonymous Auth 사용)
     const signInAsGuest = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+        const startTime = Date.now()
         setState(prev => ({ ...prev, loading: true, error: null }))
 
         try {
@@ -109,6 +124,11 @@ export function useAuth() {
                 console.error('Anonymous sign-in error:', error)
                 setState(prev => ({ ...prev, loading: false, error: error.message }))
                 return { success: false, error: error.message }
+            }
+
+            const elapsed = Date.now() - startTime
+            if (elapsed < MIN_LOADING_TIME) {
+                await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsed))
             }
 
             setState({

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import type { Recipe, Material, PlayerAlchemy, PlayerRecipe } from '../../lib/alchemyApi'
 import type { AlchemyContext } from '../../types/alchemy'
 import { isMobileView } from '../../utils/responsiveUtils'
@@ -18,7 +18,6 @@ interface AlchemyWorkshopOverlayProps {
     selectedRecipeId: string | null
     selectedIngredients: Record<string, number>
     isBrewing: boolean
-    brewProgress: number
     playerAlchemy: PlayerAlchemy | null
     onSelectRecipe: (recipeId: string | null) => void
     onAddIngredient: (materialId: string, quantity: number) => void
@@ -30,7 +29,7 @@ interface AlchemyWorkshopOverlayProps {
 }
 
 
-export default function AlchemyWorkshopOverlay({
+function AlchemyWorkshopOverlay({
     recipes,
     materials,
     playerMaterials,
@@ -38,7 +37,6 @@ export default function AlchemyWorkshopOverlay({
     selectedRecipeId,
     selectedIngredients,
     isBrewing,
-    brewProgress,
     playerAlchemy,
     onSelectRecipe,
     onAddIngredient,
@@ -248,7 +246,6 @@ export default function AlchemyWorkshopOverlay({
                             selectedRecipeId={selectedRecipeId}
                             selectedIngredients={selectedIngredients}
                             isBrewing={isBrewing}
-                            brewProgress={brewProgress}
                             allRecipes={recipes}
                             playerAlchemy={playerAlchemy}
                             onStartBrewing={onStartBrewing}
@@ -418,7 +415,6 @@ export default function AlchemyWorkshopOverlay({
                     selectedRecipeId={selectedRecipeId}
                     selectedIngredients={selectedIngredients}
                     isBrewing={isBrewing}
-                    brewProgress={brewProgress}
                     allRecipes={recipes}
                     playerAlchemy={playerAlchemy}
                     onStartBrewing={onStartBrewing}
@@ -428,3 +424,5 @@ export default function AlchemyWorkshopOverlay({
         </div>
     )
 }
+
+export default memo(AlchemyWorkshopOverlay)

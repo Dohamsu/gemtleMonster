@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import type { Recipe, PlayerAlchemy } from '../../lib/alchemyApi'
 import { isMobileView } from '../../utils/responsiveUtils'
+import { useAlchemyStore } from '../../store/useAlchemyStore'
 
 interface AlchemyBrewButtonProps {
     selectedRecipeId: string | null
     selectedIngredients: Record<string, number>
     isBrewing: boolean
-    brewProgress: number
     allRecipes: Recipe[]
     playerAlchemy: PlayerAlchemy | null
     onStartBrewing: (recipeId: string) => Promise<void>
@@ -17,12 +17,13 @@ export default function AlchemyBrewButton({
     selectedRecipeId,
     selectedIngredients,
     isBrewing,
-    brewProgress,
     allRecipes,
     playerAlchemy,
     onStartBrewing,
     onStartFreeFormBrewing
 }: AlchemyBrewButtonProps) {
+    const brewProgress = useAlchemyStore((state) => state.brewProgress)
+    const brewDuration = useAlchemyStore((state) => state.brewDuration)
     const [isMobile, setIsMobile] = useState(isMobileView())
 
     useEffect(() => {
@@ -93,17 +94,19 @@ export default function AlchemyBrewButton({
         justifyContent: 'center'
     }
 
+    // CSS 기반 프로그레스 바 스타일
+    // brewProgress가 0일 때는 transition 없이, 1로 변경될 때 transition 적용 (100%까지 진행)
     const progressBarStyle: React.CSSProperties = {
         position: 'absolute',
         left: '5px',
         top: '5px',
         height: 'calc(100% - 10px)',
-        width: `calc((100% - 10px) * ${brewProgress})`,
-        background: '#facc15',
+        width: brewProgress === 0 ? '0%' : `calc((100% - 10px) * ${brewProgress})`,
+        background: 'linear-gradient(90deg, #facc15 0%, #fbbf24 50%, #f59e0b 100%)',
         borderRadius: '6px',
-        transition: 'width 0.1s linear'
+        // CSS transition으로 부드러운 애니메이션 구현 (전체 duration 사용)
+        transition: brewProgress === 0 ? 'none' : `width ${brewDuration}ms linear`
     }
-
     return (
         <button
             onClick={handleClick}
@@ -127,7 +130,7 @@ export default function AlchemyBrewButton({
                 color: isBrewing ? '#ffffff' : (isEnabled ? '#f0d090' : '#666'),
                 textShadow: isBrewing ? '0 1px 3px rgba(0,0,0,0.8)' : 'none'
             }}>
-                {isBrewing ? `⚗️ 제조 중... ${Math.floor(brewProgress * 100)}%` : btnText}
+                {isBrewing ? `⚗️ 제조 중...` : btnText}
             </span>
         </button>
     )

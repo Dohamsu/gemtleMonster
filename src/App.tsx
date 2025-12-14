@@ -10,6 +10,8 @@ import { useGameStore } from './store/useGameStore'
 import { useResources } from './hooks/useResources'
 import { useFacilities } from './hooks/useFacilities'
 import InstallPrompt from './ui/common/InstallPrompt'
+import LottieLoader from './ui/common/LottieLoader'
+import loadingAnimation from './assets/lottie/loading.json'
 
 function App() {
     const { user, loading: authLoading, signIn, signUp, signInAsGuest } = useAuth()
@@ -118,11 +120,9 @@ function App() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-                color: 'white',
-                fontSize: '18px',
                 zIndex: 9999
             }}>
-                🧪 로딩 중...
+                <LottieLoader animationData={loadingAnimation} width={150} height={150} />
             </div>
         )
     }

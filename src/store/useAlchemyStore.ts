@@ -11,7 +11,6 @@ import type {
 import * as alchemyApi from '../lib/alchemyApi'
 import type { AlchemyResult } from '../lib/alchemyApi'
 import { isRecipeValid, findMatchingRecipe } from '../lib/alchemyLogic'
-import { ALCHEMY } from '../constants/game'
 import { useGameStore } from './useGameStore'
 import { supabase } from '../lib/supabase'
 import { getMonsterName } from '../data/monsterData'
@@ -39,6 +38,7 @@ interface AlchemyState {
   isBrewing: boolean
   brewStartTime: number | null
   brewProgress: number // 0~1
+  brewDuration: number // 조합 시간 (밀리초)
   brewResult: {
     type: 'idle' | 'success' | 'fail'
     monsterId?: string
@@ -133,6 +133,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   isBrewing: false,
   brewStartTime: null,
   brewProgress: 0,
+  brewDuration: 3000,
   brewResult: { type: 'idle' },
   isLoading: false,
   error: null,
@@ -477,71 +478,54 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       소요시간: duration / 1000 + '초'
     })
 
+    // 조합에 필요한 정보를 미리 캡처 (프로그레스 완료 후 API 호출 시 사용)
     const { userId } = get()
-    let rpcPromise: Promise<AlchemyResult> | null = null
-
-    // 1. API 호출 시작
-    if (userId) {
-      rpcPromise = alchemyApi.performAlchemy(
-        userId,
-        matchedRecipe ? matchedRecipe.id : null,
-        selectedIngredients,
-        matchedRecipe ? matchedRecipe.base_success_rate : 0
-      )
-    }
+    const capturedIngredients = { ...selectedIngredients }
+    const capturedRecipeId = matchedRecipe ? matchedRecipe.id : null
+    const capturedSuccessRate = matchedRecipe ? matchedRecipe.base_success_rate : 0
 
     set({
       isBrewing: true,
       brewStartTime: Date.now(),
       brewProgress: 0,
+      brewDuration: duration,
       brewResult: { type: 'idle' },
       selectedRecipeId: matchedRecipe ? matchedRecipe.id : null
     })
 
-    // 진행 바 시뮬레이션
-    const interval = ALCHEMY.BREW_UPDATE_INTERVAL_MS
+    // CSS 애니메이션을 위해 다음 프레임에서 프로그레스를 1로 설정 (100%까지 진행)
+    requestAnimationFrame(() => {
+      set({ brewProgress: 1 })
+    })
 
-    let timer: NodeJS.Timeout | null = null
-    timer = setInterval(async () => {
+    // 프로그레스 바가 완료된 후 (duration 시간 후) API 호출
+    setTimeout(async () => {
       const state = get()
-      if (!state.isBrewing) {
-        if (timer) clearInterval(timer)
-        return
-      }
+      if (!state.isBrewing) return // 이미 취소된 경우
 
-      // Time-based progress calculation
-      const elapsed = Date.now() - (state.brewStartTime || Date.now())
-      const progressFromTime = Math.min(elapsed / duration, 1)
-
-      // API 응답을 기다리기 위해 95%까지만 진행
-      const targetProgress = rpcPromise ? 0.95 : 1
-      const newProgress = Math.min(targetProgress, progressFromTime)
-      set({ brewProgress: newProgress })
-
-      // 완료 조건: 95% 도달 + API 응답 완료 (혹은 userId 없어서 로컬 테스트인 경우)
-      if (newProgress >= targetProgress) {
-        if (rpcPromise) {
-          try {
-            const result = await rpcPromise
-            if (timer) clearInterval(timer)
-            get().updateBrewProgress(1)
-            await get().completeBrewing(result, matchedRecipe)
-          } catch (e: any) {
-            console.error('Alchemy RPC failed', e)
-            if (timer) clearInterval(timer)
-            const errorMessage = e.message || 'Unknown network error'
-            set({
-              isBrewing: false,
-              error: `서버 통신 오류: ${errorMessage}. 잠시 후 다시 시도해주세요.`
-            })
-          }
-        } else {
-          // userId 없는 경우 (테스트)
-          if (timer) clearInterval(timer)
-          set({ isBrewing: false })
+      if (userId) {
+        try {
+          console.log('🌐 [startFreeFormBrewing] 프로그레스 완료, API 호출 시작...')
+          const result = await alchemyApi.performAlchemy(
+            userId,
+            capturedRecipeId,
+            capturedIngredients,
+            capturedSuccessRate
+          )
+          await get().completeBrewing(result, matchedRecipe)
+        } catch (e: any) {
+          console.error('Alchemy RPC failed', e)
+          const errorMessage = e.message || 'Unknown network error'
+          set({
+            isBrewing: false,
+            error: `서버 통신 오류: ${errorMessage}. 잠시 후 다시 시도해주세요.`
+          })
         }
+      } else {
+        // userId 없는 경우 (테스트)
+        set({ isBrewing: false })
       }
-    }, interval)
+    }, duration)
   },
 
   startBrewing: async (recipeId) => {
@@ -576,75 +560,50 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       }
     }
 
+    const duration = recipe.craft_time_sec * 1000
+
+    // 조합에 필요한 정보를 미리 캡처 (프로그레스 완료 후 API 호출 시 사용)
+    const { userId, selectedIngredients } = get()
+    const capturedIngredients = { ...selectedIngredients }
+
     set({
       isBrewing: true,
       brewStartTime: Date.now(),
       brewProgress: 0,
+      brewDuration: duration,
       brewResult: { type: 'idle' },
       error: null // Clear previous errors
     })
 
-    const { userId, selectedIngredients } = get()
-    let rpcPromise: Promise<AlchemyResult> | null = null
+    // CSS 애니메이션을 위해 다음 프레임에서 프로그레스를 1로 설정 (100%까지 진행)
+    requestAnimationFrame(() => {
+      set({ brewProgress: 1 })
+    })
 
-    if (userId) {
-      // startBrewing에서는 selectedIngredients가 비어있을 수 있음(레시피 클릭해서 시작하는 경우)
-      // 하지만 canCraft 체크를 통과했으므로 selectedIngredients에 이미 세팅되어 있거나,
-      // 혹은 auto-fill이 필요한데, 현재 로직상 startBrewing 호출 전 selectedIngredients가 채워져 있어야 함.
-      // store의 selectedIngredients를 사용.
-      // 레시피를 선택해서 조합하는 경우 실패 확률 제거 (100% 성공)
-      rpcPromise = alchemyApi.performAlchemy(userId, recipeId, selectedIngredients, 100)
-    }
-
-    // 진행 바 시뮬레이션
-    const duration = recipe.craft_time_sec * 1000
-    const interval = ALCHEMY.BREW_UPDATE_INTERVAL_MS
-
-    let timer: NodeJS.Timeout | null = null
-    timer = setInterval(async () => {
+    // 프로그레스 바가 완료된 후 (duration 시간 후) API 호출
+    setTimeout(async () => {
       const state = get()
-      if (!state.isBrewing) {
-        if (timer) clearInterval(timer)
-        return
-      }
+      if (!state.isBrewing) return // 이미 취소된 경우
 
-      // Time-based progress calculation
-      const elapsed = Date.now() - (state.brewStartTime || Date.now())
-      const progressFromTime = Math.min(elapsed / duration, 1)
-
-      const targetProgress = rpcPromise ? 0.95 : 1
-      const newProgress = Math.min(targetProgress, progressFromTime)
-      set({ brewProgress: newProgress })
-
-      if (newProgress >= targetProgress) {
-        if (rpcPromise) {
-          try {
-            const result = await rpcPromise
-            if (timer) clearInterval(timer)
-            get().updateBrewProgress(1)
-            get().updateBrewProgress(1)
-            await get().completeBrewing(result, recipe)
-          } catch (e: any) {
-            console.error('Alchemy RPC failed', e)
-            if (timer) clearInterval(timer)
-            const errorMessage = e.message || 'Unknown network error'
-            set({
-              isBrewing: false,
-              error: `서버 통신 오류: ${errorMessage}. 잠시 후 다시 시도해주세요.`
-            })
-          }
-        } else {
-          // userId 없는 경우 (테스트)
-          // Cannot support server logic without user, just fail or mock
-          if (timer) clearInterval(timer)
-          set({ isBrewing: false })
+      if (userId) {
+        try {
+          console.log('🌐 [startBrewing] 프로그레스 완료, API 호출 시작...')
+          // 레시피를 선택해서 조합하는 경우 실패 확률 제거 (100% 성공)
+          const result = await alchemyApi.performAlchemy(userId, recipeId, capturedIngredients, 100)
+          await get().completeBrewing(result, recipe)
+        } catch (e: any) {
+          console.error('Alchemy RPC failed', e)
+          const errorMessage = e.message || 'Unknown network error'
+          set({
+            isBrewing: false,
+            error: `서버 통신 오류: ${errorMessage}. 잠시 후 다시 시도해주세요.`
+          })
         }
+      } else {
+        // userId 없는 경우 (테스트)
+        set({ isBrewing: false })
       }
-    }, interval)
-
-    // Store timer reference for cleanup if needed
-    // Note: In real implementation, you might want to track this in state
-    // and clear it when component unmounts or brewing is cancelled
+    }, duration)
   },
 
   updateBrewProgress: (progress) => set({ brewProgress: progress }),

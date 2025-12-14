@@ -18,7 +18,7 @@ export const ALCHEMY = {
   /** Default craft time for failed recipes (milliseconds) */
   DEFAULT_CRAFT_TIME_MS: 3000,
   /** Progress update interval during brewing (milliseconds) */
-  BREW_UPDATE_INTERVAL_MS: 50,
+  BREW_UPDATE_INTERVAL_MS: 16,
 } as const
 
 // Experience by Rarity

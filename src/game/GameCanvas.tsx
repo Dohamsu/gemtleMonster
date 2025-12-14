@@ -329,7 +329,6 @@ export default function GameCanvas() {
                         }
                     }}
                     onAddIngredient={addIngredient}
-                    brewProgress={brewProgress}
                     playerAlchemy={playerAlchemy}
                     playerRecipes={playerRecipes}
                     onStartBrewing={startBrewing}
