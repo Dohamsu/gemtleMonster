@@ -54,7 +54,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'N',
         drops: [
             { materialId: 'beast_fang', chance: 100, min: 1, max: 1 },
-            { materialId: 'scrap_leather', chance: 40, min: 1, max: 1 }
+            { materialId: 'leather_beast', chance: 40, min: 1, max: 1 }
         ]
     },
     'monster_golem_stone': {
@@ -269,7 +269,10 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐇',
         iconUrl: '/assets/monsters/frost_bunny.png',
         rarity: 'N',
-        element: 'water'
+        element: 'water',
+        drops: [
+            { materialId: 'scrap_leather', chance: 60, min: 1, max: 2 }
+        ]
     },
     'monster_snow_fairy': {
         name: '설화 요정',
@@ -497,7 +500,11 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐻',
         iconUrl: '/assets/monsters/scar_bear.png',
         rarity: 'SR',
-        element: 'earth'
+        element: 'earth',
+        drops: [
+            { materialId: 'bear_skin', chance: 50, min: 1, max: 1 },
+            { materialId: 'claw_sharp', chance: 40, min: 1, max: 2 }
+        ]
     },
     'monster_penguin': {
         name: '아기 펭귄',
@@ -521,7 +528,11 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🦌',
         iconUrl: '/assets/monsters/gazzel.png',
         rarity: 'N',
-        element: 'wind'
+        element: 'wind',
+        drops: [
+            { materialId: 'scrap_leather', chance: 50, min: 1, max: 2 },
+            { materialId: 'bone_fragment', chance: 30, min: 1, max: 1 }
+        ]
     },
     // Conditional Monsters
     'monster_owl_night': {

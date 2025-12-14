@@ -15,10 +15,11 @@ interface AwakeningModalProps {
 export default function AwakeningModal({ targetMonster, onClose, onSuccess }: AwakeningModalProps) {
     const { user } = useAuth()
     const { playerMonsters, loadPlayerMonsters } = useAlchemyStore()
-    const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null)
+    const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([])
     const [isProcessing, setIsProcessing] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [animationState, setAnimationState] = useState<'SELECT' | 'ANIMATING' | 'SUCCESS'>('SELECT')
+    const [resultLevel, setResultLevel] = useState<number | null>(null)
 
     // Filter available materials: Same monster_id, not locked, not the target itself
     const availableMaterials = useMemo(() => {
@@ -29,8 +30,21 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
         )
     }, [playerMonsters, targetMonster])
 
+    const toggleSelection = (id: string) => {
+        if (selectedMaterialIds.includes(id)) {
+            setSelectedMaterialIds(prev => prev.filter(mid => mid !== id))
+        } else {
+            // Check max level limit
+            const currentLevel = targetMonster.awakening_level || 0
+            const projectedLevel = currentLevel + selectedMaterialIds.length + 1
+            if (projectedLevel > 5) return // Max level 5
+
+            setSelectedMaterialIds(prev => [...prev, id])
+        }
+    }
+
     const handleAwaken = async () => {
-        if (!user || !selectedMaterialId) return
+        if (!user || selectedMaterialIds.length === 0) return
         setIsProcessing(true)
         setError(null)
         setAnimationState('ANIMATING')
@@ -40,15 +54,16 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
             await new Promise(resolve => setTimeout(resolve, 1500)) // Fake delay for build-up
 
             // Actual API call
-            const result = await awakenMonster(user.id, targetMonster.id, selectedMaterialId)
+            const result = await awakenMonster(user.id, targetMonster.id, selectedMaterialIds)
 
             if (result.success) {
                 // Success Flash
+                setResultLevel(result.newAwakeningLevel) // Store result
                 setAnimationState('SUCCESS')
                 await loadPlayerMonsters(user.id)
 
                 // Show success state for a moment
-                await new Promise(resolve => setTimeout(resolve, 1500))
+                await new Promise(resolve => setTimeout(resolve, 2000)) // Increased duration slightly for reading
 
                 onSuccess() // Trigger parent refresh
                 onClose()
@@ -122,41 +137,60 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
                 {(animationState === 'ANIMATING' || animationState === 'SUCCESS') && (
                     <div style={{
                         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                        minHeight: '300px', gap: '20px'
+                        minHeight: '300px', gap: '20px', position: 'relative'
                     }}>
-                        {/* Background Rays */}
-                        <div style={{
-                            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                            width: '600px', height: '600px',
-                            background: `conic-gradient(from 0deg, transparent 0deg, ${getRarityColor(data.rarity || 'N')}20 30deg, transparent 60deg)`,
-                            animation: 'rays 4s linear infinite',
-                            pointerEvents: 'none', zIndex: 0
-                        }}></div>
+                        {/* Background Rays - Only on SUCCESS */}
+                        {animationState === 'SUCCESS' && (
+                            <div style={{
+                                position: 'absolute',
+                                top: 0, left: 0, right: 0, bottom: 0,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                overflow: 'visible',
+                                pointerEvents: 'none'
+                            }}>
+                                <div style={{
+                                    width: 'min(80vw, 80vh, 400px)',
+                                    height: 'min(80vw, 80vh, 400px)',
+                                    background: `repeating-conic-gradient(from 0deg, ${getRarityColor(data.rarity || 'N')}30 0deg 10deg, transparent 10deg 20deg)`,
+                                    animation: 'rays 10s linear infinite',
+                                    borderRadius: '50%',
+                                    opacity: 0.8,
+                                    filter: 'blur(3px)'
+                                }}></div>
+                            </div>
+                        )}
 
                         {/* Main Monster */}
                         <div style={{
-                            fontSize: '100px',
+                            zIndex: 1,
                             animation: animationState === 'ANIMATING' ? 'pulse-glow 1.5s infinite ease-in-out' : 'success-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                            filter: `drop-shadow(0 0 20px ${getRarityColor(data.rarity || 'N')})`,
-                            zIndex: 1, position: 'relative'
+                            filter: `drop-shadow(0 0 25px ${getRarityColor(data.rarity || 'N')})`,
+                            position: 'relative', textAlign: 'center'
                         }}>
                             {data.iconUrl
-                                ? <img src={data.iconUrl} alt={data.name} style={{ width: '150px', height: '150px', objectFit: 'contain' }} />
-                                : data.emoji
+                                ? <img src={data.iconUrl} alt={data.name} style={{ width: 'min(120px, 30vw)', height: 'min(120px, 30vw)', objectFit: 'contain' }} />
+                                : <span style={{ fontSize: 'min(80px, 20vw)' }}>{data.emoji}</span>
                             }
                             {animationState === 'SUCCESS' && (
                                 <div style={{
-                                    position: 'absolute', bottom: '-20px', left: '50%', transform: 'translateX(-50%)',
-                                    fontSize: '24px', color: '#fbbf24', textShadow: '0 0 10px #f59e0b',
+                                    position: 'absolute', bottom: '-25px', left: '50%', transform: 'translateX(-50%)',
+                                    fontSize: 'clamp(16px, 5vw, 24px)', color: '#fbbf24', textShadow: '0 0 10px #f59e0b',
                                     whiteSpace: 'nowrap', fontWeight: 'bold'
                                 }}>
-                                    SUCCESS!
+                                    ✨ SUCCESS! ✨
                                 </div>
                             )}
                         </div>
 
-                        <div style={{ zIndex: 1, color: '#cbd5e1', fontSize: '1.2em', fontWeight: 'bold' }}>
-                            {animationState === 'ANIMATING' ? '초월 진행 중...' : '초월 성공!'}
+                        <div style={{ zIndex: 1, color: '#cbd5e1', fontSize: 'clamp(1em, 4vw, 1.2em)', fontWeight: 'bold', textAlign: 'center', marginTop: '10px' }}>
+                            {animationState === 'ANIMATING' ? '초월 진행 중...' : (
+                                <>
+                                    초월 성공!<br />
+                                    <span style={{ color: '#fbbf24', fontSize: '1.2em' }}>
+                                        Lv.{resultLevel ?? targetMonster.awakening_level} 달성
+                                    </span>
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
@@ -168,7 +202,10 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
 
                         <div style={{ textAlign: 'center', color: '#cbd5e1', fontSize: '0.95em' }}>
                             <span style={{ color: '#93c5fd', fontWeight: 'bold' }}>{data.name}</span>을(를) 초월하시겠습니까?<br />
-                            <span style={{ fontSize: '0.85em', color: '#94a3b8' }}>재료로 사용된 몬스터는 <span style={{ color: '#f87171' }}>사라집니다.</span></span>
+                            <span style={{ fontSize: '0.85em', color: '#94a3b8' }}>
+                                선택된 <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{selectedMaterialIds.length}</span>마리의 재료는
+                                <span style={{ color: '#f87171' }}> 소멸</span>됩니다.
+                            </span>
                         </div>
 
                         {/* Selection Area */}
@@ -185,36 +222,61 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
                                 </div>
                             ) : (
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '10px' }}>
-                                    {availableMaterials.map(mat => (
-                                        <div key={mat.id}
-                                            onClick={() => setSelectedMaterialId(mat.id)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                border: selectedMaterialId === mat.id ? '2px solid #fbbf24' : '1px solid #334155',
-                                                borderRadius: '8px', padding: '5px',
-                                                background: selectedMaterialId === mat.id ? 'rgba(251, 191, 36, 0.2)' : 'rgba(30, 41, 59, 0.8)',
-                                                textAlign: 'center', transition: 'all 0.2s'
-                                            }}
-                                        >
-                                            <div style={{
-                                                width: '100%', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                fontSize: '24px', overflow: 'hidden', padding: '5px', position: 'relative'
-                                            }}>
-                                                {data.iconUrl
-                                                    ? <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                                    : data.emoji
-                                                }
+                                    {availableMaterials.map(mat => {
+                                        const isSelected = selectedMaterialIds.includes(mat.id)
+                                        return (
+                                            <div key={mat.id}
+                                                onClick={() => toggleSelection(mat.id)}
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    border: isSelected ? '2px solid #fbbf24' : '1px solid #334155',
+                                                    borderRadius: '8px', padding: '5px',
+                                                    background: isSelected ? 'rgba(251, 191, 36, 0.2)' : 'rgba(30, 41, 59, 0.8)',
+                                                    textAlign: 'center', transition: 'all 0.2s',
+                                                    transform: isSelected ? 'scale(1.05)' : 'scale(1)'
+                                                }}
+                                            >
                                                 <div style={{
-                                                    position: 'absolute', bottom: '0', right: '0',
-                                                    background: '#3b82f6', color: 'white', fontSize: '10px',
-                                                    padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold',
-                                                    boxShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                                    width: '100%', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontSize: '24px', overflow: 'hidden', padding: '5px', position: 'relative'
                                                 }}>
-                                                    Lv.{mat.level}
+                                                    {data.iconUrl
+                                                        ? <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                        : data.emoji
+                                                    }
+                                                    <div style={{
+                                                        position: 'absolute', bottom: '0', right: '0',
+                                                        background: '#3b82f6', color: 'white', fontSize: '10px',
+                                                        padding: '1px 4px', borderRadius: '4px', fontWeight: 'bold',
+                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                                    }}>
+                                                        Lv.{mat.level}
+                                                    </div>
+                                                    {/* Awakening Stars */}
+                                                    {(mat.awakening_level || 0) > 0 && (
+                                                        <div style={{
+                                                            position: 'absolute', top: '2px', left: '2px',
+                                                            color: '#fbbf24', fontSize: '10px', fontWeight: 'bold',
+                                                            textShadow: '0 0 2px #000',
+                                                            display: 'flex', gap: '1px'
+                                                        }}>
+                                                            {'★'.repeat(mat.awakening_level || 0)}
+                                                        </div>
+                                                    )}
+                                                    {isSelected && (
+                                                        <div style={{
+                                                            position: 'absolute', top: '2px', right: '2px',
+                                                            background: '#fbbf24', borderRadius: '50%', width: '16px', height: '16px',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            fontSize: '10px', color: '#000', fontWeight: 'bold'
+                                                        }}>
+                                                            ✓
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -233,16 +295,16 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
 
                             <button
                                 onClick={handleAwaken}
-                                disabled={!selectedMaterialId || isProcessing || animationState !== 'SELECT'}
+                                disabled={selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT'}
                                 style={{
                                     padding: '10px 20px', borderRadius: '8px', border: 'none',
-                                    background: (!selectedMaterialId || isProcessing || animationState !== 'SELECT') ? '#94a3b8' : '#fbbf24',
-                                    color: (!selectedMaterialId || isProcessing || animationState !== 'SELECT') ? '#e2e8f0' : '#451a03',
-                                    cursor: (!selectedMaterialId || isProcessing || animationState !== 'SELECT') ? 'not-allowed' : 'pointer',
+                                    background: (selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT') ? '#94a3b8' : '#fbbf24',
+                                    color: (selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT') ? '#e2e8f0' : '#451a03',
+                                    cursor: (selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT') ? 'not-allowed' : 'pointer',
                                     fontWeight: 'bold', display: 'flex', gap: '8px', alignItems: 'center'
                                 }}
                             >
-                                {isProcessing ? '처리 중...' : '초월하기'}
+                                {isProcessing ? '처리 중...' : `초월하기 (+${selectedMaterialIds.length})`}
                             </button>
                         </div>
                     </>

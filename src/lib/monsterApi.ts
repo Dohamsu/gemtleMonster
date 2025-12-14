@@ -274,41 +274,54 @@ export async function updateMonsterExp(
 export async function awakenMonster(
   userId: string,
   targetMonsterId: string,
-  materialMonsterId: string
+  materialMonsterIds: string[]
 ): Promise<{ success: boolean; newAwakeningLevel: number; error?: string }> {
-  // 1. Validate ownership
+  // 1. Validate inputs
+  if (!materialMonsterIds || materialMonsterIds.length === 0) {
+    return { success: false, newAwakeningLevel: 0, error: '재료 몬스터를 선택해주세요.' }
+  }
+
+  const allMonsterIds = [targetMonsterId, ...materialMonsterIds]
+
   const { data: monsters, error: fetchError } = await supabase
     .from('player_monster')
     .select('id, monster_id, awakening_level, is_locked')
-    .in('id', [targetMonsterId, materialMonsterId])
+    .in('id', allMonsterIds)
     .eq('user_id', userId)
 
-  if (fetchError || !monsters || monsters.length !== 2) {
+  if (fetchError || !monsters || monsters.length !== allMonsterIds.length) {
     return { success: false, newAwakeningLevel: 0, error: '몬스터 정보를 찾을 수 없습니다.' }
   }
 
   const target = monsters.find(m => m.id === targetMonsterId)
-  const material = monsters.find(m => m.id === materialMonsterId)
-
-  if (!target || !material) return { success: false, newAwakeningLevel: 0, error: '몬스터 정보 오류' }
+  if (!target) return { success: false, newAwakeningLevel: 0, error: '대상 몬스터 오류' }
 
   // 2. Validate conditions
-  if (target.monster_id !== material.monster_id) {
-    return { success: false, newAwakeningLevel: 0, error: '동일한 종류의 몬스터만 재료로 사용할 수 있습니다.' }
-  }
-  if (material.is_locked) {
-    return { success: false, newAwakeningLevel: 0, error: '잠금 상태인 몬스터는 재료로 사용할 수 없습니다.' }
-  }
-  if (target.awakening_level >= 5) {
-    return { success: false, newAwakeningLevel: 0, error: '이미 최대 초월 레벨입니다.' }
+  if (target.awakening_level + materialMonsterIds.length > 5) { // Assuming MAX is 5
+    return { success: false, newAwakeningLevel: 0, error: '최대 초월 레벨을 초과합니다.' }
   }
 
-  // 3. Execute Transaction (Simulate with sequential calls since we don't have a specific RPC yet)
-  // Delete material
+  for (const matId of materialMonsterIds) {
+    const material = monsters.find(m => m.id === matId)
+    if (!material) return { success: false, newAwakeningLevel: 0, error: '재료 몬스터 오류' }
+
+    if (target.monster_id !== material.monster_id) {
+      return { success: false, newAwakeningLevel: 0, error: '동일한 종류의 몬스터만 재료로 사용할 수 있습니다.' }
+    }
+    if (material.is_locked) {
+      return { success: false, newAwakeningLevel: 0, error: '잠금 상태인 몬스터는 재료로 사용할 수 없습니다.' }
+    }
+    if (material.id === target.id) {
+      return { success: false, newAwakeningLevel: 0, error: '자기 자신을 재료로 사용할 수 없습니다.' }
+    }
+  }
+
+  // 3. Execute Transaction 
+  // Delete materials
   const { error: deleteError } = await supabase
     .from('player_monster')
     .delete()
-    .eq('id', materialMonsterId)
+    .in('id', materialMonsterIds)
     .eq('user_id', userId)
 
   if (deleteError) {
@@ -316,7 +329,7 @@ export async function awakenMonster(
   }
 
   // Update target
-  const newAwakeningLevel = target.awakening_level + 1
+  const newAwakeningLevel = target.awakening_level + materialMonsterIds.length
   const { error: updateError } = await supabase
     .from('player_monster')
     .update({ awakening_level: newAwakeningLevel })
@@ -324,9 +337,7 @@ export async function awakenMonster(
     .eq('user_id', userId)
 
   if (updateError) {
-    // Critical: Material was deleted but target update failed. 
-    // In a real production app, this should be an SQL Transaction or RPC.
-    console.error('CRITICAL: Material deleted but Awakening failed', { targetMonsterId, materialMonsterId })
+    console.error('CRITICAL: Materials deleted but Awakening failed', { targetMonsterId, materialMonsterIds })
     return { success: false, newAwakeningLevel: 0, error: '초월 업데이트 중 오류가 발생했습니다.' }
   }
 

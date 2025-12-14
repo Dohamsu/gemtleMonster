@@ -34,8 +34,9 @@ export const MATERIALS: Record<string, Material> = {
     'ore_mythril': { id: 'ore_mythril', name: '미스릴 광석', type: 'MINERAL', description: '전설의 금속 미스릴', rarity: 'R', iconUrl: '/assets/materials/ore_mythril.png' },
     'gem_dark': { id: 'gem_dark', name: '어둠의 보석', type: 'MINERAL', description: '어둠 속성이 담긴 신비한 보석', rarity: 'SR', iconUrl: '/assets/materials/gem_dark.png' },
     'claw_sharp': { id: 'claw_sharp', name: '날카로운 발톱', type: 'BEAST', description: '공격적인 몬스터의 발톱', rarity: 'R', iconUrl: '/assets/materials/claw_sharp.png' },
-    'hide_tough': { id: 'hide_tough', name: '질긴 가죽', type: 'BEAST', description: '두껍고 질긴 몬스터 가죽', rarity: 'R', iconUrl: '/assets/materials/hide_tough.png' },
-    'leather_beast': { id: 'leather_beast', name: '짐승 가죽', type: 'BEAST', description: '가공되어 부드럽고 질긴 짐승의 가죽', rarity: 'N', iconUrl: '/assets/materials/hide_tough.png' },
+    // 'hide_tough' merged into 'leather_beast'
+    'leather_beast': { id: 'leather_beast', name: '부드러운 가죽', type: 'BEAST', description: '가공되어 부드럽고 질긴 짐승의 가죽', rarity: 'N', iconUrl: '/assets/materials/hide_tough.png' },
+    'bear_skin': { id: 'bear_skin', name: '곰 가죽', type: 'BEAST', description: '곰의 두껍고 따뜻한 가죽.', rarity: 'R', iconUrl: '/assets/materials/bear_skin.png' },
     'bone_dragon': { id: 'bone_dragon', name: '용의 뼈', type: 'BEAST', description: '고대 용의 강력한 뼈', rarity: 'SSR', iconUrl: '/assets/materials/bone_dragon.png' },
     'slime_mutant': { id: 'slime_mutant', name: '변이 점액', type: 'SLIME', description: '특이하게 변이한 슬라임의 점액', rarity: 'R', iconUrl: '/assets/materials/slime_mutant.png' },
     'soul_fragment': { id: 'soul_fragment', name: '영혼 파편', type: 'SPIRIT', description: '영혼의 일부가 결정화된 파편', rarity: 'R', iconUrl: '/assets/materials/soul_fragment.png' },
@@ -54,7 +55,7 @@ export const MATERIALS: Record<string, Material> = {
     'frost_essence': { id: 'frost_essence', name: '서리 정수', type: 'SPIRIT', description: '겨울의 정령이 남긴 순수한 서리의 힘.', rarity: 'R', iconUrl: '/assets/materials/frost_essence.png' },
 
     // New Basic Materials for Diversity (Drops)
-    'scrap_leather': { id: 'scrap_leather', name: '가죽 조각', type: 'BEAST', description: '작은 가죽 조각.', rarity: 'N', iconUrl: '/assets/materials/scrap_leather.png' },
+    'scrap_leather': { id: 'scrap_leather', name: '자투리 가죽', type: 'BEAST', description: '작은 가죽 조각.', rarity: 'N', iconUrl: '/assets/materials/scrap_leather.png' },
     'scrap_cloth': { id: 'scrap_cloth', name: '옷감 조각', type: 'SPECIAL', description: '낡은 천 조각.', rarity: 'N', iconUrl: '/assets/materials/scrap_cloth.png' },
     'feather_common': { id: 'feather_common', name: '일반 깃털', type: 'BEAST', description: '평범한 새의 깃털.', rarity: 'N', iconUrl: '/assets/materials/feather_common.png' },
     'bone_fragment': { id: 'bone_fragment', name: '뼈 조각', type: 'BEAST', description: '작은 뼈 조각.', rarity: 'N', iconUrl: '/assets/materials/bone_fragment.png' },
@@ -617,7 +618,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         ingredients: [
             { materialId: 'slime_gel', quantity: 5, isCatalyst: false },
             { materialId: 'shard_water', quantity: 2, isCatalyst: false },
-            { materialId: 'hide_tough', quantity: 1, isCatalyst: false }
+            { materialId: 'leather_beast', quantity: 2, isCatalyst: false }
         ],
         conditions: [
             {

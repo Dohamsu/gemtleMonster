@@ -391,7 +391,7 @@ export const BEAST_DUNGEON: Dungeon = {
                 { materialId: 'leather_beast', chance: 100, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'beast_fang', chance: 80, minQuantity: 2, maxQuantity: 4 },
                 { materialId: 'claw_sharp', chance: 50, minQuantity: 1, maxQuantity: 2 },
-                { materialId: 'hide_tough', chance: 30, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'bear_skin', chance: 50, minQuantity: 1, maxQuantity: 1 }
             ]
         }
     ]
