@@ -20,7 +20,7 @@
                     "level": 1,
                     "name": "야생 들판",
                     "stats": {
-                        "intervalSeconds": 10,
+                        "intervalSeconds": 13,
                         "bundlesPerTick": 1,
                         "dropRates": {
                             "herb_common": 1.0
@@ -35,7 +35,7 @@
                     "level": 2,
                     "name": "약초 정원",
                     "stats": {
-                        "intervalSeconds": 8,
+                        "intervalSeconds": 10,
                         "bundlesPerTick": 1,
                         "dropRates": {
                             "herb_common": 0.80,
@@ -52,7 +52,7 @@
                     "level": 3,
                     "name": "유리 온실",
                     "stats": {
-                        "intervalSeconds": 6,
+                        "intervalSeconds": 8,
                         "bundlesPerTick": 2,
                         "dropRates": {
                             "herb_rare": 0.70,
@@ -113,7 +113,7 @@
                     "level": 1,
                     "name": "암석 광산",
                     "stats": {
-                        "intervalSeconds": 15,
+                        "intervalSeconds": 19,
                         "bundlesPerTick": 1,
                         "dropRates": {
                             "stone": 0.9,
@@ -130,7 +130,7 @@
                     "level": 2,
                     "name": "구리 광산",
                     "stats": {
-                        "intervalSeconds": 12,
+                        "intervalSeconds": 15,
                         "bundlesPerTick": 1,
                         "dropRates": {
                             "ore_copper": 0.8,
@@ -237,7 +237,7 @@
                     "level": 1,
                     "name": "야외 화덕",
                     "stats": {
-                        "intervalSeconds": 20,
+                        "intervalSeconds": 25,
                         "bundlesPerTick": 1,
                         "dropRates": {
                             "ingot_copper": 1.0

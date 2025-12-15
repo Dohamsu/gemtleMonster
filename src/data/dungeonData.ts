@@ -16,6 +16,7 @@ export interface DungeonEnemy {
     image?: string
     element?: string
     drops: DungeonDrop[]
+    goldDrop?: { min: number; max: number } // 골드 드랍 (리밸런싱 추가)
 }
 
 export interface Dungeon {
@@ -412,7 +413,7 @@ export const BEAST_DUNGEON: Dungeon = {
     ]
 }
 
-// Helper to add global drops
+// Helper to add global drops and gold
 function addGlobalDrops(dungeons: Dungeon[]): Dungeon[] {
     return dungeons.map(dungeon => ({
         ...dungeon,
@@ -422,7 +423,9 @@ function addGlobalDrops(dungeons: Dungeon[]): Dungeon[] {
                 ...enemy.drops,
                 // Global Low Chance Drop: Monster Essence
                 { materialId: 'essence', chance: 5, minQuantity: 1, maxQuantity: 1 }
-            ]
+            ],
+            // 골드 드랍 추가 (리밸런싱): level × 2 ~ level × 3
+            goldDrop: { min: Math.floor(enemy.level * 2), max: Math.floor(enemy.level * 3) }
         }))
     }))
 }

@@ -100,11 +100,11 @@ export function calculateDamage(
     const elementMultiplier = getElementalMultiplier(attacker.element, defender.element)
     damage *= elementMultiplier
 
-    // 3. Defense Mitigation (Standard formula: Damage * (100 / (100 + Def)))
-    // Or simple subtraction with min 1?
-    // User's previous code used subtraction. Let's stick to subtraction but improved.
-    const defenseMitigation = Math.max(0, defender.def * 0.5) // Def mitigates 50% of its value from raw damage
-    damage = Math.max(1, damage - defenseMitigation)
+    // 3. Defense Mitigation (비율 감쇄 공식: Damage * (100 / (100 + Def * k)))
+    // k는 밸런스 계수 (권장값: 1.0)
+    const DEF_COEFFICIENT = 1.0
+    damage = Math.floor(damage * (100 / (100 + defender.def * DEF_COEFFICIENT)))
+    damage = Math.max(1, damage)
 
     // 4. Critical Hit (10% base chance)
     let isCritical = false

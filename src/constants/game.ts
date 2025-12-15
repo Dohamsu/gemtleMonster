@@ -13,8 +13,8 @@ export const ALCHEMY = {
   XP_PER_LEVEL: 100,
   /** Animation duration for resource additions (milliseconds) */
   RESOURCE_ANIMATION_DURATION: 2000,
-  /** Failure experience multiplier (30% of total) */
-  FAILURE_EXP_MULTIPLIER: 0.3,
+  /** Failure experience multiplier (10% of total - 리밸런싱) */
+  FAILURE_EXP_MULTIPLIER: 0.1,
   /** Default craft time for failed recipes (milliseconds) */
   DEFAULT_CRAFT_TIME_MS: 3000,
   /** Progress update interval during brewing (milliseconds) */

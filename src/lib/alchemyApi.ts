@@ -80,14 +80,14 @@ export async function getPlayerAlchemy(userId: string): Promise<PlayerAlchemy | 
 export async function initializePlayerAlchemy(userId: string): Promise<void> {
   const { error } = await supabase
     .from('player_alchemy')
-    .insert({
+    .upsert({
       user_id: userId,
       level: 1,
       experience: 0,
       workshop_level: 1,
       global_success_bonus: 0,
       global_time_reduction: 0
-    })
+    }, { onConflict: 'user_id' })
 
   if (error) {
     console.error('연금술 정보 초기화 실패:', error)

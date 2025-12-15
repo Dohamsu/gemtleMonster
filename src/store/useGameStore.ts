@@ -548,7 +548,18 @@ export const useGameStore = create<GameState>((set, get) => ({
             result = 'victory'
             // Calculate drops on victory
             if (enemy) {
-                // Drop Logic
+                // 골드 드랍 (리밸런싱 추가)
+                if (enemy.goldDrop) {
+                    const goldAmount = Math.floor(
+                        Math.random() * (enemy.goldDrop.max - enemy.goldDrop.min + 1) + enemy.goldDrop.min
+                    )
+                    if (goldAmount > 0) {
+                        rewards['gold'] = (rewards['gold'] || 0) + goldAmount
+                        finalLogs.push(`획득 골드: {{GOLD|${goldAmount}G}}`)
+                    }
+                }
+
+                // 재료 드랍
                 for (const drop of enemy.drops) {
                     const roll = Math.random() * 100
                     if (roll < drop.chance) {

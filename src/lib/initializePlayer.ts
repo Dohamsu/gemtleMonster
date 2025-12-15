@@ -58,15 +58,15 @@ export async function initializePlayer(userId: string) {
             throw facilityError
         }
 
-        // Initialize player_alchemy
-        const { error: alchemyError } = await supabase.from('player_alchemy').insert({
+        // Initialize player_alchemy (use upsert to avoid duplicate key error)
+        const { error: alchemyError } = await supabase.from('player_alchemy').upsert({
             user_id: userId,
             level: 1,
             experience: 0,
             workshop_level: 1,
             global_success_bonus: 0,
             global_time_reduction: 0,
-        })
+        }, { onConflict: 'user_id' })
 
         if (alchemyError) {
             console.error('Error creating player alchemy:', alchemyError)
