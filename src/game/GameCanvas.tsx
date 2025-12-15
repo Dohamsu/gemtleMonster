@@ -65,6 +65,7 @@ export default function GameCanvas() {
     const [lastBrewResult, setLastBrewResult] = useState<{
         success: boolean;
         monsterId?: string;
+        itemId?: string; // New
         hint?: {
             type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH'
             monsterName?: string
@@ -148,6 +149,7 @@ export default function GameCanvas() {
             setLastBrewResult({
                 success: brewResult.type === 'success',
                 monsterId: brewResult.monsterId,
+                itemId: brewResult.itemId, // New
                 hint: brewResult.hint,
                 expGain: brewResult.expGain
             })
@@ -343,6 +345,7 @@ export default function GameCanvas() {
                 isOpen={showResultModal}
                 success={lastBrewResult.success}
                 monsterId={lastBrewResult.monsterId}
+                itemId={lastBrewResult.itemId} // New
                 hint={lastBrewResult.hint}
                 expGain={lastBrewResult.expGain}
                 onClose={() => setShowResultModal(false)}

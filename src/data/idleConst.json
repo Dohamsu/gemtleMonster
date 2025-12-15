@@ -347,9 +347,7 @@
                     "stats": {
                         "intervalSeconds": 30,
                         "bundlesPerTick": 1,
-                        "dropRates": {
-                            "potion_hp_small": 1.0
-                        },
+                        "dropRates": {},
                         "cost": {
                             "herb_common": 3
                         }
@@ -365,10 +363,7 @@
                     "stats": {
                         "intervalSeconds": 25,
                         "bundlesPerTick": 1,
-                        "dropRates": {
-                            "potion_hp_small": 0.8,
-                            "potion_mp_small": 0.2
-                        },
+                        "dropRates": {},
                         "cost": {
                             "herb_common": 5
                         }
@@ -385,10 +380,7 @@
                     "stats": {
                         "intervalSeconds": 20,
                         "bundlesPerTick": 2,
-                        "dropRates": {
-                            "potion_mp_small": 0.6,
-                            "potion_hp_small": 0.4
-                        },
+                        "dropRates": {},
                         "cost": {
                             "herb_rare": 1
                         }

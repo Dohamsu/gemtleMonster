@@ -64,6 +64,9 @@ export const MATERIALS: Record<string, Material> = {
     // Consumables (Potions)
     'potion_hp_small': { id: 'potion_hp_small', name: '소형 체력 포션', type: 'CONSUMABLE', description: '체력을 50 회복시켜줍니다.', rarity: 'N', iconUrl: '/assets/materials/potion_hp_small.png', sellPrice: 20 },
     'potion_mp_small': { id: 'potion_mp_small', name: '소형 마나 포션', type: 'CONSUMABLE', description: '마나를 30 회복시켜줍니다.', rarity: 'N', iconUrl: '/assets/materials/potion_mp_small.png', sellPrice: 20 },
+    'potion_stamina': { id: 'potion_stamina', name: '스태미나 포션', type: 'CONSUMABLE', description: '활력을 불어넣어주는 포션.', rarity: 'N', iconUrl: '/assets/materials/potion_stamina.png', sellPrice: 30 },
+    'potion_ironskin': { id: 'potion_ironskin', name: '강철 피부 포션', type: 'CONSUMABLE', description: '피부를 단단하게 만들어주는 포션.', rarity: 'N', iconUrl: '/assets/materials/potion_ironskin.png', sellPrice: 40 },
+    'potion_light': { id: 'potion_light', name: '빛의 물약', type: 'CONSUMABLE', description: '어둠을 밝혀주는 빛나는 물약.', rarity: 'R', iconUrl: '/assets/materials/potion_light.png', sellPrice: 60 },
 
     // Mining Tiers
     'stone': { id: 'stone', name: '돌멩이', type: 'MINERAL', description: '흔히 볼 수 있는 돌멩이입니다. 단단해서 던지면 아픕니다.', rarity: 'N', iconUrl: '/assets/materials/stone.png', sellPrice: 1 },
@@ -107,7 +110,9 @@ interface DBRecipeSeed {
     id: string
     name?: string // Optional: Derived from monsterData if missing
     description?: string // Optional: Derived from monsterData if missing
-    resultMonsterId: string // "monster_slime_basic" 형식
+    type?: 'MONSTER' | 'ITEM'
+    resultMonsterId?: string // "monster_slime_basic" (optional if type is ITEM)
+    resultItemId?: string // (optional if type is MONSTER)
     resultCount: number
     baseSuccessRate: number
     craftTimeSec: number
@@ -132,6 +137,108 @@ interface DBRecipeSeed {
 }
 
 const DB_RECIPES_SEED: DBRecipeSeed[] = [
+    // Potion Recipes (Manual Crafting)
+    {
+        id: 'recipe_potion_hp_small',
+        name: '소형 체력 포션',
+        description: '체력을 회복시켜주는 작은 물약.',
+        type: 'ITEM',
+        resultItemId: 'potion_hp_small',
+        resultCount: 1,
+        baseSuccessRate: 100, // Potions are easy to make
+        craftTimeSec: 3,
+        costGold: 10,
+        requiredAlchemyLevel: 1,
+        expGain: 5,
+        isHidden: false,
+        priority: 100,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_potion_mp_small',
+        name: '소형 마나 포션',
+        description: '마나를 회복시켜주는 작은 물약.',
+        type: 'ITEM',
+        resultItemId: 'potion_mp_small',
+        resultCount: 1,
+        baseSuccessRate: 100,
+        craftTimeSec: 5,
+        costGold: 20,
+        requiredAlchemyLevel: 1, // Restriction removed
+        expGain: 8,
+        isHidden: false, // Initially visible
+        priority: 99,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'crystal_mana', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_potion_stamina',
+        name: '스태미나 포션',
+        description: '약초와 돌을 섞어 만든 활력 포션.',
+        type: 'ITEM',
+        resultItemId: 'potion_stamina',
+        resultCount: 1,
+        baseSuccessRate: 95,
+        craftTimeSec: 5,
+        costGold: 15,
+        requiredAlchemyLevel: 1,
+        expGain: 6,
+        isHidden: false,
+        priority: 98,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 3, isCatalyst: false },
+            { materialId: 'stone', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_potion_ironskin',
+        name: '강철 피부 포션',
+        description: '철광석의 성분을 추출한 포션.',
+        type: 'ITEM',
+        resultItemId: 'potion_ironskin',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 8,
+        costGold: 25,
+        requiredAlchemyLevel: 1,
+        expGain: 8,
+        isHidden: false,
+        priority: 97,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'ore_iron', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_potion_light',
+        name: '빛의 물약',
+        description: '정령의 가루로 만든 빛나는 물약.',
+        type: 'ITEM',
+        resultItemId: 'potion_light',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 10,
+        costGold: 40,
+        requiredAlchemyLevel: 2,
+        expGain: 12,
+        isHidden: false,
+        priority: 96,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'spirit_dust', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+
     {
         id: 'recipe_slime_basic',
         resultMonsterId: 'monster_slime_basic',
@@ -939,12 +1046,15 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
 
 // 런타임용 레시피 (TypeScript 타입)
 export const RECIPES: Recipe[] = DB_RECIPES_SEED.map(dbRecipe => {
-    const monster = MONSTER_DATA[dbRecipe.resultMonsterId]
+    const monster = dbRecipe.resultMonsterId ? MONSTER_DATA[dbRecipe.resultMonsterId] : undefined
     return {
         id: dbRecipe.id,
         name: dbRecipe.name || monster?.name || 'Unknown Recipe',
         description: dbRecipe.description || monster?.description || 'No description',
-        resultMonsterId: dbRecipe.resultMonsterId.replace(/^monster_/, ''), // "monster_slime_basic" -> "slime_basic"
+        type: dbRecipe.type || 'MONSTER',
+        resultMonsterId: dbRecipe.resultMonsterId?.replace(/^monster_/, ''), // "monster_slime_basic" -> "slime_basic"
+        resultItemId: dbRecipe.resultItemId,
+        resultCount: dbRecipe.resultCount || 1,
         materials: dbRecipe.ingredients.map(ing => ({
             materialId: ing.materialId,
             count: ing.quantity
@@ -1017,7 +1127,7 @@ export function getMaterialsForDB() {
 export function getRecipesForDB() {
     // Hydrate name and description from MONSTER_DATA if missing
     return DB_RECIPES_SEED.map(recipe => {
-        const monster = MONSTER_DATA[recipe.resultMonsterId]
+        const monster = recipe.resultMonsterId ? MONSTER_DATA[recipe.resultMonsterId] : undefined
         return {
             ...recipe,
             name: recipe.name || monster?.name || 'Unknown Recipe',

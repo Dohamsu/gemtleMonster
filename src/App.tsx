@@ -193,21 +193,20 @@ function App() {
                         <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
                     </button>
 
-                    {/* UI Overlay (Bottom Slide-up Panel) */}
+                    {/* UI Overlay (Right Slide-in Panel) */}
                     <div style={{
                         position: 'absolute',
-                        bottom: 0,
-                        left: 0,
+                        top: 0,
+                        right: 0,
                         width: '100%',
-                        maxHeight: '80%',
+                        height: '100%',
                         backgroundColor: '#1a1a1a',
-                        borderTop: '2px solid #333',
                         display: 'flex',
                         flexDirection: 'column',
-                        zIndex: 15,
-                        boxShadow: '0 -4px 12px rgba(0,0,0,0.5)',
+                        zIndex: 1000, // Highest priority to cover all interactive elements (Alchemy Overlay uses 50-100)
+                        boxShadow: '-4px 0 12px rgba(0,0,0,0.5)',
                         overflowY: 'auto',
-                        transform: isOverlayOpen ? 'translateY(0)' : 'translateY(100%)',
+                        transform: isOverlayOpen ? 'translateX(0)' : 'translateX(100%)',
                         transition: 'transform 0.3s ease-in-out'
                     }}>
                         {/* Close button inside overlay */}

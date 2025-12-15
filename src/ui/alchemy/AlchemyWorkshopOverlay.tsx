@@ -49,6 +49,17 @@ function AlchemyWorkshopOverlay({
     const [isMobile, setIsMobile] = useState(isMobileView())
     const [showCodex, setShowCodex] = useState(false)
     const setCanvasView = useGameStore((state) => state.setCanvasView)
+    const { alchemyMode, setAlchemyMode } = useAlchemyStore()
+
+    // Helper to determine recipe type (robust against missing type in DB)
+    const getRecipeType = (r: Recipe) => {
+        if (r.type) return r.type
+        if (r.result_item_id) return 'ITEM'
+        return 'MONSTER'
+    }
+
+    // Filter recipes based on mode
+    const filteredRecipes = recipes.filter(r => getRecipeType(r) === alchemyMode)
 
     useEffect(() => {
         const handleResize = () => {
@@ -82,10 +93,63 @@ function AlchemyWorkshopOverlay({
             }}>
                 <AlchemyBackButton onBack={handleBack} />
 
+                <AlchemyBackButton onBack={handleBack} />
+
+                {/* Mode Toggle (Mobile) - Left Vertical Stack */}
+                <div style={{
+                    position: 'absolute',
+                    top: '80px', // Below Back Button (approx 20px + 40px + gap)
+                    left: '20px',
+                    zIndex: 50,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    pointerEvents: 'auto'
+                }}>
+                    <button
+                        onClick={() => setAlchemyMode('MONSTER')}
+                        style={{
+                            background: alchemyMode === 'MONSTER' ? '#805ad5' : 'rgba(45, 55, 72, 0.9)',
+                            color: alchemyMode === 'MONSTER' ? 'white' : '#cbd5e0',
+                            border: alchemyMode === 'MONSTER' ? '1px solid #9f7aea' : '1px solid #4a5568',
+                            borderRadius: '12px',
+                            padding: '8px 12px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                            width: '70px', // Fixed width for alignment
+                            textAlign: 'center'
+                        }}
+                    >
+                        몬스터
+                    </button>
+                    <button
+                        onClick={() => setAlchemyMode('ITEM')}
+                        style={{
+                            background: alchemyMode === 'ITEM' ? '#3182ce' : 'rgba(45, 55, 72, 0.9)',
+                            color: alchemyMode === 'ITEM' ? 'white' : '#cbd5e0',
+                            border: alchemyMode === 'ITEM' ? '1px solid #63b3ed' : '1px solid #4a5568',
+                            borderRadius: '12px',
+                            padding: '8px 12px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                            width: '70px', // Fixed width for alignment
+                            textAlign: 'center'
+                        }}
+                    >
+                        소모품
+                    </button>
+                </div>
+
                 {/* Mobile Codex Floating Button - Positioned below the Hamburger Button */}
                 <div style={{
                     position: 'absolute',
-                    top: '80px', // Hamburger is top:20px + height:50px + gap:10px
+                    top: '70px', // Aligned with toggle
                     right: '20px', // Align with Hamburger Button
                     pointerEvents: 'auto',
                     zIndex: 50
@@ -117,7 +181,7 @@ function AlchemyWorkshopOverlay({
                 {useAlchemyStore((state) => state.error) && (
                     <div style={{
                         position: 'absolute',
-                        top: '60px',
+                        top: '120px',
                         left: '50%',
                         transform: 'translateX(-50%)',
                         background: 'rgba(239, 68, 68, 0.95)',
@@ -153,13 +217,13 @@ function AlchemyWorkshopOverlay({
                 {showCodex && (
                     <div style={{
                         position: 'absolute',
-                        top: '60px', // Below header/buttons
+                        top: '120px', // Below text overlapped area
                         left: '0',
                         width: '100%',
-                        height: 'calc(100% - 60px)',
+                        height: 'calc(100% - 120px)',
                         zIndex: 40,
                         pointerEvents: 'auto',
-                        background: 'rgba(0, 0, 0, 0.8)', // Darken background
+                        background: 'rgba(0, 0, 0, 0.9)', // Darker background
                         padding: '10px',
                         boxSizing: 'border-box'
                     }}>
@@ -253,7 +317,7 @@ function AlchemyWorkshopOverlay({
                         ) : (
                             // Default to recipes if not materials (and not codex anymore)
                             <RecipeList
-                                recipes={recipes}
+                                recipes={filteredRecipes}
                                 materials={materials}
                                 playerMaterials={playerMaterials}
                                 playerRecipes={playerRecipes}
@@ -310,6 +374,63 @@ function AlchemyWorkshopOverlay({
             gap: '20px'
         }}>
             <AlchemyBackButton onBack={handleBack} />
+
+            <AlchemyBackButton onBack={handleBack} />
+
+            {/* Mode Toggle (Desktop) - Top Center */}
+            <div style={{
+                position: 'absolute',
+                top: '24px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 50,
+                display: 'flex',
+                background: '#1a202c',
+                borderRadius: '24px',
+                padding: '4px',
+                border: '2px solid #4a5568',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                pointerEvents: 'auto' // Fix: Enable clicking
+            }}>
+                <button
+                    onClick={() => setAlchemyMode('MONSTER')}
+                    style={{
+                        background: alchemyMode === 'MONSTER' ? 'linear-gradient(135deg, #6b46c1 0%, #805ad5 100%)' : 'transparent',
+                        color: alchemyMode === 'MONSTER' ? 'white' : '#718096',
+                        border: 'none',
+                        borderRadius: '20px',
+                        padding: '8px 24px',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                    }}
+                >
+                    <span>🐉</span> 몬스터
+                </button>
+                <button
+                    onClick={() => setAlchemyMode('ITEM')}
+                    style={{
+                        background: alchemyMode === 'ITEM' ? 'linear-gradient(135deg, #2b6cb0 0%, #4299e1 100%)' : 'transparent',
+                        color: alchemyMode === 'ITEM' ? 'white' : '#718096',
+                        border: 'none',
+                        borderRadius: '20px',
+                        padding: '8px 24px',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                    }}
+                >
+                    <span>🧪</span> 소모품
+                </button>
+            </div>
 
             {/* Desktop Codex Toggle Button */}
             <div style={{
@@ -410,7 +531,7 @@ function AlchemyWorkshopOverlay({
                 transition: 'opacity 0.2s'
             }}>
                 <RecipeList
-                    recipes={recipes}
+                    recipes={filteredRecipes}
                     materials={materials}
                     playerMaterials={playerMaterials}
                     playerRecipes={playerRecipes}

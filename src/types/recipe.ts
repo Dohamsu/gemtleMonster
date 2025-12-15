@@ -32,7 +32,9 @@ export interface Recipe {
   id: string
   name: string
   description?: string
-  result_monster_id: string
+  type?: 'MONSTER' | 'ITEM' // Default 'MONSTER'
+  result_monster_id?: string // Optional
+  result_item_id?: string // New
   result_count: number
   base_success_rate: number
   craft_time_sec: number

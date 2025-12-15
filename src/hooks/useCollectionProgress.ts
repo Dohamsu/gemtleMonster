@@ -25,15 +25,18 @@ export function useCollectionProgress(
                 elapsed = now - lastCollectedAt
             } else {
                 // Fallback if no collection yet (start from 0)
-                elapsed = now % duration // This might be desynced but better than nothing
+                // Fallback if no collection yet (start from 0)
+                elapsed = 0
             }
 
             // Cap at 100% if we want, or loop
             // Since auto-collection loops, we loop the visual too
             // But to sync perfectly, we should base it on the *next* expected collection
             // For now, simple modulo based on last collection is good enough
-            const cycleElapsed = elapsed % duration
-            const newProgress = (cycleElapsed / duration) * 100
+            // Do not use modulo here. We want the accumulated progress.
+            // If the progress > 100%, it means we are overdue (or stalled).
+            // The UI handles clamping/looping if needed, but for "stall" detection we need true progress.
+            const newProgress = (elapsed / duration) * 100
             setProgress(newProgress)
         }
 

@@ -1,5 +1,5 @@
-import React from 'react'
 import { getMonsterData } from '../../data/monsterData'
+import { MATERIALS } from '../../data/alchemyData'
 
 interface AlchemyResultModalProps {
     isOpen: boolean
@@ -13,6 +13,7 @@ interface AlchemyResultModalProps {
         message?: string
     }
     monsterId?: string
+    itemId?: string
     expGain?: number
     onClose: () => void
 }
@@ -21,6 +22,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
     isOpen,
     success,
     monsterId,
+    itemId,
     hint,
     expGain,
     onClose
@@ -28,6 +30,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
     if (!isOpen) return null
 
     const monster = monsterId ? getMonsterData(monsterId) : null
+    const item = itemId ? MATERIALS[itemId] : null
 
     const getHintContent = () => {
         if (!hint) return null
@@ -120,109 +123,155 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                     </h2>
                 </div>
 
-                {/* Monster Info - Only for Success */}
-                {success && monster && (
-                    <>
-                        {/* Monster Image */}
-                        <div style={{
-                            width: '200px',
-                            height: '200px',
-                            margin: '0 auto 24px',
-                            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '3px solid #facc15',
-                            overflow: 'hidden'
-                        }}>
-                            {monster.iconUrl ? (
-                                <img
-                                    src={monster.iconUrl}
-                                    alt={monster.name}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'contain',
-                                        imageRendering: 'pixelated'
-                                    }}
-                                />
-                            ) : (
-                                <span style={{ fontSize: '120px' }}>{monster.emoji}</span>
-                            )}
-                        </div>
-
-                        {/* Monster Name & Role */}
-                        <div style={{
-                            textAlign: 'center',
-                            marginBottom: '20px'
-                        }}>
+                {/* Success Content - Item or Monster */}
+                {success && (
+                    item ? (
+                        /* Item Reward Display */
+                        <>
+                            <div style={{
+                                width: '120px',
+                                height: '120px',
+                                margin: '0 auto 16px',
+                                background: 'linear-gradient(135deg, #3182ce 0%, #63b3ed 100%)',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '3px solid #facc15',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                                overflow: 'hidden'
+                            }}>
+                                {item.iconUrl ? (
+                                    <img
+                                        src={item.iconUrl}
+                                        alt={item.name}
+                                        style={{ width: '80%', height: '80%', objectFit: 'contain' }}
+                                    />
+                                ) : (
+                                    <span style={{ fontSize: '60px' }}>🧪</span>
+                                )}
+                            </div>
                             <h3 style={{
                                 margin: '0 0 8px 0',
                                 fontSize: '24px',
                                 color: '#facc15',
-                                fontWeight: 'bold'
-                            }}>
-                                {monster.name}
-                            </h3>
-                            <div style={{
-                                display: 'inline-block',
-                                padding: '4px 12px',
-                                background: '#334155',
-                                borderRadius: '12px',
-                                fontSize: '14px',
-                                color: '#cbd5e1',
-                                fontWeight: 'bold'
-                            }}>
-                                {monster.role}
-                            </div>
-                        </div>
-
-                        {/* Stats */}
-                        <div style={{
-                            background: '#1e293b',
-                            borderRadius: '8px',
-                            padding: '16px',
-                            marginBottom: '16px'
-                        }}>
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr 1fr',
-                                gap: '12px',
+                                fontWeight: 'bold',
                                 textAlign: 'center'
                             }}>
-                                <div>
-                                    <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>HP</div>
-                                    <div style={{ fontSize: '18px', color: '#22c55e', fontWeight: 'bold' }}>{monster.hp}</div>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>공격력</div>
-                                    <div style={{ fontSize: '18px', color: '#ef4444', fontWeight: 'bold' }}>{monster.attack}</div>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>방어력</div>
-                                    <div style={{ fontSize: '18px', color: '#3b82f6', fontWeight: 'bold' }}>{monster.defense}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Description */}
-                        <div style={{
-                            background: '#0f172a',
-                            borderRadius: '8px',
-                            padding: '14px',
-                            marginBottom: '24px'
-                        }}>
-                            <div style={{
-                                fontSize: '14px',
+                                {item.name} 획득!
+                            </h3>
+                            <p style={{
+                                textAlign: 'center',
                                 color: '#cbd5e1',
-                                lineHeight: '1.6'
+                                fontSize: '14px',
+                                marginBottom: '24px'
                             }}>
-                                {monster.description}
+                                {item.description}
+                            </p>
+                        </>
+                    ) : (monster && (
+                        /* Monster Reward Display */
+                        <>
+                            {/* Monster Image */}
+                            <div style={{
+                                width: '200px',
+                                height: '200px',
+                                margin: '0 auto 24px',
+                                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '3px solid #facc15',
+                                overflow: 'hidden'
+                            }}>
+                                {monster.iconUrl ? (
+                                    <img
+                                        src={monster.iconUrl}
+                                        alt={monster.name}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'contain',
+                                            imageRendering: 'pixelated'
+                                        }}
+                                    />
+                                ) : (
+                                    <span style={{ fontSize: '120px' }}>{monster.emoji}</span>
+                                )}
                             </div>
-                        </div>
-                    </>
-                )}
+
+                            {/* Monster Name & Role */}
+                            <div style={{
+                                textAlign: 'center',
+                                marginBottom: '20px'
+                            }}>
+                                <h3 style={{
+                                    margin: '0 0 8px 0',
+                                    fontSize: '24px',
+                                    color: '#facc15',
+                                    fontWeight: 'bold'
+                                }}>
+                                    {monster.name}
+                                </h3>
+                                <div style={{
+                                    display: 'inline-block',
+                                    padding: '4px 12px',
+                                    background: '#334155',
+                                    borderRadius: '12px',
+                                    fontSize: '14px',
+                                    color: '#cbd5e1',
+                                    fontWeight: 'bold'
+                                }}>
+                                    {monster.role}
+                                </div>
+                            </div>
+
+                            {/* Stats */}
+                            <div style={{
+                                background: '#1e293b',
+                                borderRadius: '8px',
+                                padding: '16px',
+                                marginBottom: '16px'
+                            }}>
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr 1fr',
+                                    gap: '12px',
+                                    textAlign: 'center'
+                                }}>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>HP</div>
+                                        <div style={{ fontSize: '18px', color: '#22c55e', fontWeight: 'bold' }}>{monster.hp}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>공격력</div>
+                                        <div style={{ fontSize: '18px', color: '#ef4444', fontWeight: 'bold' }}>{monster.attack}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>방어력</div>
+                                        <div style={{ fontSize: '18px', color: '#3b82f6', fontWeight: 'bold' }}>{monster.defense}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Description */}
+                            <div style={{
+                                background: '#0f172a',
+                                borderRadius: '8px',
+                                padding: '14px',
+                                marginBottom: '24px'
+                            }}>
+                                <div style={{
+                                    fontSize: '14px',
+                                    color: '#cbd5e1',
+                                    lineHeight: '1.6'
+                                }}>
+                                    {monster.description}
+                                </div>
+                            </div>
+                        </>
+                    )))}
 
                 {/* Failure Message */}
                 {!success && (

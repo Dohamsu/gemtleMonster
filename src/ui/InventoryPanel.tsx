@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAlchemyStore } from '../store/useAlchemyStore'
-import { useGameStore } from '../store/useGameStore'
 import { isMobileView } from '../utils/responsiveUtils'
 import { getFamilyColor, getRarityColor } from '../utils/materialUtils'
-import ResourceAnimation from './ResourceAnimation'
 import ResourceIcon from './ResourceIcon'
 import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 
@@ -16,11 +14,9 @@ export const InventoryPanel: React.FC = () => {
     selectedIngredients
   } = useAlchemyStore()
 
-  const { recentAdditions, removeRecentAddition } = useGameStore()
   const { materialCounts: playerMaterials } = useUnifiedInventory()
 
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+  const [activeTab, setActiveTab] = useState<'materials' | 'consumables'>('materials')
   const [showOnlyOwned, setShowOnlyOwned] = useState(false)
 
   // 반응형 감지
@@ -32,31 +28,15 @@ export const InventoryPanel: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Show all materials (filtered by ownership if toggled)
-  const ownedMaterials = showOnlyOwned
-    ? allMaterials.filter(m => (playerMaterials[m.id] || 0) > 0)
-    : allMaterials
-
-  // 계열별로 그룹화
-  const groupedMaterials = ownedMaterials.reduce((acc, material) => {
-    if (!acc[material.family]) {
-      acc[material.family] = []
-    }
-    acc[material.family].push(material)
-    return acc
-  }, {} as Record<string, typeof allMaterials>)
-
-  const toggleCategory = (family: string) => {
-    setCollapsedCategories(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(family)) {
-        newSet.delete(family)
-      } else {
-        newSet.add(family)
-      }
-      return newSet
+  // Filter materials based on tab and ownership
+  const filteredMaterials = allMaterials
+    .filter(m => {
+      const isConsumable = m.family === 'CONSUMABLE'
+      if (activeTab === 'materials' && isConsumable) return false
+      if (activeTab === 'consumables' && !isConsumable) return false
+      return true
     })
-  }
+    .filter(m => !showOnlyOwned || (playerMaterials[m.id] || 0) > 0)
 
   const handleAddToSlot = (materialId: string) => {
     const currentQty = selectedIngredients[materialId] || 0
@@ -70,9 +50,9 @@ export const InventoryPanel: React.FC = () => {
   return (
     <div style={{
       width: isMobile ? '100%' : '320px',
-      height: isMobile ? '50%' : '100%',
+      height: '100%', // Mobile also takes 100% now inside the drawer
       flex: isMobile ? 1 : 'none',
-      minHeight: isMobile ? '50%' : 0,
+      minHeight: 0,
       background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
       borderLeft: isMobile ? 'none' : '2px solid #4a5568',
       borderTop: isMobile ? '2px solid #4a5568' : 'none',
@@ -80,116 +60,96 @@ export const InventoryPanel: React.FC = () => {
       flexDirection: 'column',
       overflow: 'hidden'
     }}>
-      {/* 헤더 */}
+      {/* 헤더 (모바일에서는 숨김, 데스크톱에서는 타이틀만 표시) */}
+      {!isMobile && (
+        <div style={{
+          padding: '16px',
+          borderBottom: '1px solid #4a5568',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <h2 style={{
+            margin: 0,
+            fontSize: '20px',
+            color: '#f0e68c'
+          }}>
+            인벤토리
+          </h2>
+        </div>
+      )}
+
+      {/* 탭 & 필터 */}
       <div style={{
-        padding: isMobile ? '12px' : '16px',
-        borderBottom: '1px solid #4a5568',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <h2 style={{
-          margin: 0,
-          fontSize: isMobile ? '18px' : '20px',
-          color: '#f0e68c'
-        }}>
-          인벤토리
-        </h2>
-
-        {/* View Mode Toggle */}
-        <div style={{
-          display: 'flex',
-          gap: '4px',
-          background: '#0f172a',
-          borderRadius: '6px',
-          padding: '4px'
-        }}>
-          {/* Show Only Owned Toggle */}
-          <button
-            onClick={() => setShowOnlyOwned(!showOnlyOwned)}
-            style={{
-              width: '32px',
-              height: '32px',
-              background: showOnlyOwned ? '#334155' : 'transparent',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              color: showOnlyOwned ? '#facc15' : '#64748b',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
-            }}
-            title="보유 재료만 보기"
-          >
-            ★
-          </button>
-          <div style={{ width: '1px', background: '#334155', margin: '0 2px' }} />
-          <button
-            onClick={() => setViewMode('list')}
-            style={{
-              width: '32px',
-              height: '32px',
-              background: viewMode === 'list' ? '#334155' : 'transparent',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              color: viewMode === 'list' ? '#facc15' : '#64748b',
-              fontSize: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
-            }}
-            title="리스트 뷰"
-          >
-            ☰
-          </button>
-          <button
-            onClick={() => setViewMode('grid')}
-            style={{
-              width: '32px',
-              height: '32px',
-              background: viewMode === 'grid' ? '#334155' : 'transparent',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              color: viewMode === 'grid' ? '#facc15' : '#64748b',
-              fontSize: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
-            }}
-            title="썸네일 뷰"
-          >
-            ⊞
-          </button>
-        </div>
-      </div>
-
-      {/* 탭 */}
-      <div style={{
-        display: 'flex',
         borderBottom: '1px solid #4a5568',
-        background: '#0f172a'
+        background: '#0f172a',
+        paddingRight: '8px' // 버튼 여백
       }}>
         <div
+          onClick={() => setActiveTab('materials')}
           style={{
             flex: 1,
             padding: '12px 8px',
-            background: '#1e293b',
-            color: '#f0e68c',
-            borderBottom: '2px solid #f0e68c',
+            background: activeTab === 'materials' ? '#1e293b' : 'transparent',
+            color: activeTab === 'materials' ? '#f0e68c' : '#64748b',
+            borderBottom: activeTab === 'materials' ? '2px solid #f0e68c' : '2px solid transparent',
             fontSize: '13px',
             fontWeight: 'bold',
-            textAlign: 'center'
+            textAlign: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
           }}
         >
           재료
         </div>
+        <div
+          onClick={() => setActiveTab('consumables')}
+          style={{
+            flex: 1,
+            padding: '12px 8px',
+            background: activeTab === 'consumables' ? '#1e293b' : 'transparent',
+            color: activeTab === 'consumables' ? '#f0e68c' : '#64748b',
+            borderBottom: activeTab === 'consumables' ? '2px solid #f0e68c' : '2px solid transparent',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+        >
+          소모품
+        </div>
+
+        {/* Show Only Owned Toggle (탭 바 우측으로 이동) */}
+        <div style={{
+          width: '1px',
+          height: '20px',
+          background: '#334155',
+          margin: '0 8px'
+        }} />
+        <button
+          onClick={() => setShowOnlyOwned(!showOnlyOwned)}
+          style={{
+            width: '32px',
+            height: '32px',
+            background: showOnlyOwned ? '#334155' : 'transparent',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            color: showOnlyOwned ? '#facc15' : '#64748b',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s'
+          }}
+          title="보유 재료만 보기"
+        >
+          ★
+        </button>
       </div>
 
       {/* 컨텐츠 */}
@@ -200,23 +160,23 @@ export const InventoryPanel: React.FC = () => {
         minHeight: 0
       }}>
         <>
-          {ownedMaterials.length === 0 ? (
+          {filteredMaterials.length === 0 ? (
             <div style={{
               padding: '32px 16px',
               textAlign: 'center',
               color: '#94a3b8',
               fontSize: '14px'
             }}>
-              보유한 재료가 없습니다.
+              {activeTab === 'materials' ? '보유한 재료가 없습니다.' : '보유한 소모품이 없습니다.'}
             </div>
-          ) : viewMode === 'grid' ? (
-            // Grid View
+          ) : (
+            // Grid View (Always)
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
               gap: '8px'
             }}>
-              {ownedMaterials.map(material => {
+              {filteredMaterials.map(material => {
                 const quantity = playerMaterials[material.id] || 0
                 return (
                   <div
@@ -296,154 +256,6 @@ export const InventoryPanel: React.FC = () => {
                 )
               })}
             </div>
-          ) : (
-            // List View (original)
-            Object.entries(groupedMaterials).map(([family, materials]) => (
-              <div key={family} style={{ marginBottom: '16px' }}>
-                {/* 계열 헤더 - Clickable */}
-                <div
-                  onClick={() => toggleCategory(family)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    marginBottom: '8px',
-                    paddingLeft: '4px',
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    padding: '6px',
-                    borderRadius: '4px',
-                    transition: 'background 0.15s'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#1e293b' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
-                >
-                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                    {collapsedCategories.has(family) ? '▶' : '▼'}
-                  </span>
-                  <div style={{
-                    width: '12px',
-                    height: '12px',
-                    borderRadius: '50%',
-                    background: getFamilyColor(family)
-                  }} />
-                  <span style={{
-                    fontSize: '13px',
-                    fontWeight: 'bold',
-                    color: '#f1f5f9'
-                  }}>
-                    {family}
-                  </span>
-                </div>
-
-                {/* 재료 카드 */}
-                {!collapsedCategories.has(family) && materials.map(material => {
-                  const quantity = playerMaterials[material.id] || 0
-                  return (
-                    <div
-                      key={material.id}
-                      onClick={() => handleAddToSlot(material.id)}
-                      style={{
-                        marginBottom: '6px',
-                        padding: '10px',
-                        background: '#1e293b',
-                        border: selectedIngredients[material.id] ? '2px solid #ffd700' : `1px solid ${getRarityColor(material.rarity)}40`,
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s',
-                        position: 'relative',
-                        opacity: quantity > 0 ? 1 : 0.4,
-                        filter: quantity > 0 ? 'none' : 'grayscale(1)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#334155'
-                        e.currentTarget.style.transform = 'translateX(4px)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = '#1e293b'
-                        e.currentTarget.style.transform = 'translateX(0)'
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}>
-                        <div>
-                          <div style={{
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            color: getRarityColor(material.rarity),
-                            marginBottom: '2px'
-                          }}>
-                            {material.name}
-                          </div>
-                          {material.description && (
-                            <div style={{
-                              fontSize: '11px',
-                              color: '#94a3b8'
-                            }}>
-                              {material.description}
-                            </div>
-                          )}
-                        </div>
-                        <div style={{
-                          fontSize: '16px',
-                          fontWeight: 'bold',
-                          color: '#f0e68c',
-                          minWidth: '60px',
-                          textAlign: 'right',
-                          position: 'relative',
-                          marginRight: '8px',
-                          display: 'inline-block'
-                        }}>
-                          ×{quantity}
-                        </div>
-                        {(() => {
-                          const additions = recentAdditions.filter(a => a.resourceId === material.id)
-                          if (additions.length === 0) return null
-                          const totalAmount = additions.reduce((sum, a) => sum + a.amount, 0)
-                          const firstId = additions[0].id
-                          return (
-                            <div style={{
-                              position: 'absolute',
-                              top: '-20px',
-                              right: 0,
-                              pointerEvents: 'none'
-                            }}>
-                              <ResourceAnimation
-                                key={firstId}
-                                amount={totalAmount}
-                                onComplete={() => {
-                                  additions.forEach(a => removeRecentAddition(a.id))
-                                }}
-                              />
-                            </div>
-                          )
-                        })()}
-                      </div>
-
-                      {/* 특수 재료 표시 */}
-                      {material.is_special && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '6px',
-                          right: '6px',
-                          fontSize: '10px',
-                          padding: '2px 6px',
-                          background: '#7c3aed',
-                          color: 'white',
-                          borderRadius: '4px',
-                          fontWeight: 'bold'
-                        }}>
-                          특수
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            ))
           )}
         </>
       </div>

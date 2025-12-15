@@ -9,7 +9,9 @@ description: Add or Modify an alchemy recipe
    ```typescript
    {
        id: 'recipe_id',
-       resultMonsterId: 'monster_id',
+       type: 'MONSTER', // 'MONSTER' or 'ITEM'
+       resultMonsterId: 'monster_id', // Required if type is MONSTER
+       // resultItemId: 'item_id', // Required if type is ITEM
        resultCount: 1,
        baseSuccessRate: 90,
        craftTimeSec: 60,

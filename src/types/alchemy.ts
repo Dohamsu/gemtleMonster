@@ -45,7 +45,10 @@ export interface Recipe {
     id: string
     name: string
     description: string
-    resultMonsterId: string
+    type?: 'MONSTER' | 'ITEM' // Default to MONSTER for backward compatibility
+    resultMonsterId?: string // Optional now
+    resultItemId?: string // New field for item result
+    resultCount?: number // How many items produced
     materials: {
         materialId: string
         count: number

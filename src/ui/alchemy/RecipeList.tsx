@@ -200,7 +200,7 @@ export default function RecipeList({
                                 marginBottom: '6px',
                                 width: '100%'
                             }}>
-                                {/* Monster Image */}
+                                {/* Monster/Item Image */}
                                 <div style={{
                                     width: '32px',
                                     height: '32px',
@@ -211,22 +211,39 @@ export default function RecipeList({
                                     overflow: 'hidden',
                                     flexShrink: 0
                                 }}>
-                                    {MONSTER_DATA[recipe.result_monster_id]?.iconUrl ? (
-                                        <img
-                                            src={MONSTER_DATA[recipe.result_monster_id].iconUrl}
-                                            alt={recipe.result_monster_id}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'contain',
-                                                filter: isDiscovered ? 'none' : 'brightness(0) contrast(100%)',
-                                                opacity: isDiscovered ? 1 : 0.7
-                                            }}
-                                        />
+                                    {recipe.type === 'ITEM' && recipe.result_item_id ? (
+                                        // Item Icon
+                                        (() => {
+                                            const item = materials.find(m => m.id === recipe.result_item_id)
+                                            return item?.icon_url ? (
+                                                <img
+                                                    src={item.icon_url}
+                                                    alt={recipe.result_item_id}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                />
+                                            ) : (
+                                                <span style={{ fontSize: '18px' }}>🧪</span>
+                                            )
+                                        })()
                                     ) : (
-                                        <span style={{ fontSize: '18px' }}>
-                                            {MONSTER_DATA[recipe.result_monster_id]?.emoji || '❓'}
-                                        </span>
+                                        // Monster Icon
+                                        (recipe.result_monster_id && MONSTER_DATA[recipe.result_monster_id]?.iconUrl) ? (
+                                            <img
+                                                src={MONSTER_DATA[recipe.result_monster_id].iconUrl}
+                                                alt={recipe.result_monster_id}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'contain',
+                                                    filter: isDiscovered ? 'none' : 'brightness(0) contrast(100%)',
+                                                    opacity: isDiscovered ? 1 : 0.7
+                                                }}
+                                            />
+                                        ) : (
+                                            <span style={{ fontSize: '18px' }}>
+                                                {recipe.result_monster_id ? (MONSTER_DATA[recipe.result_monster_id]?.emoji || '❓') : '❓'}
+                                            </span>
+                                        )
                                     )}
                                 </div>
 

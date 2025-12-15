@@ -50,11 +50,10 @@ export default function AlchemyLayout() {
             }}>
                 {/* Left/Top: Free Form Cauldron */}
                 <div style={{
-                    flex: 1,
+                    flex: isMobile ? 'none' : 1,
                     overflow: 'auto',
                     borderRight: isMobile ? 'none' : '2px solid #4a5568',
                     borderBottom: isMobile ? '2px solid #4a5568' : 'none',
-                    minHeight: isMobile ? '50%' : 0,
                     display: 'flex',
                     flexDirection: 'column'
                 }}>

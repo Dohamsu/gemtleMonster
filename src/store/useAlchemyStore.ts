@@ -29,6 +29,7 @@ interface AlchemyState {
   playerMonsters: PlayerMonster[]
 
   // UI 상태
+  alchemyMode: 'MONSTER' | 'ITEM'
   selectedRecipeId: string | null
   selectedIngredients: Record<string, number> // materialId -> quantity
   selectedTab: 'recipes' | 'codex' | 'recommended'
@@ -42,6 +43,7 @@ interface AlchemyState {
   brewResult: {
     type: 'idle' | 'success' | 'fail'
     monsterId?: string
+    itemId?: string // New field
     count?: number
     lostMaterials?: Record<string, number>
     hint?: {
@@ -67,6 +69,7 @@ interface AlchemyState {
   loadPlayerMonsters: (userId: string) => Promise<void>
 
   // Actions - 레시피 선택
+  setAlchemyMode: (mode: 'MONSTER' | 'ITEM') => void
   selectRecipe: (recipeId: string | null) => void
   setSelectedTab: (tab: 'recipes' | 'codex' | 'recommended') => void
   setInventoryTab: (tab: 'materials' | 'monsters' | 'factory') => void
@@ -126,6 +129,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   playerRecipes: {},
   playerAlchemy: null,
   playerMonsters: [],
+  alchemyMode: 'MONSTER',
   selectedRecipeId: null,
   selectedIngredients: {},
   selectedTab: 'recipes',
@@ -276,6 +280,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       brewResult: { type: 'idle' }
     })
   },
+
+  setAlchemyMode: (mode) => set({ alchemyMode: mode, selectedRecipeId: null }),
 
   setSelectedTab: (tab) => set({ selectedTab: tab }),
   setInventoryTab: (tab) => set({ inventoryTab: tab }),
@@ -757,12 +763,17 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         }
       }
 
-
     }
 
     // 결과 설정
     const brewResult = result.success
-      ? { type: 'success' as const, monsterId: result.result_monster_id || (recipe?.result_monster_id), count: recipe?.result_count || 1, expGain: result.exp_gain }
+      ? {
+        type: 'success' as const,
+        monsterId: result.result_monster_id || (recipe?.type === 'MONSTER' ? recipe?.result_monster_id : undefined),
+        itemId: recipe?.type === 'ITEM' ? recipe?.result_item_id : undefined,
+        count: recipe?.result_count || 1,
+        expGain: result.exp_gain
+      }
       : { type: 'fail' as const, lostMaterials: materialsUsed, hint, expGain: result.exp_gain }
 
     // 3. 로컬 상태 업데이트
@@ -785,12 +796,18 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     gameStore.setResources(newGameResources)
 
     // 4. 데이터 리로드 (결과 반영 보장을 위해)
-    // 몬스터 목록이나 레시피 카운트 등은 다시 불러오는 것이 안전함
-    if (result.success && result.result_monster_id) {
-      await get().loadPlayerMonsters(userId)
+    if (result.success) {
+      if (result.result_monster_id) {
+        await get().loadPlayerMonsters(userId)
+      }
+      // If it's an item, we updated local state (playerMaterials/resources), and DB sync happens via RPC or implicit logic.
+      // For robustness, we could reload materials, but local update should be enough for fluid UI.
+      // Actually, performAlchemy RPC updates the DB. loadPlayerData will sync counts.
+      await get().loadPlayerData(userId)
+    } else {
+      // Even on fail, materials are consumed
+      await get().loadPlayerData(userId)
     }
-    // 레시피 정보도 업데이트 (craft count 등)
-    await get().loadPlayerData(userId)
   },
 
   resetBrewResult: () => {

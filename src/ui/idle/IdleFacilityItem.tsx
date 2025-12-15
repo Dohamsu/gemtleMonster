@@ -157,6 +157,11 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
 
     const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([res, cost]) => (resources[res] || 0) >= cost)
 
+    // Check if production is stalled due to missing resources
+    const cost = levelData.stats.cost
+    const hasEnoughResources = !cost || Object.entries(cost).every(([res, amount]) => (resources[res] || 0) >= amount)
+    const isStalled = !hasEnoughResources && progress >= 100
+
     const handleUpgrade = () => {
         if (nextLevelData) {
             onUpgrade(facility.id, nextLevelData.upgradeCost)
@@ -195,20 +200,22 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                         overflow: 'hidden'
                     }}>
                         <div style={{
-                            width: `${progress}%`,
+                            width: `${Math.min(progress, 100)}%`, // Clamp to 100%
                             height: '100%',
                             background: isPaused
                                 ? '#888' // 일시정지 시 회색
-                                : facility.id === 'mine'
-                                    ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
-                                    : 'linear-gradient(90deg, #4a90e2, #63b3ed)',
-                            transition: isPaused ? 'none' : 'width 0.05s linear', // 일시정지 시 애니메이션 제거
-                            boxShadow: !isPaused && progress > 90 ? '0 0 8px rgba(255,255,255,0.5)' : 'none',
-                            opacity: isPaused ? 0.5 : 1 // 일시정지 시 투명도 낮춤
+                                : isStalled
+                                    ? '#ef4444' // 재료 부족 시 빨간색
+                                    : facility.id === 'mine'
+                                        ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
+                                        : 'linear-gradient(90deg, #4a90e2, #63b3ed)',
+                            transition: (isPaused || isStalled) ? 'none' : 'width 0.05s linear', // 일시정지/중단 시 애니메이션 제거
+                            boxShadow: (!isPaused && !isStalled && progress > 90) ? '0 0 8px rgba(255,255,255,0.5)' : 'none',
+                            opacity: (isPaused || isStalled) ? 0.7 : 1 // 투명도 조정
                         }} />
                     </div>
-                    <div style={{ fontSize: '0.75em', color: '#888', marginTop: '2px', textAlign: 'center' }}>
-                        {isPaused ? '⏸️ 일시정지' : `${getActionText(facility.id)} ${Math.floor(progress)}%`}
+                    <div style={{ fontSize: '0.75em', color: isStalled ? '#ef4444' : '#888', marginTop: '2px', textAlign: 'center', fontWeight: isStalled ? 'bold' : 'normal' }}>
+                        {isPaused ? '⏸️ 일시정지' : isStalled ? '⚠️ 재료 부족 (생산 중단됨)' : `${getActionText(facility.id)} ${Math.floor(progress)}%`}
                     </div>
                 </div>
             )}
