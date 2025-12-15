@@ -93,6 +93,10 @@ const RESOURCE_ICONS: Record<string, string> = {
     ingot_silver: '/assets/materials/ingot_silver.png',
     ingot_gold: '/assets/materials/ingot_gold.png',
     ingot_platinum: '/assets/materials/ingot_platinum.png',
+
+    // Potion Consumables
+    potion_hp_small: '/assets/materials/potion_hp_small.png',
+    potion_mp_small: '/assets/materials/potion_mp_small.png',
 }
 
 export default function ResourceIcon({ resourceId, size = 20, iconUrl }: Props) {

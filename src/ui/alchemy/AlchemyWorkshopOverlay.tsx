@@ -47,7 +47,7 @@ function AlchemyWorkshopOverlay({
     alchemyContext
 }: AlchemyWorkshopOverlayProps) {
     const [isMobile, setIsMobile] = useState(isMobileView())
-    const [showCodexDesktop, setShowCodexDesktop] = useState(false)
+    const [showCodex, setShowCodex] = useState(false)
     const setCanvasView = useGameStore((state) => state.setCanvasView)
 
     useEffect(() => {
@@ -62,8 +62,13 @@ function AlchemyWorkshopOverlay({
         setCanvasView('map')
     }
 
+    // Toggle Codex
+    const toggleCodex = () => {
+        setShowCodex(!showCodex)
+    }
+
     if (isMobile) {
-        // 모바일: 탭 기반 UI
+        // 모바일: 탭 기반 UI + 플로팅 도감 버튼
         return (
             <div style={{
                 position: 'absolute',
@@ -77,7 +82,38 @@ function AlchemyWorkshopOverlay({
             }}>
                 <AlchemyBackButton onBack={handleBack} />
 
-                {/* Error Toast code... (omitting internal redundancy if possible, but replace_block needs context) */}
+                {/* Mobile Codex Floating Button - Positioned below the Hamburger Button */}
+                <div style={{
+                    position: 'absolute',
+                    top: '80px', // Hamburger is top:20px + height:50px + gap:10px
+                    right: '20px', // Align with Hamburger Button
+                    pointerEvents: 'auto',
+                    zIndex: 50
+                }}>
+                    <button
+                        onClick={toggleCodex}
+                        style={{
+                            background: showCodex ? '#fbbf24' : '#2d3748',
+                            color: showCodex ? '#1a202c' : '#f0d090',
+                            border: '2px solid #ed8936',
+                            borderRadius: '50%', // Circle on mobile
+                            width: '44px',
+                            height: '44px',
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <span>📚</span>
+                    </button>
+                </div>
+
+                {/* Error Toast */}
                 {useAlchemyStore((state) => state.error) && (
                     <div style={{
                         position: 'absolute',
@@ -113,21 +149,46 @@ function AlchemyWorkshopOverlay({
                     </div>
                 )}
 
-                {/* Main Content Area (Tabs) */}
+                {/* Mobile Codex Overlay */}
+                {showCodex && (
+                    <div style={{
+                        position: 'absolute',
+                        top: '60px', // Below header/buttons
+                        left: '0',
+                        width: '100%',
+                        height: 'calc(100% - 60px)',
+                        zIndex: 40,
+                        pointerEvents: 'auto',
+                        background: 'rgba(0, 0, 0, 0.8)', // Darken background
+                        padding: '10px',
+                        boxSizing: 'border-box'
+                    }}>
+                        <CodexPanel
+                            materials={materials}
+                            recipes={recipes}
+                            playerMaterials={playerMaterials}
+                            playerRecipes={playerRecipes}
+                        />
+                    </div>
+                )}
+
+                {/* Main Content Area (Tabs) - Hide if Codex is open? Or keep visible underneath? */}
+                {/* Keeping it underneath but functional. Codex overlay covers it. */}
                 <div style={{
                     position: 'absolute',
-                    bottom: mobileTab === 'codex' ? '10px' : '140px',
+                    bottom: '140px', // Adjusted since 'codex' tab logic is removed
                     left: 0,
                     width: '100%',
-                    height: mobileTab === 'codex' ? 'calc(100% - 80px)' : 'calc(50% - 20px)',
-                    zIndex: mobileTab === 'codex' ? 20 : 'auto',
+                    height: 'calc(50% - 20px)',
+                    zIndex: 'auto',
                     pointerEvents: 'auto',
                     background: 'transparent',
                     display: 'flex',
                     flexDirection: 'column',
                     padding: '10px',
                     gap: '10px',
-                    transition: 'all 0.3s ease-in-out'
+                    transition: 'all 0.3s ease-in-out',
+                    opacity: showCodex ? 0.3 : 1 // Dim when codex open
                 }}>
                     {/* Tab Buttons */}
                     <div style={{
@@ -173,24 +234,7 @@ function AlchemyWorkshopOverlay({
                         >
                             🎒 재료
                         </button>
-                        <button
-                            onClick={() => onMobileTabChange?.('codex')}
-                            style={{
-                                flex: 1,
-                                padding: '10px',
-                                minHeight: '44px',
-                                background: mobileTab === 'codex' ? '#5a4030' : '#4a3020',
-                                border: mobileTab === 'codex' ? '2px solid #facc15' : 'none',
-                                borderRadius: '6px',
-                                color: '#f0d090',
-                                fontWeight: 'bold',
-                                fontSize: '14px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            📚 도감
-                        </button>
+                        {/* Codex Tab Removed */}
                     </div>
 
                     {/* Tab Content */}
@@ -198,7 +242,16 @@ function AlchemyWorkshopOverlay({
                         flex: 1,
                         minHeight: 0
                     }}>
-                        {mobileTab === 'recipes' ? (
+                        {mobileTab === 'materials' ? (
+                            <MaterialGrid
+                                materials={materials}
+                                playerMaterials={playerMaterials}
+                                selectedIngredients={selectedIngredients}
+                                isBrewing={isBrewing}
+                                onAddIngredient={onAddIngredient}
+                            />
+                        ) : (
+                            // Default to recipes if not materials (and not codex anymore)
                             <RecipeList
                                 recipes={recipes}
                                 materials={materials}
@@ -209,50 +262,35 @@ function AlchemyWorkshopOverlay({
                                 onSelectRecipe={onSelectRecipe}
                                 alchemyContext={alchemyContext}
                             />
-                        ) : mobileTab === 'materials' ? (
-                            <MaterialGrid
-                                materials={materials}
-                                playerMaterials={playerMaterials}
-                                selectedIngredients={selectedIngredients}
-                                isBrewing={isBrewing}
-                                onAddIngredient={onAddIngredient}
-                            />
-                        ) : (
-                            <CodexPanel
-                                materials={materials}
-                                recipes={recipes}
-                                playerMaterials={playerMaterials}
-                                playerRecipes={playerRecipes}
-                            />
                         )}
                     </div>
                 </div>
 
-                {/* Mobile Brew Button Container - Hide if Codex */}
-                {mobileTab !== 'codex' && (
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '80px',
-                        left: 0,
-                        width: '100%',
-                        height: '60px',
-                        pointerEvents: 'auto',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 10
-                    }}>
-                        <AlchemyBrewButton
-                            selectedRecipeId={selectedRecipeId}
-                            selectedIngredients={selectedIngredients}
-                            isBrewing={isBrewing}
-                            allRecipes={recipes}
-                            playerAlchemy={playerAlchemy}
-                            onStartBrewing={onStartBrewing}
-                            onStartFreeFormBrewing={onStartFreeFormBrewing}
-                        />
-                    </div>
-                )}
+                {/* Mobile Brew Button Container */}
+                {/* Always show unless hidden by some other logic? Logic was: !codex. Now if showCodex is true, we might want to hide it or let overlay cover it. Overlay zIndex 40, this is 10. */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: '80px',
+                    left: 0,
+                    width: '100%',
+                    height: '60px',
+                    pointerEvents: showCodex ? 'none' : 'auto', // Disable clicks when codex open
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 10,
+                    opacity: showCodex ? 0 : 1 // Hide visually
+                }}>
+                    <AlchemyBrewButton
+                        selectedRecipeId={selectedRecipeId}
+                        selectedIngredients={selectedIngredients}
+                        isBrewing={isBrewing}
+                        allRecipes={recipes}
+                        playerAlchemy={playerAlchemy}
+                        onStartBrewing={onStartBrewing}
+                        onStartFreeFormBrewing={onStartFreeFormBrewing}
+                    />
+                </div>
             </div>
         )
     }
@@ -282,10 +320,10 @@ function AlchemyWorkshopOverlay({
                 zIndex: 50
             }}>
                 <button
-                    onClick={() => setShowCodexDesktop(!showCodexDesktop)}
+                    onClick={toggleCodex}
                     style={{
-                        background: showCodexDesktop ? '#fbbf24' : '#2d3748',
-                        color: showCodexDesktop ? '#1a202c' : '#f0d090',
+                        background: showCodex ? '#fbbf24' : '#2d3748',
+                        color: showCodex ? '#1a202c' : '#f0d090',
                         border: '2px solid #ed8936',
                         borderRadius: '8px',
                         padding: '10px 20px',
@@ -300,7 +338,7 @@ function AlchemyWorkshopOverlay({
                     }}
                 >
                     <span>📚</span>
-                    <span>{showCodexDesktop ? '도감 닫기' : '도감 열기'}</span>
+                    <span>{showCodex ? '도감 닫기' : '도감 열기'}</span>
                 </button>
             </div>
 
@@ -342,7 +380,7 @@ function AlchemyWorkshopOverlay({
             )}
 
             {/* Overlay Codex Panel for Desktop */}
-            {showCodexDesktop && (
+            {showCodex && (
                 <div style={{
                     position: 'absolute',
                     top: '80px',
@@ -368,7 +406,7 @@ function AlchemyWorkshopOverlay({
                 pointerEvents: 'auto',
                 height: 'calc(100% - 150px)',
                 marginTop: '70px',
-                opacity: showCodexDesktop ? 0.3 : 1, // Dim when codex is open
+                opacity: showCodex ? 0.3 : 1, // Dim when codex is open
                 transition: 'opacity 0.2s'
             }}>
                 <RecipeList
@@ -388,7 +426,7 @@ function AlchemyWorkshopOverlay({
                 pointerEvents: 'auto',
                 height: 'calc(100% - 150px)',
                 marginTop: '70px',
-                opacity: showCodexDesktop ? 0.3 : 1, // Dim when codex is open
+                opacity: showCodex ? 0.3 : 1, // Dim when codex is open
                 transition: 'opacity 0.2s'
             }}>
                 <MaterialGrid
@@ -407,8 +445,8 @@ function AlchemyWorkshopOverlay({
                 left: '50%',
                 transform: 'translateX(-50%)',
                 zIndex: 10,
-                opacity: showCodexDesktop ? 0 : 1, // Hide when codex is open
-                pointerEvents: showCodexDesktop ? 'none' : 'auto',
+                opacity: showCodex ? 0 : 1, // Hide when codex is open
+                pointerEvents: showCodex ? 'none' : 'auto', // Disable clicks
                 transition: 'opacity 0.2s'
             }}>
                 <AlchemyBrewButton

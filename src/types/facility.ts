@@ -12,6 +12,7 @@ export interface FacilityStats {
   intervalSeconds: number
   bundlesPerTick: number
   dropRates: Record<string, number>
+  cost?: Record<string, number>
 }
 
 export interface FacilityLevel {

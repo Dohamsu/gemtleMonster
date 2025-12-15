@@ -2,7 +2,7 @@
  * Material (재료) 관련 타입 정의
  */
 
-export type MaterialFamily = 'PLANT' | 'MINERAL' | 'BEAST' | 'SLIME' | 'SPIRIT'
+export type MaterialFamily = 'PLANT' | 'MINERAL' | 'BEAST' | 'SLIME' | 'SPIRIT' | 'CONSUMABLE'
 export type MaterialRarity = 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
 
 export interface Material {

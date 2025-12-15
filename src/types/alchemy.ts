@@ -5,7 +5,7 @@ export type RarityType = 'N' | 'R' | 'SR' | 'SSR'
 export interface Material {
     id: string
     name: string
-    type: 'PLANT' | 'MINERAL' | 'BEAST' | 'SLIME' | 'SPIRIT' | 'SPECIAL'
+    type: 'PLANT' | 'MINERAL' | 'BEAST' | 'SLIME' | 'SPIRIT' | 'SPECIAL' | 'CONSUMABLE'
     description: string
     rarity: RarityType
     iconUrl?: string

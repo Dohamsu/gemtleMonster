@@ -61,6 +61,10 @@ export const MATERIALS: Record<string, Material> = {
     'bone_fragment': { id: 'bone_fragment', name: '뼈 조각', type: 'BEAST', description: '작은 뼈 조각.', rarity: 'N', iconUrl: '/assets/materials/bone_fragment.png' },
     'wood_branch': { id: 'wood_branch', name: '나뭇가지', type: 'PLANT', description: '마력이 깃든 나뭇가지.', rarity: 'N', iconUrl: '/assets/materials/wood_branch.png' },
 
+    // Consumables (Potions)
+    'potion_hp_small': { id: 'potion_hp_small', name: '소형 체력 포션', type: 'CONSUMABLE', description: '체력을 50 회복시켜줍니다.', rarity: 'N', iconUrl: '/assets/materials/potion_hp_small.png', sellPrice: 20 },
+    'potion_mp_small': { id: 'potion_mp_small', name: '소형 마나 포션', type: 'CONSUMABLE', description: '마나를 30 회복시켜줍니다.', rarity: 'N', iconUrl: '/assets/materials/potion_mp_small.png', sellPrice: 20 },
+
     // Mining Tiers
     'stone': { id: 'stone', name: '돌멩이', type: 'MINERAL', description: '흔히 볼 수 있는 돌멩이입니다. 단단해서 던지면 아픕니다.', rarity: 'N', iconUrl: '/assets/materials/stone.png', sellPrice: 1 },
 

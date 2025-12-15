@@ -29,7 +29,9 @@ const RESOURCE_NAMES: Record<string, string> = {
     spirit_dust: '정령 가루',
     essence_light: '빛의 정수',
     soul_fragment: '영혼 파편',
-    crack_stone_fragment: '균열석 파편'
+    crack_stone_fragment: '균열석 파편',
+    potion_hp_small: '소형 체력 포션',
+    potion_mp_small: '소형 마나 포션'
 }
 
 
@@ -213,9 +215,21 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
 
             {levelData.stats.dropRates && (
                 <div style={{ fontSize: '0.9em', color: '#aaa', margin: '5px 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span>생산:</span>
+                    <span style={{ color: '#4ade80' }}>생산:</span>
                     {Object.keys(levelData.stats.dropRates).map(key => (
                         <ResourceIcon key={key} resourceId={key} size={18} />
+                    ))}
+                </div>
+            )}
+
+            {levelData.stats.cost && (
+                <div style={{ fontSize: '0.9em', color: '#ef4444', margin: '5px 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <span>소모:</span>
+                    {Object.entries(levelData.stats.cost).map(([key, amount]) => (
+                        <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(239, 68, 68, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                            <ResourceIcon resourceId={key} size={16} />
+                            <span style={{ fontSize: '0.85em' }}>-{amount}</span>
+                        </div>
                     ))}
                 </div>
             )}

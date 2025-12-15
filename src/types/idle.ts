@@ -11,6 +11,7 @@ export interface FacilityLevel {
         intervalSeconds: number
         bundlesPerTick: number
         dropRates: Record<string, number>
+        cost?: Record<string, number>
         capacity?: number
         questSeedDropRate?: number
         crackStoneFragmentDropRate?: number

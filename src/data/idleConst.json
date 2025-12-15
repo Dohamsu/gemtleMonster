@@ -241,6 +241,9 @@
                         "bundlesPerTick": 1,
                         "dropRates": {
                             "ingot_copper": 1.0
+                        },
+                        "cost": {
+                            "ore_copper": 2
                         }
                     },
                     "upgradeCost": {
@@ -257,6 +260,9 @@
                         "dropRates": {
                             "ingot_iron": 0.9,
                             "ingot_copper": 0.1
+                        },
+                        "cost": {
+                            "ore_iron": 2
                         }
                     },
                     "upgradeCost": {
@@ -273,6 +279,9 @@
                         "dropRates": {
                             "ingot_silver": 0.8,
                             "ingot_iron": 0.2
+                        },
+                        "cost": {
+                            "ore_silver": 2
                         }
                     },
                     "upgradeCost": {
@@ -289,6 +298,9 @@
                         "dropRates": {
                             "ingot_gold": 0.7,
                             "ingot_silver": 0.3
+                        },
+                        "cost": {
+                            "ore_gold": 2
                         }
                     },
                     "upgradeCost": {
@@ -305,11 +317,86 @@
                         "dropRates": {
                             "ingot_platinum": 0.6,
                             "ingot_gold": 0.4
+                        },
+                        "cost": {
+                            "ore_platinum": 2
                         }
                     },
                     "upgradeCost": {
                         "gold": 200000,
                         "ore_gold": 50
+                    }
+                }
+            ]
+        },
+        {
+            "id": "alchemy_workshop",
+            "name": "연금술 공방",
+            "category": "resource_production",
+            "unlockConditions": [
+                {
+                    "type": "facilityLevel",
+                    "facilityId": "herb_farm",
+                    "min": 2
+                }
+            ],
+            "levels": [
+                {
+                    "level": 1,
+                    "name": "허름한 공방",
+                    "stats": {
+                        "intervalSeconds": 30,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "potion_hp_small": 1.0
+                        },
+                        "cost": {
+                            "herb_common": 3
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 500,
+                        "wood_branch": 20
+                    }
+                },
+                {
+                    "level": 2,
+                    "name": "견습 연금술사의 방",
+                    "stats": {
+                        "intervalSeconds": 25,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "potion_hp_small": 0.8,
+                            "potion_mp_small": 0.2
+                        },
+                        "cost": {
+                            "herb_common": 5
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 1500,
+                        "stone": 50,
+                        "herb_common": 50
+                    }
+                },
+                {
+                    "level": 3,
+                    "name": "전문가의 실험실",
+                    "stats": {
+                        "intervalSeconds": 20,
+                        "bundlesPerTick": 2,
+                        "dropRates": {
+                            "potion_mp_small": 0.6,
+                            "potion_hp_small": 0.4
+                        },
+                        "cost": {
+                            "herb_rare": 1
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 5000,
+                        "iron_ingot": 20,
+                        "herb_rare": 20
                     }
                 }
             ]
