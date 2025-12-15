@@ -7,12 +7,7 @@ import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 
 export const InventoryPanel: React.FC = () => {
   const [isMobile, setIsMobile] = useState(isMobileView())
-  const {
-    allMaterials,
-    addIngredient,
-    removeIngredient,
-    selectedIngredients
-  } = useAlchemyStore()
+  const { allMaterials } = useAlchemyStore()
 
   const { materialCounts: playerMaterials } = useUnifiedInventory()
 
@@ -37,15 +32,6 @@ export const InventoryPanel: React.FC = () => {
       return true
     })
     .filter(m => !showOnlyOwned || (playerMaterials[m.id] || 0) > 0)
-
-  const handleAddToSlot = (materialId: string) => {
-    const currentQty = selectedIngredients[materialId] || 0
-    if (currentQty > 0) {
-      removeIngredient(materialId, currentQty)
-    } else {
-      addIngredient(materialId, 1)
-    }
-  }
 
   return (
     <div style={{
@@ -181,13 +167,11 @@ export const InventoryPanel: React.FC = () => {
                 return (
                   <div
                     key={material.id}
-                    onClick={() => handleAddToSlot(material.id)}
                     style={{
                       padding: '12px 8px',
                       background: '#1e293b',
-                      border: selectedIngredients[material.id] ? '2px solid #ffd700' : `2px solid ${getRarityColor(material.rarity)}40`,
+                      border: `2px solid ${getRarityColor(material.rarity)}40`,
                       borderRadius: '8px',
-                      cursor: 'pointer',
                       transition: 'all 0.15s',
                       display: 'flex',
                       flexDirection: 'column',
@@ -196,14 +180,6 @@ export const InventoryPanel: React.FC = () => {
                       position: 'relative',
                       opacity: quantity > 0 ? 1 : 0.4,
                       filter: quantity > 0 ? 'none' : 'grayscale(1)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#334155'
-                      e.currentTarget.style.transform = 'scale(1.05)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = '#1e293b'
-                      e.currentTarget.style.transform = 'scale(1)'
                     }}
                   >
                     {/* Material Icon */}
@@ -269,7 +245,7 @@ export const InventoryPanel: React.FC = () => {
         color: '#64748b',
         textAlign: 'center'
       }}>
-        재료를 클릭하여 연금솥에 추가하세요
+        보유 중인 재료 및 소모품 목록
       </div>
     </div>
   )

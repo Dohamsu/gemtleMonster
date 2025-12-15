@@ -77,6 +77,23 @@ export function useOfflineRewards(userId: string | undefined) {
         // 최소 시간 체크 (5분 미만이면 보상 없음)
         if (elapsedSeconds < 60 * 5) {
           console.log('ℹ️ [OfflineRewards] 경과 시간 너무 짧음:', elapsedSeconds, '초')
+
+          // 마지막 수집 시간 업데이트 (자동 수집이 10분 초과로 멈추는 것 방지)
+          const now = new Date()
+          await alchemyApi.updateLastCollectedAt(userId, now)
+
+          // 로컬 스토어 수집 시간도 업데이트
+          const gameStore = useGameStore.getState()
+          const nowTime = now.getTime()
+          Object.keys(facilities).forEach(facilityId => {
+            const level = facilities[facilityId]
+            if (level > 0) {
+              for (let l = 1; l <= level; l++) {
+                gameStore.setLastCollectedAt(`${facilityId}-${l}`, nowTime)
+              }
+            }
+          })
+
           setClaimed(true)
           return
         }

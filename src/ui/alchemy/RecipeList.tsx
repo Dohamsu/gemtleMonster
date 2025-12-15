@@ -4,6 +4,7 @@ import type { AlchemyContext } from '../../types/alchemy'
 import { isRecipeValid } from '../../lib/alchemyLogic'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { isMobileView } from '../../utils/responsiveUtils'
+import { useAlchemyStore } from '../../store/useAlchemyStore'
 
 interface RecipeListProps {
     recipes: Recipe[]
@@ -27,6 +28,7 @@ export default function RecipeList({
     alchemyContext
 }: RecipeListProps) {
     const [isMobile, setIsMobile] = useState(isMobileView())
+    const { alchemyMode, setAlchemyMode } = useAlchemyStore()
 
     useEffect(() => {
         const handleResize = () => {
@@ -100,31 +102,104 @@ export default function RecipeList({
         }}>
             {/* Header */}
             <div style={{
-                padding: isMobile ? '10px' : '12px',
+                padding: isMobile ? '8px 10px' : '10px 12px',
                 borderBottom: '1px solid #7a5040',
-                background: '#2a1810'
+                background: '#2a1810',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px'
             }}>
                 <h3 style={{
                     margin: 0,
-                    fontSize: isMobile ? '16px' : '18px',
+                    fontSize: isMobile ? '14px' : '16px',
                     color: '#f0d090',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    whiteSpace: 'nowrap'
                 }}>
                     📜 레시피
                 </h3>
+
+                {/* Mode Toggle */}
+                <div style={{
+                    display: 'flex',
+                    background: '#1a1210',
+                    borderRadius: '16px',
+                    padding: '2px',
+                    border: '1px solid #4a3520',
+                    position: 'relative'
+                }}>
+                    <button
+                        onClick={() => setAlchemyMode('MONSTER')}
+                        style={{
+                            background: alchemyMode === 'MONSTER' ? 'linear-gradient(135deg, #6b46c1 0%, #805ad5 100%)' : 'transparent',
+                            color: alchemyMode === 'MONSTER' ? 'white' : '#8a7060',
+                            border: 'none',
+                            borderRadius: '14px',
+                            padding: isMobile ? '4px 10px' : '5px 14px',
+                            fontSize: isMobile ? '11px' : '13px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transform: alchemyMode === 'MONSTER' ? 'scale(1.05)' : 'scale(1)',
+                            boxShadow: alchemyMode === 'MONSTER' ? '0 2px 8px rgba(107, 70, 193, 0.5)' : 'none'
+                        }}
+                    >
+                        몬스터
+                    </button>
+                    <button
+                        onClick={() => setAlchemyMode('ITEM')}
+                        style={{
+                            background: alchemyMode === 'ITEM' ? 'linear-gradient(135deg, #2b6cb0 0%, #4299e1 100%)' : 'transparent',
+                            color: alchemyMode === 'ITEM' ? 'white' : '#8a7060',
+                            border: 'none',
+                            borderRadius: '14px',
+                            padding: isMobile ? '4px 10px' : '5px 14px',
+                            fontSize: isMobile ? '11px' : '13px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transform: alchemyMode === 'ITEM' ? 'scale(1.05)' : 'scale(1)',
+                            boxShadow: alchemyMode === 'ITEM' ? '0 2px 8px rgba(43, 108, 176, 0.5)' : 'none'
+                        }}
+                    >
+                        소모품
+                    </button>
+                </div>
             </div>
 
-            {/* Recipe List */}
-            <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: isMobile ? '6px' : '8px',
-                opacity: isBrewing ? 0.4 : 1,
-                pointerEvents: isBrewing ? 'none' : 'auto',
-                display: isMobile ? 'grid' : 'block',
-                gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'none',
-                gap: isMobile ? '6px' : '0',
-            }}>
+            {/* Recipe List - key로 모드 변경 시 애니메이션 재실행 */}
+            <div
+                key={alchemyMode}
+                style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    padding: isMobile ? '6px' : '8px',
+                    opacity: isBrewing ? 0.4 : 1,
+                    pointerEvents: isBrewing ? 'none' : 'auto',
+                    display: isMobile ? 'grid' : 'block',
+                    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'none',
+                    gap: isMobile ? '6px' : '0',
+                    animation: 'fadeSlideIn 0.25s ease-out'
+                }}>
+                <style>{`
+                    @keyframes fadeSlideIn {
+                        from {
+                            opacity: 0;
+                            transform: translateY(8px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+                `}</style>
                 {visibleRecipes.map(recipe => {
                     const isSelected = selectedRecipeId === recipe.id
                     /*
