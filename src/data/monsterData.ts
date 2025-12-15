@@ -472,7 +472,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'wind'
     },
     'sky_dragon_hatchling': {
-        name: '스카이 드래곤 유치',
+        name: '스카이 드래곤 해츨링',
         description: '천공의 탑 둥지에서 갓 깨어난 드래곤. 아직 어리지만 하늘의 제왕다운 위엄과 힘을 가지고 있습니다.',
         role: '딜러',
         hp: 1500,

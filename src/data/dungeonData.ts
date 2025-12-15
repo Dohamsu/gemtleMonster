@@ -303,6 +303,21 @@ export const VOLCANO_DUNGEON: Dungeon = {
                 { materialId: 'crystal_mana', chance: 30, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'fire_core', chance: 20, minQuantity: 1, maxQuantity: 1 } // Core drop
             ]
+        },
+        {
+            id: 'monster_dragon_inferno',
+            name: '인페르노 드래곤',
+            level: 30,
+            hp: 2000,
+            attack: 150,
+            defense: 80,
+            exp: 1000,
+            drops: [
+                { materialId: 'dragon_scale', chance: 100, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'dragon_horn', chance: 50, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'fire_core', chance: 40, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'gem_fragment', chance: 50, minQuantity: 2, maxQuantity: 3 }
+            ]
         }
     ]
 }
@@ -329,7 +344,7 @@ export const SKY_DUNGEON: Dungeon = {
         },
         {
             id: 'sky_dragon_hatchling',
-            name: '스카이 드래곤 유치',
+            name: '스카이 드래곤 해츨링',
             level: 28,
             hp: 1500,
             attack: 100,

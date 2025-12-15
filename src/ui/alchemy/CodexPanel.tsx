@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import type { Material, Recipe, PlayerRecipe } from '../../types'
 import { isMobileView } from '../../utils/responsiveUtils'
 import { MONSTER_DATA } from '../../data/monsterData'
+import { getMaterialSources } from '../../utils/materialSourceUtils'
 
 interface CodexPanelProps {
     materials: Material[]
@@ -345,23 +346,36 @@ export default function CodexPanel({
                                 color: '#cbd5e0',
                                 minHeight: '80px'
                             }}>
-                                {selectedMaterial.source_info ? (
-                                    <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                                        {Array.isArray(selectedMaterial.source_info) ? (
-                                            selectedMaterial.source_info.map((source: any, idx: number) => (
-                                                <li key={idx} style={{ marginBottom: '4px' }}>{source}</li>
-                                            ))
-                                        ) : typeof selectedMaterial.source_info === 'string' ? (
-                                            <li>{selectedMaterial.source_info}</li>
-                                        ) : (
-                                            <li>정보 없음</li>
-                                        )}
-                                    </ul>
-                                ) : (
-                                    <div style={{ color: '#718096', fontStyle: 'italic' }}>
-                                        아직 알려진 정보가 없습니다.
-                                    </div>
-                                )}
+                                {(() => {
+                                    const sources = getMaterialSources(selectedMaterial.id)
+                                    if (sources.length > 0) {
+                                        return (
+                                            <ul style={{ paddingLeft: '0', margin: 0, listStyle: 'none' }}>
+                                                {sources.map((source, idx) => (
+                                                    <li key={idx} style={{ marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                        <span style={{ fontSize: '16px' }}>
+                                                            {source.type === 'facility' ? '🏭' : '⚔️'}
+                                                        </span>
+                                                        <span>
+                                                            <strong style={{ color: '#e2e8f0' }}>{source.name}</strong>
+                                                            {source.detail && (
+                                                                <span style={{ color: '#a0aec0' }}> - {source.detail}</span>
+                                                            )}
+                                                            {source.dropRate !== undefined && (
+                                                                <span style={{ color: '#48bb78', marginLeft: '4px' }}>({source.dropRate}%)</span>
+                                                            )}
+                                                        </span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )
+                                    }
+                                    return (
+                                        <div style={{ color: '#718096', fontStyle: 'italic' }}>
+                                            아직 알려진 정보가 없습니다.
+                                        </div>
+                                    )
+                                })()}
                             </div>
                         </div>
                     </div>
