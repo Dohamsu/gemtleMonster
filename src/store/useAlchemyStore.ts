@@ -737,7 +737,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
             const materialName = materialDef?.name || matchingIngredient.material_id
 
             // 몬스터 이름 조회 (레시피 이름 대신 실제 몬스터 이름 사용)
-            let baseName = getMonsterName(undiscoveredRecipe.result_monster_id) || undiscoveredRecipe.name
+            let baseName = (undiscoveredRecipe.result_monster_id ? getMonsterName(undiscoveredRecipe.result_monster_id) : undefined) || undiscoveredRecipe.name
 
             // Fallback cleanup if name still contains "recipe"
             baseName = baseName.replace(/ 레시피| 조합법/g, '').trim()

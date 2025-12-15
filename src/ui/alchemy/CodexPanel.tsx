@@ -190,7 +190,7 @@ export default function CodexPanel({
                     {activeTab === 'recipes' && recipes.map(recipe => {
                         const playerRecipe = playerRecipes[recipe.id]
                         const isDiscovered = playerRecipe?.is_discovered || false
-                        const monster = MONSTER_DATA[recipe.result_monster_id]
+                        const monster = recipe.result_monster_id ? MONSTER_DATA[recipe.result_monster_id] : undefined
 
                         return (
                             <button
@@ -421,96 +421,103 @@ export default function CodexPanel({
                             </button>
                         )}
 
-                        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                            <div style={{
-                                width: '64px',
-                                height: '64px',
-                                background: '#2d3748',
-                                borderRadius: '12px',
-                                border: '2px solid #ed8936',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                overflow: 'hidden'
-                            }}>
-                                {MONSTER_DATA[selectedRecipe.result_monster_id]?.iconUrl ? (
-                                    <img
-                                        src={MONSTER_DATA[selectedRecipe.result_monster_id].iconUrl}
-                                        alt={MONSTER_DATA[selectedRecipe.result_monster_id].name}
-                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                    />
-                                ) : (
-                                    <span style={{ fontSize: '32px' }}>📜</span>
-                                )}
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#ed8936' }}>
-                                    {MONSTER_DATA[selectedRecipe.result_monster_id]?.name || selectedRecipe.name}
-                                </div>
-                                <div style={{ fontSize: '14px', color: '#a0aec0' }}>
-                                    {MONSTER_DATA[selectedRecipe.result_monster_id]?.role || 'Unknown'}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '8px' }}>필요 재료</div>
-                            <div style={{
-                                background: '#2d3748',
-                                borderRadius: '8px',
-                                padding: '12px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '8px'
-                            }}>
-                                {selectedRecipe.ingredients?.map((ing, idx) => {
-                                    const material = materials.find(m => m.id === ing.material_id)
-                                    return (
-                                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <div style={{ width: '24px', height: '24px', background: '#4a5568', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                {material?.icon_url ? <img src={material.icon_url} style={{ width: '100%' }} /> : '📦'}
-                                            </div>
-                                            <span style={{ fontSize: '14px', color: '#cbd5e0', flex: 1 }}>
-                                                {material?.name || ing.material_id}
-                                            </span>
-                                            <span style={{ fontSize: '14px', color: '#fbbf24', fontWeight: 'bold' }}>
-                                                x {ing.quantity}
-                                            </span>
+                        {(() => {
+                            const monster = selectedRecipe.result_monster_id ? MONSTER_DATA[selectedRecipe.result_monster_id] : undefined
+                            return (
+                                <>
+                                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                                        <div style={{
+                                            width: '64px',
+                                            height: '64px',
+                                            background: '#2d3748',
+                                            borderRadius: '12px',
+                                            border: '2px solid #ed8936',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            overflow: 'hidden'
+                                        }}>
+                                            {monster?.iconUrl ? (
+                                                <img
+                                                    src={monster.iconUrl}
+                                                    alt={monster.name}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                />
+                                            ) : (
+                                                <span style={{ fontSize: '32px' }}>📜</span>
+                                            )}
                                         </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#ed8936' }}>
+                                                {monster?.name || selectedRecipe.name}
+                                            </div>
+                                            <div style={{ fontSize: '14px', color: '#a0aec0' }}>
+                                                {monster?.role || 'Unknown'}
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <div style={{
-                            background: '#2d3748',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            fontSize: '14px'
-                        }}>
-                            <div style={{ textAlign: 'center' }}>
-                                <div style={{ color: '#a0aec0', marginBottom: '4px' }}>제작 시간</div>
-                                <div style={{ color: 'white', fontWeight: 'bold' }}>
-                                    {selectedRecipe.craft_time_sec}초
-                                </div>
-                            </div>
-                            <div style={{ width: '1px', background: '#4a5568' }} />
-                            <div style={{ textAlign: 'center' }}>
-                                <div style={{ color: '#a0aec0', marginBottom: '4px' }}>획득 경험치</div>
-                                <div style={{ color: '#9f7aea', fontWeight: 'bold' }}>
-                                    {selectedRecipe.exp_gain} XP
-                                </div>
-                            </div>
-                        </div>
+                                    <div>
+                                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '8px' }}>필요 재료</div>
+                                        <div style={{
+                                            background: '#2d3748',
+                                            borderRadius: '8px',
+                                            padding: '12px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '8px'
+                                        }}>
+                                            {selectedRecipe.ingredients?.map((ing, idx) => {
+                                                const material = materials.find(m => m.id === ing.material_id)
+                                                return (
+                                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <div style={{ width: '24px', height: '24px', background: '#4a5568', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            {material?.icon_url ? <img src={material.icon_url} style={{ width: '100%' }} /> : '📦'}
+                                                        </div>
+                                                        <span style={{ fontSize: '14px', color: '#cbd5e0', flex: 1 }}>
+                                                            {material?.name || ing.material_id}
+                                                        </span>
+                                                        <span style={{ fontSize: '14px', color: '#fbbf24', fontWeight: 'bold' }}>
+                                                            x {ing.quantity}
+                                                        </span>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
 
-                        <div>
-                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '8px' }}>설명</div>
-                            <div style={{ fontSize: '14px', color: '#a0aec0', lineHeight: '1.5' }}>
-                                {MONSTER_DATA[selectedRecipe.result_monster_id]?.description || '설명이 없습니다.'}
-                            </div>
-                        </div>
+                                    <div style={{
+                                        background: '#2d3748',
+                                        borderRadius: '8px',
+                                        padding: '12px',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        fontSize: '14px'
+                                    }}>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ color: '#a0aec0', marginBottom: '4px' }}>제작 시간</div>
+                                            <div style={{ color: 'white', fontWeight: 'bold' }}>
+                                                {selectedRecipe.craft_time_sec}초
+                                            </div>
+                                        </div>
+                                        <div style={{ width: '1px', background: '#4a5568' }} />
+                                        <div style={{ textAlign: 'center' }}>
+                                            <div style={{ color: '#a0aec0', marginBottom: '4px' }}>획득 경험치</div>
+                                            <div style={{ color: '#9f7aea', fontWeight: 'bold' }}>
+                                                {selectedRecipe.exp_gain} XP
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#e2e8f0', marginBottom: '8px' }}>설명</div>
+                                        <div style={{ fontSize: '14px', color: '#a0aec0', lineHeight: '1.5' }}>
+                                            {monster?.description || '설명이 없습니다.'}
+                                        </div>
+                                    </div>
+                                </>
+                            )
+                        })()}
                     </div>
                 )}
             </div>
