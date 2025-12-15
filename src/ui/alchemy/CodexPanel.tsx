@@ -114,7 +114,8 @@ export default function CodexPanel({
                         transition: 'background 0.2s'
                     }}
                 >
-                    📜 레시피 도감
+                    <img src="/assets/ui/recipe.png" alt="레시피" style={{ width: '18px', height: '18px', marginRight: '6px', verticalAlign: 'middle' }} />
+                    레시피 도감
                 </button>
             </div>
 
@@ -227,7 +228,7 @@ export default function CodexPanel({
                                     {isDiscovered && monster?.iconUrl ? (
                                         <img src={monster.iconUrl} alt={monster.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                     ) : (
-                                        <span style={{ fontSize: '20px' }}>📜</span>
+                                        <img src="/assets/ui/recipe.png" alt="레시피" style={{ width: '24px', height: '24px' }} />
                                     )}
                                 </div>
                                 <span style={{ fontSize: '10px', color: '#cbd5e0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
@@ -444,7 +445,7 @@ export default function CodexPanel({
                                                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                                 />
                                             ) : (
-                                                <span style={{ fontSize: '32px' }}>📜</span>
+                                                <img src="/assets/ui/recipe.png" alt="레시피" style={{ width: '48px', height: '48px' }} />
                                             )}
                                         </div>
                                         <div>

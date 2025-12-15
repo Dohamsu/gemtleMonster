@@ -57,14 +57,25 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
 
         setLoading(true)
 
-        const result = mode === 'login'
-            ? await onSignIn(email, password)
-            : await onSignUp(email, password)
+        try {
+            const result = mode === 'login'
+                ? await onSignIn(email, password)
+                : await onSignUp(email, password)
 
-        setLoading(false)
+            console.log('[LoginScreen] Auth result:', result)
+            setLoading(false)
 
-        if (!result.success) {
-            setError(getLocalizedError(result.error || '오류가 발생했습니다.'))
+            if (!result.success) {
+                const errorMsg = getLocalizedError(result.error || '오류가 발생했습니다.')
+                console.log('[LoginScreen] Setting error:', errorMsg)
+                console.log('[LoginScreen] Current loading state before setError:', loading)
+                setError(errorMsg)
+                console.log('[LoginScreen] Error set complete')
+            }
+        } catch (err: any) {
+            console.error('[LoginScreen] Unexpected error:', err)
+            setLoading(false)
+            setError('로그인 중 예기치 않은 오류가 발생했습니다.')
         }
     }
 
@@ -369,7 +380,9 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                             fontSize: '13px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px'
+                            gap: '8px',
+                            position: 'relative',
+                            zIndex: 30
                         }}>
                             <span style={{ fontSize: '16px' }}>⚠️</span>
                             {error}
@@ -433,7 +446,7 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                     게스트로 빠르게 시작
                 </button>
 
-                {loading && (
+                {loading && !error && (
                     <div style={{
                         position: 'absolute',
                         top: 0,

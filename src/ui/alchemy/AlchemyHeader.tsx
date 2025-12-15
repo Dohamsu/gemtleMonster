@@ -31,7 +31,8 @@ export default function AlchemyHeader() {
 
             <div style={{ display: 'flex', gap: '20px', fontSize: '0.95em' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span style={{ color: '#ffd700' }}>💰 Gold:</span>
+                    <img src="/assets/ui/gold_coin.png" alt="골드" style={{ width: '18px', height: '18px', verticalAlign: 'middle' }} />
+                    <span style={{ color: '#ffd700' }}>Gold:</span>
                     <span>{gold.toLocaleString()}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#aaa' }}>

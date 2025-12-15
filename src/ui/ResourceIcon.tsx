@@ -56,7 +56,7 @@ const RESOURCE_ICONS: Record<string, string> = {
     shard_light: '/assets/materials/shard_light.png',
 
     // 기타
-    gold: '💰',
+    gold: '/assets/ui/gold_coin.png',
     training_token: '🎖️',
 
     // New Basic Materials (Placeholders)

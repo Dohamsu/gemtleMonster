@@ -166,9 +166,17 @@ export const useGameStore = create<GameState>((set, get) => ({
         // Since we are in useGameStore, we should call useAlchemyStore actions
         const { addMaterial } = useAlchemyStore.getState()
 
-        // 1. Add to AlchemyStore (Authoritative)
+        // 1. Add to AlchemyStore (Authoritative) - BUT skip 'gold' as it's not a material
         Object.entries(rewards).forEach(([id, qty]) => {
-            addMaterial(id, qty)
+            if (id === 'gold') {
+                // Handle gold separately - update local resources only (legacy system)
+                const currentGold = get().resources['gold'] || 0
+                set(state => ({
+                    resources: { ...state.resources, gold: currentGold + qty }
+                }))
+            } else {
+                addMaterial(id, qty)
+            }
         })
 
         // 2. Add to Recent Additions (for Animation)

@@ -37,11 +37,19 @@ async function seedMaterials() {
     const rarityMap: Record<string, string> = {
         'N': 'COMMON',
         'R': 'RARE',
-        'SR': 'EPIC'
+        'SR': 'EPIC',
+        'SSR': 'LEGENDARY',
+        'UR': 'LEGENDARY'
     }
 
     const familyMap: Record<string, string> = {
-        'SPECIAL': 'MINERAL' // Fallback for SPECIAL
+        'PLANT': 'PLANT',
+        'MINERAL': 'MINERAL',
+        'BEAST': 'BEAST',
+        'SLIME': 'SLIME',
+        'SPIRIT': 'SPIRIT',
+        'SPECIAL': 'MINERAL',
+        'CONSUMABLE': 'MINERAL' // Map CONSUMABLE to MINERAL as fallback
     }
 
     // Let's try to upsert.

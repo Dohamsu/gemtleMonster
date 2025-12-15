@@ -231,7 +231,8 @@ function AlchemyWorkshopOverlay({
                                 transition: 'all 0.2s'
                             }}
                         >
-                            📜 레시피
+                            <img src="/assets/ui/recipe.png" alt="레시피" style={{ width: '16px', height: '16px', marginRight: '4px', verticalAlign: 'middle' }} />
+                            레시피
                         </button>
                         <button
                             onClick={() => onMobileTabChange?.('materials')}

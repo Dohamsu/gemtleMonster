@@ -117,7 +117,8 @@ export default function RecipeList({
                     fontWeight: 'bold',
                     whiteSpace: 'nowrap'
                 }}>
-                    📜 레시피
+                    <img src="/assets/ui/recipe.png" alt="레시피" style={{ width: '20px', height: '20px', marginRight: '6px', verticalAlign: 'middle' }} />
+                    레시피
                 </h3>
 
                 {/* Mode Toggle */}

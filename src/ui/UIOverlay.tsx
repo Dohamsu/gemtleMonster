@@ -263,7 +263,8 @@ export default function UIOverlay() {
                     alignItems: 'center',
                     gap: '4px'
                 }}>
-                    💰 {(resources.gold || 0).toLocaleString()} G
+                    <img src="/assets/ui/gold_coin.png" alt="골드" style={{ width: '18px', height: '18px', marginRight: '4px', verticalAlign: 'middle' }} />
+                    {(resources.gold || 0).toLocaleString()} G
                 </div>
             </div>
 

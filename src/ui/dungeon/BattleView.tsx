@@ -501,8 +501,8 @@ export default function BattleView() {
                         logText = logText.replace('[ENEMY]', '')
                     }
 
-                    // Parsing logic for tags: {{RED|text}}, {{GREEN|text}} and {{R_RARITY|text}}
-                    const parts = logText.split(/({{RED\|[^}]+}}|{{GREEN\|[^}]+}}|{{R_[^|]+\|[^}]+}})/g)
+                    // Parsing logic for tags: {{RED|text}}, {{GREEN|text}}, {{GOLD|text}} and {{R_RARITY|text}}
+                    const parts = logText.split(/({{RED\|[^}]+}}|{{GREEN\|[^}]+}}|{{GOLD\|[^}]+}}|{{R_[^|]+\|[^}]+}})/g)
 
                     const getRarityColor = (rarity: string) => {
                         switch (rarity) {
@@ -524,6 +524,14 @@ export default function BattleView() {
                                 } else if (part.startsWith('{{GREEN|') && part.endsWith('}}')) {
                                     const content = part.slice(8, -2)
                                     return <span key={idx} style={{ color: '#4ade80', fontWeight: 'bold' }}>{content}</span>
+                                } else if (part.startsWith('{{GOLD|') && part.endsWith('}}')) {
+                                    const content = part.slice(7, -2)
+                                    return (
+                                        <span key={idx} style={{ color: '#fbbf24', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+                                            <img src="/assets/ui/gold_coin.png" alt="골드" style={{ width: '14px', height: '14px', verticalAlign: 'middle' }} />
+                                            {content}
+                                        </span>
+                                    )
                                 } else if (part.startsWith('{{R_') && part.endsWith('}}')) {
                                     const match = part.match(/{{R_([^|]+)\|([^}]+)}}/)
                                     if (match) {
@@ -569,6 +577,30 @@ export default function BattleView() {
                             </h4>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                                 {Object.entries(battleState.rewards).map(([materialId, quantity]) => {
+                                    // Special handling for gold
+                                    if (materialId === 'gold') {
+                                        return (
+                                            <div key={materialId} style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                padding: '4px 8px',
+                                                background: 'rgba(0,0,0,0.3)',
+                                                borderRadius: '4px'
+                                            }}>
+                                                <img
+                                                    src="/assets/ui/gold_coin.png"
+                                                    alt="골드"
+                                                    style={{ width: '20px', height: '20px', objectFit: 'contain' }}
+                                                />
+                                                <span style={{ color: '#fbbf24', fontSize: '12px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+                                                    골드
+                                                </span>
+                                                <span style={{ color: '#fbbf24', fontWeight: 'bold', fontSize: '12px' }}>x{quantity}</span>
+                                            </div>
+                                        )
+                                    }
+
                                     const material = MATERIALS[materialId]
                                     const isImage = material?.iconUrl?.startsWith('/') || material?.iconUrl?.startsWith('http')
 

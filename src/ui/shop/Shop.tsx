@@ -442,7 +442,8 @@ export default function Shop() {
                         fontWeight: 'bold',
                         color: '#facc15'
                     }}>
-                        💰 {formatNumber(gold)} G
+                        <img src="/assets/ui/gold_coin.png" alt="골드" style={{ width: '20px', height: '20px', marginRight: '4px', verticalAlign: 'middle' }} />
+                        {formatNumber(gold)} G
                     </div>
                 </div>
             </div>

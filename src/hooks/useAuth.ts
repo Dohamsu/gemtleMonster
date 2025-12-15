@@ -34,7 +34,8 @@ export function useAuth() {
     // 이메일/비밀번호로 로그인
     const signIn = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
         const startTime = Date.now()
-        setState(prev => ({ ...prev, loading: true, error: null }))
+        // Note: 여기서 loading 상태를 변경하지 않음 - LoginScreen에서 자체 loading 상태를 관리함
+        // setState를 호출하면 App.tsx가 로딩 화면으로 전환되어 LoginScreen이 언마운트됨
 
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
@@ -43,7 +44,7 @@ export function useAuth() {
             })
 
             if (error) {
-                setState(prev => ({ ...prev, loading: false, error: error.message }))
+                // 에러 시 바로 반환 - 내부 상태 변경 없음
                 return { success: false, error: error.message }
             }
 
@@ -52,6 +53,7 @@ export function useAuth() {
                 await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsed))
             }
 
+            // 성공 시에만 user 상태 업데이트
             setState({
                 user: data.user,
                 loading: false,
@@ -61,7 +63,6 @@ export function useAuth() {
             return { success: true }
         } catch (err: any) {
             const errorMsg = err.message || '로그인 중 오류가 발생했습니다.'
-            setState(prev => ({ ...prev, loading: false, error: errorMsg }))
             return { success: false, error: errorMsg }
         }
     }, [])
@@ -69,7 +70,7 @@ export function useAuth() {
     // 이메일/비밀번호로 회원가입
     const signUp = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
         const startTime = Date.now()
-        setState(prev => ({ ...prev, loading: true, error: null }))
+        // Note: 여기서 loading 상태를 변경하지 않음 - LoginScreen에서 자체 loading 상태를 관리함
 
         try {
             const { data, error } = await supabase.auth.signUp({
@@ -81,7 +82,7 @@ export function useAuth() {
             })
 
             if (error) {
-                setState(prev => ({ ...prev, loading: false, error: error.message }))
+                // 에러 시 바로 반환 - 내부 상태 변경 없음
                 return { success: false, error: error.message }
             }
 
@@ -93,6 +94,7 @@ export function useAuth() {
                     await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsed))
                 }
 
+                // 성공 시에만 user 상태 업데이트
                 setState({
                     user: data.user,
                     loading: false,
@@ -102,11 +104,9 @@ export function useAuth() {
                 return { success: true }
             }
 
-            setState(prev => ({ ...prev, loading: false }))
             return { success: true }
         } catch (err: any) {
             const errorMsg = err.message || '회원가입 중 오류가 발생했습니다.'
-            setState(prev => ({ ...prev, loading: false, error: errorMsg }))
             return { success: false, error: errorMsg }
         }
     }, [])

@@ -149,7 +149,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 3,
         costGold: 10,
         requiredAlchemyLevel: 1,
-        expGain: 5,
+        expGain: 50,
         isHidden: false,
         priority: 100,
         ingredients: [
@@ -169,7 +169,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 20,
         requiredAlchemyLevel: 1, // Restriction removed
-        expGain: 8,
+        expGain: 80,
         isHidden: false, // Initially visible
         priority: 99,
         ingredients: [
@@ -189,7 +189,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 15,
         requiredAlchemyLevel: 1,
-        expGain: 6,
+        expGain: 60,
         isHidden: false,
         priority: 98,
         ingredients: [
@@ -209,7 +209,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 8,
         costGold: 25,
         requiredAlchemyLevel: 1,
-        expGain: 8,
+        expGain: 80,
         isHidden: false,
         priority: 97,
         ingredients: [
@@ -229,7 +229,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 10,
         costGold: 40,
         requiredAlchemyLevel: 2,
-        expGain: 12,
+        expGain: 120,
         isHidden: false,
         priority: 96,
         ingredients: [
@@ -247,7 +247,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 2,
         costGold: 10,
         requiredAlchemyLevel: 1,
-        expGain: 10,
+        expGain: 100,
         isHidden: false,
         priority: 100,
         ingredients: [
@@ -263,7 +263,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 50,
         requiredAlchemyLevel: 2,
-        expGain: 20,
+        expGain: 200,
         isHidden: false,
         priority: 90,
         ingredients: [
@@ -280,7 +280,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 10,
         costGold: 100,
         requiredAlchemyLevel: 3,
-        expGain: 30,
+        expGain: 300,
         isHidden: false,
         priority: 85,
         ingredients: [
@@ -297,7 +297,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 8,
         costGold: 80,
         requiredAlchemyLevel: 3,
-        expGain: 25,
+        expGain: 250,
         isHidden: false,
         priority: 88,
         ingredients: [
@@ -315,7 +315,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 8,
         costGold: 120,
         requiredAlchemyLevel: 4,
-        expGain: 35,
+        expGain: 350,
         isHidden: false,
         priority: 82,
         ingredients: [
@@ -333,7 +333,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 15,
         costGold: 200,
         requiredAlchemyLevel: 3,
-        expGain: 50,
+        expGain: 500,
         isHidden: false,
         priority: 75,
         ingredients: [
@@ -351,7 +351,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 15,
         costGold: 250,
         requiredAlchemyLevel: 6,
-        expGain: 60,
+        expGain: 600,
         isHidden: false,
         priority: 70,
         ingredients: [
@@ -369,7 +369,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 10,
         costGold: 180,
         requiredAlchemyLevel: 5,
-        expGain: 55,
+        expGain: 550,
         isHidden: true,
         priority: 65,
         ingredients: [
@@ -393,7 +393,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 10,
         costGold: 150,
         requiredAlchemyLevel: 4,
-        expGain: 45,
+        expGain: 450,
         isHidden: true,
         priority: 68,
         ingredients: [
@@ -417,7 +417,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 20,
         costGold: 300,
         requiredAlchemyLevel: 7,
-        expGain: 80,
+        expGain: 800,
         isHidden: true,
         priority: 60,
         ingredients: [
@@ -440,7 +440,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 60,
         requiredAlchemyLevel: 2,
-        expGain: 25,
+        expGain: 250,
         isHidden: false,
         priority: 89,
         ingredients: [
@@ -458,7 +458,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 70,
         requiredAlchemyLevel: 2,
-        expGain: 30,
+        expGain: 300,
         isHidden: false,
         priority: 88,
         ingredients: [
@@ -476,7 +476,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 8,
         costGold: 90,
         requiredAlchemyLevel: 3,
-        expGain: 35,
+        expGain: 350,
         isHidden: false,
         priority: 86,
         ingredients: [
@@ -494,7 +494,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 2,
         costGold: 30,
         requiredAlchemyLevel: 1,
-        expGain: 15,
+        expGain: 150,
         isHidden: false,
         priority: 95,
         ingredients: [
@@ -511,7 +511,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 8,
         costGold: 80,
         requiredAlchemyLevel: 3,
-        expGain: 30,
+        expGain: 300,
         isHidden: false,
         priority: 84,
         ingredients: [
@@ -529,7 +529,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 15,
         costGold: 220,
         requiredAlchemyLevel: 5,
-        expGain: 55,
+        expGain: 550,
         isHidden: false,
         priority: 72,
         ingredients: [
@@ -548,7 +548,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 2,
         costGold: 15,
         requiredAlchemyLevel: 1,
-        expGain: 12,
+        expGain: 120,
         isHidden: false,
         priority: 94,
         ingredients: [
@@ -565,7 +565,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 2,
         costGold: 25,
         requiredAlchemyLevel: 1,
-        expGain: 15, // Edited by AI
+        expGain: 150, // Edited by AI
         isHidden: false,
         priority: 93,
         ingredients: [
@@ -583,7 +583,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 35,
         requiredAlchemyLevel: 1,
-        expGain: 18,
+        expGain: 180,
         isHidden: false,
         priority: 92,
         ingredients: [
@@ -601,7 +601,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 60,
         requiredAlchemyLevel: 2,
-        expGain: 25,
+        expGain: 250,
         isHidden: false,
         priority: 87,
         ingredients: [
@@ -620,7 +620,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 40,
         requiredAlchemyLevel: 1,
-        expGain: 20,
+        expGain: 200,
         isHidden: false,
         priority: 91,
         ingredients: [
@@ -638,7 +638,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 40,
         requiredAlchemyLevel: 1,
-        expGain: 20,
+        expGain: 200,
         isHidden: false,
         priority: 91,
         ingredients: [
@@ -656,7 +656,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 20,
         costGold: 200,
         requiredAlchemyLevel: 5,
-        expGain: 60,
+        expGain: 600,
         isHidden: false,
         priority: 75,
         ingredients: [
@@ -675,7 +675,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 10,
         costGold: 100,
         requiredAlchemyLevel: 3,
-        expGain: 40,
+        expGain: 400,
         isHidden: true, // Special monsters are hidden by default -> Unlocked by conditions? No, let's make them visible if condition met (handled by UI filtering usually, or just show them)
         // For now, let's keep isHidden false so users can see them if they meet requirements (or see them greyed out)
         // Actually, logic usually hides them if they are 'secret'. Let's make them visible.
@@ -700,7 +700,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 8,
         costGold: 50,
         requiredAlchemyLevel: 2,
-        expGain: 30,
+        expGain: 300,
         isHidden: false,
         priority: 71,
         ingredients: [
@@ -723,7 +723,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 15,
         costGold: 150,
         requiredAlchemyLevel: 4,
-        expGain: 50,
+        expGain: 500,
         isHidden: false,
         priority: 69,
         ingredients: [
@@ -746,7 +746,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 20,
         costGold: 300,
         requiredAlchemyLevel: 5,
-        expGain: 80,
+        expGain: 800,
         isHidden: false,
         priority: 60,
         ingredients: [
@@ -769,7 +769,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 20,
         requiredAlchemyLevel: 1,
-        expGain: 15,
+        expGain: 150,
         isHidden: false,
         priority: 95,
         ingredients: [
@@ -797,7 +797,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 60,
         costGold: 1000,
         requiredAlchemyLevel: 8,
-        expGain: 200,
+        expGain: 2000,
         isHidden: true,
         priority: 50,
         ingredients: [
@@ -815,7 +815,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 60,
         costGold: 1000,
         requiredAlchemyLevel: 8,
-        expGain: 200,
+        expGain: 2000,
         isHidden: true,
         priority: 50,
         ingredients: [
@@ -833,7 +833,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 60,
         costGold: 1000,
         requiredAlchemyLevel: 8,
-        expGain: 200,
+        expGain: 2000,
         isHidden: true,
         priority: 50,
         ingredients: [
@@ -851,7 +851,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 60,
         costGold: 1000,
         requiredAlchemyLevel: 8,
-        expGain: 200,
+        expGain: 2000,
         isHidden: true,
         priority: 50,
         ingredients: [
@@ -871,7 +871,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 40,
         costGold: 500,
         requiredAlchemyLevel: 6,
-        expGain: 100,
+        expGain: 1000,
         isHidden: false,
         priority: 60,
         ingredients: [
@@ -889,7 +889,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 40,
         costGold: 450,
         requiredAlchemyLevel: 6,
-        expGain: 90,
+        expGain: 900,
         isHidden: false,
         priority: 60,
         ingredients: [
@@ -907,7 +907,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 40,
         costGold: 500,
         requiredAlchemyLevel: 6,
-        expGain: 100,
+        expGain: 1000,
         isHidden: false,
         priority: 60,
         ingredients: [
@@ -925,7 +925,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 20,
         costGold: 600,
         requiredAlchemyLevel: 7,
-        expGain: 120,
+        expGain: 1200,
         isHidden: false,
         priority: 60,
         ingredients: [
@@ -943,7 +943,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 20,
         costGold: 600,
         requiredAlchemyLevel: 7,
-        expGain: 120,
+        expGain: 1200,
         isHidden: false,
         priority: 60,
         ingredients: [
@@ -962,7 +962,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 5,
         costGold: 30,
         requiredAlchemyLevel: 1,
-        expGain: 15,
+        expGain: 150,
         isHidden: false,
         priority: 95,
         ingredients: [
@@ -979,7 +979,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 8,
         costGold: 20,
         requiredAlchemyLevel: 1,
-        expGain: 15,
+        expGain: 150,
         isHidden: false,
         priority: 96,
         ingredients: [
@@ -997,7 +997,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 15,
         costGold: 100,
         requiredAlchemyLevel: 2,
-        expGain: 30,
+        expGain: 300,
         isHidden: false,
         priority: 90,
         ingredients: [
@@ -1014,7 +1014,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 20,
         costGold: 300,
         requiredAlchemyLevel: 4,
-        expGain: 50,
+        expGain: 500,
         isHidden: false,
         priority: 80,
         ingredients: [
@@ -1032,7 +1032,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         craftTimeSec: 40,
         costGold: 800,
         requiredAlchemyLevel: 6,
-        expGain: 100,
+        expGain: 1000,
         isHidden: false,
         priority: 70,
         ingredients: [
