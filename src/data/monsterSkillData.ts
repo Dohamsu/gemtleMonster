@@ -518,6 +518,27 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
         { id: 'skill_bear_claw', name: '곰의 발톱', description: '거대한 앞발로 적을 할꿥니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 150, target: 'ENEMY' }, cooldown: 3, emoji: '🐻' },
         { id: 'skill_bear_roar', name: '맹수의 포효', description: '우렁찬 포효로 적의 기를 꺾습니다.', unlockLevel: 25, type: 'ACTIVE', effect: { type: 'DEBUFF', value: 20, target: 'ALL_ENEMIES' }, cooldown: 5, emoji: '📢' }
     ],
+    // Moss Snail
+    'moss_snail': [
+        { id: 'skill_snail_shell', name: '단단한 껍질', description: '껍질로 몸을 보호하여 방어력을 높입니다.', unlockLevel: 5, type: 'PASSIVE', effect: { type: 'BUFF', value: 15, target: 'SELF' }, emoji: '🐌' }
+    ],
+    // Acorn Squirrel
+    'acorn_squirrel': [
+        { id: 'skill_acorn_throw', name: '도토리 투척', description: '마력 도토리를 던져 적을 공격합니다.', unlockLevel: 8, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 100, target: 'ENEMY' }, cooldown: 2, emoji: '🐿️' }
+    ],
+    // Thorn Boar
+    'thorn_boar': [
+        { id: 'skill_boar_charge', name: '돌진', description: '무서운 속도로 적에게 돌진합니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 130, target: 'ENEMY' }, cooldown: 3, emoji: '🐗' }
+    ],
+    // Leaf Sprite
+    'leaf_sprite': [
+        { id: 'skill_leaf_heal', name: '생명의 잎', description: '싱그러운 잎으로 아군을 치유합니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'HEAL', value: 25, target: 'ALL_ALLIES' }, cooldown: 4, emoji: '🌿' }
+    ],
+    // Forest Spider
+    'forest_spider': [
+        { id: 'skill_spider_web', name: '거미줄 묶기', description: '끈적한 거미줄로 적의 움직임을 방해합니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'DEBUFF', value: 15, target: 'ENEMY' }, cooldown: 4, emoji: '🕸️' },
+        { id: 'skill_spider_poison', name: '독액', description: '독을 주입하여 지속 피해를 입힙니다.', unlockLevel: 20, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 100, target: 'ENEMY', duration: 3 }, cooldown: 5, emoji: '☠️' }
+    ],
     // Penguin
     'penguin': [
         { id: 'skill_penguin_slide', name: '배치기 슬라이딩', description: '배로 미끄러지며 적에게 돌진합니다.', unlockLevel: 5, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 90, target: 'ENEMY' }, cooldown: 2, emoji: '🐧' }

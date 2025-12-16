@@ -411,7 +411,7 @@ export const BEAST_DUNGEON: Dungeon = {
             ]
         },
         {
-            id: 'monster_moss_snail',
+            id: 'moss_snail',
             name: '이끼 달팽이',
             level: 9,
             hp: 120,
@@ -424,7 +424,7 @@ export const BEAST_DUNGEON: Dungeon = {
             ]
         },
         {
-            id: 'monster_acorn_squirrel',
+            id: 'acorn_squirrel',
             name: '도토리 다람쥐',
             level: 10,
             hp: 90,
@@ -437,7 +437,7 @@ export const BEAST_DUNGEON: Dungeon = {
             ]
         },
         {
-            id: 'monster_thorn_boar',
+            id: 'thorn_boar',
             name: '가시 멧돼지',
             level: 11,
             hp: 150,
@@ -450,7 +450,7 @@ export const BEAST_DUNGEON: Dungeon = {
             ]
         },
         {
-            id: 'monster_leaf_sprite',
+            id: 'leaf_sprite',
             name: '나뭇잎 정령',
             level: 12,
             hp: 80,
@@ -463,7 +463,7 @@ export const BEAST_DUNGEON: Dungeon = {
             ]
         },
         {
-            id: 'monster_forest_spider',
+            id: 'forest_spider',
             name: '숲 거미',
             level: 13,
             hp: 130,
