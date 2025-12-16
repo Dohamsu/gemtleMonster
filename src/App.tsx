@@ -12,6 +12,8 @@ import { useFacilities } from './hooks/useFacilities'
 import InstallPrompt from './ui/common/InstallPrompt'
 import LottieLoader from './ui/common/LottieLoader'
 import loadingAnimation from './assets/lottie/loading.json'
+import offlineLoadingAnimation from './assets/lottie/offline_loading.json'
+import { useOfflineRewards } from './hooks/useOfflineRewards'
 
 function App() {
     const { user, loading: authLoading, signIn, signUp, signInAsGuest } = useAuth()
@@ -89,6 +91,9 @@ function App() {
             ; (window as unknown as { syncMaterials: typeof syncMaterials; useGameStore: typeof useGameStore }).useGameStore = useGameStore
     }, [user])
 
+    // 오프라인 보상 훅 (전역 로딩 제어용)
+    const offlineRewardState = useOfflineRewards(user?.id)
+
     // 반응형 레이아웃을 위한 뷰포트 크기 감지
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
     const [isOverlayOpen, setIsOverlayOpen] = useState(false) // 모바일 UI Overlay 토글 상태
@@ -108,7 +113,16 @@ function App() {
     }, [])
 
     // 로딩 중 또는 비로그인 상태: 로그인 화면 표시 (전체 화면)
-    if (authLoading) {
+    // Auth 로딩 OR (로그인됨 AND 오프라인 보상 계산 중)
+    if (authLoading || (user && !offlineRewardState.claimed)) {
+        // Determine which animation to show
+        // If auth is done but offline reward is not claimed -> offline loading
+        const isOfflineLoading = user && !offlineRewardState.claimed
+        const currentAnimation = isOfflineLoading ? offlineLoadingAnimation : loadingAnimation
+        const loadingText = isOfflineLoading ? '오프라인 보상 계산 중...' : '로딩 중...'
+        const width = isOfflineLoading ? 200 : 150
+        const height = isOfflineLoading ? 200 : 150
+
         return (
             <div style={{
                 position: 'fixed',
@@ -117,12 +131,21 @@ function App() {
                 right: 0,
                 bottom: 0,
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
                 zIndex: 9999
             }}>
-                <LottieLoader animationData={loadingAnimation} width={150} height={150} />
+                <LottieLoader animationData={currentAnimation} width={width} height={height} />
+                <p style={{
+                    color: '#94a3b8',
+                    marginTop: '20px',
+                    fontSize: '1.1rem',
+                    fontWeight: 500
+                }}>
+                    {loadingText}
+                </p>
             </div>
         )
     }
@@ -158,7 +181,7 @@ function App() {
                         backgroundColor: '#2c3e50',
                         overflow: 'hidden'
                     }}>
-                        <GameCanvas />
+                        <GameCanvas offlineRewards={offlineRewardState} />
                     </div>
 
                     {/* Hamburger Button */}
@@ -257,7 +280,7 @@ function App() {
                 backgroundColor: '#2c3e50',
                 overflow: 'hidden'
             }}>
-                <GameCanvas />
+                <GameCanvas offlineRewards={offlineRewardState} />
             </div>
 
             {/* UI Sidebar (Right) */}

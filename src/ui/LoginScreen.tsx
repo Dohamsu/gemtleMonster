@@ -21,6 +21,8 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
     const [rememberEmail, setRememberEmail] = useState(false)
     const isMobile = isMobileView()
 
+    const [capsLockOn, setCapsLockOn] = useState(false)
+
     useEffect(() => {
         const savedEmail = localStorage.getItem('savedEmail')
         if (savedEmail) {
@@ -28,6 +30,12 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
             setRememberEmail(true)
         }
     }, [])
+
+    const checkCapsLock = (e: React.KeyboardEvent | React.MouseEvent | React.FocusEvent) => {
+        if (e.nativeEvent instanceof KeyboardEvent) {
+            setCapsLockOn(e.nativeEvent.getModifierState('CapsLock'))
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -62,18 +70,14 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                 ? await onSignIn(email, password)
                 : await onSignUp(email, password)
 
-            console.log('[LoginScreen] Auth result:', result)
             setLoading(false)
 
             if (!result.success) {
                 const errorMsg = getLocalizedError(result.error || '오류가 발생했습니다.')
-                console.log('[LoginScreen] Setting error:', errorMsg)
-                console.log('[LoginScreen] Current loading state before setError:', loading)
                 setError(errorMsg)
-                console.log('[LoginScreen] Error set complete')
             }
-        } catch (err: any) {
-            console.error('[LoginScreen] Unexpected error:', err)
+        } catch (err: unknown) {
+            // console.error('[LoginScreen] Unexpected error:', err)
             setLoading(false)
             setError('로그인 중 예기치 않은 오류가 발생했습니다.')
         }
@@ -304,7 +308,7 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', position: 'relative' }}>
                         <label style={{ fontSize: '13px', color: '#cbd5e1', fontWeight: 500, marginLeft: '4px' }}>
                             비밀번호
                         </label>
@@ -312,6 +316,14 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            onKeyDown={checkCapsLock}
+                            onKeyUp={checkCapsLock}
+                            onClick={checkCapsLock}
+                            onFocus={(e) => {
+                                checkCapsLock(e)
+                                e.target.style.borderColor = '#6366f1'
+                                e.target.style.boxShadow = '0 0 0 2px rgba(99, 102, 241, 0.2)'
+                            }}
                             placeholder="••••••"
                             style={{
                                 width: '100%',
@@ -325,15 +337,41 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                                 outline: 'none',
                                 transition: 'border-color 0.2s, box-shadow 0.2s'
                             }}
-                            onFocus={(e) => {
-                                e.target.style.borderColor = '#6366f1'
-                                e.target.style.boxShadow = '0 0 0 2px rgba(99, 102, 241, 0.2)'
-                            }}
                             onBlur={(e) => {
                                 e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'
                                 e.target.style.boxShadow = 'none'
                             }}
                         />
+                        {capsLockOn && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                left: '0',
+                                marginTop: '4px',
+                                background: '#f59e0b',
+                                color: '#000',
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                                zIndex: 10,
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                            }}>
+                                <span>⚠️ Caps Lock이 켜져있습니다</span>
+                                <div style={{
+                                    content: '""',
+                                    position: 'absolute',
+                                    top: '-4px',
+                                    left: '12px',
+                                    borderLeft: '4px solid transparent',
+                                    borderRight: '4px solid transparent',
+                                    borderBottom: '4px solid #f59e0b'
+                                }} />
+                            </div>
+                        )}
                     </div>
 
                     {mode === 'signup' && (
@@ -345,6 +383,14 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
+                                onKeyDown={checkCapsLock}
+                                onKeyUp={checkCapsLock}
+                                onClick={checkCapsLock}
+                                onFocus={(e) => {
+                                    checkCapsLock(e)
+                                    e.target.style.borderColor = '#6366f1'
+                                    e.target.style.boxShadow = '0 0 0 2px rgba(99, 102, 241, 0.2)'
+                                }}
                                 placeholder="••••••"
                                 style={{
                                     width: '100%',
@@ -357,10 +403,6 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                                     boxSizing: 'border-box',
                                     outline: 'none',
                                     transition: 'border-color 0.2s, box-shadow 0.2s'
-                                }}
-                                onFocus={(e) => {
-                                    e.target.style.borderColor = '#6366f1'
-                                    e.target.style.boxShadow = '0 0 0 2px rgba(99, 102, 241, 0.2)'
                                 }}
                                 onBlur={(e) => {
                                     e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'
@@ -407,10 +449,10 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                             transition: 'transform 0.1s, box-shadow 0.2s',
                             boxShadow: '0 4px 12px rgba(79, 70, 229, 0.4)'
                         }}
-                        onMouseDown={(e) => !loading && ((e.target as any).style.transform = 'scale(0.98)')}
-                        onMouseUp={(e) => !loading && ((e.target as any).style.transform = 'scale(1)')}
-                        onMouseEnter={(e) => !loading && ((e.target as any).style.boxShadow = '0 6px 16px rgba(79, 70, 229, 0.5)')}
-                        onMouseLeave={(e) => !loading && ((e.target as any).style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.4)')}
+                        onMouseDown={(e) => !loading && ((e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)')}
+                        onMouseUp={(e) => !loading && ((e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)')}
+                        onMouseEnter={(e) => !loading && ((e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 16px rgba(79, 70, 229, 0.5)')}
+                        onMouseLeave={(e) => !loading && ((e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(79, 70, 229, 0.4)')}
                     >
                         {loading ? '처리 중...' : (mode === 'login' ? '시작하기' : '계정 생성')}
                     </button>
@@ -440,8 +482,8 @@ export default function LoginScreen({ onSignIn, onSignUp, onGuestLogin }: LoginS
                         cursor: loading ? 'not-allowed' : 'pointer',
                         transition: 'all 0.2s'
                     }}
-                    onMouseEnter={(e) => !loading && ((e.target as any).style.backgroundColor = 'rgba(255, 255, 255, 0.1)')}
-                    onMouseLeave={(e) => !loading && ((e.target as any).style.backgroundColor = 'rgba(255, 255, 255, 0.05)')}
+                    onMouseEnter={(e) => !loading && ((e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(255, 255, 255, 0.1)')}
+                    onMouseLeave={(e) => !loading && ((e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(255, 255, 255, 0.05)')}
                 >
                     게스트로 빠르게 시작
                 </button>

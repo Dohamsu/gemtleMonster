@@ -95,7 +95,7 @@ export default function MaterialGrid({
                     color: '#f0d090',
                     fontWeight: 'bold'
                 }}>
-                    🎒 보유 재료
+                    <img src="/assets/ui/suede_bag.png" alt="보유 재료" style={{ width: '36px', height: '36px', marginRight: '6px', verticalAlign: 'text-bottom' }} /> 보유 재료
                 </h3>
                 <button
                     onClick={() => setShowOnlyOwned(!showOnlyOwned)}

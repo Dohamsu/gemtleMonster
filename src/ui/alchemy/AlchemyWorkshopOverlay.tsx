@@ -222,7 +222,7 @@ function AlchemyWorkshopOverlay({
                                 padding: '10px',
                                 minHeight: '44px',
                                 background: mobileTab === 'recipes' ? '#5a4030' : '#4a3020',
-                                border: mobileTab === 'recipes' ? '2px solid #facc15' : 'none',
+                                border: mobileTab === 'recipes' ? '2px solid #facc15' : '2px solid transparent',
                                 borderRadius: '6px',
                                 color: '#f0d090',
                                 fontWeight: 'bold',
@@ -231,7 +231,7 @@ function AlchemyWorkshopOverlay({
                                 transition: 'all 0.2s'
                             }}
                         >
-                            <img src="/assets/ui/recipe.png" alt="레시피" style={{ width: '16px', height: '16px', marginRight: '4px', verticalAlign: 'middle' }} />
+                            <img src="/assets/ui/recipe.png" alt="레시피" style={{ width: '36px', height: '36px', marginRight: '4px', verticalAlign: 'middle' }} />
                             레시피
                         </button>
                         <button
@@ -241,7 +241,7 @@ function AlchemyWorkshopOverlay({
                                 padding: '10px',
                                 minHeight: '44px',
                                 background: mobileTab === 'materials' ? '#5a4030' : '#4a3020',
-                                border: mobileTab === 'materials' ? '2px solid #facc15' : 'none',
+                                border: mobileTab === 'materials' ? '2px solid #facc15' : '2px solid transparent',
                                 borderRadius: '6px',
                                 color: '#f0d090',
                                 fontWeight: 'bold',
@@ -250,7 +250,7 @@ function AlchemyWorkshopOverlay({
                                 transition: 'all 0.2s'
                             }}
                         >
-                            🎒 재료
+                            <img src="/assets/ui/suede_bag.png" alt="재료" style={{ width: '36px', height: '36px', marginRight: '2px', verticalAlign: 'middle' }} /> 재료
                         </button>
                         {/* Codex Tab Removed */}
                     </div>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useGameStore } from '../store/useGameStore'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { useAuth } from '../hooks/useAuth'
-import { useOfflineRewards } from '../hooks/useOfflineRewards'
+
 import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 import { AlchemyResultModal } from '../ui/alchemy/AlchemyResultModal'
 import Shop from '../ui/shop/Shop'
@@ -22,7 +22,15 @@ import { isMobileView } from '../utils/responsiveUtils'
 /**
  * Optimized GameCanvas Component
  */
-export default function GameCanvas() {
+interface GameCanvasProps {
+    offlineRewards?: {
+        claimed: boolean
+        rewards: Record<string, number>
+        elapsedTime: number
+    }
+}
+
+export default function GameCanvas(props: GameCanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const { user } = useAuth()
     const {
@@ -57,8 +65,9 @@ export default function GameCanvas() {
     // Advanced Alchemy: Context hook
     const alchemyContext = useAlchemyContext()
 
-    // Phase 3: 오프라인 보상 시스템
-    const { claimed, rewards, elapsedTime } = useOfflineRewards(user?.id)
+    // Phase 3: 오프라인 보상 시스템 (Props로 전달받음)
+    // const { claimed, rewards, elapsedTime } = useOfflineRewards(user?.id) // Moved to App.tsx
+    const { claimed, rewards, elapsedTime } = props.offlineRewards || { claimed: true, rewards: {}, elapsedTime: 0 }
     const [showOfflineRewardModal, setShowOfflineRewardModal] = useState(false)
 
     const [showResultModal, setShowResultModal] = useState(false)
