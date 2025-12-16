@@ -506,6 +506,86 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'claw_sharp', chance: 40, min: 1, max: 2 }
         ]
     },
+    'monster_moss_snail': {
+        name: '이끼 달팽이',
+        description: '껍질에 이끼가 무성하게 자란 달팽이. 느리지만 단단한 껍질로 자신을 보호하며 숲의 청소부 역할을 합니다.',
+        role: '탱커',
+        hp: 120,
+        attack: 20,
+        defense: 40,
+        emoji: '🐌',
+        iconUrl: '/assets/monsters/monster_moss_snail.png',
+        rarity: 'N',
+        element: 'earth',
+        drops: [
+            { materialId: 'shell_snail', chance: 100, min: 1, max: 2 },
+            { materialId: 'slime_fluid', chance: 50, min: 1, max: 1 }
+        ]
+    },
+    'monster_thorn_boar': {
+        name: '가시 멧돼지',
+        description: '등에 날카로운 가시가 돋아난 멧돼지. 화가 나면 앞뒤 가리지 않고 돌진하여 적을 들이받습니다.',
+        role: '딜러',
+        hp: 150,
+        attack: 50,
+        defense: 25,
+        emoji: '🐗',
+        iconUrl: '/assets/monsters/monster_thorn_boar.png',
+        rarity: 'N',
+        element: 'earth',
+        drops: [
+            { materialId: 'tusk_boar', chance: 100, min: 1, max: 1 },
+            { materialId: 'leather_beast', chance: 40, min: 1, max: 1 }
+        ]
+    },
+    'monster_forest_spider': {
+        name: '숲 거미',
+        description: '울창한 나무 사이에 거미줄을 치고 기다리는 사냥꾼. 끈적한 거미줄로 적을 묶고 독니를 드러냅니다.',
+        role: '딜러',
+        hp: 130,
+        attack: 60,
+        defense: 15,
+        emoji: '🕷️',
+        iconUrl: '/assets/monsters/monster_forest_spider.png',
+        rarity: 'R',
+        element: 'dark',
+        drops: [
+            { materialId: 'silk_spider', chance: 100, min: 1, max: 2 },
+            { materialId: 'herb_common', chance: 30, min: 1, max: 1 }
+        ]
+    },
+    'monster_acorn_squirrel': {
+        name: '도토리 다람쥐',
+        description: '마력을 머금은 거대한 도토리를 소중히 들고 다니는 다람쥐. 도토리를 던져 원거리에서 공격합니다.',
+        role: '서포터',
+        hp: 90,
+        attack: 30,
+        defense: 10,
+        emoji: '🐿️',
+        iconUrl: '/assets/monsters/monster_acorn_squirrel.png',
+        rarity: 'N',
+        element: 'earth',
+        drops: [
+            { materialId: 'acorn_magic', chance: 80, min: 1, max: 1 },
+            { materialId: 'scrap_leather', chance: 40, min: 1, max: 1 }
+        ]
+    },
+    'monster_leaf_sprite': {
+        name: '나뭇잎 정령',
+        description: '숲의 생명력이 뭉쳐 태어난 작은 정령. 싱그러운 잎사귀를 흔들며 숲의 활력을 불어넣습니다.',
+        role: '서포터',
+        hp: 80,
+        attack: 15,
+        defense: 15,
+        emoji: '🌿',
+        iconUrl: '/assets/monsters/monster_leaf_sprite.png',
+        rarity: 'R',
+        element: 'light',
+        drops: [
+            { materialId: 'leaf_life', chance: 100, min: 1, max: 1 },
+            { materialId: 'spirit_dust', chance: 50, min: 1, max: 1 }
+        ]
+    },
     'monster_penguin': {
         name: '아기 펭귄',
         description: '뒤뚱거리며 걷는 귀여운 펭귄. 차가운 물속을 자유롭게 헤엄치며, 보는 이의 마음을 녹입니다.',

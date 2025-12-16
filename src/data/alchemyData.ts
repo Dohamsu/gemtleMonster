@@ -111,6 +111,13 @@ export const MATERIALS: Record<string, Material> = {
     'assassin_dagger': { id: 'assassin_dagger', name: '암살자의 단검', type: 'SPECIAL', description: '피 묻은 녹슨 단검.', rarity: 'SR', iconUrl: '/assets/materials/assassin_dagger.png' },
     'phoenix_feather': { id: 'phoenix_feather', name: '불사조의 깃털', type: 'SPIRIT', description: '꺼지지 않는 불씨가 남아있는 깃털.', rarity: 'SR', iconUrl: '/assets/materials/phoenix_feather.png' },
     'yeti_fur': { id: 'yeti_fur', name: '예티의 털', type: 'BEAST', description: '추위를 완벽하게 막아주는 두꺼운 털.', rarity: 'SR', iconUrl: '/assets/materials/yeti_fur.png' },
+
+    // Beast Forest New Materials
+    'shell_snail': { id: 'shell_snail', name: '달팽이 껍질', type: 'BEAST', description: '이끼가 낀 단단한 껍질.', rarity: 'N', iconUrl: '/assets/materials/stone.png' },
+    'tusk_boar': { id: 'tusk_boar', name: '멧돼지 송곳니', type: 'BEAST', description: '거칠고 날카로운 송곳니.', rarity: 'N', iconUrl: '/assets/materials/beast_fang.png' },
+    'silk_spider': { id: 'silk_spider', name: '거미줄', type: 'BEAST', description: '질기고 끈적한 거미줄.', rarity: 'N', iconUrl: '/assets/materials/scrap_cloth.png' },
+    'acorn_magic': { id: 'acorn_magic', name: '마력 도토리', type: 'PLANT', description: '마력을 머금어 커진 도토리.', rarity: 'R', iconUrl: '/assets/materials/seed_ancient.png' },
+    'leaf_life': { id: 'leaf_life', name: '생명의 나뭇잎', type: 'PLANT', description: '생명력이 넘치는 싱싱한 잎사귀.', rarity: 'R', iconUrl: '/assets/materials/herb_yggdrasil.png' },
 }
 
 
@@ -672,6 +679,92 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
             { materialId: 'leather_beast', quantity: 3, isCatalyst: false },
             { materialId: 'claw_sharp', quantity: 2, isCatalyst: false },
             { materialId: 'beast_fang', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    // New Beast Forest Monsters
+    {
+        id: 'recipe_moss_snail',
+        resultMonsterId: 'monster_moss_snail',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 5,
+        costGold: 30,
+        requiredAlchemyLevel: 1,
+        expGain: 150,
+        isHidden: false,
+        priority: 92,
+        ingredients: [
+            { materialId: 'shell_snail', quantity: 2, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_thorn_boar',
+        resultMonsterId: 'monster_thorn_boar',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 8,
+        costGold: 50,
+        requiredAlchemyLevel: 2,
+        expGain: 200,
+        isHidden: false,
+        priority: 88,
+        ingredients: [
+            { materialId: 'tusk_boar', quantity: 2, isCatalyst: false },
+            { materialId: 'leather_beast', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_forest_spider',
+        resultMonsterId: 'monster_forest_spider',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 8,
+        costGold: 60,
+        requiredAlchemyLevel: 2,
+        expGain: 220,
+        isHidden: false,
+        priority: 87,
+        ingredients: [
+            { materialId: 'silk_spider', quantity: 3, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_acorn_squirrel',
+        resultMonsterId: 'monster_acorn_squirrel',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 6,
+        costGold: 45,
+        requiredAlchemyLevel: 1,
+        expGain: 180,
+        isHidden: false,
+        priority: 90,
+        ingredients: [
+            { materialId: 'acorn_magic', quantity: 1, isCatalyst: false },
+            { materialId: 'scrap_leather', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_leaf_sprite',
+        resultMonsterId: 'monster_leaf_sprite',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 10,
+        costGold: 80,
+        requiredAlchemyLevel: 3,
+        expGain: 300,
+        isHidden: false,
+        priority: 85,
+        ingredients: [
+            { materialId: 'leaf_life', quantity: 2, isCatalyst: false },
+            { materialId: 'spirit_dust', quantity: 1, isCatalyst: false }
         ],
         conditions: []
     },

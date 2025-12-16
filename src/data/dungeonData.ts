@@ -409,6 +409,71 @@ export const BEAST_DUNGEON: Dungeon = {
                 { materialId: 'claw_sharp', chance: 50, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'bear_skin', chance: 50, minQuantity: 1, maxQuantity: 1 }
             ]
+        },
+        {
+            id: 'monster_moss_snail',
+            name: '이끼 달팽이',
+            level: 9,
+            hp: 120,
+            attack: 18,
+            defense: 35,
+            exp: 500,
+            drops: [
+                { materialId: 'shell_snail', chance: 80, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'slime_fluid', chance: 40, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'monster_acorn_squirrel',
+            name: '도토리 다람쥐',
+            level: 10,
+            hp: 90,
+            attack: 25,
+            defense: 8,
+            exp: 550,
+            drops: [
+                { materialId: 'acorn_magic', chance: 70, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'scrap_leather', chance: 30, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'monster_thorn_boar',
+            name: '가시 멧돼지',
+            level: 11,
+            hp: 150,
+            attack: 40,
+            defense: 20,
+            exp: 650,
+            drops: [
+                { materialId: 'tusk_boar', chance: 90, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'leather_beast', chance: 30, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'monster_leaf_sprite',
+            name: '나뭇잎 정령',
+            level: 12,
+            hp: 80,
+            attack: 20,
+            defense: 12,
+            exp: 600,
+            drops: [
+                { materialId: 'leaf_life', chance: 80, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'spirit_dust', chance: 40, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'monster_forest_spider',
+            name: '숲 거미',
+            level: 13,
+            hp: 130,
+            attack: 45,
+            defense: 12,
+            exp: 700,
+            drops: [
+                { materialId: 'silk_spider', chance: 90, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'herb_common', chance: 20, minQuantity: 1, maxQuantity: 1 }
+            ]
         }
     ]
 }
