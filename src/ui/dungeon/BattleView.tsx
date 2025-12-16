@@ -4,7 +4,7 @@ import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { DUNGEONS } from '../../data/dungeonData'
 import { MATERIALS } from '../../data/alchemyData'
-import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
+import { MONSTER_DATA } from '../../data/monsterData'
 
 export default function BattleView() {
     const { battleState, processTurn, endBattle, activeDungeon, consumeFloatingTexts } = useGameStore()
@@ -149,7 +149,7 @@ export default function BattleView() {
 
     const dungeon = DUNGEONS.find(d => d.id === activeDungeon)
     const enemy = dungeon?.enemies.find(e => e.id === battleState.enemyId)
-    const monsterData = battleState.selectedMonsterType ? MONSTERS[battleState.selectedMonsterType] : null
+    const monsterData = battleState.selectedMonsterType ? MONSTER_DATA[battleState.selectedMonsterType] : null
     const monsterName = monsterData?.name || '나의 몬스터'
 
     return (
