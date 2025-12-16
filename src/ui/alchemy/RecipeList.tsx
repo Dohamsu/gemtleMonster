@@ -29,6 +29,8 @@ export default function RecipeList({
 }: RecipeListProps) {
     const [isMobile, setIsMobile] = useState(isMobileView())
     const { alchemyMode, setAlchemyMode } = useAlchemyStore()
+    // 대용량 제작 수량 상태 (레시피 ID별)
+    const [craftQuantities, setCraftQuantities] = useState<Record<string, number>>({})
 
     useEffect(() => {
         const handleResize = () => {
@@ -75,9 +77,13 @@ export default function RecipeList({
         // 4. Toggle selection
         if (selectedRecipeId === recipe.id) {
             onSelectRecipe(null)
+            // 선택 해제 시 수량 1로 초기화
+            useAlchemyStore.getState().setCraftQuantity(1)
         } else {
-            // Check materials for auto-fill preview (optional visual feedback, but click logic handles selection)
             onSelectRecipe(recipe.id)
+            // 선택한 레시피의 현재 수량을 스토어에 동기화
+            const recipeQuantity = craftQuantities[recipe.id] || 1
+            useAlchemyStore.getState().setCraftQuantity(recipeQuantity)
         }
     }
 
@@ -87,6 +93,39 @@ export default function RecipeList({
             return `${(num / 1000).toFixed(1)}k`
         }
         return num.toString()
+    }
+
+    // 최대 제작 가능 수량 계산 (소모품용)
+    const getMaxCraftable = (recipe: Recipe): number => {
+        if (!recipe.ingredients || recipe.ingredients.length === 0) return 10
+        let maxPossible = 10 // 최대 10개 제한
+        for (const ing of recipe.ingredients) {
+            const owned = playerMaterials[ing.material_id] || 0
+            const canMake = Math.floor(owned / ing.quantity)
+            maxPossible = Math.min(maxPossible, canMake)
+        }
+        return Math.max(1, maxPossible)
+    }
+
+    // 수량 변경 핸들러
+    const handleQuantityChange = (recipeId: string, delta: number, maxCraftable: number) => {
+        // 레시피가 선택되어 있지 않으면 자동 선택
+        if (selectedRecipeId !== recipeId) {
+            onSelectRecipe(recipeId)
+        }
+
+        setCraftQuantities(prev => {
+            const current = prev[recipeId] || 1
+            const newQty = Math.max(1, Math.min(maxCraftable, current + delta))
+            // 알케미 스토어에도 수량 동기화
+            useAlchemyStore.getState().setCraftQuantity(newQty)
+            return { ...prev, [recipeId]: newQty }
+        })
+    }
+
+    // 레시피 수량 가져오기
+    const getCraftQuantity = (recipeId: string): number => {
+        return craftQuantities[recipeId] || 1
     }
 
     return (
@@ -185,7 +224,8 @@ export default function RecipeList({
                     opacity: isBrewing ? 0.4 : 1,
                     pointerEvents: isBrewing ? 'none' : 'auto',
                     display: isMobile ? 'grid' : 'block',
-                    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'none',
+                    // 소모품 탭은 1열, 몬스터 탭은 2열
+                    gridTemplateColumns: isMobile ? (alchemyMode === 'ITEM' ? '1fr' : 'repeat(2, 1fr)') : 'none',
                     gap: isMobile ? '6px' : '0',
                     animation: 'fadeSlideIn 0.25s ease-out'
                 }}>
@@ -346,37 +386,124 @@ export default function RecipeList({
                             </div>
 
                             {/* Required Materials */}
-                            {recipe.ingredients && recipe.ingredients.length > 0 && (
-                                <div style={{ paddingLeft: isMobile ? '0' : '40px', marginTop: isMobile ? '4px' : '0' }}> {/* Remove indent on mobile, move below */}
-                                    {recipe.ingredients.map((ing, idx) => {
-                                        const mat = materials.find(m => m.id === ing.material_id)
-                                        const owned = playerMaterials[ing.material_id] || 0
-                                        const hasEnough = owned >= ing.quantity
-                                        const isIngredientDiscovered = isDiscovered || discoveredIngredients.includes(ing.material_id)
-                                        const matName = isIngredientDiscovered ? (mat?.name || ing.material_id) : '???'
+                            {recipe.ingredients && recipe.ingredients.length > 0 && (() => {
+                                const quantity = getCraftQuantity(recipe.id)
+                                const maxCraftable = getMaxCraftable(recipe)
+                                const isItemRecipe = recipe.type === 'ITEM'
 
-                                        return (
-                                            <div
-                                                key={idx}
-                                                style={{
-                                                    fontSize: isMobile ? '10px' : '11px',
-                                                    color: isIngredientDiscovered ? (hasEnough ? '#aaa' : '#ff6666') : '#666',
-                                                    marginBottom: '2px',
-                                                    // display: 'flex', // Removed flex space-between
-                                                    // justifyContent: 'space-between'
-                                                }}
-                                            >
-                                                <span>{matName} </span>
-                                                {isIngredientDiscovered && (
-                                                    <span style={{ color: hasEnough ? '#4ade80' : '#ff6666', marginLeft: '4px' }}>
-                                                        {ing.quantity} / {formatNumber(owned)}
-                                                    </span>
-                                                )}
+                                return (
+                                    <div style={{
+                                        paddingLeft: isMobile ? '0' : '40px',
+                                        marginTop: isMobile ? '4px' : '0',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}>
+                                        {/* 재료 목록 */}
+                                        <div style={{ flex: 1 }}>
+                                            {recipe.ingredients.map((ing, idx) => {
+                                                const mat = materials.find(m => m.id === ing.material_id)
+                                                const owned = playerMaterials[ing.material_id] || 0
+                                                const requiredQty = ing.quantity * quantity
+                                                const hasEnough = owned >= requiredQty
+                                                const isIngredientDiscovered = isDiscovered || discoveredIngredients.includes(ing.material_id)
+                                                const matName = isIngredientDiscovered ? (mat?.name || ing.material_id) : '???'
+
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        style={{
+                                                            fontSize: isMobile ? '10px' : '11px',
+                                                            color: isIngredientDiscovered ? (hasEnough ? '#aaa' : '#ff6666') : '#666',
+                                                            marginBottom: '2px',
+                                                        }}
+                                                    >
+                                                        <span>{matName} </span>
+                                                        {isIngredientDiscovered && (
+                                                            <span style={{ color: hasEnough ? '#4ade80' : '#ff6666', marginLeft: '4px' }}>
+                                                                {isItemRecipe && quantity > 1 ? `${ing.quantity}×${quantity}=` : ''}{requiredQty} / {formatNumber(owned)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+
+                                        {/* 소모품 대용량 제작 수량 선택 UI - 오른쪽 배치 */}
+                                        {isItemRecipe && isDiscovered && hasAllMaterials && (
+                                            <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                padding: '4px 6px',
+                                                background: 'rgba(122, 80, 64, 0.2)',
+                                                borderRadius: '6px',
+                                                border: '1px solid rgba(154, 106, 64, 0.4)',
+                                                flexShrink: 0
+                                            }}>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleQuantityChange(recipe.id, -1, maxCraftable)
+                                                    }}
+                                                    disabled={quantity <= 1}
+                                                    style={{
+                                                        width: '18px',
+                                                        height: '18px',
+                                                        border: quantity <= 1 ? '1px solid #5a4a40' : '1px solid #9a6a40',
+                                                        borderRadius: '3px',
+                                                        background: quantity <= 1 ? '#3a2a20' : 'linear-gradient(180deg, #6a4a30 0%, #5a3a20 100%)',
+                                                        color: quantity <= 1 ? '#6a5a50' : '#f0d090',
+                                                        cursor: quantity <= 1 ? 'not-allowed' : 'pointer',
+                                                        fontSize: '11px',
+                                                        fontWeight: 'bold',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: 0
+                                                    }}
+                                                >
+                                                    -
+                                                </button>
+                                                <span style={{
+                                                    fontSize: '11px',
+                                                    fontWeight: 'bold',
+                                                    color: '#f0d090',
+                                                    minWidth: '20px',
+                                                    textAlign: 'center'
+                                                }}>
+                                                    x{quantity}
+                                                </span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleQuantityChange(recipe.id, 1, maxCraftable)
+                                                    }}
+                                                    disabled={quantity >= maxCraftable}
+                                                    style={{
+                                                        width: '18px',
+                                                        height: '18px',
+                                                        border: quantity >= maxCraftable ? '1px solid #5a4a40' : '1px solid #9a6a40',
+                                                        borderRadius: '3px',
+                                                        background: quantity >= maxCraftable ? '#3a2a20' : 'linear-gradient(180deg, #6a4a30 0%, #5a3a20 100%)',
+                                                        color: quantity >= maxCraftable ? '#6a5a50' : '#f0d090',
+                                                        cursor: quantity >= maxCraftable ? 'not-allowed' : 'pointer',
+                                                        fontSize: '11px',
+                                                        fontWeight: 'bold',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        padding: 0
+                                                    }}
+                                                >
+                                                    +
+                                                </button>
                                             </div>
-                                        )
-                                    })}
-                                </div>
-                            )}
+                                        )}
+                                    </div>
+                                )
+                            })()}
 
                             {/* 힌트 (미발견 시) */}
                             {!isDiscovered && recipe.conditions && recipe.conditions.length > 0 && (

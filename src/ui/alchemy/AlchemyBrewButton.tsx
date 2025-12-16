@@ -9,7 +9,7 @@ interface AlchemyBrewButtonProps {
     isBrewing: boolean
     allRecipes: Recipe[]
     playerAlchemy: PlayerAlchemy | null
-    onStartBrewing: (recipeId: string) => Promise<void>
+    onStartBrewing: (recipeId: string, quantity?: number) => Promise<void>
     onStartFreeFormBrewing: () => Promise<void>
 }
 
@@ -24,6 +24,7 @@ export default function AlchemyBrewButton({
 }: AlchemyBrewButtonProps) {
     const brewProgress = useAlchemyStore((state) => state.brewProgress)
     const brewDuration = useAlchemyStore((state) => state.brewDuration)
+    const craftQuantity = useAlchemyStore((state) => state.craftQuantity)
     const [isMobile, setIsMobile] = useState(isMobileView())
 
     useEffect(() => {
@@ -51,16 +52,19 @@ export default function AlchemyBrewButton({
     const isEnabled = (selectedRecipe && hasMaterials && hasLevel) || (!selectedRecipe && hasIngredients)
 
     // 버튼 텍스트 결정
+    const isItemRecipe = selectedRecipe?.type === 'ITEM'
     let btnText = '🧪 연금술 시작'
     if (selectedRecipe && !hasLevel) btnText = `Lv.${selectedRecipe.required_alchemy_level} 필요`
     else if (selectedRecipe && !hasMaterials) btnText = '재료 부족'
     else if (!selectedRecipe && !hasIngredients) btnText = '재료를 추가하세요'
+    else if (isItemRecipe && craftQuantity > 1) btnText = `🧪 제작 x${craftQuantity}`
 
     const handleClick = () => {
         if (isBrewing || !isEnabled) return
 
         if (selectedRecipeId) {
-            onStartBrewing(selectedRecipeId)
+            // 소모품은 수량과 함께 전달
+            onStartBrewing(selectedRecipeId, isItemRecipe ? craftQuantity : 1)
         } else {
             onStartFreeFormBrewing()
         }

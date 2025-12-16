@@ -49,7 +49,7 @@ async function seedMaterials() {
         'SLIME': 'SLIME',
         'SPIRIT': 'SPIRIT',
         'SPECIAL': 'MINERAL',
-        'CONSUMABLE': 'MINERAL' // Map CONSUMABLE to MINERAL as fallback
+        'CONSUMABLE': 'CONSUMABLE' // Now correctly mapped
     }
 
     // Let's try to upsert.

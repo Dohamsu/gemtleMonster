@@ -264,7 +264,9 @@ export interface AlchemyResult {
   new_level: number
   new_total_exp: number
   result_monster_id: string | null
+  result_item_id?: string | null // 추가
   fail_count: number
+  quantity?: number // 대용량 제작 수량
   error?: string
 }
 
@@ -275,19 +277,22 @@ export interface AlchemyResult {
  * @param recipeId - Recipe ID to craft
  * @param ingredients - Dictionary of materials to consume { materialId: quantity }
  * @param successRate - Displayed success rate (for logging purposes)
+ * @param quantity - 제작 수량 (기본 1, 최대 10)
  * @returns Result of the alchemy operation
  */
 export async function performAlchemy(
   userId: string,
   recipeId: string | null,
   ingredients: Record<string, number>,
-  successRate: number
+  successRate: number,
+  quantity: number = 1
 ): Promise<AlchemyResult> {
   const { data, error } = await supabase.rpc('perform_alchemy', {
     p_user_id: userId,
     p_recipe_id: recipeId,
     p_ingredients: ingredients,
-    p_success_rate: successRate
+    p_success_rate: successRate,
+    p_quantity: quantity
   })
 
   if (error) {
@@ -299,6 +304,7 @@ export async function performAlchemy(
       new_total_exp: 0,
       result_monster_id: null,
       fail_count: 0,
+      quantity: 1,
       error: error.message
     }
   }

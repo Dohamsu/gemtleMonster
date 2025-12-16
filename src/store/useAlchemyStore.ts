@@ -45,6 +45,7 @@ interface AlchemyState {
     monsterId?: string
     itemId?: string // New field
     count?: number
+    craftQuantity?: number // 대용량 제작 수량
     lostMaterials?: Record<string, number>
     hint?: {
       type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH'
@@ -74,6 +75,10 @@ interface AlchemyState {
   setSelectedTab: (tab: 'recipes' | 'codex' | 'recommended') => void
   setInventoryTab: (tab: 'materials' | 'monsters' | 'factory') => void
 
+  // 대용량 제작 수량
+  craftQuantity: number
+  setCraftQuantity: (quantity: number) => void
+
   // Actions - 재료 관리
   addIngredient: (materialId: string, quantity: number) => void
   removeIngredient: (materialId: string, quantity: number) => void
@@ -85,7 +90,7 @@ interface AlchemyState {
   canCraftWithMaterials: (recipeId: string) => boolean
   canStartBrewing: () => boolean
   startFreeFormBrewing: () => Promise<void>
-  startBrewing: (recipeId: string) => Promise<void>
+  startBrewing: (recipeId: string, quantity?: number) => Promise<void>
   updateBrewProgress: (progress: number) => void
   completeBrewing: (result: AlchemyResult, matchedRecipe?: Recipe | null) => Promise<void>
   resetBrewResult: () => void
@@ -134,6 +139,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   selectedIngredients: {},
   selectedTab: 'recipes',
   inventoryTab: 'materials',
+  craftQuantity: 1, // 대용량 제작 수량 (기본 1)
   isBrewing: false,
   brewStartTime: null,
   brewProgress: 0,
@@ -285,6 +291,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   setSelectedTab: (tab) => set({ selectedTab: tab }),
   setInventoryTab: (tab) => set({ inventoryTab: tab }),
+  setCraftQuantity: (quantity) => set({ craftQuantity: quantity }),
 
   // ============================================
   // 재료 관리
@@ -534,8 +541,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     }, duration)
   },
 
-  startBrewing: async (recipeId) => {
-    const { allRecipes, canCraft, alchemyContext, forceSyncCallback } = get()
+  startBrewing: async (recipeId, quantity = 1) => {
+    const { allRecipes, canCraft, alchemyContext, forceSyncCallback, playerMaterials } = get()
     const recipe = allRecipes.find(r => r.id === recipeId)
 
     if (!recipe) {
@@ -549,7 +556,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       await forceSyncCallback()
     }
 
-    // 1. Check material and level requirements
+    // 1. Check material and level requirements (단일 제작 기준)
     const craftCheck = canCraft(recipeId)
     if (!craftCheck.can) {
       console.error('조합 불가:', craftCheck.missingMaterials)
@@ -566,6 +573,91 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       }
     }
 
+    // 3. 대용량 제작 시 재료 체크
+    if (quantity > 1 && recipe.ingredients) {
+      for (const ing of recipe.ingredients) {
+        const owned = playerMaterials[ing.material_id] || 0
+        if (owned < ing.quantity * quantity) {
+          console.error(`재료 부족: ${ing.material_id} 필요 ${ing.quantity * quantity}, 보유 ${owned}`)
+          return
+        }
+      }
+    }
+
+    const isItemRecipe = recipe.type === 'ITEM'
+
+    // 소모품(ITEM)의 경우 즉시 완료 처리
+    if (isItemRecipe) {
+      const { userId } = get()
+
+      // 재료 계산 (단일 제작 기준 - 서버에서 수량 곱셈 처리)
+      const capturedIngredients: Record<string, number> = {}
+      if (recipe.ingredients) {
+        for (const ing of recipe.ingredients) {
+          capturedIngredients[ing.material_id] = ing.quantity
+        }
+      }
+
+      // 프로그레스 바 애니메이션을 위해 먼저 0으로 설정
+      // 레시피의 craft_time_sec를 사용 (밀리초로 변환)
+      const brewAnimationDuration = recipe.craft_time_sec * 1000
+      set({
+        isBrewing: true,
+        brewStartTime: Date.now(),
+        brewProgress: 0,
+        brewDuration: brewAnimationDuration,
+        brewResult: { type: 'idle' },
+        error: null
+      })
+
+      // 짧은 딜레이 후 프로그레스 1로 변경 (CSS transition 트리거)
+      setTimeout(() => {
+        set({ brewProgress: 1 })
+      }, 50)
+
+      if (userId) {
+        try {
+          console.log(`🌐 [startBrewing] 소모품 제작 x${quantity} (1번 API 호출)`)
+
+          // API 호출과 프로그레스 바 애니메이션을 동시에 진행
+          const apiPromise = alchemyApi.performAlchemy(
+            userId,
+            recipeId,
+            capturedIngredients,
+            100,
+            quantity // 서버에서 수량 처리
+          )
+
+          // 프로그레스 바 애니메이션 완료 대기 Promise
+          const animationPromise = new Promise<void>(resolve => {
+            setTimeout(resolve, brewAnimationDuration + 100) // 약간의 여유 추가
+          })
+
+          // API 응답과 애니메이션 모두 완료될 때까지 대기
+          const [result] = await Promise.all([apiPromise, animationPromise])
+
+          if (result) {
+            const enhancedResult = {
+              ...result,
+              craft_quantity: result.quantity || quantity
+            }
+            await get().completeBrewing(enhancedResult, recipe)
+          }
+        } catch (e: any) {
+          console.error('Alchemy RPC failed', e)
+          const errorMessage = e.message || 'Unknown network error'
+          set({
+            isBrewing: false,
+            error: `서버 통신 오류: ${errorMessage}. 잠시 후 다시 시도해주세요.`
+          })
+        }
+      } else {
+        set({ isBrewing: false })
+      }
+      return
+    }
+
+    // 몬스터 레시피는 기존 로직 유지 (프로그레스 바 + 제작 시간)
     const duration = recipe.craft_time_sec * 1000
 
     // 조합에 필요한 정보를 미리 캡처 (프로그레스 완료 후 API 호출 시 사용)
@@ -766,12 +858,15 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     }
 
     // 결과 설정
+    // result.craft_quantity는 대용량 제작 시 startBrewing에서 전달됨
+    const craftQty = (result as any).craft_quantity || 1
     const brewResult = result.success
       ? {
         type: 'success' as const,
         monsterId: result.result_monster_id || (recipe?.type === 'MONSTER' ? recipe?.result_monster_id : undefined),
         itemId: recipe?.type === 'ITEM' ? recipe?.result_item_id : undefined,
         count: recipe?.result_count || 1,
+        craftQuantity: craftQty,
         expGain: result.exp_gain
       }
       : { type: 'fail' as const, lostMaterials: materialsUsed, hint, expGain: result.exp_gain }

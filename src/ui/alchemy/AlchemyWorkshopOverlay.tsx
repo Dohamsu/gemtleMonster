@@ -21,7 +21,7 @@ interface AlchemyWorkshopOverlayProps {
     playerAlchemy: PlayerAlchemy | null
     onSelectRecipe: (recipeId: string | null) => void
     onAddIngredient: (materialId: string, quantity: number) => void
-    onStartBrewing: (recipeId: string) => Promise<void>
+    onStartBrewing: (recipeId: string, quantity?: number) => Promise<void>
     onStartFreeFormBrewing: () => Promise<void>
     mobileTab?: 'recipes' | 'materials' | 'codex'
     onMobileTabChange?: (tab: 'recipes' | 'materials' | 'codex') => void

@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react'
 import { getMonsterData } from '../../data/monsterData'
 import { MATERIALS } from '../../data/alchemyData'
 
@@ -15,6 +16,7 @@ interface AlchemyResultModalProps {
     monsterId?: string
     itemId?: string
     expGain?: number
+    craftQuantity?: number // 대용량 제작 수량
     onClose: () => void
 }
 
@@ -25,6 +27,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
     itemId,
     hint,
     expGain,
+    craftQuantity = 1,
     onClose
 }) => {
     if (!isOpen) return null
@@ -128,27 +131,113 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                     item ? (
                         /* Item Reward Display */
                         <>
+                            {/* 스택된 이미지 컨테이너 (하나의 박스) */}
                             <div style={{
-                                width: '120px',
-                                height: '120px',
+                                position: 'relative',
+                                width: '130px', // 이미지가 겹쳐질 공간 확보
+                                height: '130px',
                                 margin: '0 auto 16px',
-                                background: 'linear-gradient(135deg, #3182ce 0%, #63b3ed 100%)',
-                                borderRadius: '12px',
+                                background: 'linear-gradient(135deg, #2c1810 0%, #0f0f0f 100%)',
+                                borderRadius: '16px',
+                                border: '3px solid #facc15',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                border: '3px solid #facc15',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                                overflow: 'hidden'
+                                overflow: 'visible' // 이미지가 약간 튀어나와도 자연스럽게
                             }}>
-                                {item.iconUrl ? (
-                                    <img
-                                        src={item.iconUrl}
-                                        alt={item.name}
-                                        style={{ width: '80%', height: '80%', objectFit: 'contain' }}
-                                    />
-                                ) : (
-                                    <span style={{ fontSize: '60px' }}>🧪</span>
+                                {/* 최대 5개까지 이미지만 스택으로 표시 */}
+                                <div style={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    height: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    {useMemo(() => {
+                                        const count = Math.min(craftQuantity, 5)
+                                        return Array.from({ length: count }).map((_, idx) => {
+                                            if (count === 1) {
+                                                // 1개는 정중앙 강조
+                                                return {
+                                                    top: '50%',
+                                                    left: '50%',
+                                                    transform: 'translate(-50%, -50%) scale(1.2)',
+                                                    zIndex: 10
+                                                }
+                                            }
+
+                                            // 랜덤 배치 생성 (-5 ~ 5px 범위)
+                                            // 시드 기반이 아닌 순수 랜덤이지만, useMemo로 고정됨
+                                            const randomAngle = Math.random() * 360
+                                            const distance = Math.random() * 6 // 중심에서의 거리 (최대 6px)
+
+                                            const offsetX = Math.cos(randomAngle * (Math.PI / 180)) * distance
+                                            const offsetY = Math.sin(randomAngle * (Math.PI / 180)) * distance
+
+                                            const rotate = (Math.random() - 0.5) * 20 // -10 ~ 10도 회전
+                                            const scale = 0.9 + Math.random() * 0.2 // 0.9 ~ 1.1 크기
+
+                                            return {
+                                                top: '50%',  // 부모의 중앙
+                                                left: '50%', // 부모의 중앙
+                                                marginTop: offsetY,  // 랜덤 오프셋 Y
+                                                marginLeft: offsetX, // 랜덤 오프셋 X
+                                                transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`, // 중앙 정렬 보정 + 회전/크기
+                                                zIndex: idx + 1
+                                            }
+                                        })
+                                    }, [craftQuantity]).map((style, idx) => (
+                                        <div
+                                            key={idx}
+                                            style={{
+                                                position: 'absolute',
+                                                width: '80px',
+                                                height: '80px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
+                                                transition: 'all 0.3s ease',
+                                                ...style
+                                            }}
+                                        >
+                                            {item.iconUrl ? (
+                                                <img
+                                                    src={item.iconUrl}
+                                                    alt={item.name}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'contain'
+                                                    }}
+                                                />
+                                            ) : (
+                                                <span style={{ fontSize: '50px' }}>🧪</span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* 5개 이상일 때 뱃지 */}
+                                {craftQuantity > 5 && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: -5,
+                                        right: -5,
+                                        background: '#ea580c', // 더 눈에 띄는 색상
+                                        borderRadius: '12px',
+                                        padding: '2px 8px',
+                                        fontSize: '14px',
+                                        fontWeight: 'bold',
+                                        color: 'white',
+                                        border: '2px solid #fff',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                        zIndex: 10
+                                    }}>
+                                        +{craftQuantity - 5}
+                                    </div>
                                 )}
                             </div>
                             <h3 style={{
@@ -158,7 +247,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                                 fontWeight: 'bold',
                                 textAlign: 'center'
                             }}>
-                                {item.name} 획득!
+                                {item.name} {craftQuantity > 1 ? `x${craftQuantity}` : ''} 획득!
                             </h3>
                             <p style={{
                                 textAlign: 'center',

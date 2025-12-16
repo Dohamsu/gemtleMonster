@@ -4,6 +4,7 @@ import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { DUNGEONS } from '../../data/dungeonData'
 import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
 import BattleView from './BattleView'
+import ConsumableConfigPanel from './ConsumableConfigPanel'
 
 interface DungeonModalProps {
     isOpen: boolean
@@ -16,6 +17,7 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
     const [selectedMonsterId, setSelectedMonsterId] = useState<string | null>(null)
     const [selectedDungeonId, setSelectedDungeonId] = useState<string | null>(null)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+    const [showConsumableConfig, setShowConsumableConfig] = useState(false)
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -116,18 +118,40 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                             {battleState ? '전투 중!' : (selectedDungeon ? selectedDungeon.name : '던전 선택')}
                         </h2>
                     </div>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#94a3b8',
-                            fontSize: '24px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        ×
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {!battleState && (
+                            <button
+                                onClick={() => setShowConsumableConfig(true)}
+                                style={{
+                                    background: 'rgba(59, 130, 246, 0.2)',
+                                    border: '1px solid #3b82f6',
+                                    color: '#60a5fa',
+                                    padding: '6px 12px',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: '12px',
+                                    fontWeight: 'bold',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                }}
+                            >
+                                ⚙️ 소모품
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#94a3b8',
+                                fontSize: '24px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            ×
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -399,6 +423,12 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
                     )}
                 </div>
             </div>
+
+            {/* Consumable Config Panel */}
+            <ConsumableConfigPanel
+                isOpen={showConsumableConfig}
+                onClose={() => setShowConsumableConfig(false)}
+            />
         </div>
     )
 }

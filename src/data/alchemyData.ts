@@ -1,6 +1,15 @@
 import type { Material, Recipe, RecipeCondition } from '../types/alchemy'
+import type { ConsumableEffect } from '../types/consumable'
 import { MONSTER_DATA } from './monsterData'
 
+// 소모품 효과 정의
+export const CONSUMABLE_EFFECTS: Record<string, ConsumableEffect> = {
+    'potion_hp_small': { type: 'HEAL_HP', value: 50 },
+    'potion_mp_small': { type: 'HEAL_HP', value: 30 },  // MP 없으므로 HP로 대체
+    'potion_stamina': { type: 'BUFF_ATK', value: 20, duration: 3 },
+    'potion_ironskin': { type: 'BUFF_DEF', value: 30, duration: 3 },
+    'potion_light': { type: 'CURE_STATUS', value: 0 }  // 상태이상 해제
+}
 export const MATERIALS: Record<string, Material> = {
     'herb_common': { id: 'herb_common', name: '일반 약초', type: 'PLANT', description: '흔하게 볼 수 있는 약초.', rarity: 'N', iconUrl: '/assets/materials/herb_common.png', sellPrice: 10 },
     'herb_rare': { id: 'herb_rare', name: '희귀 약초', type: 'PLANT', description: '희귀하게 자라는 약초.', rarity: 'R', iconUrl: '/assets/materials/herb_rare.png', sellPrice: 50 },

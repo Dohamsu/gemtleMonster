@@ -2,8 +2,9 @@
 import { create } from 'zustand'
 import { DUNGEONS } from '../data/dungeonData'
 import { GAME_MONSTERS as MONSTERS } from '../data/monsterData'
-import { MATERIALS } from '../data/alchemyData'
+import { MATERIALS, CONSUMABLE_EFFECTS } from '../data/alchemyData'
 import type { RarityType } from '../types/alchemy'
+import type { ConsumableSlot } from '../types/consumable'
 import { useAlchemyStore } from './useAlchemyStore'
 import { getUnlockableSkills } from '../data/monsterSkillData'
 import { calculateDamage, processStatusEffects } from '../lib/battleUtils'
@@ -56,6 +57,11 @@ interface GameState {
     // Sync Callbacks
     batchFacilitySyncCallback: ((id: string, level: number) => void) | null
     setBatchFacilitySyncCallback: (callback: ((id: string, level: number) => void) | null) => void
+
+    // Consumable Auto-Use Settings
+    consumableSlots: ConsumableSlot[]
+    setConsumableSlots: (slots: ConsumableSlot[]) => void
+    updateConsumableSlot: (slotId: 'hp' | 'status', updates: Partial<ConsumableSlot>) => void
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -75,6 +81,23 @@ export const useGameStore = create<GameState>((set, get) => ({
     setFacilities: (facilities) => set({ facilities }),
     batchFacilitySyncCallback: null,
     setBatchFacilitySyncCallback: (callback) => set({ batchFacilitySyncCallback: callback }),
+
+    // Consumable Auto-Use Settings
+    consumableSlots: [
+        { id: 'hp', consumableId: null, threshold: 30, statusTypes: [], enabled: false },
+        { id: 'status', consumableId: null, threshold: 0, statusTypes: ['BURN', 'POISON'], enabled: false }
+    ],
+    setConsumableSlots: (slots) => set({ consumableSlots: slots }),
+    updateConsumableSlot: (slotId, updates) => {
+        console.log('🔧 [updateConsumableSlot] 호출:', slotId, updates)
+        set(state => {
+            const newSlots = state.consumableSlots.map(slot =>
+                slot.id === slotId ? { ...slot, ...updates } : slot
+            )
+            console.log('🔧 [updateConsumableSlot] 새 슬롯:', newSlots)
+            return { consumableSlots: newSlots }
+        })
+    },
 
     upgradeFacility: async (facilityId, cost) => {
         const state = get()
@@ -313,7 +336,139 @@ export const useGameStore = create<GameState>((set, get) => ({
         if (!state.battleState || state.battleState.result) return
 
         const { playerHp, enemyHp, logs, enemyId, playerAtk, playerDef, selectedMonsterType, playerMaxHp, selectedMonsterId, enemyAtk, enemyDef } = state.battleState
-        const { playerMonsters } = useAlchemyStore.getState()
+        const { playerMonsters, playerMaterials, consumeMaterials } = useAlchemyStore.getState()
+
+        // ========================================
+        // Auto-Consumable Check (턴 시작 시)
+        // ========================================
+        const consumableSlots = state.consumableSlots
+        let currentPlayerHp = playerHp
+        let currentPlayerAtk = playerAtk
+        let currentPlayerDef = playerDef
+        const consumableLogs: string[] = []
+        const consumableFloatingTexts: FloatingText[] = []
+
+        console.log('🧪 [Auto-Consumable] 슬롯 체크 시작:', consumableSlots)
+        console.log('🧪 [Auto-Consumable] 현재 HP:', playerHp, '/', playerMaxHp, '=', Math.round((playerHp / playerMaxHp) * 100) + '%')
+        console.log('🧪 [Auto-Consumable] playerMaterials:', playerMaterials)
+
+        for (const slot of consumableSlots) {
+            console.log('🧪 [Auto-Consumable] 슬롯 체크:', slot.id, 'enabled:', slot.enabled, 'consumableId:', slot.consumableId)
+            if (!slot.enabled || !slot.consumableId) continue
+
+            const consumableCount = playerMaterials[slot.consumableId] || 0
+            console.log('🧪 [Auto-Consumable] 소모품 보유량:', slot.consumableId, '=', consumableCount)
+            if (consumableCount <= 0) continue
+
+            const effect = CONSUMABLE_EFFECTS[slot.consumableId]
+            console.log('🧪 [Auto-Consumable] 효과 정보:', effect)
+            if (!effect) continue
+
+            const material = MATERIALS[slot.consumableId]
+            const consumableName = material?.name || slot.consumableId
+
+            let shouldUse = false
+
+            // HP 조건 체크
+            if (slot.id === 'hp') {
+                const hpPercent = (currentPlayerHp / playerMaxHp) * 100
+                console.log('🧪 [Auto-Consumable] HP 조건:', hpPercent, '% <= ', slot.threshold, '%?', hpPercent <= slot.threshold)
+                if (hpPercent <= slot.threshold) {
+                    shouldUse = true
+                }
+            }
+            // 상태이상 조건 체크
+            else if (slot.id === 'status') {
+                const playerStatusEffects = state.battleState?.playerStatusEffects || []
+                const hasTargetStatus = playerStatusEffects.some(eff =>
+                    slot.statusTypes.includes(eff.type)
+                )
+                if (hasTargetStatus) {
+                    shouldUse = true
+                }
+            }
+
+            if (shouldUse) {
+                // 소모품 사용
+                await consumeMaterials({ [slot.consumableId]: 1 })
+
+                // 효과 적용
+                if (effect.type === 'HEAL_HP') {
+                    const healAmount = Math.min(effect.value, playerMaxHp - currentPlayerHp)
+                    currentPlayerHp = Math.min(playerMaxHp, currentPlayerHp + effect.value)
+                    consumableLogs.push(`[CONSUMABLE]🧪 ${consumableName}을(를) 사용! {{GREEN|HP +${healAmount}}}`)
+                    consumableFloatingTexts.push({
+                        id: `consumable-heal-${Date.now()}`,
+                        x: 0, y: 0,
+                        text: `+${healAmount}`,
+                        color: '#4ade80',
+                        life: 40,
+                        target: 'PLAYER',
+                        type: 'HEAL'
+                    })
+                } else if (effect.type === 'BUFF_ATK') {
+                    currentPlayerAtk = Math.floor(playerAtk * (1 + effect.value / 100))
+                    consumableLogs.push(`[CONSUMABLE]🧪 ${consumableName}을(를) 사용! {{GREEN|공격력 +${effect.value}%}} (${effect.duration || 3}턴)`)
+                    consumableFloatingTexts.push({
+                        id: `consumable-buff-${Date.now()}`,
+                        x: 0, y: 0,
+                        text: `ATK ↑`,
+                        color: '#fbbf24',
+                        life: 40,
+                        target: 'PLAYER',
+                        type: 'BUFF'
+                    })
+                } else if (effect.type === 'BUFF_DEF') {
+                    currentPlayerDef = Math.floor(playerDef * (1 + effect.value / 100))
+                    consumableLogs.push(`[CONSUMABLE]🧪 ${consumableName}을(를) 사용! {{GREEN|방어력 +${effect.value}%}} (${effect.duration || 3}턴)`)
+                    consumableFloatingTexts.push({
+                        id: `consumable-buff-${Date.now()}`,
+                        x: 0, y: 0,
+                        text: `DEF ↑`,
+                        color: '#60a5fa',
+                        life: 40,
+                        target: 'PLAYER',
+                        type: 'BUFF'
+                    })
+                } else if (effect.type === 'CURE_STATUS') {
+                    consumableLogs.push(`[CONSUMABLE]🧪 ${consumableName}을(를) 사용! {{GREEN|상태이상 해제!}}`)
+                    consumableFloatingTexts.push({
+                        id: `consumable-cure-${Date.now()}`,
+                        x: 0, y: 0,
+                        text: `상태 해제`,
+                        color: '#f0abfc',
+                        life: 40,
+                        target: 'PLAYER',
+                        type: 'HEAL'
+                    })
+                    // 상태이상 해제 적용
+                    set(s => ({
+                        battleState: s.battleState ? {
+                            ...s.battleState,
+                            playerStatusEffects: []
+                        } : null
+                    }))
+                }
+
+                // 한 턴에 한 종류의 소모품만 사용
+                break
+            }
+        }
+
+        // 소모품 효과 적용 후 상태 업데이트
+        if (consumableLogs.length > 0) {
+            set(s => ({
+                battleState: s.battleState ? {
+                    ...s.battleState,
+                    playerHp: currentPlayerHp,
+                    playerAtk: currentPlayerAtk,
+                    playerDef: currentPlayerDef,
+                    logs: [...s.battleState.logs, ...consumableLogs],
+                    floatingTexts: [...s.battleState.floatingTexts, ...consumableFloatingTexts]
+                } : null
+            }))
+        }
+        // ========================================
 
         // Monster & Skill Data Setup
         const selectedMonster = selectedMonsterId ? playerMonsters.find(m => m.id === selectedMonsterId) : null
@@ -374,10 +529,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         const playerEntity: BattleEntity = {
             id: 'player',
             name: monsterName,
-            hp: playerHp,
+            hp: currentPlayerHp, // 소모품 효과 적용된 HP
             maxHp: playerMaxHp,
-            atk: playerAtk,
-            def: playerDef,
+            atk: currentPlayerAtk, // 소모품 효과 적용된 ATK
+            def: currentPlayerDef, // 소모품 효과 적용된 DEF
             element: (state.battleState.playerElement || 'EARTH') as any,
             isPlayer: true,
             statusEffects: state.battleState.playerStatusEffects || []

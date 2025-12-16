@@ -499,6 +499,9 @@ export default function BattleView() {
                     } else if (logText.startsWith('[ENEMY]')) {
                         color = '#9ca3af' // Dimmed
                         logText = logText.replace('[ENEMY]', '')
+                    } else if (logText.startsWith('[CONSUMABLE]')) {
+                        color = '#a3e635' // Green highlight for consumable
+                        logText = logText.replace('[CONSUMABLE]', '')
                     }
 
                     // Parsing logic for tags: {{RED|text}}, {{GREEN|text}}, {{GOLD|text}} and {{R_RARITY|text}}

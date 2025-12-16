@@ -66,6 +66,7 @@ export default function GameCanvas() {
         success: boolean;
         monsterId?: string;
         itemId?: string; // New
+        craftQuantity?: number; // 대용량 제작 수량
         hint?: {
             type: 'INGREDIENT_REVEAL' | 'NEAR_MISS' | 'CONDITION_MISMATCH'
             monsterName?: string
@@ -150,6 +151,7 @@ export default function GameCanvas() {
                 success: brewResult.type === 'success',
                 monsterId: brewResult.monsterId,
                 itemId: brewResult.itemId, // New
+                craftQuantity: brewResult.craftQuantity, // 대용량 제작 수량
                 hint: brewResult.hint,
                 expGain: brewResult.expGain
             })
@@ -348,6 +350,7 @@ export default function GameCanvas() {
                 itemId={lastBrewResult.itemId} // New
                 hint={lastBrewResult.hint}
                 expGain={lastBrewResult.expGain}
+                craftQuantity={lastBrewResult.craftQuantity} // 대용량 제작 수량
                 onClose={() => setShowResultModal(false)}
             />
 
