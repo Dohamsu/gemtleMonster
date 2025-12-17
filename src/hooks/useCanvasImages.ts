@@ -12,7 +12,7 @@ export interface CanvasImages {
     cauldron_pixel: HTMLImageElement | null
     dungeon_forest: HTMLImageElement | null
     spirit_sanctum: HTMLImageElement | null
-    blacksmith: HTMLImageElement | null
+    blacksmith: Record<number, HTMLImageElement>
     materials: Record<string, HTMLImageElement>
 }
 
@@ -31,7 +31,7 @@ export function useCanvasImages() {
         cauldron_pixel: null,
         dungeon_forest: null,
         spirit_sanctum: null,
-        blacksmith: null,
+        blacksmith: {},
         materials: {}
     })
 
@@ -71,10 +71,23 @@ export function useCanvasImages() {
             loadImage('/assets/cauldron_pixel.png'),
             loadImage('/assets/dungeon_entrance.png'),
             loadImage('/assets/facility/spirit_santuary.png'),
-            loadImage('/assets/blacksmith.png'),
-            loadMaterialImages()
+            loadMaterialImages(),
+            // Load Blacksmith images for levels 1-5
+            Promise.all([
+                loadImage('/assets/facility/blacksmith_1.png'),
+                loadImage('/assets/facility/forge_1.png'),
+                loadImage('/assets/facility/forge_2.png'),
+                loadImage('/assets/facility/forge_3.png'),
+                loadImage('/assets/facility/forge_4.png')
+            ]).then(([lv1, lv2, lv3, lv4, lv5]) => ({
+                1: lv1,
+                2: lv2,
+                3: lv3,
+                4: lv4,
+                5: lv5
+            }))
         ])
-            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, dungeonForest, spiritSanctum, blacksmith, materials]) => {
+            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, dungeonForest, spiritSanctum, materials, blacksmithImages]) => {
                 setImages({
                     background: bg as HTMLImageElement,
                     herb_farm: herbFarm as HTMLImageElement,
@@ -85,7 +98,7 @@ export function useCanvasImages() {
                     cauldron_pixel: cauldronPixel as HTMLImageElement,
                     dungeon_forest: dungeonForest as HTMLImageElement,
                     spirit_sanctum: spiritSanctum as HTMLImageElement,
-                    blacksmith: blacksmith as HTMLImageElement,
+                    blacksmith: blacksmithImages as Record<number, HTMLImageElement>,
                     materials: materials as Record<string, HTMLImageElement>
                 })
             })

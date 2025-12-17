@@ -74,11 +74,21 @@ export function renderMapView({ ctx, canvas, images, facilities }: MapRendererPr
     }
 
     // Render blacksmith
-    if (images.blacksmith) {
+    if (facilities['blacksmith'] && images.blacksmith) {
         const blacksmithX = canvas.width * 0.8 - 64
         const blacksmithY = canvas.height * 0.25 - 64
-        ctx.drawImage(images.blacksmith, blacksmithX, blacksmithY, 128, 128)
 
+        // Determine level and image
+        // Level 1: blacksmith_1.png (mapped to 1)
+        // Level 2+: forge_{n}.png (mapped to 2,3,4,5)
+        const level = facilities['blacksmith'] || 1
+        const img = images.blacksmith[level] || images.blacksmith[1]
+
+        if (img) {
+            ctx.drawImage(img, blacksmithX, blacksmithY, 128, 128)
+        }
+
+        // Draw title
         ctx.fillStyle = 'white'
         ctx.font = 'bold 14px Arial'
         ctx.shadowColor = 'black'

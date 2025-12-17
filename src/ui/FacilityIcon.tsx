@@ -7,37 +7,50 @@ interface Props {
     style?: React.CSSProperties
 }
 
-export default function FacilityIcon({ id, level, size = 40, style }: Props) {
-    const getImagePath = () => {
-        // Use level-specific images for facilities that have them
-        if (id === 'herb_farm') {
-            // herb_farm has level-specific images: herb_farm_1.png, herb_farm_2.png, herb_farm_3.png
-            const imageLevel = Math.min(level, 3) // Cap at 3 since we only have 3 images
-            return `/assets/facility/herb_farm_${imageLevel}.png`
-        }
-
-        if (id === 'mine') {
-            // mine has level-specific images: mine_1.png, mine_2.png, mine_3.png
-            const imageLevel = Math.min(level, 3) // Cap at 3 since we only have 3 images
-            return `/assets/facility/mine_${imageLevel}.png`
-        }
-
-        if (id === 'spirit_sanctum') {
-            // spirit_sanctum has a single image (note: filename has typo 'santuary' instead of 'sanctuary')
-            return `/assets/facility/spirit_santuary.png`
-        }
-
-        if (id === 'blacksmith') {
-            const imageLevel = Math.min(level, 5)
-            return `/assets/facility/blacksmith_${imageLevel}.png`
-        }
-
-        // For other facilities, you can add similar logic when images are available
-        // For now, return null to show a fallback
-        return null
+// Refactored function to get the image path based on id and level
+const getFacilityIconUrl = (id: string, level: number): string | null => {
+    // Check for blacksmith/forge progression
+    if (id === 'blacksmith') {
+        const lv = level || 1
+        // Level 1: blacksmith_1.png
+        // Level 2: forge_1.png
+        // Level 3: forge_2.png
+        // Level 4: forge_3.png
+        // Level 5: forge_4.png
+        if (lv === 1) return '/assets/facility/blacksmith_1.png'
+        if (lv >= 2 && lv <= 5) return `/assets/facility/forge_${lv - 1}.png`
+        if (lv > 5) return '/assets/facility/forge_4.png' // Fallback for higher levels
     }
 
-    const imagePath = getImagePath()
+    switch (id) {
+        case 'herb_farm':
+            // herb_farm has level-specific images: herb_farm_1.png, herb_farm_2.png, herb_farm_3.png
+            const herbFarmImageLevel = Math.min(level, 3) // Cap at 3 since we only have 3 images
+            return `/assets/facility/herb_farm_${herbFarmImageLevel}.png`
+        case 'mine':
+            // mine has level-specific images: mine_1.png, mine_2.png, mine_3.png
+            const mineImageLevel = Math.min(level, 3) // Cap at 3 since we only have 3 images
+            return `/assets/facility/mine_${mineImageLevel}.png`
+        case 'spirit_sanctum':
+            // spirit_sanctum has a single image (note: filename has typo 'santuary' instead of 'sanctuary')
+            return '/assets/facility/spirit_santuary.png'
+        case 'alchemy_lab':
+            return '/assets/facility/alchemy_workshop.png'
+        case 'shop_building':
+            return '/assets/facility/shop_building.png'
+        case 'dungeon_dispatch':
+            return '/assets/facility/dungeon_entrance.png'
+        case 'training_ground':
+            return '/assets/ui/icon_crossed_swords.png' // Placeholder for training
+        case 'monster_farm':
+            return '/assets/facility/shop_building.png' // Placeholder
+        default:
+            return null // Fallback to emoji if no image is available
+    }
+}
+
+export default function FacilityIcon({ id, level, size = 40, style }: Props) {
+    const imagePath = getFacilityIconUrl(id, level)
     const sizeValue = typeof size === 'string' ? size : `${size}px`
 
     if (imagePath) {

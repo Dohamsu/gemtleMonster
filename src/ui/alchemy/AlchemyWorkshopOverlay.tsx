@@ -108,8 +108,8 @@ function AlchemyWorkshopOverlay({
                             color: showCodex ? '#1a202c' : '#f0d090',
                             border: '2px solid #ed8936',
                             borderRadius: '12px',
-                            width: '50px',
-                            padding: '8px 4px',
+                            width: '56px',
+                            padding: '6px 4px',
                             fontSize: '18px',
                             fontWeight: 'bold',
                             cursor: 'pointer',
@@ -122,7 +122,7 @@ function AlchemyWorkshopOverlay({
                             transition: 'all 0.2s'
                         }}
                     >
-                        <span>📚</span>
+                        <img src="/assets/ui/reciepbook.png" alt="도감" style={{ width: '36px', height: '36px' }} />
                         <span style={{ fontSize: '10px' }}>도감</span>
                     </button>
                 </div>
@@ -355,7 +355,7 @@ function AlchemyWorkshopOverlay({
                         transition: 'all 0.2s'
                     }}
                 >
-                    <span>📚</span>
+                    <img src="/assets/ui/reciepbook.png" alt="도감" style={{ width: '24px', height: '24px' }} />
                     <span>{showCodex ? '도감 닫기' : '도감 열기'}</span>
                 </button>
             </div>
