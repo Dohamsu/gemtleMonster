@@ -15,6 +15,8 @@ import { useGameStore } from './useGameStore'
 import { supabase } from '../lib/supabase'
 import { getMonsterName } from '../data/monsterData'
 
+const consoleLogNoop = (..._args: any[]) => { }
+
 
 interface AlchemyState {
   // 마스터 데이터
@@ -160,7 +162,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   // ============================================
 
   loadAllData: async (userId: string) => {
-    // console.log(`🔄 [AlchemyStore] loadAllData 시작:`, userId)
+    // consoleLogNoop(`🔄 [AlchemyStore] loadAllData 시작:`, userId)
     set({ isLoading: true, error: null, userId })
     try {
       await Promise.all([
@@ -169,8 +171,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         get().loadPlayerData(userId),
         get().loadPlayerMonsters(userId)
       ])
-      // console.log(`✅ [AlchemyStore] loadAllData 완료`)
-      // console.log(`📦 playerMaterials:`, get().playerMaterials)
+      // consoleLogNoop(`✅ [AlchemyStore] loadAllData 완료`)
+      // consoleLogNoop(`📦 playerMaterials:`, get().playerMaterials)
     } catch (error) {
       console.error(`❌ [AlchemyStore] loadAllData 실패:`, error)
       set({ error: error instanceof Error ? error.message : 'Unknown error' })
@@ -200,12 +202,12 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   },
 
   loadPlayerData: async (userId: string) => {
-    console.log(`🔄 [AlchemyStore] loadPlayerData 시작:`, userId)
+    consoleLogNoop(`🔄 [AlchemyStore] loadPlayerData 시작:`, userId)
     try {
       // 1. 플레이어 재료 로드
       const playerMats = await alchemyApi.getPlayerMaterials(userId)
-      console.log(`📦 [AlchemyStore] DB에서 로드한 재료:`, playerMats.length, '개')
-      console.log(`📦 [AlchemyStore] 서버 응답 (ore 관련):`, playerMats.filter(m => m.material_id.includes('ore')))
+      consoleLogNoop(`📦 [AlchemyStore] DB에서 로드한 재료:`, playerMats.length, '개')
+      consoleLogNoop(`📦 [AlchemyStore] 서버 응답 (ore 관련):`, playerMats.filter(m => m.material_id.includes('ore')))
 
       const materialsMap: Record<string, number> = {}
       playerMats.forEach(m => {
@@ -222,7 +224,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
       const goldAmount = goldData?.amount || 0
       materialsMap['gold'] = goldAmount
-      // console.log(`💰 골드 로드:`, goldAmount)
+      // consoleLogNoop(`💰 골드 로드:`, goldAmount)
 
       // 3. 누락된 재료 0으로 채우기 (클라이언트 잔존 데이터 제거용)
       // MATERIALS 상수를 참조하여 모든 재료 키에 대해 값 설정
@@ -255,7 +257,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       const currentResources = gameStore.resources
       // 기존 리소스에 materialsMap(0 포함)을 덮어씌움으로써 없는 재료는 0이 됨
       gameStore.setResources({ ...currentResources, ...materialsMap })
-      // console.log(`✅ [AlchemyStore] resources 캐시 동기화 완료`)
+      // consoleLogNoop(`✅ [AlchemyStore] resources 캐시 동기화 완료`)
 
     } catch (error) {
       console.error('❌ [AlchemyStore] 플레이어 데이터 로딩 실패:', error)
@@ -308,7 +310,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     const availableAmount = mergedMaterials[materialId] || 0
     const newAmount = Math.min(currentAmount + quantity, availableAmount)
 
-    // console.log(`🔵 재료 추가: ${materialId}, 보유: ${availableAmount}, 현재: ${currentAmount}, 새로운: ${newAmount}`)
+    // consoleLogNoop(`🔵 재료 추가: ${materialId}, 보유: ${availableAmount}, 현재: ${currentAmount}, 새로운: ${newAmount}`)
 
     // 값이 0이면 키를 추가하지 않음
     if (newAmount === 0) {
@@ -320,7 +322,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       [materialId]: newAmount
     }
 
-    // console.log(`✅ 재료 추가 완료. 현재 슬롯:`, newIngredients)
+    // consoleLogNoop(`✅ 재료 추가 완료. 현재 슬롯:`, newIngredients)
 
     set({ selectedIngredients: newIngredients, selectedRecipeId: null })
   },
@@ -352,39 +354,39 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     const gameStore = useGameStore.getState()
     const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
 
-    console.log('🔄 [autoFillIngredients] 시작:', recipeId)
-    console.log('📦 [autoFillIngredients] 전체 레시피 수:', allRecipes.length)
+    consoleLogNoop('🔄 [autoFillIngredients] 시작:', recipeId)
+    consoleLogNoop('📦 [autoFillIngredients] 전체 레시피 수:', allRecipes.length)
 
     const recipe = allRecipes.find(r => r.id === recipeId)
     if (!recipe) {
-      console.log('❌ [autoFillIngredients] 레시피를 찾을 수 없음:', recipeId)
+      consoleLogNoop('❌ [autoFillIngredients] 레시피를 찾을 수 없음:', recipeId)
       return false
     }
 
-    console.log('📜 [autoFillIngredients] 레시피 정보:', recipe.name, recipe)
-    console.log('🧪 [autoFillIngredients] ingredients:', recipe.ingredients)
+    consoleLogNoop('📜 [autoFillIngredients] 레시피 정보:', recipe.name, recipe)
+    consoleLogNoop('🧪 [autoFillIngredients] ingredients:', recipe.ingredients)
 
     if (!recipe.ingredients || recipe.ingredients.length === 0) {
-      console.log('❌ [autoFillIngredients] 레시피에 재료 정보가 없음')
+      consoleLogNoop('❌ [autoFillIngredients] 레시피에 재료 정보가 없음')
       return false
     }
 
-    console.log('📦 [autoFillIngredients] 현재 보유 재료:', mergedMaterials)
+    consoleLogNoop('📦 [autoFillIngredients] 현재 보유 재료:', mergedMaterials)
 
     const newIngredients: Record<string, number> = {}
 
     for (const ing of recipe.ingredients) {
       const available = mergedMaterials[ing.material_id] || 0
-      console.log(`  - ${ing.material_id}: 보유 ${available} / 필요 ${ing.quantity}`)
+      consoleLogNoop(`  - ${ing.material_id}: 보유 ${available} / 필요 ${ing.quantity}`)
       if (available < ing.quantity) {
         // 재료 부족
-        console.log(`❌ 재료 부족: ${ing.material_id}`)
+        consoleLogNoop(`❌ 재료 부족: ${ing.material_id}`)
         return false
       }
       newIngredients[ing.material_id] = ing.quantity
     }
 
-    console.log('✅ [autoFillIngredients] 자동 배치 완료:', newIngredients)
+    consoleLogNoop('✅ [autoFillIngredients] 자동 배치 완료:', newIngredients)
     set({ selectedIngredients: newIngredients })
     return true
   },
@@ -457,7 +459,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     const { selectedIngredients } = get()
     // 값이 0보다 큰 재료가 1개 이상 있으면 조합 시작 가능
     const validIngredients = Object.entries(selectedIngredients).filter(([_, count]) => count > 0)
-    // console.log(`🔍 조합 가능 여부 체크: ${validIngredients.length}개 재료`, selectedIngredients)
+    // consoleLogNoop(`🔍 조합 가능 여부 체크: ${validIngredients.length}개 재료`, selectedIngredients)
     return validIngredients.length > 0
   },
 
@@ -471,7 +473,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // Phase 2: 조합 전 배치된 변경사항 먼저 동기화
     if (forceSyncCallback) {
-      console.log('⚡ [startFreeFormBrewing] 배치 동기화 먼저 실행...')
+      consoleLogNoop('⚡ [startFreeFormBrewing] 배치 동기화 먼저 실행...')
       await forceSyncCallback()
     }
 
@@ -479,13 +481,13 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     const matchedRecipe = findMatchingRecipe(selectedIngredients, alchemyContext || null, allRecipes)
 
     if (!matchedRecipe) {
-      console.log('⚠️ [startFreeFormBrewing] 일치하는 레시피 없음 - 실험 모드(실패)로 진행')
+      consoleLogNoop('⚠️ [startFreeFormBrewing] 일치하는 레시피 없음 - 실험 모드(실패)로 진행')
       // 레시피가 없어도 진행 (실패 처리 및 힌트 제공을 위해)
     }
 
     const duration = matchedRecipe ? matchedRecipe.craft_time_sec * 1000 : 3000 // 기본 3초
 
-    console.log('🧪 자유 조합 시작:', {
+    consoleLogNoop('🧪 자유 조합 시작:', {
       재료: selectedIngredients,
       매칭된레시피: matchedRecipe ? matchedRecipe.name : '없음 (실험)',
       소요시간: duration / 1000 + '초'
@@ -518,7 +520,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
       if (userId) {
         try {
-          console.log('🌐 [startFreeFormBrewing] 프로그레스 완료, API 호출 시작...')
+          consoleLogNoop('🌐 [startFreeFormBrewing] 프로그레스 완료, API 호출 시작...')
           const result = await alchemyApi.performAlchemy(
             userId,
             capturedRecipeId,
@@ -552,7 +554,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // Phase 2: 조합 전 배치된 변경사항 먼저 동기화
     if (forceSyncCallback) {
-      console.log('⚡ [startBrewing] 배치 동기화 먼저 실행...')
+      consoleLogNoop('⚡ [startBrewing] 배치 동기화 먼저 실행...')
       await forceSyncCallback()
     }
 
@@ -567,8 +569,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     if (alchemyContext && recipe.conditions && recipe.conditions.length > 0) {
       if (!isRecipeValid(recipe, alchemyContext)) {
         console.error('⚠️ 조합 조건이 충족되지 않았습니다.')
-        console.log('현재 컨텍스트:', alchemyContext)
-        console.log('필요 조건:', recipe.conditions)
+        consoleLogNoop('현재 컨텍스트:', alchemyContext)
+        consoleLogNoop('필요 조건:', recipe.conditions)
         return
       }
     }
@@ -617,7 +619,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
       if (userId) {
         try {
-          console.log(`🌐 [startBrewing] 소모품 제작 x${quantity} (1번 API 호출)`)
+          consoleLogNoop(`🌐 [startBrewing] 소모품 제작 x${quantity} (1번 API 호출)`)
 
           // API 호출과 프로그레스 바 애니메이션을 동시에 진행
           const apiPromise = alchemyApi.performAlchemy(
@@ -685,7 +687,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
       if (userId) {
         try {
-          console.log('🌐 [startBrewing] 프로그레스 완료, API 호출 시작...')
+          consoleLogNoop('🌐 [startBrewing] 프로그레스 완료, API 호출 시작...')
           // 레시피를 선택해서 조합하는 경우 실패 확률 제거 (100% 성공)
           const result = await alchemyApi.performAlchemy(userId, recipeId, capturedIngredients, 100)
           await get().completeBrewing(result, recipe)
@@ -743,15 +745,15 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     // 2. 힌트 시스템 처리 (실패 시에만)
     if (result.success) {
       // 성공 시에는 별도 힌트 처리 없음 (서버에서 이미 failCount 리셋됨)
-      console.log(`✅ 연금술 성공! +${result.exp_gain} XP`)
+      consoleLogNoop(`✅ 연금술 성공! +${result.exp_gain} XP`)
     } else {
-      console.log('Alchemy Failed Debug:', result) // DEBUG
+      consoleLogNoop('Alchemy Failed Debug:', result) // DEBUG
       if (result.error) console.error('Alchemy Error:', result.error)
 
       // Fallback XP Logic
       if (!result.exp_gain || result.exp_gain === 0) {
         const fallbackExp = recipe ? Math.max(Math.floor(recipe.exp_gain * 0.1), 1) : 5
-        console.log(`⚠️ 서버 XP 0 감지. 클라이언트 보정: +${fallbackExp} XP`)
+        consoleLogNoop(`⚠️ 서버 XP 0 감지. 클라이언트 보정: +${fallbackExp} XP`)
 
         // DB 동기화 (비동기)
         alchemyApi.addAlchemyExperience(userId, fallbackExp).catch(console.error)
@@ -778,7 +780,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         }
       }
 
-      console.log(`💔 연속 실패 ${failCount}회`)
+      consoleLogNoop(`💔 연속 실패 ${failCount}회`)
 
       // --- Enhanced Hint Logic ---
       // (기존 로직 유지)
@@ -835,7 +837,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
             baseName = baseName.replace(/ 레시피| 조합법/g, '').trim()
             if (!baseName) baseName = '알 수 없는 몬스터'
 
-            console.log('💡 힌트 생성:', {
+            consoleLogNoop('💡 힌트 생성:', {
               recipe: undiscoveredRecipe.name,
               target: baseName,
               material: materialName
@@ -906,7 +908,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   },
 
   resetBrewResult: () => {
-    console.log('🔄 [AlchemyStore] resetBrewResult called')
+    consoleLogNoop('🔄 [AlchemyStore] resetBrewResult called')
     set({ brewResult: { type: 'idle' } })
   },
 
@@ -917,7 +919,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   addTestMaterials: async (userId: string) => {
     try {
       // 기본 재료들 추가
-      console.log('🔧 테스트 재료 추가 시작...')
+      consoleLogNoop('🔧 테스트 재료 추가 시작...')
       await alchemyApi.addMaterialToPlayer(userId, 'herb_common', 20)
       await alchemyApi.addMaterialToPlayer(userId, 'slime_core', 10)
       await alchemyApi.addMaterialToPlayer(userId, 'ore_iron', 10)
@@ -929,8 +931,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       await get().loadPlayerData(userId)
 
       const { playerMaterials } = get()
-      console.log('✅ 테스트 재료 추가 완료')
-      console.log('📦 보유 재료:', playerMaterials)
+      consoleLogNoop('✅ 테스트 재료 추가 완료')
+      consoleLogNoop('📦 보유 재료:', playerMaterials)
     } catch (error) {
       console.error('❌ 테스트 재료 추가 실패:', error)
     }
@@ -943,7 +945,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   sellMaterial: async (materialId, quantity) => {
     const { userId, playerMaterials, forceSyncCallback } = get()
 
-    // console.log(`[Store Debug] sellMaterial called:`, { materialId, quantity, userId })
+    // consoleLogNoop(`[Store Debug] sellMaterial called:`, { materialId, quantity, userId })
 
     if (!userId) {
       console.error('[Store Debug] 로그인이 필요합니다.')
@@ -952,7 +954,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // Phase 2: 판매 전 배치된 변경사항 먼저 동기화
     if (forceSyncCallback) {
-      console.log('⚡ [sellMaterial] 배치 동기화 먼저 실행...')
+      consoleLogNoop('⚡ [sellMaterial] 배치 동기화 먼저 실행...')
       await forceSyncCallback()
     }
 
@@ -964,9 +966,9 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     try {
       // DB 업데이트
-      // console.log(`[Store Debug] DB 업데이트 시도...`)
+      // consoleLogNoop(`[Store Debug] DB 업데이트 시도...`)
       const success = await alchemyApi.consumeMaterials(userId, { [materialId]: quantity })
-      // console.log(`[Store Debug] DB 업데이트 결과:`, success)
+      // consoleLogNoop(`[Store Debug] DB 업데이트 결과:`, success)
 
       if (success) {
         // 로컬 상태 업데이트
@@ -985,7 +987,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
           [materialId]: Math.max(0, (currentResources[materialId] || 0) - quantity)
         })
 
-        // console.log(`[Store Debug] 로컬 상태 업데이트 완료`)
+        // consoleLogNoop(`[Store Debug] 로컬 상태 업데이트 완료`)
         return true
       } else {
         console.error(`[Store Debug] DB 업데이트 실패 - 재료가 DB에 없을 수 있습니다.`)
@@ -1022,7 +1024,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       [materialId]: (currentResources[materialId] || 0) + quantity
     })
 
-    // console.log(`✅ 재료 추가 완료 (로컬): ${materialId} +${quantity}`)
+    // consoleLogNoop(`✅ 재료 추가 완료 (로컬): ${materialId} +${quantity}`)
 
     // 배치 동기화 콜백이 있으면 큐에 추가 (Phase 1)
     if (batchSyncCallback) {
@@ -1031,7 +1033,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       // 배치 시스템이 없으면 기존 방식으로 즉시 저장 (하위 호환성)
       try {
         await alchemyApi.addMaterialToPlayer(userId, materialId, quantity)
-        // console.log(`✅ 재료 추가 완료 (DB - 즉시): ${materialId} +${quantity}`)
+        // consoleLogNoop(`✅ 재료 추가 완료 (DB - 즉시): ${materialId} +${quantity}`)
       } catch (error) {
         console.error(`❌ 재료 DB 저장 실패 (로컬은 유지):`, materialId, error)
       }
@@ -1047,8 +1049,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     // 여기서는 안전을 위해 기존 consumeMaterials(즉시 DB 위임) 방식을 따르되, 배치 콜백을 우선 사용가능한지 확인.
 
     // Check sufficiency locally first
-    console.log(`💰 [AlchemyStore] consumeMaterials 호출됨. 요청:`, materials)
-    console.log(`💰 [AlchemyStore] 현재 playerMaterials 상태:`,
+    consoleLogNoop(`💰 [AlchemyStore] consumeMaterials 호출됨. 요청:`, materials)
+    consoleLogNoop(`💰 [AlchemyStore] 현재 playerMaterials 상태:`,
       Object.fromEntries(
         Object.entries(materials).map(([id]) => [id, playerMaterials[id] || 0])
       )
@@ -1060,7 +1062,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         console.error(`❌ [AlchemyStore] 재료 부족: ${id} (보유: ${current}, 필요: ${amount})`)
         return false
       }
-      console.log(`✅ [AlchemyStore] 재료 충분: ${id} (보유: ${current}, 필요: ${amount})`)
+      consoleLogNoop(`✅ [AlchemyStore] 재료 충분: ${id} (보유: ${current}, 필요: ${amount})`)
     }
 
     // 로컬 상태 업데이트
@@ -1102,12 +1104,12 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   setBatchSyncCallback: (callback) => {
     set({ batchSyncCallback: callback })
-    // console.log(`🔗 [AlchemyStore] 배치 동기화 콜백 ${callback ? '설정' : '해제'}`)
+    // consoleLogNoop(`🔗 [AlchemyStore] 배치 동기화 콜백 ${callback ? '설정' : '해제'}`)
   },
 
   setForceSyncCallback: (callback) => {
     set({ forceSyncCallback: callback })
-    // console.log(`🔗 [AlchemyStore] 즉시 동기화 콜백 ${callback ? '설정' : '해제'}`)
+    // consoleLogNoop(`🔗 [AlchemyStore] 즉시 동기화 콜백 ${callback ? '설정' : '해제'}`)
   },
 
   // ============================================
@@ -1155,7 +1157,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         const currentResources = gameStore.resources
         gameStore.setResources({ ...currentResources, ...updatedMaterials })
 
-        console.log(`✅ 몬스터 분해 완료: ${result.deleted_count}마리`)
+        consoleLogNoop(`✅ 몬스터 분해 완료: ${result.deleted_count}마리`)
       }
 
       return result
@@ -1182,7 +1184,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       )
       set({ playerMonsters: updatedMonsters })
 
-      console.log(`✅ 몬스터 잠금 상태 변경: ${monsterId} -> ${isLocked}`)
+      consoleLogNoop(`✅ 몬스터 잠금 상태 변경: ${monsterId} -> ${isLocked}`)
     } catch (error) {
       console.error('몬스터 잠금 상태 변경 실패:', error)
       throw error

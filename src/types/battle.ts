@@ -43,6 +43,24 @@ export interface BattleState {
 
   // Visual Queues
   floatingTexts: FloatingText[]
+
+  // Skill System
+  playerSkills?: BattleSkill[]
+  skillCooldowns?: Record<string, number> // skillId -> remaining turns
+}
+
+export interface BattleSkill {
+  id: string
+  name: string
+  emoji: string
+  iconUrl?: string
+  type: 'ACTIVE' | 'PASSIVE'
+  effectType: string
+  effectValue: number
+  effectTarget: string
+  duration?: number
+  cooldown?: number
+  triggerChance: number
 }
 
 export interface Enemy {

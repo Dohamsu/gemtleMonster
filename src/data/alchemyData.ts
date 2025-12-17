@@ -257,7 +257,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
 
     {
         id: 'recipe_slime_basic',
-        resultMonsterId: 'monster_slime_basic',
+        resultMonsterId: 'slime_basic',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 2,
@@ -273,7 +273,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_hound_fang',
-        resultMonsterId: 'monster_hound_fang',
+        resultMonsterId: 'hound_fang',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 5,
@@ -290,7 +290,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_golem_stone',
-        resultMonsterId: 'monster_golem_stone',
+        resultMonsterId: 'golem_stone',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 10,
@@ -307,7 +307,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_fairy_spirit',
-        resultMonsterId: 'monster_fairy_spirit',
+        resultMonsterId: 'fairy_spirit',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 8,
@@ -325,7 +325,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_wolf_dark',
-        resultMonsterId: 'monster_wolf_dark',
+        resultMonsterId: 'wolf_dark',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 8,
@@ -343,7 +343,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_slime_king',
-        resultMonsterId: 'monster_slime_king',
+        resultMonsterId: 'slime_king',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 15,
@@ -361,7 +361,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_golem_magma',
-        resultMonsterId: 'monster_golem_magma',
+        resultMonsterId: 'golem_magma',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 15,
@@ -379,7 +379,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_slime_nightmare',
-        resultMonsterId: 'monster_slime_nightmare',
+        resultMonsterId: 'slime_nightmare',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 10,
@@ -403,7 +403,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_fairy_dawn',
-        resultMonsterId: 'monster_fairy_dawn',
+        resultMonsterId: 'fairy_dawn',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 10,
@@ -427,7 +427,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_guardian_tiger_ko',
-        resultMonsterId: 'monster_guardian_tiger',
+        resultMonsterId: 'guardian_tiger',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 20,
@@ -450,7 +450,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_slime_water',
-        resultMonsterId: 'monster_slime_water',
+        resultMonsterId: 'slime_water',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 5,
@@ -468,7 +468,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_slime_dark',
-        resultMonsterId: 'monster_slime_dark',
+        resultMonsterId: 'slime_dark',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 5,
@@ -486,7 +486,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_golem_wood',
-        resultMonsterId: 'monster_golem_wood',
+        resultMonsterId: 'golem_wood',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 8,
@@ -504,7 +504,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_mushroom',
-        resultMonsterId: 'monster_mushroom',
+        resultMonsterId: 'mushroom',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 2,
@@ -521,7 +521,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_mushroom_dark',
-        resultMonsterId: 'monster_mushroom_dark',
+        resultMonsterId: 'mushroom_dark',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 8,
@@ -539,7 +539,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_golem_gem',
-        resultMonsterId: 'monster_golem_gem',
+        resultMonsterId: 'golem_gem',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 15,
@@ -558,7 +558,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     // 눈꽃 몬스터 레시피 (Snow/Ice Monster Recipes)
     {
         id: 'recipe_snowflake_sprite',
-        resultMonsterId: 'monster_snowflake_sprite',
+        resultMonsterId: 'snowflake_sprite',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 2,
@@ -575,7 +575,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_ice_slime',
-        resultMonsterId: 'monster_ice_slime',
+        resultMonsterId: 'ice_slime',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 2,
@@ -593,7 +593,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_frost_bunny',
-        resultMonsterId: 'monster_frost_bunny',
+        resultMonsterId: 'frost_bunny',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 5,
@@ -611,7 +611,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_snow_fairy',
-        resultMonsterId: 'monster_snow_fairy',
+        resultMonsterId: 'snow_fairy',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 5,
@@ -630,7 +630,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     // Beast Forest Monsters (짐승의 숲 몬스터)
     {
         id: 'recipe_penguin',
-        resultMonsterId: 'monster_penguin',
+        resultMonsterId: 'penguin',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 5,
@@ -648,7 +648,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_gazelle',
-        resultMonsterId: 'monster_gazelle',
+        resultMonsterId: 'gazelle',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 5,
@@ -666,7 +666,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_scar_bear',
-        resultMonsterId: 'monster_scar_bear',
+        resultMonsterId: 'scar_bear',
         resultCount: 1,
         baseSuccessRate: 85,
         craftTimeSec: 20,
@@ -685,7 +685,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     // New Beast Forest Monsters
     {
         id: 'recipe_moss_snail',
-        resultMonsterId: 'monster_moss_snail',
+        resultMonsterId: 'moss_snail',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 5,
@@ -702,7 +702,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_thorn_boar',
-        resultMonsterId: 'monster_thorn_boar',
+        resultMonsterId: 'thorn_boar',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 8,
@@ -719,7 +719,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_forest_spider',
-        resultMonsterId: 'monster_forest_spider',
+        resultMonsterId: 'forest_spider',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 8,
@@ -736,7 +736,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_acorn_squirrel',
-        resultMonsterId: 'monster_acorn_squirrel',
+        resultMonsterId: 'acorn_squirrel',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 6,
@@ -753,7 +753,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_leaf_sprite',
-        resultMonsterId: 'monster_leaf_sprite',
+        resultMonsterId: 'leaf_sprite',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 10,
@@ -771,7 +771,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     // Conditional Monster Recipes
     {
         id: 'recipe_owl_night',
-        resultMonsterId: 'monster_owl_night',
+        resultMonsterId: 'owl_night',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 10,
@@ -796,7 +796,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_rooster_morning',
-        resultMonsterId: 'monster_rooster_morning',
+        resultMonsterId: 'rooster_morning',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 8,
@@ -819,7 +819,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_turtle_weekend',
-        resultMonsterId: 'monster_turtle_weekend',
+        resultMonsterId: 'turtle_weekend',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 15,
@@ -842,7 +842,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_golem_desktop',
-        resultMonsterId: 'monster_golem_desktop',
+        resultMonsterId: 'golem_desktop',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 20,
@@ -865,7 +865,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_slime_mobile',
-        resultMonsterId: 'monster_slime_mobile',
+        resultMonsterId: 'slime_mobile',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 5,
@@ -893,7 +893,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     // SSR Recipes
     {
         id: 'recipe_dragon_inferno',
-        resultMonsterId: 'monster_dragon_inferno',
+        resultMonsterId: 'dragon_inferno',
         resultCount: 1,
         baseSuccessRate: 60,
         craftTimeSec: 60,
@@ -911,7 +911,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_angel_arch',
-        resultMonsterId: 'monster_angel_arch',
+        resultMonsterId: 'angel_arch',
         resultCount: 1,
         baseSuccessRate: 60,
         craftTimeSec: 60,
@@ -929,7 +929,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_demon_lord',
-        resultMonsterId: 'monster_demon_lord',
+        resultMonsterId: 'demon_lord',
         resultCount: 1,
         baseSuccessRate: 60,
         craftTimeSec: 60,
@@ -947,7 +947,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_kraken_abyss',
-        resultMonsterId: 'monster_kraken_abyss',
+        resultMonsterId: 'kraken_abyss',
         resultCount: 1,
         baseSuccessRate: 60,
         craftTimeSec: 60,
@@ -967,7 +967,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     // SR Recipes
     {
         id: 'recipe_knight_spectral',
-        resultMonsterId: 'monster_knight_spectral',
+        resultMonsterId: 'knight_spectral',
         resultCount: 1,
         baseSuccessRate: 75,
         craftTimeSec: 40,
@@ -985,7 +985,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_shaman_goblin',
-        resultMonsterId: 'monster_shaman_goblin',
+        resultMonsterId: 'shaman_goblin',
         resultCount: 1,
         baseSuccessRate: 75,
         craftTimeSec: 40,
@@ -1003,7 +1003,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_assassin_shadow',
-        resultMonsterId: 'monster_assassin_shadow',
+        resultMonsterId: 'assassin_shadow',
         resultCount: 1,
         baseSuccessRate: 75,
         craftTimeSec: 40,
@@ -1021,7 +1021,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_phoenix_baby',
-        resultMonsterId: 'monster_phoenix_baby',
+        resultMonsterId: 'phoenix_baby',
         resultCount: 1,
         baseSuccessRate: 75,
         craftTimeSec: 20,
@@ -1039,7 +1039,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_yeti_ancient',
-        resultMonsterId: 'monster_yeti_ancient',
+        resultMonsterId: 'yeti_ancient',
         resultCount: 1,
         baseSuccessRate: 75,
         craftTimeSec: 20,
@@ -1058,7 +1058,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     // New Recipes for Added Monsters
     {
         id: 'recipe_skeleton_soldier',
-        resultMonsterId: 'monster_skeleton_soldier',
+        resultMonsterId: 'skeleton_soldier',
         resultCount: 1,
         baseSuccessRate: 95,
         craftTimeSec: 5,
@@ -1075,7 +1075,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_scarecrow',
-        resultMonsterId: 'monster_scarecrow',
+        resultMonsterId: 'scarecrow',
         resultCount: 1,
         baseSuccessRate: 95,
         craftTimeSec: 8,
@@ -1093,7 +1093,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_copper_golem',
-        resultMonsterId: 'monster_copper_golem',
+        resultMonsterId: 'copper_golem',
         resultCount: 1,
         baseSuccessRate: 90,
         craftTimeSec: 15,
@@ -1110,7 +1110,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_silver_wolf',
-        resultMonsterId: 'monster_silver_wolf',
+        resultMonsterId: 'silver_wolf',
         resultCount: 1,
         baseSuccessRate: 85,
         craftTimeSec: 20,
@@ -1128,7 +1128,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
     {
         id: 'recipe_golden_bat',
-        resultMonsterId: 'monster_golden_bat',
+        resultMonsterId: 'golden_bat',
         resultCount: 1,
         baseSuccessRate: 80,
         craftTimeSec: 40,

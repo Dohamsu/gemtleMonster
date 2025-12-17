@@ -26,7 +26,7 @@ export interface MonsterData {
 }
 
 export const MONSTER_DATA: Record<string, MonsterData> = {
-    'monster_slime_basic': {
+    'slime_basic': {
         name: '기본 슬라임',
         description: '연금술 초보도 쉽게 다루는 가장 기본형 슬라임. 느릿하지만 탁월한 회복력으로 전열을 지키는 입문용 몬스터입니다.',
         role: '탱커',
@@ -42,22 +42,20 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'slime_gel', chance: 30, min: 1, max: 1 }
         ]
     },
-    'monster_hound_fang': {
+    'hound_fang': {
         name: '송곳니 하운드',
         description: '새하얀 송곳니를 번뜩이며 달려드는 사냥견. 그림자처럼 움직이며 끊임없는 연속 공격을 퍼붓습니다.',
         role: '딜러',
         hp: 100,
         attack: 45,
-        defense: 15,
-        emoji: '🐺',
-        iconUrl: '/assets/monsters/hound_basic.png',
+        defense: 10,
+        emoji: '🐕',
+        iconUrl: '/assets/monsters/hound_fang.png',
         rarity: 'N',
-        drops: [
-            { materialId: 'beast_fang', chance: 100, min: 1, max: 1 },
-            { materialId: 'leather_beast', chance: 40, min: 1, max: 1 }
-        ]
+        factoryTrait: { targetFacility: 'mine', effect: '채굴 속도 증가', value: 5 },
+        drops: [{ materialId: 'beast_fang', chance: 80, min: 1, max: 2 }]
     },
-    'monster_golem_stone': {
+    'golem_stone': {
         name: '돌 골렘',
         description: '고대 성채의 파편으로 빚어낸 돌 골렘. 거대한 몸으로 일행 앞을 막아서 모든 공격을 받아냅니다.',
         role: '탱커',
@@ -74,7 +72,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'stone', chance: 50, min: 2, max: 5 }
         ]
     },
-    'monster_fairy_spirit': {
+    'fairy_spirit': {
         name: '정령 요정',
         description: '숲의 바람과 속삭이는 정령 요정. 아군의 상처를 치유하고 능력을 일시적으로 끌어올려 줍니다.',
         role: '서포터',
@@ -86,7 +84,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'wind'
     },
-    'monster_wolf_dark': {
+    'wolf_dark': {
         name: '어둠 늑대',
         description: '달빛조차 스며들지 않는 그림자 속을 달리는 늑대. 어둠 속에서 찌르는 한 방의 치명타로 적을 쓰러뜨립니다.',
         role: '딜러',
@@ -98,7 +96,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SR',
         element: 'dark'
     },
-    'monster_slime_king': {
+    'slime_king': {
         name: '왕슬라임',
         description: '모든 슬라임을 다스리는 점액의 군주. 둔중하지만 압도적인 체력과 방어력으로 전장을 지배합니다.',
         role: '탱커',
@@ -111,7 +109,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'water',
         factoryTrait: { targetFacility: 'herb_farm', effect: '생산량 대폭 증가', value: 20 }
     },
-    'monster_golem_magma': {
+    'golem_magma': {
         name: '마그마 골렘',
         description: '분화구 깊은 곳에서 깨어난 마그마 골렘. 끊임없이 타오르는 화염 주먹으로 적을 재로 만들어 버립니다.',
         role: '딜러',
@@ -123,7 +121,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SR',
         element: 'fire'
     },
-    'monster_slime_nightmare': {
+    'slime_nightmare': {
         name: '악몽 슬라임',
         description: '잠든 자의 악몽이 응고되어 탄생한 슬라임. 적에게 각종 약화 효과를 퍼뜨려 전투를 서서히 무너뜨립니다.',
         role: '딜러',
@@ -135,7 +133,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'dark'
     },
-    'monster_fairy_dawn': {
+    'fairy_dawn': {
         name: '새벽 정령',
         description: '해가 떠오르는 찰나에만 모습을 드러내는 새벽의 정령. 아군이 얻는 경험치를 높여 성장을 가속시켜 줍니다.',
         role: '서포터',
@@ -147,7 +145,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'light'
     },
-    'monster_guardian_tiger': {
+    'guardian_tiger': {
         name: '호랑이 수호령',
         description: '옛 사당을 지키던 호랑이 수호령이 형상을 드러낸 존재. 번개 같은 발톱으로 적의 급소를 정확히 노립니다.',
         role: '딜러',
@@ -159,7 +157,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SSR',
         element: 'light'
     },
-    'monster_slime_water': {
+    'slime_water': {
         name: '워터 슬라임',
         description: '맑고 차가운 물기만으로 이루어진 슬라임. 물리 공격을 상쇄하며 흐르는 방어막처럼 아군을 지켜줍니다.',
         role: '탱커',
@@ -172,7 +170,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'water',
         factoryTrait: { targetFacility: 'water_purifier', effect: '정화 속도 증가', value: 10 }
     },
-    'monster_slime_dark': {
+    'slime_dark': {
         name: '다크 슬라임',
         description: '어둠에 잠식된 점액이 모여 만들어진 슬라임. 인기척 없이 다가가 그림자에서 기습을 가합니다.',
         role: '딜러',
@@ -184,7 +182,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'dark'
     },
-    'monster_golem_wood': {
+    'golem_wood': {
         name: '나무 골렘',
         description: '오래된 숲의 수호목이 움직이기 시작한 골렘. 자연의 수호력을 빌려 아군을 단단히 감싸 보호합니다.',
         role: '서포터',
@@ -196,7 +194,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'earth'
     },
-    'monster_mushroom': {
+    'mushroom': {
         name: '머쉬룸',
         description: '숲의 기운을 머금고 자라난 거대 버섯. 포자를 퍼뜨려 아군을 치유하거나 적을 혼란스럽게 만듭니다.',
         role: '서포터',
@@ -208,7 +206,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'N',
         element: 'earth'
     },
-    'monster_mushroom_dark': {
+    'mushroom_dark': {
         name: '다크 머쉬룸',
         description: '음습한 늪지에서 자라난 독버섯. 치명적인 독 포자를 뿜어 적을 서서히 죽음에 이르게 합니다.',
         role: '딜러',
@@ -220,7 +218,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'dark'
     },
-    'monster_golem_gem': {
+    'golem_gem': {
         name: '보석 골렘',
         description: '희귀한 보석들로 이루어진 화려한 골렘. 눈부신 광채로 적의 시야를 가리고 단단한 보석 몸체로 공격을 튕겨냅니다.',
         role: '탱커',
@@ -233,7 +231,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'earth'
     },
     // 눈꽃 몬스터 (Snow/Ice Monsters)
-    'monster_snowflake_sprite': {
+    'snowflake_sprite': {
         name: '눈꽃 정령',
         description: '첫눈이 내릴 때 태어나는 순수한 정령. 차가운 바람과 함께 춤추며 아군의 마음을 치유합니다.',
         role: '서포터',
@@ -246,7 +244,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'water',
         factoryTrait: { targetFacility: 'herb_farm', effect: '희귀 약초 확률 증가', value: 3 }
     },
-    'monster_ice_slime': {
+    'ice_slime': {
         name: '아이스 슬라임',
         description: '얼어붙은 호수에서 태어난 차가운 슬라임. 몸을 얼음처럼 굳혀 적의 공격을 막아냅니다.',
         role: '탱커',
@@ -259,7 +257,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'water',
         factoryTrait: { targetFacility: 'mine', effect: '마력 광석 확률 증가', value: 5 }
     },
-    'monster_frost_bunny': {
+    'frost_bunny': {
         name: '서리 토끼',
         description: '하얀 털에 서리를 두른 재빠른 토끼. 차가운 발차기로 적을 연속 공격합니다.',
         role: '딜러',
@@ -274,7 +272,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'scrap_leather', chance: 60, min: 1, max: 2 }
         ]
     },
-    'monster_snow_fairy': {
+    'snow_fairy': {
         name: '설화 요정',
         description: '눈보라 속에서 태어난 아름다운 요정. 눈꽃 마법으로 적을 얼리고 아군을 보호합니다.',
         role: '서포터',
@@ -490,7 +488,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         ]
     },
     // Beast Forest Monsters (짐승의 숲)
-    'monster_scar_bear': {
+    'scar_bear': {
         name: '상처 입은 곰',
         description: '수많은 전투로 온몸에 흉터가 남은 거대한 곰. 숲의 깊은 곳에서 영역을 지키며, 침입자를 무자비하게 공격합니다.',
         role: '탱커',
@@ -506,7 +504,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'claw_sharp', chance: 40, min: 1, max: 2 }
         ]
     },
-    'monster_moss_snail': {
+    'moss_snail': {
         name: '이끼 달팽이',
         description: '껍질에 이끼가 무성하게 자란 달팽이. 느리지만 단단한 껍질로 자신을 보호하며 숲의 청소부 역할을 합니다.',
         role: '탱커',
@@ -522,7 +520,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'slime_fluid', chance: 50, min: 1, max: 1 }
         ]
     },
-    'monster_thorn_boar': {
+    'thorn_boar': {
         name: '가시 멧돼지',
         description: '등에 날카로운 가시가 돋아난 멧돼지. 화가 나면 앞뒤 가리지 않고 돌진하여 적을 들이받습니다.',
         role: '딜러',
@@ -538,7 +536,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'leather_beast', chance: 40, min: 1, max: 1 }
         ]
     },
-    'monster_forest_spider': {
+    'forest_spider': {
         name: '숲 거미',
         description: '울창한 나무 사이에 거미줄을 치고 기다리는 사냥꾼. 끈적한 거미줄로 적을 묶고 독니를 드러냅니다.',
         role: '딜러',
@@ -554,7 +552,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'herb_common', chance: 30, min: 1, max: 1 }
         ]
     },
-    'monster_acorn_squirrel': {
+    'acorn_squirrel': {
         name: '도토리 다람쥐',
         description: '마력을 머금은 거대한 도토리를 소중히 들고 다니는 다람쥐. 도토리를 던져 원거리에서 공격합니다.',
         role: '서포터',
@@ -570,7 +568,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'scrap_leather', chance: 40, min: 1, max: 1 }
         ]
     },
-    'monster_leaf_sprite': {
+    'leaf_sprite': {
         name: '나뭇잎 정령',
         description: '숲의 생명력이 뭉쳐 태어난 작은 정령. 싱그러운 잎사귀를 흔들며 숲의 활력을 불어넣습니다.',
         role: '서포터',
@@ -897,12 +895,8 @@ const ROLE_MAP: Record<string, RoleType> = {
 }
 
 export const GAME_MONSTERS: Record<string, Monster> = Object.entries(MONSTER_DATA).reduce((acc, [key, data]) => {
-    // Remove 'monster_' prefix for game logic keys if needed, 
-    // BUT current game logic seems to use keys like 'slime_basic' (without prefix) 
-    // or 'monster_slime_basic' (with prefix).
-    // Let's check alchemyData.ts again. It uses keys like 'slime_basic'.
-    // So we need to strip 'monster_' prefix.
-    const shortKey = key.replace(/^monster_/, '')
+    // MONSTER_DATA keys are already prefix-less now.
+    const shortKey = key
 
     acc[shortKey] = {
         id: shortKey,

@@ -61,7 +61,7 @@ export function useAutoCollection(userId: string | undefined) {
             try {
                 // 1. Consumption (if cost exists)
                 if (stats.cost) {
-                    console.log(`🔄 [AutoCollection] ${facilityKey} 자원 소비 시도:`, stats.cost)
+                    // console.log(`🔄 [AutoCollection] ${facilityKey} 자원 소비 시도:`, stats.cost)
                     const consumed = await useAlchemyStore.getState().consumeMaterials(stats.cost)
                     if (!consumed) {
                         console.log(`⚠️ [AutoCollection] ${facilityKey} 자원 부족으로 생산 건너뜀`)
@@ -72,7 +72,7 @@ export function useAutoCollection(userId: string | undefined) {
                         // We'll return early.
                         return
                     }
-                    console.log(`✅ [AutoCollection] ${facilityKey} 자원 소비 성공`)
+                    // console.log(`✅ [AutoCollection] ${facilityKey} 자원 소비 성공`)
                 }
 
                 const drops: Record<string, number> = {}

@@ -149,6 +149,7 @@ export default function BattleView() {
 
     const dungeon = DUNGEONS.find(d => d.id === activeDungeon)
     const enemy = dungeon?.enemies.find(e => e.id === battleState.enemyId)
+    // Monster Data
     const monsterData = battleState.selectedMonsterType ? MONSTER_DATA[battleState.selectedMonsterType] : null
     const monsterName = monsterData?.name || '나의 몬스터'
 

@@ -480,42 +480,57 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         if (selectedMonster && monsterData) {
             currentLevel = selectedMonster.level || 1
+            console.log('🎯 [Skill] monsterData.role:', monsterData.role)
             const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
             role = roleMap[monsterData.role] || 'TANK'
         }
 
+        // Strip 'monster_' prefix to match MONSTER_UNIQUE_SKILLS keys
+        const skillMonsterId = selectedMonsterType?.replace(/^monster_/, '') || ''
+        console.log('🎯 [Skill] Looking up skills for:', skillMonsterId, 'role:', role, 'level:', currentLevel)
+
         const skills = (selectedMonster && monsterData)
-            ? getUnlockableSkills(selectedMonsterType!, role, currentLevel)
+            ? getUnlockableSkills(skillMonsterId, role, currentLevel)
             : []
 
         const activeSkills = skills.filter((s: any) => s.type === 'ACTIVE')
 
-        // Skill Activation Logic (30% Chance)
+        // Skill Activation Logic (Per-skill triggerChance)
         let skillLog: string | null = null
         let skillBonusDmg = 0
         let skillHeal = 0
         let skillBuffValue = 0
+        let usedSkill: any = null
 
-        const canTriggerSkill = activeSkills.length > 0 && Math.random() < 0.3
+        // Try each active skill based on its individual triggerChance
+        console.log('🎯 [Skill] Active skills available:', activeSkills.length, activeSkills.map(s => s.name))
+        for (const skill of activeSkills) {
+            const triggerChance = skill.triggerChance ?? 30 // Default 30% if not set
+            const roll = Math.random() * 100
+            console.log(`🎯 [Skill] Checking ${skill.name}: roll=${roll.toFixed(1)} vs chance=${triggerChance}`)
+            if (roll < triggerChance) {
+                usedSkill = skill
+                console.log(`🎯 [Skill] TRIGGERED: ${skill.name}`)
+                break // Use the first skill that triggers
+            }
+        }
 
-        if (canTriggerSkill) {
-            const skill = activeSkills[Math.floor(Math.random() * activeSkills.length)]
-
-            if (skill.effect.type === 'DAMAGE') {
-                skillBonusDmg = Math.floor(playerAtk * (skill.effect.value / 100))
-                skillLog = `${skill.emoji} [${skill.name}] 발동! 강력한 일격!`
-            } else if (skill.effect.type === 'HEAL') {
-                skillHeal = Math.floor(playerMaxHp * (skill.effect.value / 100))
-                skillLog = `${skill.emoji} [${skill.name}] 발동! 체력을 ${skillHeal} 회복했습니다.`
-            } else if (skill.effect.type === 'BUFF') {
-                skillBuffValue = Math.floor(playerAtk * (skill.effect.value / 100))
-                skillLog = `${skill.emoji} [${skill.name}] 발동! 공격력이 증가했습니다!`
-            } else if (skill.effect.type === 'DEBUFF') {
+        if (usedSkill) {
+            if (usedSkill.effect.type === 'DAMAGE') {
+                skillBonusDmg = Math.floor(playerAtk * (usedSkill.effect.value / 100))
+                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 강력한 일격!`
+            } else if (usedSkill.effect.type === 'HEAL') {
+                skillHeal = Math.floor(playerMaxHp * (usedSkill.effect.value / 100))
+                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 체력을 ${skillHeal} 회복했습니다.`
+            } else if (usedSkill.effect.type === 'BUFF') {
+                skillBuffValue = Math.floor(playerAtk * (usedSkill.effect.value / 100))
+                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 공격력이 증가했습니다!`
+            } else if (usedSkill.effect.type === 'DEBUFF') {
                 skillBonusDmg = Math.floor(playerAtk * 0.5)
-                skillLog = `${skill.emoji} [${skill.name}] 발동! 적을 약화시킵니다!`
-            } else if (skill.effect.type === 'SPECIAL') {
+                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 적을 약화시킵니다!`
+            } else if (usedSkill.effect.type === 'SPECIAL') {
                 skillBonusDmg = Math.floor(playerAtk * 0.3)
-                skillLog = `${skill.emoji} [${skill.name}] 발동! 특수 효과!`
+                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 특수 효과!`
             }
         }
 

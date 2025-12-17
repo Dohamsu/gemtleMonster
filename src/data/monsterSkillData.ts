@@ -29,6 +29,8 @@ export interface MonsterSkill {
     effect: SkillEffect
     cooldown?: number     // 액티브 스킬 쿨다운 (턴)
     emoji: string
+    iconUrl?: string
+    triggerChance?: number // 스킬 발동 확률 (0~100, 기본값 30)
 }
 
 // ==========================================
@@ -54,7 +56,8 @@ export const ROLE_SKILLS: Record<RoleType, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'DEBUFF', value: 0, target: 'ENEMY' },
             cooldown: 3,
-            emoji: '📣'
+            emoji: '📣',
+            triggerChance: 35
         },
         {
             id: 'tank_fortify',
@@ -73,7 +76,8 @@ export const ROLE_SKILLS: Record<RoleType, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'BUFF', value: 50, target: 'SELF', duration: 3 },
             cooldown: 6,
-            emoji: '🏰'
+            emoji: '🏰',
+            triggerChance: 20
         }
     ],
 
@@ -86,7 +90,8 @@ export const ROLE_SKILLS: Record<RoleType, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'DAMAGE', value: 120, target: 'ENEMY' },
             cooldown: 2,
-            emoji: '⚔️'
+            emoji: '⚔️',
+            triggerChance: 45
         },
         {
             id: 'dps_critical',
@@ -114,7 +119,8 @@ export const ROLE_SKILLS: Record<RoleType, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'BUFF', value: 50, target: 'SELF', duration: 3 },
             cooldown: 7,
-            emoji: '🩸'
+            emoji: '🩸',
+            triggerChance: 15
         }
     ],
 
@@ -127,7 +133,8 @@ export const ROLE_SKILLS: Record<RoleType, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'HEAL', value: 25, target: 'ALL_ALLIES' },
             cooldown: 3,
-            emoji: '🌿'
+            emoji: '🌿',
+            triggerChance: 50
         },
         {
             id: 'support_blessing',
@@ -146,7 +153,8 @@ export const ROLE_SKILLS: Record<RoleType, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'BUFF', value: 20, target: 'ALL_ALLIES', duration: 2 },
             cooldown: 5,
-            emoji: '✨'
+            emoji: '✨',
+            triggerChance: 30
         },
         {
             id: 'support_revive',
@@ -156,7 +164,8 @@ export const ROLE_SKILLS: Record<RoleType, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'HEAL', value: 30, target: 'ALL_ALLIES' },
             cooldown: 10,
-            emoji: '👼'
+            emoji: '👼',
+            triggerChance: 10
         }
     ],
 
@@ -178,7 +187,8 @@ export const ROLE_SKILLS: Record<RoleType, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'DAMAGE', value: 100, target: 'ENEMY' },
             cooldown: 3,
-            emoji: '👻'
+            emoji: '👻',
+            triggerChance: 40
         },
         {
             id: 'hybrid_balance',
@@ -273,7 +283,8 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'DAMAGE', value: 130, target: 'ALL_ENEMIES' },
             cooldown: 5,
-            emoji: '🌋'
+            emoji: '🌋',
+            iconUrl: '/assets/skills/skill_golem_quake.png'
         },
         {
             id: 'skill_golem_harden',
@@ -308,7 +319,8 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'DAMAGE', value: 200, target: 'ENEMY' },
             cooldown: 5,
-            emoji: '🌑'
+            emoji: '🌑',
+            iconUrl: '/assets/skills/skill_wolf_shadow.png'
         },
         {
             id: 'skill_wolf_night',
@@ -329,7 +341,8 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
             unlockLevel: 15,
             type: 'PASSIVE',
             effect: { type: 'DEBUFF', value: 20, target: 'ALL_ENEMIES' },
-            emoji: '👑'
+            emoji: '👑',
+            iconUrl: '/assets/skills/skill_king_authority.png'
         },
         {
             id: 'skill_king_press',
@@ -352,7 +365,8 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'DEBUFF', value: 30, target: 'ALL_ENEMIES', duration: 2 },
             cooldown: 5,
-            emoji: '🐯'
+            emoji: '🐯',
+            iconUrl: '/assets/skills/skill_tiger_roar.png'
         },
         {
             id: 'skill_tiger_lightning',
@@ -362,7 +376,8 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'DAMAGE', value: 180, target: 'ENEMY' },
             cooldown: 4,
-            emoji: '⚡'
+            emoji: '⚡',
+            iconUrl: '/assets/skills/skill_tiger_lightning.png'
         },
         {
             id: 'skill_tiger_god',
@@ -384,7 +399,8 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'DAMAGE', value: 220, target: 'ALL_ENEMIES' },
             cooldown: 7,
-            emoji: '🐲'
+            emoji: '🐲',
+            iconUrl: '/assets/skills/skill_dragon_breath.png'
         },
         {
             id: 'skill_dragon_scale',
@@ -406,7 +422,8 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
             type: 'ACTIVE',
             effect: { type: 'DAMAGE', value: 150, target: 'ENEMY' },
             cooldown: 3,
-            emoji: '👊'
+            emoji: '👊',
+            iconUrl: '/assets/skills/skill_magma_punch.png'
         }
     ],
     'fairy_dawn': [
@@ -441,7 +458,8 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
             unlockLevel: 35,
             type: 'PASSIVE',
             effect: { type: 'SPECIAL', value: 30, target: 'SELF' },
-            emoji: '💎'
+            emoji: '💎',
+            iconUrl: '/assets/skills/skill_gem_reflect.png'
         }
     ],
     // Slime Nightmare
@@ -456,7 +474,7 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
     ],
     // Slime Dark
     'slime_dark': [
-        { id: 'skill_dark_hide', name: '그림자 숨기', description: '어둠 속에 몸을 숨겨 적의 공격을 피합니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'BUFF', value: 20, target: 'SELF', duration: 2 }, cooldown: 5, emoji: '🕶️' },
+        { id: 'skill_dark_hide', name: '그림자 숨기', description: '어둠 속에 몸을 숨겨 적의 공격을 피합니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'BUFF', value: 20, target: 'SELF', duration: 2 }, cooldown: 5, emoji: '🕶️', iconUrl: '/assets/skills/skill_dark_hide.png' },
         { id: 'skill_dark_strike', name: '기습', description: '방심한 적의 뒤를 노려 큰 피해를 입힙니다.', unlockLevel: 25, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 150, target: 'ENEMY' }, cooldown: 3, emoji: '🗡️' }
     ],
     // Golem Wood
@@ -492,7 +510,7 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
     // Snow Fairy
     'snow_fairy': [
         { id: 'skill_snow_bless', name: '설원의 축복', description: '눈의 정령의 힘으로 아군의 방어력을 높입니다.', unlockLevel: 15, type: 'ACTIVE', effect: { type: 'BUFF', value: 20, target: 'ALL_ALLIES', duration: 3 }, cooldown: 5, emoji: '🙌' },
-        { id: 'skill_snow_storm', name: '작은 눈보라', description: '휘몰아치는 눈보라로 적 전체를 공격합니다.', unlockLevel: 35, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 120, target: 'ALL_ENEMIES' }, cooldown: 6, emoji: '🌨️' }
+        { id: 'skill_snow_storm', name: '작은 눈보라', description: '휘몰아치는 눈보라로 적 전체를 공격합니다.', unlockLevel: 35, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 120, target: 'ALL_ENEMIES' }, cooldown: 6, emoji: '🌨️', iconUrl: '/assets/skills/skill_snow_storm.png' }
     ],
     // Crystal Mite
     'crystal_mite': [
@@ -532,7 +550,7 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
     ],
     // Leaf Sprite
     'leaf_sprite': [
-        { id: 'skill_leaf_heal', name: '생명의 잎', description: '싱그러운 잎으로 아군을 치유합니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'HEAL', value: 25, target: 'ALL_ALLIES' }, cooldown: 4, emoji: '🌿' }
+        { id: 'skill_leaf_heal', name: '생명의 잎', description: '싱그러운 잎으로 아군을 치유합니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'HEAL', value: 25, target: 'ALL_ALLIES' }, cooldown: 4, emoji: '🌿', iconUrl: '/assets/skills/skill_leaf_heal.png' }
     ],
     // Forest Spider
     'forest_spider': [
@@ -634,6 +652,8 @@ export function getSkillById(skillId: string): MonsterSkill | undefined {
 }
 
 export function getSkillIconUrl(skill: MonsterSkill): string {
+    if (skill.iconUrl) return skill.iconUrl
+
     const emojiMap: Record<string, string> = {
         '🛡️': 'skill_shield',
         '📣': 'skill_shout',
