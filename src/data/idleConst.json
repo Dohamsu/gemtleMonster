@@ -305,7 +305,8 @@
                     },
                     "upgradeCost": {
                         "gold": 50000,
-                        "ore_silver": 50
+                        "ore_silver": 50,
+                        "ore_gold": 50
                     }
                 },
                 {

@@ -5,7 +5,7 @@ import { MONSTER_UNIQUE_SKILLS } from './src/data/monsterSkillData'
 console.log('🔍 Validating Monster Data Consistency...\n')
 
 // Extract monster IDs from both sources
-const monsterDataIds = Object.keys(MONSTER_DATA).map(id => id.replace(/^monster_/, ''))
+const monsterDataIds = Object.keys(MONSTER_DATA)
 const skillDataIds = Object.keys(MONSTER_UNIQUE_SKILLS)
 
 // Find mismatches
@@ -20,8 +20,7 @@ console.log('')
 if (monstersWithoutSkills.length > 0) {
     console.log('⚠️  Monsters WITHOUT skill definitions:')
     monstersWithoutSkills.forEach(id => {
-        const fullId = `monster_${id}`
-        const monster = MONSTER_DATA[fullId]
+        const monster = MONSTER_DATA[id]
         console.log(`  - ${id} (${monster?.name || 'Unknown'})`)
     })
     console.log('')
@@ -45,7 +44,7 @@ console.log('\n📋 Full ID Mapping:')
 console.log('Monster Data ID → Skill Data ID')
 monsterDataIds.slice(0, 10).forEach(id => {
     const hasSkill = skillDataIds.includes(id) ? '✅' : '❌'
-    console.log(`  monster_${id} → ${id} ${hasSkill}`)
+    console.log(`  ${id} → ${id} ${hasSkill}`)
 })
 if (monsterDataIds.length > 10) {
     console.log(`  ... and ${monsterDataIds.length - 10} more`)

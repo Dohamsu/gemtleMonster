@@ -127,7 +127,7 @@ interface DBRecipeSeed {
     name?: string // Optional: Derived from monsterData if missing
     description?: string // Optional: Derived from monsterData if missing
     type?: 'MONSTER' | 'ITEM'
-    resultMonsterId?: string // "monster_slime_basic" (optional if type is ITEM)
+    resultMonsterId?: string // "slime_basic" (optional if type is ITEM)
     resultItemId?: string // (optional if type is MONSTER)
     resultCount: number
     baseSuccessRate: number
@@ -1154,7 +1154,7 @@ export const RECIPES: Recipe[] = DB_RECIPES_SEED.map(dbRecipe => {
         name: dbRecipe.name || monster?.name || 'Unknown Recipe',
         description: dbRecipe.description || monster?.description || 'No description',
         type: dbRecipe.type || 'MONSTER',
-        resultMonsterId: dbRecipe.resultMonsterId?.replace(/^monster_/, ''), // "monster_slime_basic" -> "slime_basic"
+        resultMonsterId: dbRecipe.resultMonsterId, // Strict ID usage
         resultItemId: dbRecipe.resultItemId,
         resultCount: dbRecipe.resultCount || 1,
         materials: dbRecipe.ingredients.map(ing => ({

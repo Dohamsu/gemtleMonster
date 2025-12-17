@@ -52,9 +52,9 @@ async function seedSkills() {
         console.log('👾 몬스터 고유 스킬 처리 중...')
 
         // Iterate MONSTER_DATA to guarantee valid FKs
-        for (const [fullMonsterId, data] of Object.entries(MONSTER_DATA)) {
-            const shortId = fullMonsterId.replace(/^monster_/, '')
-            const uniqueSkills = MONSTER_UNIQUE_SKILLS[shortId]
+        for (const [monsterId, data] of Object.entries(MONSTER_DATA)) {
+            // MONSTER_DATA keys are now prefix-less 'slime_basic'
+            const uniqueSkills = MONSTER_UNIQUE_SKILLS[monsterId]
 
             if (uniqueSkills && uniqueSkills.length > 0) {
                 for (const skill of uniqueSkills) {
@@ -72,7 +72,7 @@ async function seedSkills() {
                             cooldown: skill.cooldown,
                             emoji: skill.emoji,
                             role: null, // Unique skill
-                            monster_id: fullMonsterId
+                            monster_id: monsterId
                         }, { onConflict: 'id' })
 
                     if (error) console.error(`Failed to upsert unique skill ${skill.name} for ${data.name}:`, error.message)

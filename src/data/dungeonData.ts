@@ -306,7 +306,7 @@ export const VOLCANO_DUNGEON: Dungeon = {
             ]
         },
         {
-            id: 'monster_dragon_inferno',
+            id: 'dragon_inferno',
             name: '인페르노 드래곤',
             level: 30,
             hp: 2000,

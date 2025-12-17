@@ -505,8 +505,8 @@ export default function BattleView() {
                         logText = logText.replace('[CONSUMABLE]', '')
                     }
 
-                    // Parsing logic for tags: {{RED|text}}, {{GREEN|text}}, {{GOLD|text}} and {{R_RARITY|text}}
-                    const parts = logText.split(/({{RED\|[^}]+}}|{{GREEN\|[^}]+}}|{{GOLD\|[^}]+}}|{{R_[^|]+\|[^}]+}})/g)
+                    // Parsing logic for tags: {{RED|text}}, {{GREEN|text}}, {{GRAY|text}}, {{GOLD|text}} and {{R_RARITY|text}}
+                    const parts = logText.split(/({{RED\|[^}]+}}|{{GREEN\|[^}]+}}|{{GRAY\|[^}]+}}|{{GOLD\|[^}]+}}|{{R_[^|]+\|[^}]+}})/g)
 
                     const getRarityColor = (rarity: string) => {
                         switch (rarity) {
@@ -528,6 +528,9 @@ export default function BattleView() {
                                 } else if (part.startsWith('{{GREEN|') && part.endsWith('}}')) {
                                     const content = part.slice(8, -2)
                                     return <span key={idx} style={{ color: '#4ade80', fontWeight: 'bold' }}>{content}</span>
+                                } else if (part.startsWith('{{GRAY|') && part.endsWith('}}')) {
+                                    const content = part.slice(7, -2)
+                                    return <span key={idx} style={{ color: '#9ca3af', fontWeight: 'bold' }}>{content}</span>
                                 } else if (part.startsWith('{{GOLD|') && part.endsWith('}}')) {
                                     const content = part.slice(7, -2)
                                     return (

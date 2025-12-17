@@ -270,8 +270,8 @@ export const useGameStore = create<GameState>((set, get) => ({
             return
         }
 
-        // Fix: Strip 'monster_' prefix if present to match MONSTERS keys
-        const monsterKey = playerMonster.monster_id.replace('monster_', '')
+        // Fix: Use ID directly (Strict Mode)
+        const monsterKey = playerMonster.monster_id
         const monsterData = MONSTERS[monsterKey]
 
         if (!monsterData) {
@@ -485,8 +485,8 @@ export const useGameStore = create<GameState>((set, get) => ({
             role = roleMap[monsterData.role] || 'TANK'
         }
 
-        // Strip 'monster_' prefix to match MONSTER_UNIQUE_SKILLS keys
-        const skillMonsterId = selectedMonsterType?.replace(/^monster_/, '') || ''
+        // Use ID directly
+        const skillMonsterId = selectedMonsterType || ''
         console.log('🎯 [Skill] Looking up skills for:', skillMonsterId, 'role:', role, 'level:', currentLevel)
 
         const skills = (selectedMonster && monsterData)

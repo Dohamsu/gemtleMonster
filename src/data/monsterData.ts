@@ -50,7 +50,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 45,
         defense: 10,
         emoji: '🐕',
-        iconUrl: '/assets/monsters/hound_fang.png',
+        iconUrl: '/assets/monsters/hound_basic.png', // Fallback to basic hound
         rarity: 'N',
         factoryTrait: { targetFacility: 'mine', effect: '채굴 속도 증가', value: 5 },
         drops: [{ materialId: 'beast_fang', chance: 80, min: 1, max: 2 }]
@@ -584,7 +584,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'spirit_dust', chance: 50, min: 1, max: 1 }
         ]
     },
-    'monster_penguin': {
+    'penguin': {
         name: '아기 펭귄',
         description: '뒤뚱거리며 걷는 귀여운 펭귄. 차가운 물속을 자유롭게 헤엄치며, 보는 이의 마음을 녹입니다.',
         role: '서포터',
@@ -596,7 +596,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'N',
         element: 'water'
     },
-    'monster_gazelle': {
+    'gazelle': {
         name: '바람 가젤',
         description: '바람처럼 빠르게 달리는 가젤. 날렵한 뿔과 다리로 적의 공격을 피하며 초원을 누빕니다.',
         role: '딜러',
@@ -613,7 +613,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         ]
     },
     // Conditional Monsters
-    'monster_owl_night': {
+    'owl_night': {
         name: '밤눈 부엉이',
         description: '밤이 깊어질수록 눈빛이 밝게 빛나는 부엉이. 어둠 속에서 진실을 꿰뚫어 봅니다.',
         role: '서포터',
@@ -625,7 +625,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'wind'
     },
-    'monster_rooster_morning': {
+    'rooster_morning': {
         name: '새벽의 닭',
         description: '아침 해가 뜨면 가장 먼저 울어 세상을 깨우는 닭. 그 울음소리는 아군의 사기를 높입니다.',
         role: '딜러',
@@ -637,7 +637,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'N',
         element: 'fire'
     },
-    'monster_turtle_weekend': {
+    'turtle_weekend': {
         name: '주말 거북이',
         description: '평일에는 깊은 잠에 빠져 있다가 주말에만 활동하는 거북이. 여유롭지만 단단한 등껍질을 가지고 있습니다.',
         role: '탱커',
@@ -649,7 +649,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'water'
     },
-    'monster_golem_desktop': {
+    'golem_desktop': {
         name: 'PC 골렘',
         description: '복잡한 연산 장치와 회로로 구성된 골렘. 데스크탑 환경의 강력한 리소스를 동력원으로 사용합니다.',
         role: '탱커',
@@ -661,7 +661,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SSR',
         element: 'earth'
     },
-    'monster_slime_mobile': {
+    'slime_mobile': {
         name: '모바일 슬라임',
         description: '작고 가벼워 어디든 데리고 다닐 수 있는 슬라임. 모바일 환경에 최적화되어 있습니다.',
         role: '서포터',
@@ -679,7 +679,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     // ==========================================
 
     // SSR Monsters
-    'monster_dragon_inferno': {
+    'dragon_inferno': {
         name: '인페르노 드래곤',
         description: '지옥의 화염을 휘감은 전설의 드래곤. 입에서 뿜어내는 브레스는 모든 것을 태워버리는 절대적인 위력을 자랑합니다.',
         role: '딜러',
@@ -697,7 +697,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'fire_core', chance: 30, min: 1, max: 1 }
         ]
     },
-    'monster_angel_arch': {
+    'angel_arch': {
         name: '아크 엔젤',
         description: '천상의 빛을 머금은 고위 천사. 존재만으로도 아군에게 축복을 내리며, 기적 같은 치유력으로 전장을 구원합니다.',
         role: '서포터',
@@ -715,7 +715,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'rune_world', chance: 20, min: 1, max: 1 }
         ]
     },
-    'monster_demon_lord': {
+    'demon_lord': {
         name: '마왕',
         description: '심연의 끝에서 돌아온 어둠의 군주. 압도적인 카리스마와 파괴적인 마력으로 적들을 공포에 떨게 합니다.',
         role: '딜러',
@@ -732,7 +732,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'soul_fragment', chance: 30, min: 1, max: 2 }
         ]
     },
-    'monster_kraken_abyss': {
+    'kraken_abyss': {
         name: '심연의 크라켄',
         description: '깊은 바다 속에서 잠자던 거대 괴수. 수많은 다리로 적을 휘감으며 절대 뚫리지 않는 방벽이 되어줍니다.',
         role: '탱커',
@@ -751,7 +751,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
 
     // SR Monsters
-    'monster_knight_spectral': {
+    'knight_spectral': {
         name: '유령 기사',
         description: '육체는 사라졌으나 맹세는 남은 기사. 물리적인 공격을 무시하며, 전우를 지키기 위해 영원히 싸웁니다.',
         role: '탱커',
@@ -763,7 +763,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SR',
         element: 'dark'
     },
-    'monster_shaman_goblin': {
+    'shaman_goblin': {
         name: '고블린 대주술사',
         description: '부족의 지혜를 이어받은 늙은 고블린. 기이한 주문으로 아군의 잠재력을 끌어올리는 강력한 서포터입니다.',
         role: '서포터',
@@ -775,7 +775,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SR',
         element: 'earth'
     },
-    'monster_assassin_shadow': {
+    'assassin_shadow': {
         name: '그림자 암살자',
         description: '소리 없이 다가와 적의 숨통을 끊는 암살자. 눈에 보이지 않는 속도로 전장을 누비며 치명타를 날립니다.',
         role: '딜러',
@@ -787,7 +787,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SR',
         element: 'dark'
     },
-    'monster_phoenix_baby': {
+    'phoenix_baby': {
         name: '아기 불사조',
         description: '영원한 생명을 품은 불사조의 유체. 작지만 따스한 불꽃으로 아군의 체력을 지속적으로 회복시켜 줍니다.',
         role: '서포터',
@@ -799,7 +799,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SR',
         element: 'fire'
     },
-    'monster_yeti_ancient': {
+    'yeti_ancient': {
         name: '고대 예티',
         description: '설산의 전설로 내려오는 거대한 유인원. 두꺼운 가죽과 얼음 같은 근육으로 어떤 공격도 버텨냅니다.',
         role: '탱커',
@@ -812,7 +812,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'water'
     },
     // New Craftable Monsters (Using new materials)
-    'monster_skeleton_soldier': {
+    'skeleton_soldier': {
         name: '해골 병사',
         description: '부서진 뼈를 모아 탄생시킨 언데드 병사. 두려움을 모르고 명령에 절대 복종합니다.',
         role: '딜러',
@@ -824,7 +824,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'N',
         element: 'dark'
     },
-    'monster_scarecrow': {
+    'scarecrow': {
         name: '허수아비',
         description: '나뭇가지와 헌 옷으로 만든 허수아비. 마력이 깃들어 스스로 움직이며 까마귀를 쫓아냅니다.',
         role: '서포터',
@@ -836,7 +836,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'N',
         element: 'earth'
     },
-    'monster_copper_golem': {
+    'copper_golem': {
         name: '구리 골렘',
         description: '구리로 만들어진 소형 골렘. 녹이 슬기 쉽지만 전이 잘 통해 번개에 강합니다.',
         role: '탱커',
@@ -848,7 +848,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'N',
         element: 'earth'
     },
-    'monster_silver_wolf': {
+    'silver_wolf': {
         name: '은빛 늑대',
         description: '은 광석의 기운을 받아 털이 은빛으로 빛나는 늑대. 달빛 아래서 더욱 빨라집니다.',
         role: '딜러',
@@ -860,7 +860,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'light'
     },
-    'monster_golden_bat': {
+    'golden_bat': {
         name: '황금 박쥐',
         description: '황금을 탐하다 온몸이 황금으로 변해버린 박쥐. 행운을 불러온다고 알려져 있습니다.',
         role: '서포터',
@@ -868,7 +868,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         attack: 30,
         defense: 30,
         emoji: '🦇',
-        iconUrl: '/assets/monsters/bat_golden.png',
+        iconUrl: '/assets/monsters/owl_night.png', // Fallback to owl (winged)
         rarity: 'SR',
         element: 'wind'
     }
