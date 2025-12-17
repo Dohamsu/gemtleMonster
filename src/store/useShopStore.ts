@@ -28,7 +28,7 @@ interface ShopState {
 // Note: WEIGHTS are defined inline in refreshItems()
 
 // 기본 판매가 (구매가는 여기에 10배 등 적용)
-const BASE_SELL_PRICES = {
+export const BASE_SELL_PRICES: Record<string, number> = {
     'N': 10,
     'COMMON': 10,
     'R': 50,
