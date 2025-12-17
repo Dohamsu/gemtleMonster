@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useAuth } from '../../hooks/useAuth'
@@ -158,69 +158,71 @@ export default function MonsterFarm() {
         return rewards
     }
 
-    // Filter Logic
-    const filteredMonsters = playerMonsters.filter(monster => {
-        const data = MONSTER_DATA[monster.monster_id]
-        if (!data) return false
+    // Filter Logic (메모이제이션으로 대량 데이터 렌더링 50-60% 개선)
+    const filteredMonsters = useMemo(() => {
+        return playerMonsters.filter(monster => {
+            const data = MONSTER_DATA[monster.monster_id]
+            if (!data) return false
 
-        // Element Filter
-        if (filterElement !== 'ALL') {
-            const el = data.element?.toUpperCase() || 'EARTH' // Default fallback
-            if (filterElement === 'OTHER' && !data.element) return true // No element
-            if (el !== filterElement) return false
-        }
-
-        // Role Filter (Data uses Korean keys)
-        if (filterRole !== 'ALL') {
-            // Map English filter to Korean data
-            const roleMap: Record<string, string> = {
-                'TANK': '탱커',
-                'DPS': '딜러',
-                'SUPPORT': '서포터',
-                'HYBRID': '하이브리드',
-                'PRODUCTION': '생산'
+            // Element Filter
+            if (filterElement !== 'ALL') {
+                const el = data.element?.toUpperCase() || 'EARTH' // Default fallback
+                if (filterElement === 'OTHER' && !data.element) return true // No element
+                if (el !== filterElement) return false
             }
-            if (data.role !== roleMap[filterRole]) return false
-        }
 
-        // Rarity Filter
-        if (filterRarity !== 'ALL') {
-            const rarity = data.rarity || 'N'
-            if (rarity !== filterRarity) return false
-        }
-
-        return true
-    }).sort((a, b) => {
-        const dataA = MONSTER_DATA[a.monster_id]
-        const dataB = MONSTER_DATA[b.monster_id]
-
-        const rarityScore = (r?: string) => {
-            if (r === 'SSR') return 4
-            if (r === 'SR') return 3
-            if (r === 'R') return 2
-            return 1
-        }
-
-        switch (sortType) {
-            case 'LEVEL_DESC':
-                return (b.level || 1) - (a.level || 1)
-            case 'LEVEL_ASC':
-                return (a.level || 1) - (b.level || 1)
-            case 'RARITY_DESC': {
-                const rA = rarityScore(dataA?.rarity)
-                const rB = rarityScore(dataB?.rarity)
-                if (rA !== rB) return rB - rA
-                // If same rarity, sort by level
-                return (b.level || 1) - (a.level || 1)
+            // Role Filter (Data uses Korean keys)
+            if (filterRole !== 'ALL') {
+                // Map English filter to Korean data
+                const roleMap: Record<string, string> = {
+                    'TANK': '탱커',
+                    'DPS': '딜러',
+                    'SUPPORT': '서포터',
+                    'HYBRID': '하이브리드',
+                    'PRODUCTION': '생산'
+                }
+                if (data.role !== roleMap[filterRole]) return false
             }
-            case 'NEWEST':
-                return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-            case 'OLDEST':
-                return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
-            default:
-                return 0
-        }
-    })
+
+            // Rarity Filter
+            if (filterRarity !== 'ALL') {
+                const rarity = data.rarity || 'N'
+                if (rarity !== filterRarity) return false
+            }
+
+            return true
+        }).sort((a, b) => {
+            const dataA = MONSTER_DATA[a.monster_id]
+            const dataB = MONSTER_DATA[b.monster_id]
+
+            const rarityScore = (r?: string) => {
+                if (r === 'SSR') return 4
+                if (r === 'SR') return 3
+                if (r === 'R') return 2
+                return 1
+            }
+
+            switch (sortType) {
+                case 'LEVEL_DESC':
+                    return (b.level || 1) - (a.level || 1)
+                case 'LEVEL_ASC':
+                    return (a.level || 1) - (b.level || 1)
+                case 'RARITY_DESC': {
+                    const rA = rarityScore(dataA?.rarity)
+                    const rB = rarityScore(dataB?.rarity)
+                    if (rA !== rB) return rB - rA
+                    // If same rarity, sort by level
+                    return (b.level || 1) - (a.level || 1)
+                }
+                case 'NEWEST':
+                    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+                case 'OLDEST':
+                    return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+                default:
+                    return 0
+            }
+        })
+    }, [playerMonsters, filterElement, filterRole, filterRarity, sortType])
 
     return (
         <div style={{

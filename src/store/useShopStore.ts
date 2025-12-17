@@ -119,58 +119,51 @@ export const useShopStore = create<ShopState>()(
                 const totalPrice = item.price * quantity
                 const alchemyStore = useAlchemyStore.getState()
                 const currentGold = alchemyStore.playerMaterials['gold'] || 0
+                const currentItemCount = alchemyStore.playerMaterials[itemId] || 0
 
+                // 골드 부족 체크
                 if (currentGold < totalPrice) {
                     return false
                 }
 
-                // 1. 골드 차감 (로컬)
-                const newGold = currentGold - totalPrice
-                useAlchemyStore.setState({
-                    playerMaterials: {
-                        ...alchemyStore.playerMaterials,
-                        gold: newGold
-                    }
-                })
-
-                // UI 동기화
-                useGameStore.getState().setResources({
-                    ...useGameStore.getState().resources,
-                    gold: newGold
-                })
-
-                // 2. 아이템 추가 (로컬)
-                const currentItemCount = alchemyStore.playerMaterials[itemId] || 0
-                useAlchemyStore.setState({
-                    playerMaterials: {
-                        ...useAlchemyStore.getState().playerMaterials,
-                        [itemId]: currentItemCount + quantity
-                    }
-                })
-
-                // 3. 서버 동기화 (비동기)
-                if (alchemyStore.userId) {
-                    try {
-                        // 골드 차감
-                        // alchemyApi에 deductGold 같은게 없으면 consumeMaterials 사용
-                        // 골드는 player_resource 테이블이므로 별도 API 필요할 수 있음.
-                        // 하지만 기존 sellMaterial 로직을 보면 addGold만 있고 removeGold는 불명확.
-                        // alchemyApi.addGold(-totalPrice) 가 가능한지 확인 필요.
-                        // 보통 addGold는 `increment` RPC를 쓸 것이므로 음수도 가능할 것.
-                        await alchemyApi.addGold(alchemyStore.userId, -totalPrice)
-
-                        // 아이템 추가
-                        await alchemyApi.addMaterialToPlayer(alchemyStore.userId, itemId, quantity)
-
-                        return true
-                    } catch (e) {
-                        console.error('구매 transaction 실패:', e)
-                        // 롤백 로직이 필요하지만, 여기선 간단히 로그만
-                        return false // 이미 UI는 업데이트됨... 
-                    }
+                // userId 없으면 실패
+                if (!alchemyStore.userId) {
+                    console.error('구매 실패: 사용자 ID 없음')
+                    return false
                 }
 
-                return true
+                // 트랜잭션 패턴: 서버 먼저, 성공 시에만 로컬 업데이트
+                try {
+                    // 1. 서버 트랜잭션 실행 (병렬 처리)
+                    await Promise.all([
+                        alchemyApi.addGold(alchemyStore.userId, -totalPrice),
+                        alchemyApi.addMaterialToPlayer(alchemyStore.userId, itemId, quantity)
+                    ])
+
+                    // 2. 서버 성공 시에만 로컬 상태 업데이트
+                    const newGold = currentGold - totalPrice
+                    const newItemCount = currentItemCount + quantity
+
+                    useAlchemyStore.setState({
+                        playerMaterials: {
+                            ...alchemyStore.playerMaterials,
+                            gold: newGold,
+                            [itemId]: newItemCount
+                        }
+                    })
+
+                    // 3. UI 동기화 (레거시 호환)
+                    useGameStore.getState().setResources({
+                        ...useGameStore.getState().resources,
+                        gold: newGold
+                    })
+
+                    return true
+                } catch (e) {
+                    console.error('구매 실패:', e)
+                    // 서버 실패 시 로컬 상태는 변경되지 않음 (자동 롤백)
+                    return false
+                }
             }
         }),
         {

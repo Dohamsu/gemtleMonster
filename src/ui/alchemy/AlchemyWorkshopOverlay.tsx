@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect, memo, useMemo } from 'react'
 import type { Recipe, Material, PlayerAlchemy, PlayerRecipe } from '../../lib/alchemyApi'
 import type { AlchemyContext } from '../../types/alchemy'
 import { isMobileView } from '../../utils/responsiveUtils'
@@ -9,6 +9,13 @@ import { AlchemyBackButton } from './AlchemyBackButton'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import CodexPanel from './CodexPanel'
+
+// 컴포넌트 외부로 이동하여 매 렌더링마다 재생성 방지
+const getRecipeType = (r: Recipe): 'MONSTER' | 'ITEM' => {
+    if (r.type) return r.type
+    if (r.result_item_id) return 'ITEM'
+    return 'MONSTER'
+}
 
 interface AlchemyWorkshopOverlayProps {
     recipes: Recipe[]
@@ -51,15 +58,11 @@ function AlchemyWorkshopOverlay({
     const setCanvasView = useGameStore((state) => state.setCanvasView)
     const { alchemyMode } = useAlchemyStore()
 
-    // Helper to determine recipe type (robust against missing type in DB)
-    const getRecipeType = (r: Recipe) => {
-        if (r.type) return r.type
-        if (r.result_item_id) return 'ITEM'
-        return 'MONSTER'
-    }
-
-    // Filter recipes based on mode
-    const filteredRecipes = recipes.filter(r => getRecipeType(r) === alchemyMode)
+    // Filter recipes based on mode (메모이제이션으로 불필요한 재계산 방지)
+    const filteredRecipes = useMemo(
+        () => recipes.filter(r => getRecipeType(r) === alchemyMode),
+        [recipes, alchemyMode]
+    )
 
     useEffect(() => {
         const handleResize = () => {

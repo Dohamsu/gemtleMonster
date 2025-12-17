@@ -5,6 +5,10 @@ description: 게임 내 새로운 콘텐츠(시설, 재료, 몬스터, 레시피
 
 # 🛠️ 콘텐츠 추가 가이드 (Content Addition Guide)
 
+> [!TIP]
+> **Data Flow Diagrams**: See [.agent/rules/data-flow.md](file:///.agent/rules/data-flow.md) for visual flow charts.
+
+
 게임 내 새로운 콘텐츠(시설, 재료, 몬스터, 레시피)를 추가할 때 수정해야 할 파일들과 그 연결 관계를 정리한 문서입니다. 추가 작업 시 이 체크리스트를 확인하여 누락을 방지하세요.
 
 ---

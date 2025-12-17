@@ -48,19 +48,31 @@ export default function BattleView() {
         prevEnemyHpRef.current = battleState.enemyHp
     }, [battleState])
 
-    // Animation Loop
+    // Animation Loop (최적화: 불필요한 리렌더링 방지)
     useEffect(() => {
         let animationFrameId: number
         const animate = () => {
             setAnimatingTexts(prev => {
                 if (prev.length === 0) return prev
-                return prev
-                    .map(t => ({
-                        ...t,
-                        life: t.life - 1,
-                        y: t.y - 1 // Float up 1px per frame
-                    }))
-                    .filter(t => t.life > 0)
+
+                // 먼저 필터링하여 살아있는 텍스트만 처리
+                const alive = prev.filter(t => t.life > 1) // life > 1인 것만 유지 (다음 프레임에 0 이상)
+
+                // 길이가 같으면 아무것도 제거되지 않았으므로 업데이트
+                // 길이가 다르면 제거된 것이 있으므로 업데이트 필요
+                if (alive.length === 0 && prev.length > 0) {
+                    // 모두 제거되는 경우
+                    return []
+                }
+
+                // life 감소 및 위치 이동
+                const updated = alive.map(t => ({
+                    ...t,
+                    life: t.life - 1,
+                    y: t.y - 1 // Float up 1px per frame
+                }))
+
+                return updated
             })
             animationFrameId = requestAnimationFrame(animate)
         }
