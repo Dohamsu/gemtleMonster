@@ -18,9 +18,10 @@ const MAX_OFFLINE_HOURS = 8 // 최대 8시간 보상
  * 오프라인 보상을 계산하고 지급하는 Hook
  *
  * @param userId - 사용자 ID
+ * @param areFacilitiesLoading - 시설 데이터 로딩 여부 (from useFacilities)
  * @returns claimed: 보상 지급 여부, rewards: 지급된 보상
  */
-export function useOfflineRewards(userId: string | undefined) {
+export function useOfflineRewards(userId: string | undefined, areFacilitiesLoading: boolean = true) {
   const [claimed, setClaimed] = useState(false)
   const [rewards, setRewards] = useState<Record<string, number>>({})
   const [elapsedTime, setElapsedTime] = useState(0)
@@ -28,22 +29,38 @@ export function useOfflineRewards(userId: string | undefined) {
 
   const isCalculatingRef = useRef(false)
 
-  // 시설 데이터가 DB에서 로드되었는지 확인 (기본값 이상이어야 함)
-  // 기본값: { herb_farm: 1, monster_farm: 1 }
-  // DB 로드 후에는 광산 등 다른 시설도 포함됨
+  // 시설 데이터가 DB에서 로드되었는지 확인
   const facilitiesLoadedRef = useRef(false)
 
   useEffect(() => {
-    // 기본값 2개보다 많은 시설이 있거나, 기본 시설 레벨이 1보다 높으면 로드된 것으로 판단
-    const facilityIds = Object.keys(facilities)
-    const isLoaded = facilityIds.length > 2 ||
-      facilityIds.some(id => facilities[id] > 1 && id !== 'herb_farm' && id !== 'monster_farm')
-
-    if (isLoaded && !facilitiesLoadedRef.current) {
-      facilitiesLoadedRef.current = true
-      console.log('✅ [OfflineRewards] 시설 데이터 로드 완료:', facilities)
+    // userID가 변경되면(로그아웃/로그인) 상태 초기화
+    if (userId) {
+      // 새 유저 로그인 시: 초기화는 필요 없으나(컴포넌트 키가 바뀌면 자동이지만, App 최상위라 안바뀜),
+      // 로그아웃 -> 로그인 시나리오에서 refs가 오염될 수 있음.
+      // 그러나 아래 useEffect에서 reset을 처리함.
+    } else {
+      // 로그아웃 시 상태 초기화
+      setClaimed(false)
+      setRewards({})
+      setElapsedTime(0)
+      facilitiesLoadedRef.current = false
+      isCalculatingRef.current = false
+      // Note: claimed가 false가 되면 로딩 화면이 다시 나올 수 있음 (App.tsx 로직)
+      // 하지만 로그아웃 상태이므로 LoginScreen이 나옴.
     }
-  }, [facilities])
+  }, [userId])
+
+  useEffect(() => {
+    // 시설 로딩이 완료되었으면 로드된 것으로 표시
+    // (기존에는 시설 개수로 추측했으나, 신규 유저는 기본 시설만 가지므로 추측 불가)
+    if (!areFacilitiesLoading && !facilitiesLoadedRef.current) {
+      facilitiesLoadedRef.current = true
+      console.log('✅ [OfflineRewards] 시설 데이터 로드 확인 (로딩 완료)')
+    } else if (areFacilitiesLoading) {
+      // 로딩 중으로 바뀌면(재로그인 등) 다시 false로 리셋
+      facilitiesLoadedRef.current = false
+    }
+  }, [areFacilitiesLoading])
 
   useEffect(() => {
     if (!userId || claimed || isCalculatingRef.current) return
@@ -270,7 +287,7 @@ export function useOfflineRewards(userId: string | undefined) {
     }
 
     calculateAndClaimRewards()
-  }, [userId, claimed, facilities])
+  }, [userId, claimed, facilities, areFacilitiesLoading])
 
   return {
     claimed,

@@ -14,9 +14,17 @@ export function useFacilities(userId: string | undefined) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        if (!userId) return
+        if (!userId) {
+            // Reset state on logout
+            setFacilities([])
+            setPlayerFacilities({})
+            setLoading(true)
+            return
+        }
 
         const fetchData = async () => {
+            setLoading(true) // Start loading for new user
+
             // Clear stale cache to force fresh fetch
             localStorage.removeItem('facility_master_data')
 

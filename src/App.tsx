@@ -25,7 +25,7 @@ function App() {
      * TODO: 레거시 시스템 제거 시 이 부분도 제거 필요
      */
     const { resources: dbResources } = useResources(user?.id)
-    const { playerFacilities: dbFacilities } = useFacilities(user?.id)
+    const { playerFacilities: dbFacilities, loading: facilitiesLoading } = useFacilities(user?.id)
 
     // Sync DB data to local store when loaded (레거시 호환성)
     useEffect(() => {
@@ -92,7 +92,7 @@ function App() {
     }, [user])
 
     // 오프라인 보상 훅 (전역 로딩 제어용)
-    const offlineRewardState = useOfflineRewards(user?.id)
+    const offlineRewardState = useOfflineRewards(user?.id, facilitiesLoading)
 
     // 반응형 레이아웃을 위한 뷰포트 크기 감지
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)

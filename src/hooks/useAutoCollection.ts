@@ -149,7 +149,16 @@ export function useAutoCollection(userId: string | undefined) {
                     if (!stats || !stats.intervalSeconds) continue
 
                     const facilityKey = `${facilityId}-${level}`
-                    const lastTime = lastCollectedAt[facilityKey] || 0
+                    const lastTime = lastCollectedAt[facilityKey]
+
+                    // Fix: If timestamp is missing (race condition or first load), initialize it to now
+                    // instead of treating it as huge offline time (which causes infinite partial skip)
+                    if (!lastTime) {
+                        // console.log(`🔧 [AutoCollection] Initializing timestamp for ${facilityKey}`)
+                        setLastCollectedAt(facilityKey, now)
+                        continue
+                    }
+
                     const elapsed = now - lastTime
                     const intervalMs = stats.intervalSeconds * 1000
 
@@ -159,6 +168,9 @@ export function useAutoCollection(userId: string | undefined) {
                         // useOfflineRewards handles > 5 mins. We give a buffer (10 mins) to ensure no conflict.
                         if (elapsed > 10 * 60 * 1000) {
                             // console.warn(`[AutoCollection] Skipping ${facilityKey} (Elapsed: ${elapsed}ms) - Delegating to OfflineRewards`)
+                            // Even if we skip, we MUST update the timestamp to prevent infinite skipping
+                            // if OfflineRewards failed to update it.
+                            setLastCollectedAt(facilityKey, now)
                             continue
                         }
 
