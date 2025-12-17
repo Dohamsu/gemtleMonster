@@ -18,14 +18,19 @@ const MAX_OFFLINE_HOURS = 8 // 최대 8시간 보상
  * 오프라인 보상을 계산하고 지급하는 Hook
  *
  * @param userId - 사용자 ID
+ * @param facilities - 외부에서 주입된 시설 데이터 (Race Condition 방지)
  * @param areFacilitiesLoading - 시설 데이터 로딩 여부 (from useFacilities)
  * @returns claimed: 보상 지급 여부, rewards: 지급된 보상
  */
-export function useOfflineRewards(userId: string | undefined, areFacilitiesLoading: boolean = true) {
+export function useOfflineRewards(
+  userId: string | undefined,
+  facilities: Record<string, number>,
+  areFacilitiesLoading: boolean = true
+) {
   const [claimed, setClaimed] = useState(false)
   const [rewards, setRewards] = useState<Record<string, number>>({})
   const [elapsedTime, setElapsedTime] = useState(0)
-  const { facilities } = useGameStore()
+  // const { facilities } = useGameStore() // REMOVED: Use props instead to avoid sync delay
 
   const isCalculatingRef = useRef(false)
 
@@ -149,6 +154,8 @@ export function useOfflineRewards(userId: string | undefined, areFacilitiesLoadi
 
         // 4. 각 시설/레벨별 생산량 계산
         const totalRewards: Record<string, number> = {}
+
+        console.log('🏭 [OfflineRewards] 계산 기준 시설 정보:', facilities)
 
         for (const [facilityId, currentLevel] of Object.entries(facilities)) {
           if (currentLevel <= 0) continue

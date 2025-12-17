@@ -32,11 +32,8 @@ export function useLongPress(
 
         // Start delay timer
         timeoutRef.current = setTimeout(() => {
-            let tickCount = 0
-
             // Start repeat interval
             intervalRef.current = setInterval(() => {
-                tickCount++
 
                 // Accelerate: Call callback multiple times based on duration?
                 // Or just call callback once and let consumer handle speed?
@@ -68,14 +65,14 @@ export function useLongPress(
     }, [])
 
     return {
-        onMouseDown: (e: React.MouseEvent) => {
+        onMouseDown: () => {
             // Prevent default to avoid text selection etc
             // e.preventDefault() // Sometimes causes issues with click
             start()
         },
         onMouseUp: clear,
         onMouseLeave: clear,
-        onTouchStart: (e: React.TouchEvent) => {
+        onTouchStart: () => {
             // e.preventDefault() // Prevents scrolling, might be desired for buttons
             start()
         },
@@ -92,7 +89,7 @@ export function useLongPress(
  * 16+ ticks: +10
  * (Adjust as needed)
  */
-export function useacceleratingValue(
+export function useAcceleratingValue(
     updateFn: (amount: number) => void,
     delay = 300,
     interval = 100
@@ -116,7 +113,6 @@ export function useacceleratingValue(
     const run = useCallback(() => {
         const tick = () => {
             countRef.current++
-
             // Acceleration Logic
             let step = 1
             if (countRef.current > 20) step = 10
@@ -127,11 +123,11 @@ export function useacceleratingValue(
             // Decreasing interval for "log feelings"?
             // fixed interval 80ms is usually smooth enough if step increases.
 
-            timerRef.current = setTimeout(tick, 80)
+            timerRef.current = setTimeout(tick, interval)
         }
 
-        timerRef.current = setTimeout(tick, 80) // subsequent ticks
-    }, [])
+        timerRef.current = setTimeout(tick, interval) // subsequent ticks
+    }, [interval])
 
     const start = useCallback(() => {
         stop()

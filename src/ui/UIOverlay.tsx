@@ -177,17 +177,19 @@ export default function UIOverlay() {
 
             {/* Header / Player Info */}
             <div style={{
-                background: '#2a2a2a',
+                background: '#2a1810',
                 padding: isMobile ? '12px' : '15px',
                 borderRadius: '8px',
                 marginBottom: isMobile ? '10px' : '15px',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                border: '1px solid #5a4030'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <h2 style={{
                         margin: 0,
-                        color: '#fff',
-                        fontSize: isMobile ? '1.1em' : '1.2em'
+                        color: '#f0d090',
+                        fontSize: isMobile ? '1.1em' : '1.2em',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
                     }}>GemtleMonster</h2>
 
                     {/* 계정 관련 버튼들 */}
@@ -220,11 +222,12 @@ export default function UIOverlay() {
                             style={{
                                 padding: '6px 10px',
                                 backgroundColor: 'transparent',
-                                color: 'rgba(255,255,255,0.6)',
-                                border: '1px solid rgba(255,255,255,0.2)',
+                                color: '#f0d090',
+                                border: '1px solid #f0d090',
                                 borderRadius: '6px',
                                 fontSize: '12px',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                opacity: 0.8
                             }}
                         >
                             로그아웃
@@ -234,7 +237,7 @@ export default function UIOverlay() {
 
                 <div style={{
                     fontSize: isMobile ? '0.9em' : '1em',
-                    color: '#e2e8f0',
+                    color: '#f0d090',
                     marginBottom: isMobile ? '8px' : '10px',
                     fontWeight: 'bold',
                     display: 'flex',
@@ -257,7 +260,7 @@ export default function UIOverlay() {
 
                 <div style={{
                     fontSize: isMobile ? '0.9em' : '0.95em',
-                    color: '#ffd700',
+                    color: '#facc15',
                     fontWeight: 'bold',
                     display: 'flex',
                     alignItems: 'center',
@@ -280,13 +283,14 @@ export default function UIOverlay() {
                         flex: 1,
                         padding: isMobile ? '12px 8px' : '10px',
                         minHeight: isMobile ? '44px' : 'auto',
-                        background: activeTab === 'facilities' ? '#444' : '#2a2a2a',
-                        color: 'white',
-                        border: 'none',
+                        background: activeTab === 'facilities' ? '#5a4030' : '#4a3020',
+                        color: '#f0d090',
+                        border: activeTab === 'facilities' ? '2px solid #facc15' : '2px solid transparent',
                         borderRadius: '8px',
                         cursor: 'pointer',
                         fontSize: isMobile ? '0.95em' : '1em',
-                        fontWeight: activeTab === 'facilities' ? 'bold' : 'normal'
+                        fontWeight: activeTab === 'facilities' ? 'bold' : 'normal',
+                        transition: 'all 0.2s'
                     }}
                 >
                     시설 관리
@@ -297,13 +301,14 @@ export default function UIOverlay() {
                         flex: 1,
                         padding: isMobile ? '12px 8px' : '10px',
                         minHeight: isMobile ? '44px' : 'auto',
-                        background: activeTab === 'alchemy' ? '#444' : '#2a2a2a',
-                        color: 'white',
-                        border: 'none',
+                        background: activeTab === 'alchemy' ? '#5a4030' : '#4a3020',
+                        color: '#f0d090',
+                        border: activeTab === 'alchemy' ? '2px solid #facc15' : '2px solid transparent',
                         borderRadius: '8px',
                         cursor: 'pointer',
                         fontSize: isMobile ? '0.95em' : '1em',
-                        fontWeight: activeTab === 'alchemy' ? 'bold' : 'normal'
+                        fontWeight: activeTab === 'alchemy' ? 'bold' : 'normal',
+                        transition: 'all 0.2s'
                     }}
                 >
                     인벤토리

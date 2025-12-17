@@ -3,8 +3,8 @@ export const shopStyles = `
     
     .shop-container {
         font-family: 'Space Grotesk', sans-serif;
-        background: #1c1917;
-        color: #f3f4f6;
+        background: #2a1810;
+        color: #f0d090;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -22,30 +22,33 @@ export const shopStyles = `
         width: 8px;
     }
     .shop-container::-webkit-scrollbar-track {
-        background: #1c1917;
+        background: #2a1810;
     }
     .shop-container::-webkit-scrollbar-thumb {
-        background: #444;
+        background: #5a4030;
         border-radius: 4px;
+        border: 1px solid #4a3020;
     }
     .shop-container::-webkit-scrollbar-thumb:hover {
-        background: #e7b308;
+        background: #facc15;
     }
     
     .item-card {
-        background: rgba(42, 42, 42, 0.6);
-        border: 1px solid #444;
+        background: rgba(42, 42, 42, 0.8);
+        border: 1px solid #444444;
         border-radius: 12px;
         padding: 16px;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
         backdrop-filter: blur(8px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
     
     .item-card:hover {
         transform: translateY(-4px);
-        background: rgba(42, 42, 42, 0.8);
+        background: rgba(60, 60, 60, 0.9);
+        border-color: #facc15;
         box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
     
@@ -59,11 +62,12 @@ export const shopStyles = `
         justify-content: center;
         position: relative;
         overflow: hidden;
+        border: 1px solid #4a3020;
     }
     
     .purchase-btn {
-        background: #eab308;
-        color: #1a1a1a;
+        background: #facc15;
+        color: #2a1810;
         border: none;
         padding: 10px;
         border-radius: 8px;
@@ -76,14 +80,14 @@ export const shopStyles = `
     }
     
     .purchase-btn:hover:not(:disabled) {
-        background: #ca8a04;
+        background: #fbbf24;
         transform: scale(1.02);
-        box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+        box-shadow: 0 0 15px rgba(250, 204, 21, 0.4);
     }
     
     .purchase-btn:disabled {
-        background: #4b5563;
-        color: #9ca3af;
+        background: #4a3020;
+        color: #785a40;
         cursor: not-allowed;
     }
     
@@ -103,10 +107,10 @@ export const shopStyles = `
     .qty-input-container {
         display: flex;
         align-items: center;
-        background: #171717;
+        background: #1a0f0a;
         border-radius: 8px;
         padding: 4px;
-        border: 1px solid #444;
+        border: 1px solid #4a3020;
     }
     
     .qty-btn {
@@ -125,8 +129,8 @@ export const shopStyles = `
     }
     
     .qty-btn:hover {
-        background: rgba(255,255,255,0.1);
-        color: white;
+        background: rgba(250, 204, 21, 0.1);
+        color: #facc15;
     }
     
     .qty-input {
@@ -134,7 +138,7 @@ export const shopStyles = `
         background: transparent;
         border: none;
         text-align: center;
-        color: white;
+        color: #f0d090;
         font-weight: 700;
         font-size: 14px;
         outline: none;
@@ -143,8 +147,8 @@ export const shopStyles = `
     .filter-chip {
         padding: 8px 16px;
         border-radius: 8px;
-        background: rgba(42, 42, 42, 0.6);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(90, 64, 48, 0.3);
+        border: 1px solid rgba(240, 208, 144, 0.1);
         color: #9ca3af;
         font-size: 13px;
         font-weight: 600;
@@ -154,14 +158,14 @@ export const shopStyles = `
     }
 
     .filter-chip.active {
-        background: rgba(234, 179, 8, 0.2);
-        border-color: #eab308;
-        color: #eab308;
+        background: rgba(250, 204, 21, 0.2);
+        border-color: #facc15;
+        color: #facc15;
     }
 
     .filter-chip:hover:not(.active) {
-        background: rgba(255,255,255,0.1);
-        color: white;
+        background: rgba(250, 204, 21, 0.1);
+        color: #f0d090;
     }
 
     .modal-overlay {
@@ -178,20 +182,21 @@ export const shopStyles = `
     }
 
     .modal-content {
-        background: #1c1917;
+        background: #2a1810;
         width: 100%;
         max-width: 400px;
         padding: 32px;
         border-radius: 20px;
         text-align: center;
         box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        border: 1px solid #5a4030;
         animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .sell-action-bar {
-        background: rgba(42, 42, 42, 0.5);
+        background: rgba(42, 24, 16, 0.8);
         backdrop-filter: blur(8px);
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid #5a4030;
         border-radius: 12px;
         padding: 16px;
         display: flex;
@@ -200,8 +205,8 @@ export const shopStyles = `
     }
 
     .sell-btn {
-        background: #eab308;
-        color: #1a1a1a;
+        background: #facc15;
+        color: #2a1810;
         font-weight: 700;
         padding: 8px 20px;
         border-radius: 8px;
@@ -211,8 +216,8 @@ export const shopStyles = `
     }
 
     .sell-btn:disabled {
-        background: #444444;
-        color: #9ca3af;
+        background: #4a3020;
+        color: #785a40;
         cursor: not-allowed;
     }
 
@@ -259,13 +264,14 @@ export const shopStyles = `
     }
 
     .timer-box {
-        background: #292524;
-        border: 1px solid #44403c;
+        background: #4a3020;
+        border: 1px solid #5a4030;
         border-radius: 8px;
         padding: 4px 10px;
         min-width: 50px;
         display: flex;
         flex-direction: column;
         align-items: center;
+        color: #facc15;
     }
 `

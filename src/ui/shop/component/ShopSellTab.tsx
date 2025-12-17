@@ -1,8 +1,8 @@
-import { useRef } from 'react'
+
 import { MATERIALS } from '../../../data/alchemyData'
 import { formatNumber, getRarityColor, getRarityLabel } from '../utils'
 import type { ShopItem } from '../types'
-import { useacceleratingValue } from '../hooks/useLongPress'
+import { useAcceleratingValue } from '../hooks/useLongPress'
 
 interface ShopSellTabProps {
     sellItems: ShopItem[]
@@ -33,11 +33,11 @@ const QuantityControl = ({
 }) => {
 
     // Hooks must be in a component!
-    const inc = useacceleratingValue((step) => {
+    const inc = useAcceleratingValue((step) => {
         onChange(itemId, Math.min(qty + step, max), max, 'sell')
     })
 
-    const dec = useacceleratingValue((step) => {
+    const dec = useAcceleratingValue((step) => {
         onChange(itemId, Math.max(qty - step, 1), max, 'sell')
     })
 

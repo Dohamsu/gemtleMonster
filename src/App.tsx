@@ -92,7 +92,7 @@ function App() {
     }, [user])
 
     // 오프라인 보상 훅 (전역 로딩 제어용)
-    const offlineRewardState = useOfflineRewards(user?.id, facilitiesLoading)
+    const offlineRewardState = useOfflineRewards(user?.id, dbFacilities, facilitiesLoading)
 
     // 반응형 레이아웃을 위한 뷰포트 크기 감지
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
