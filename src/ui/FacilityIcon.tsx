@@ -23,29 +23,29 @@ const getFacilityIconUrl = (id: string, level: number): string | null => {
     }
 
     switch (id) {
-        case 'herb_farm':
-            // herb_farm has level-specific images: herb_farm_1.png, herb_farm_2.png, herb_farm_3.png
-            const herbFarmImageLevel = Math.min(level, 3) // Cap at 3 since we only have 3 images
+        case 'herb_farm': {
+            const herbFarmImageLevel = Math.min(level, 3)
             return `/assets/facility/herb_farm_${herbFarmImageLevel}.png`
-        case 'mine':
-            // mine has level-specific images: mine_1.png, mine_2.png, mine_3.png
-            const mineImageLevel = Math.min(level, 3) // Cap at 3 since we only have 3 images
+        }
+        case 'mine': {
+            const mineImageLevel = Math.min(level, 3)
             return `/assets/facility/mine_${mineImageLevel}.png`
+        }
         case 'spirit_sanctum':
-            // spirit_sanctum has a single image (note: filename has typo 'santuary' instead of 'sanctuary')
             return '/assets/facility/spirit_santuary.png'
         case 'alchemy_lab':
+        case 'alchemy_workshop':
             return '/assets/facility/alchemy_workshop.png'
         case 'shop_building':
             return '/assets/facility/shop_building.png'
         case 'dungeon_dispatch':
             return '/assets/facility/dungeon_entrance.png'
         case 'training_ground':
-            return '/assets/ui/icon_crossed_swords.png' // Placeholder for training
+            return '/assets/facility/training_ground.png'
         case 'monster_farm':
-            return '/assets/facility/shop_building.png' // Placeholder
+            return '/assets/facility/monster_farm.png'
         default:
-            return null // Fallback to emoji if no image is available
+            return null
     }
 }
 

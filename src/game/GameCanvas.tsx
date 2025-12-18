@@ -18,6 +18,7 @@ import { UI, LAYOUT } from '../constants/game'
 import DungeonModal from '../ui/dungeon/DungeonModal'
 import { MATERIALS } from '../data/alchemyData'
 import { isMobileView } from '../utils/responsiveUtils'
+import FacilityPage from '../ui/facility/FacilityPage'
 
 /**
  * Optimized GameCanvas Component
@@ -321,6 +322,23 @@ export default function GameCanvas(props: GameCanvasProps) {
                 }}>
                     <div style={{ pointerEvents: 'auto', width: '100%', height: '100%' }}>
                         <MonsterFarm />
+                    </div>
+                </div>
+            )}
+
+            {/* Facility UI Overlay */}
+            {canvasView === 'facility' && (
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 2000
+                }}>
+                    <div style={{ pointerEvents: 'auto', width: '100%', height: '100%' }}>
+                        <FacilityPage />
                     </div>
                 </div>
             )}

@@ -1,0 +1,76 @@
+
+> gemtlemonster@0.0.0 lint
+> eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0
+
+
+/Users/jwonkim/Workspace/gemtleMonster/src/hooks/useBatchSync.ts
+  132:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jwonkim/Workspace/gemtleMonster/src/store/useGameStore.ts
+  106:9   warning  Unexpected console statement                                no-console
+  111:13  warning  Unexpected console statement                                no-console
+  133:13  warning  Unexpected console statement                                no-console
+  141:17  warning  Unexpected console statement                                no-console
+  162:13  warning  Unexpected console statement                                no-console
+  166:9   warning  Unexpected console statement                                no-console
+  290:9   warning  Unexpected console statement                                no-console
+  309:13  warning  Unexpected console statement                                no-console
+  318:13  warning  Unexpected console statement                                no-console
+  322:9   warning  Unexpected console statement                                no-console
+  393:13  warning  Unexpected console statement                                no-console
+  394:13  warning  Unexpected console statement                                no-console
+  395:13  warning  Unexpected console statement                                no-console
+  398:17  warning  Unexpected console statement                                no-console
+  402:17  warning  Unexpected console statement                                no-console
+  406:17  warning  Unexpected console statement                                no-console
+  417:21  warning  Unexpected console statement                                no-console
+  527:17  warning  Unexpected console statement                                no-console
+  541:17  error    'passiveDmgBonus' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/jwonkim/Workspace/gemtleMonster/src/store/useShopStore.ts
+   90:25  error    'basePrice' is never reassigned. Use 'const' instead  prefer-const
+  131:21  warning  Unexpected console statement                          no-console
+  163:21  warning  Unexpected console statement                          no-console
+
+/Users/jwonkim/Workspace/gemtleMonster/src/types/idle.ts
+  20:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jwonkim/Workspace/gemtleMonster/src/ui/FacilityIcon.tsx
+  28:13  error  Unexpected lexical declaration in case block  no-case-declarations
+  32:13  error  Unexpected lexical declaration in case block  no-case-declarations
+
+/Users/jwonkim/Workspace/gemtleMonster/src/ui/LoginScreen.tsx
+  1:1  error  Unused eslint-disable directive (no problems were reported from 'no-console')
+
+/Users/jwonkim/Workspace/gemtleMonster/src/ui/UIOverlay.tsx
+  30:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jwonkim/Workspace/gemtleMonster/src/ui/alchemy/AlchemyResultModal.tsx
+  158:38  error  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+/Users/jwonkim/Workspace/gemtleMonster/src/ui/alchemy/AlchemyWorkshopOverlay.tsx
+  134:18  error  React Hook "useAlchemyStore" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  367:14  error  React Hook "useAlchemyStore" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+  367:38  error  Unexpected any. Specify a different type                                                                                            @typescript-eslint/no-explicit-any
+
+/Users/jwonkim/Workspace/gemtleMonster/src/ui/common/LottieLoader.tsx
+  4:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/jwonkim/Workspace/gemtleMonster/src/ui/dungeon/BattleView.tsx
+  165:8  warning  React Hook useEffect has a missing dependency: 'battleState'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/jwonkim/Workspace/gemtleMonster/src/ui/dungeon/DungeonModal.tsx
+   46:9   warning  Unexpected console statement  no-console
+   47:9   warning  Unexpected console statement  no-console
+   50:13  warning  Unexpected console statement  no-console
+   55:13  warning  Unexpected console statement  no-console
+   59:9   warning  Unexpected console statement  no-console
+  290:53  warning  Unexpected console statement  no-console
+  399:53  warning  Unexpected console statement  no-console
+
+/Users/jwonkim/Workspace/gemtleMonster/src/utils/errorUtils.ts
+  136:5  warning  Unexpected console statement  no-console
+
+✖ 42 problems (13 errors, 29 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+

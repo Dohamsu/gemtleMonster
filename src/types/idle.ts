@@ -17,7 +17,7 @@ export interface FacilityLevel {
         crackStoneFragmentDropRate?: number
         ancientRelicFragmentDropRate?: number
         // Add other potential stats here as optional
-        [key: string]: any
+        [key: string]: unknown
     }
     upgradeCost: Record<string, number>
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useGameStore } from '../store/useGameStore'
 import { supabase } from '../lib/supabase'
 import { useAlchemyStore } from '../store/useAlchemyStore'
+import { MONSTER_DATA } from '../data/monsterData'
 
 interface FacilityLevelStats {
     intervalSeconds: number
@@ -13,7 +14,8 @@ interface FacilityLevelStats {
 type FacilityStatsMap = Record<string, Record<number, FacilityLevelStats>>
 
 export function useAutoCollection(userId: string | undefined) {
-    const { facilities, lastCollectedAt, addResources, setLastCollectedAt, canvasView, isOfflineProcessing } = useGameStore()
+    const { facilities, assignedMonsters, lastCollectedAt, addResources, setLastCollectedAt, canvasView, isOfflineProcessing } = useGameStore()
+    const { playerMonsters } = useAlchemyStore()
     const statsRef = useRef<FacilityStatsMap>({})
     const processingRef = useRef<Set<string>>(new Set())
 
@@ -110,41 +112,63 @@ export function useAutoCollection(userId: string | undefined) {
             const entries = Object.entries(facilities)
 
             for (const [facilityId, currentLevel] of entries) {
-                if (currentLevel <= 0 || !currentStatsMap[facilityId]) continue
+                const facilityStats = currentStatsMap[facilityId]
+                if (!facilityStats) continue
 
-                for (let level = 1; level <= currentLevel; level++) {
-                    const stats = currentStatsMap[facilityId][level]
-                    if (!stats || !stats.intervalSeconds) continue
+                const stats = facilityStats[currentLevel]
+                if (!stats || !stats.intervalSeconds) continue
 
-                    const facilityKey = `${facilityId}-${level}`
-                    const lastTime = lastCollectedAt[facilityKey]
+                const facilityKey = `${facilityId}-${currentLevel}`
+                const lastTime = lastCollectedAt[facilityKey]
 
-                    if (!lastTime) {
-                        setLastCollectedAt(facilityKey, now)
-                        continue
-                    }
-
-                    const elapsed = now - lastTime
-                    const intervalMs = stats.intervalSeconds * 1000
-
-                    if (elapsed < intervalMs) continue
-
-                    const productionCount = Math.floor(elapsed / intervalMs)
-                    if (productionCount <= 0) continue
-
-                    // Ignore huge catch-up (delegated to offline rewards)
-                    if (elapsed > 10 * 60 * 1000) {
-                        setLastCollectedAt(facilityKey, now)
-                        continue
-                    }
-
-                    const nextTime = lastTime + (productionCount * intervalMs)
-                    // Fire and forget (internal locking handles it)
-                    collectFromBatch(facilityKey, stats, productionCount, nextTime)
+                if (!lastTime) {
+                    setLastCollectedAt(facilityKey, now)
+                    continue
                 }
+
+                // --- Monster Bonus Calculation ---
+                let bonusSpeed = 0 // Percentage reduction
+                let bonusAmount = 0 // Percentage increase
+                const assignedMonsterId = assignedMonsters[facilityId]
+                if (assignedMonsterId) {
+                    const playerMonster = playerMonsters.find(m => m.id === assignedMonsterId)
+                    if (playerMonster) {
+                        const monsterData = MONSTER_DATA[playerMonster.monster_id]
+                        if (monsterData?.factoryTrait && monsterData.factoryTrait.targetFacility === facilityId) {
+                            if (monsterData.factoryTrait.effect === '채굴 속도 증가' || monsterData.factoryTrait.effect === '채집 속도 증가' || monsterData.factoryTrait.effect === '생산 속도 증가') {
+                                bonusSpeed = monsterData.factoryTrait.value
+                            } else if (monsterData.factoryTrait.effect === '생산량 증가') {
+                                bonusAmount = monsterData.factoryTrait.value
+                            }
+                        }
+                    }
+                }
+
+                const intervalMs = (stats.intervalSeconds * (1 - bonusSpeed / 100)) * 1000
+                const elapsed = now - lastTime
+
+                if (elapsed < intervalMs) continue
+
+                const productionCount = Math.floor(elapsed / intervalMs)
+                if (productionCount <= 0) continue
+
+                // Ignore huge catch-up (delegated to offline rewards)
+                if (elapsed > 10 * 60 * 1000) {
+                    setLastCollectedAt(facilityKey, now)
+                    continue
+                }
+
+                // Apply quantity bonus to bundlesPerTick (probabilistic for fractions)
+                const baseBundles = stats.bundlesPerTick
+                const adjustedBundles = baseBundles * (1 + bonusAmount / 100)
+                const actualBundles = Math.floor(adjustedBundles) + (Math.random() < (adjustedBundles % 1) ? 1 : 0)
+
+                const nextTime = lastTime + (productionCount * intervalMs)
+                // Fire and forget (internal locking handles it)
+                collectFromBatch(facilityKey, { ...stats, bundlesPerTick: actualBundles }, productionCount, nextTime)
             }
         }, 100) // 0.1s tick
 
         return () => clearInterval(intervalId)
-    }, [userId, facilities, canvasView, lastCollectedAt, addResources, setLastCollectedAt, isOfflineProcessing])
+    }, [userId, facilities, assignedMonsters, playerMonsters, canvasView, lastCollectedAt, addResources, setLastCollectedAt, isOfflineProcessing])
 }

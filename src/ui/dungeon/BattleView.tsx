@@ -151,12 +151,20 @@ export default function BattleView() {
     useEffect(() => {
         if (!battleState || battleState.result) return
 
-        const timer = setInterval(() => {
-            processTurn()
-        }, 1000 / battleSpeed)
+        let timerId: ReturnType<typeof setTimeout> | undefined
 
-        return () => clearInterval(timer)
-    }, [battleState, processTurn, battleSpeed])
+        const runTurn = async () => {
+            await processTurn()
+            // Turn 간격을 배속에 맞춰 조정
+            timerId = setTimeout(runTurn, 1000 / battleSpeed)
+        }
+
+        timerId = setTimeout(runTurn, 1000 / battleSpeed)
+
+        return () => {
+            if (timerId) clearTimeout(timerId)
+        }
+    }, [battleState?.isBattling, battleState?.result, processTurn, battleSpeed]) // eslint-disable-line react-hooks/exhaustive-deps
 
     if (!battleState) return null
 
@@ -340,7 +348,7 @@ export default function BattleView() {
                             width: `${(battleState.playerHp / battleState.playerMaxHp) * 100}%`,
                             height: '100%',
                             background: '#22c55e',
-                            transition: 'width 0.3s'
+                            transition: `width ${0.3 / battleSpeed}s ease-out`
                         }} />
                     </div>
                     <div>{battleState.playerHp} / {battleState.playerMaxHp}</div>
@@ -494,7 +502,7 @@ export default function BattleView() {
                             width: `${(battleState.enemyHp / battleState.enemyMaxHp) * 100}%`,
                             height: '100%',
                             background: '#ef4444',
-                            transition: 'width 0.3s'
+                            transition: `width ${0.3 / battleSpeed}s ease-out`
                         }} />
                     </div>
                     <div>{battleState.enemyHp} / {battleState.enemyMaxHp}</div>

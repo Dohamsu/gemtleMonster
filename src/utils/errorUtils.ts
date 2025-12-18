@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 export const getLocalizedError = (error: string): string => {
     if (!error) return '알 수 없는 오류가 발생했습니다.'
 

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-console */
 import { create } from 'zustand'
 import { DUNGEONS } from '../data/dungeonData'
 import { GAME_MONSTERS as MONSTERS } from '../data/monsterData'
@@ -7,12 +7,14 @@ import type { RarityType } from '../types/alchemy'
 import type { ConsumableSlot } from '../types/consumable'
 import { useAlchemyStore } from './useAlchemyStore'
 import { getUnlockableSkills } from '../data/monsterSkillData'
+import type { MonsterSkill } from '../data/monsterSkillData'
 import { calculateDamage, processStatusEffects } from '../lib/battleUtils'
+import type { StatusEffect } from '../lib/battleUtils'
 import type { BattleEntity } from '../lib/battleUtils'
 import type { FloatingText, BattleState } from '../types/battle'
 import type { RoleType } from '../types/monster'
 
-export type CanvasView = 'map' | 'dungeon' | 'alchemy_workshop' | 'shop' | 'awakening' | 'monster_farm'
+export type CanvasView = 'map' | 'dungeon' | 'alchemy_workshop' | 'shop' | 'awakening' | 'monster_farm' | 'facility'
 
 interface GameState {
     canvasView: CanvasView
@@ -50,6 +52,13 @@ interface GameState {
     setFacilities: (facilities: Record<string, number>) => void
     upgradeFacility: (facilityId: string, cost: Record<string, number>) => Promise<void>
 
+    // Monster Assignment
+    assignedMonsters: Record<string, string | null>
+    assignMonster: (facilityId: string, monsterId: string | null) => void
+    setAssignedMonsters: (assignments: Record<string, string | null>) => void
+    batchAssignmentSyncCallback: ((facilityId: string, monsterId: string | null) => void) | null
+    setBatchAssignmentSyncCallback: (callback: ((facilityId: string, monsterId: string | null) => void) | null) => void
+
     // Auto Collection
     lastCollectedAt: Record<string, number>
     setLastCollectedAt: (id: string, time: number) => void
@@ -83,6 +92,18 @@ export const useGameStore = create<GameState>((set, get) => ({
     setResources: (resources) => set({ resources }),
     facilities: { 'herb_farm': 1, 'monster_farm': 1 }, // Default facilities
     setFacilities: (facilities) => set({ facilities }),
+    assignedMonsters: {},
+    assignMonster: (facilityId, monsterId) => set(state => {
+        if (state.batchAssignmentSyncCallback) {
+            state.batchAssignmentSyncCallback(facilityId, monsterId)
+        }
+        return {
+            assignedMonsters: { ...state.assignedMonsters, [facilityId]: monsterId }
+        }
+    }),
+    setAssignedMonsters: (assignedMonsters) => set({ assignedMonsters }),
+    batchAssignmentSyncCallback: null,
+    setBatchAssignmentSyncCallback: (callback) => set({ batchAssignmentSyncCallback: callback }),
     batchFacilitySyncCallback: null,
     setBatchFacilitySyncCallback: (callback) => set({ batchFacilitySyncCallback: callback }),
 
@@ -164,8 +185,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         // 5. Initialize lastCollectedAt for the new level (CRITICAL: Prevents massive backlog processing)
         // Without this, auto-collection would see elapsed time from epoch (1970) and try to process years worth of production
         const now = Date.now()
-        for (let l = 1; l <= newLevel; l++) {
-            const key = `${facilityId}-${l}`
+        for (let _l = 1; _l <= newLevel; _l++) {
+            const key = `${facilityId}-${_l}`
             if (!state.lastCollectedAt[key]) {
                 get().setLastCollectedAt(key, now)
             }
@@ -213,9 +234,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
 
         // 2. Process Animations (Batch)
-        let newAdditions: any[] = []
-        if (source) {
-            newAdditions = Object.entries(rewards)
+        const newAdditions = source
+            ? Object.entries(rewards)
                 .filter(([id]) => id !== 'empty')
                 .map(([id, qty]) => ({
                     id: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
@@ -223,7 +243,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                     resourceId: id,
                     amount: qty
                 }))
-        }
+            : []
 
         // Single State Update for everything local
         set(state => ({
@@ -349,6 +369,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         })
 
     },
+
+
 
     processTurn: async () => {
         const state = get()
@@ -493,16 +515,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         const selectedMonster = selectedMonsterId ? playerMonsters.find(m => m.id === selectedMonsterId) : null
         const monsterData = selectedMonsterType ? MONSTERS[selectedMonsterType] : null
         const monsterName = monsterData?.name || '플레이어'
+        const currentLevel = selectedMonster?.level || 1
+        const role = (monsterData?.role as RoleType) || 'TANK'
 
-        let currentLevel = 1
-        let role: RoleType = 'TANK'
-
-        if (selectedMonster && monsterData) {
-            currentLevel = selectedMonster.level || 1
-            // FIXED: monsterData.role is already RoleType in legacy adapter
-            role = monsterData.role as RoleType
-            console.log(`🎯 [Skill] Monster: ${monsterName}, Role: ${role}, Level: ${currentLevel}`)
-        }
+        console.log(`🎯 [Skill] Monster: ${monsterName}, Role: ${role}, Level: ${currentLevel}`)
 
         // Use ID directly
         const skillMonsterId = selectedMonsterType || ''
@@ -515,11 +531,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         // ========================================
         let passiveCritChance = 0
         let passivePierce = 0
-        let passiveDmgBonus = 0
+        const passiveDmgBonus = 0
         let passiveStatMult = 1.0
         let passiveDefMult = 1.0
 
-        const passiveSkills = skills.filter((s: any) => s.type === 'PASSIVE')
+        const passiveSkills = skills.filter((s: MonsterSkill) => s.type === 'PASSIVE')
         for (const skill of passiveSkills) {
             if (skill.effect.type === 'BUFF') {
                 const id = skill.id.toLowerCase()
@@ -551,11 +567,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         // ========================================
         // 2. Active Skill Activation Logic
         // ========================================
-        const activeSkills = skills.filter((s: any) => s.type === 'ACTIVE')
+        const activeSkills = skills.filter((s: MonsterSkill) => s.type === 'ACTIVE')
         let skillLog: string | null = null
         let skillMultiplier = 100
         let skillHeal = 0
-        let usedSkill: any = null
+        let usedSkill: MonsterSkill | null = null
 
         // Try each active skill based on its individual triggerChance
         for (const skill of activeSkills) {
@@ -566,8 +582,8 @@ export const useGameStore = create<GameState>((set, get) => ({
             }
         }
 
-        const playerStatusEffects = [...(state.battleState.playerStatusEffects || [])]
-        const enemyStatusEffects = [...(state.battleState.enemyStatusEffects || [])]
+        const playerStatusEffects: StatusEffect[] = [...(state.battleState.playerStatusEffects || [])]
+        const enemyStatusEffects: StatusEffect[] = [...(state.battleState.enemyStatusEffects || [])]
 
         if (usedSkill) {
             skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동!`
@@ -643,7 +659,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             maxHp: playerMaxHp,
             atk: currentPlayerAtk,
             def: currentPlayerDef,
-            element: (state.battleState.playerElement || 'EARTH') as any,
+            element: state.battleState.playerElement || 'EARTH',
             isPlayer: true,
             statusEffects: playerStatusEffects
         }
@@ -655,7 +671,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             maxHp: state.battleState.enemyMaxHp,
             atk: enemyAtk,
             def: enemyDef,
-            element: (state.battleState.enemyElement || 'EARTH') as any,
+            element: state.battleState.enemyElement || 'EARTH',
             isPlayer: false,
             statusEffects: enemyStatusEffects
         }

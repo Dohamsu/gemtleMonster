@@ -30,6 +30,41 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
     craftQuantity = 1,
     onClose
 }) => {
+    const itemStyles = useMemo(() => {
+        if (!isOpen || !itemId) return []
+        const count = Math.min(craftQuantity, 5)
+        return Array.from({ length: count }).map((_, idx) => {
+            if (count === 1) {
+                // 1개는 정중앙 강조
+                return {
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%) scale(1.2)',
+                    zIndex: 10
+                }
+            }
+
+            // 랜덤 배치 생성 (-5 ~ 5px 범위)
+            const randomAngle = Math.random() * 360
+            const distance = Math.random() * 6 // 중심에서의 거리 (최대 6px)
+
+            const offsetX = Math.cos(randomAngle * (Math.PI / 180)) * distance
+            const offsetY = Math.sin(randomAngle * (Math.PI / 180)) * distance
+
+            const rotate = (Math.random() - 0.5) * 20 // -10 ~ 10도 회전
+            const scale = 0.9 + Math.random() * 0.2 // 0.9 ~ 1.1 크기
+
+            return {
+                top: '50%',  // 부모의 중앙
+                left: '50%', // 부모의 중앙
+                marginTop: offsetY,  // 랜덤 오프셋 Y
+                marginLeft: offsetX, // 랜덤 오프셋 X
+                transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`, // 중앙 정렬 보정 + 회전/크기
+                zIndex: idx + 1
+            }
+        })
+    }, [isOpen, itemId, craftQuantity])
+
     if (!isOpen) return null
 
     const monster = monsterId ? getMonsterData(monsterId) : null
@@ -155,40 +190,7 @@ export const AlchemyResultModal: React.FC<AlchemyResultModalProps> = ({
                                     alignItems: 'center',
                                     justifyContent: 'center'
                                 }}>
-                                    {useMemo(() => {
-                                        const count = Math.min(craftQuantity, 5)
-                                        return Array.from({ length: count }).map((_, idx) => {
-                                            if (count === 1) {
-                                                // 1개는 정중앙 강조
-                                                return {
-                                                    top: '50%',
-                                                    left: '50%',
-                                                    transform: 'translate(-50%, -50%) scale(1.2)',
-                                                    zIndex: 10
-                                                }
-                                            }
-
-                                            // 랜덤 배치 생성 (-5 ~ 5px 범위)
-                                            // 시드 기반이 아닌 순수 랜덤이지만, useMemo로 고정됨
-                                            const randomAngle = Math.random() * 360
-                                            const distance = Math.random() * 6 // 중심에서의 거리 (최대 6px)
-
-                                            const offsetX = Math.cos(randomAngle * (Math.PI / 180)) * distance
-                                            const offsetY = Math.sin(randomAngle * (Math.PI / 180)) * distance
-
-                                            const rotate = (Math.random() - 0.5) * 20 // -10 ~ 10도 회전
-                                            const scale = 0.9 + Math.random() * 0.2 // 0.9 ~ 1.1 크기
-
-                                            return {
-                                                top: '50%',  // 부모의 중앙
-                                                left: '50%', // 부모의 중앙
-                                                marginTop: offsetY,  // 랜덤 오프셋 Y
-                                                marginLeft: offsetX, // 랜덤 오프셋 X
-                                                transform: `translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`, // 중앙 정렬 보정 + 회전/크기
-                                                zIndex: idx + 1
-                                            }
-                                        })
-                                    }, [craftQuantity]).map((style, idx) => (
+                                    {itemStyles.map((style, idx) => (
                                         <div
                                             key={idx}
                                             style={{

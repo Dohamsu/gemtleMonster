@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { useState, useEffect } from 'react'
 import { isMobileView } from '../utils/responsiveUtils'
 import { getLocalizedError } from '../utils/errorUtils'

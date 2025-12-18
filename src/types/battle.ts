@@ -1,6 +1,7 @@
 /**
  * Battle (전투) 관련 타입 정의
  */
+import type { ElementType } from '../types/alchemy'
 import type { StatusEffect } from '../lib/battleUtils'
 
 export type FloatingTextType = 'DAMAGE' | 'HEAL' | 'CRIT' | 'MISS' | 'BUFF' | 'WEAK' | 'RESIST'
@@ -34,11 +35,11 @@ export interface BattleState {
   playerAtk: number
   playerDef: number
   playerMonsterImage?: string
-  playerElement?: string
+  playerElement?: ElementType
   playerStatusEffects?: StatusEffect[]
   enemyAtk: number
   enemyDef: number
-  enemyElement?: string
+  enemyElement?: ElementType
   enemyStatusEffects?: StatusEffect[]
 
   // Visual Queues
@@ -70,7 +71,7 @@ export interface Enemy {
   hp: number
   attack: number
   defense: number
-  element?: string // New
+  element?: ElementType // New
   drops: EnemyDrop[]
 }
 

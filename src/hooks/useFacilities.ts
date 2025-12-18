@@ -6,11 +6,13 @@ import type { FacilityData } from '../types/idle'
 interface PlayerFacility {
     facility_id: string
     current_level: number
+    assigned_monster_id: string | null
 }
 
 export function useFacilities(userId: string | undefined) {
     const [facilities, setFacilities] = useState<FacilityData[]>([])
     const [playerFacilities, setPlayerFacilities] = useState<Record<string, number>>({})
+    const [assignedMonsters, setAssignedMonsters] = useState<Record<string, string | null>>({})
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -18,6 +20,7 @@ export function useFacilities(userId: string | undefined) {
             // Reset state on logout
             setFacilities([])
             setPlayerFacilities({})
+            setAssignedMonsters({})
             setLoading(true)
             return
         }
@@ -36,7 +39,7 @@ export function useFacilities(userId: string | undefined) {
             ] = await Promise.all([
                 supabase.from('facility').select('id, name, category'),
                 supabase.from('facility_level').select('facility_id, level, name, stats, upgrade_cost'),
-                supabase.from('player_facility').select('facility_id, current_level').eq('user_id', userId)
+                supabase.from('player_facility').select('facility_id, current_level, assigned_monster_id').eq('user_id', userId)
             ])
 
             // Combine data
@@ -64,10 +67,13 @@ export function useFacilities(userId: string | undefined) {
 
             if (playerFacilitiesData) {
                 const playerFacilityMap: Record<string, number> = {}
+                const assignmentMap: Record<string, string | null> = {}
                 playerFacilitiesData.forEach((pf: PlayerFacility) => {
                     playerFacilityMap[pf.facility_id] = pf.current_level
+                    assignmentMap[pf.facility_id] = pf.assigned_monster_id
                 })
                 setPlayerFacilities(playerFacilityMap)
+                setAssignedMonsters(assignmentMap)
             }
 
             setLoading(false)
@@ -110,5 +116,5 @@ export function useFacilities(userId: string | undefined) {
         setPlayerFacilities(prev => ({ ...prev, [facilityId]: newLevel }))
     }
 
-    return { facilities, playerFacilities, loading, upgradeFacility }
+    return { facilities, playerFacilities, assignedMonsters, loading, upgradeFacility }
 }

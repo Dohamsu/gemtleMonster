@@ -27,7 +27,7 @@ function App() {
      * TODO: 레거시 시스템 제거 시 이 부분도 제거 필요
      */
     const { resources: dbResources } = useResources(user?.id)
-    const { playerFacilities: dbFacilities, loading: facilitiesLoading } = useFacilities(user?.id)
+    const { playerFacilities: dbFacilities, assignedMonsters: dbAssignments, loading: facilitiesLoading } = useFacilities(user?.id)
 
     // Sync DB data to local store when loaded (레거시 호환성)
     useEffect(() => {
@@ -40,7 +40,10 @@ function App() {
         if (Object.keys(dbFacilities).length > 0) {
             setFacilities(dbFacilities)
         }
-    }, [dbFacilities, setFacilities])
+        if (Object.keys(dbAssignments).length > 0) {
+            useGameStore.getState().setAssignedMonsters(dbAssignments)
+        }
+    }, [dbFacilities, dbAssignments, setFacilities])
 
     // Auto-collect resources from facilities (updates local store)
     useAutoCollection(user?.id)
@@ -211,9 +214,6 @@ function App() {
                             boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                             transition: 'background-color 0.2s'
                         }}
-                        onMouseDown={(e) => e.currentTarget.style.backgroundColor = 'rgba(60, 60, 60, 0.9)'}
-                        onMouseUp={(e) => e.currentTarget.style.backgroundColor = 'rgba(26, 26, 26, 0.9)'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(26, 26, 26, 0.9)'}
                     >
                         <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
                         <div style={{ width: '24px', height: '3px', backgroundColor: '#fff', borderRadius: '2px' }} />
@@ -230,7 +230,7 @@ function App() {
                         backgroundColor: '#1a1a1a',
                         display: 'flex',
                         flexDirection: 'column',
-                        zIndex: 1000, // Highest priority to cover all interactive elements (Alchemy Overlay uses 50-100)
+                        zIndex: 1000,
                         boxShadow: '-4px 0 12px rgba(0,0,0,0.5)',
                         overflowY: 'auto',
                         transform: isOverlayOpen ? 'translateX(0)' : 'translateX(100%)',
@@ -270,7 +270,7 @@ function App() {
         )
     }
 
-    // 데스크톱 레이아웃 (기존 방식)
+    // 데스크톱 레이아웃
     return (
         <div style={{
             display: 'flex',

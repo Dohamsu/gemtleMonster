@@ -1,3 +1,5 @@
+import type { ElementType } from '../types/alchemy'
+
 export interface DungeonDrop {
     materialId: string
     chance: number // 0-100
@@ -14,7 +16,7 @@ export interface DungeonEnemy {
     defense: number
     exp: number
     image?: string
-    element?: string
+    element?: ElementType // New
     drops: DungeonDrop[]
     goldDrop?: { min: number; max: number } // 골드 드랍 (리밸런싱 추가)
 }

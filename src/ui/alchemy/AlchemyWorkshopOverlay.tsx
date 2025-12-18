@@ -56,7 +56,8 @@ function AlchemyWorkshopOverlay({
     const [isMobile, setIsMobile] = useState(isMobileView())
     const [showCodex, setShowCodex] = useState(false)
     const setCanvasView = useGameStore((state) => state.setCanvasView)
-    const { alchemyMode } = useAlchemyStore()
+    const alchemyStore = useAlchemyStore()
+    const { alchemyMode, error: alchemyError, resetError } = alchemyStore
 
     // Filter recipes based on mode (메모이제이션으로 불필요한 재계산 방지)
     const filteredRecipes = useMemo(
@@ -131,7 +132,7 @@ function AlchemyWorkshopOverlay({
                 </div>
 
                 {/* Error Toast */}
-                {useAlchemyStore((state) => state.error) && (
+                {alchemyError && (
                     <div style={{
                         position: 'absolute',
                         top: '60px',
@@ -149,9 +150,9 @@ function AlchemyWorkshopOverlay({
                         minWidth: '300px',
                         justifyContent: 'space-between'
                     }}>
-                        <span>⚠️ {useAlchemyStore.getState().error}</span>
+                        <span>⚠️ {alchemyError}</span>
                         <button
-                            onClick={useAlchemyStore.getState().resetError}
+                            onClick={resetError}
                             style={{
                                 background: 'transparent',
                                 border: 'none',
@@ -364,7 +365,7 @@ function AlchemyWorkshopOverlay({
             </div>
 
             {/* Error Toast (Desktop) */}
-            {useAlchemyStore((state: any) => state.error) && (
+            {alchemyError && (
                 <div style={{
                     position: 'absolute',
                     top: '80px',
@@ -383,9 +384,9 @@ function AlchemyWorkshopOverlay({
                     justifyContent: 'space-between',
                     pointerEvents: 'auto'
                 }}>
-                    <span style={{ fontSize: '15px', fontWeight: 500 }}>⚠️ {useAlchemyStore.getState().error}</span>
+                    <span style={{ fontSize: '15px', fontWeight: 500 }}>⚠️ {alchemyError}</span>
                     <button
-                        onClick={useAlchemyStore.getState().resetError}
+                        onClick={resetError}
                         style={{
                             background: 'transparent',
                             border: 'none',

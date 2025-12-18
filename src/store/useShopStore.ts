@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { MATERIALS } from '../data/alchemyData'
@@ -87,7 +88,7 @@ export const useShopStore = create<ShopState>()(
 
                     // 3. 가격 결정
                     // 기본 판매가의 10배
-                    let basePrice = randomItem.sellPrice || BASE_SELL_PRICES[randomItem.rarity as keyof typeof BASE_SELL_PRICES] || 10
+                    const basePrice = randomItem.sellPrice || BASE_SELL_PRICES[randomItem.rarity as keyof typeof BASE_SELL_PRICES] || 10
                     const buyPrice = basePrice * 10
 
                     newItems.push({

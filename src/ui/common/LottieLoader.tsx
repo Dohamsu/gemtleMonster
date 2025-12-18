@@ -1,7 +1,7 @@
 import Lottie from 'lottie-react'
 
 interface LottieLoaderProps {
-    animationData: any
+    animationData: unknown
     width?: number | string
     height?: number | string
     loop?: boolean
