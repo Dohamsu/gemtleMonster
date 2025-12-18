@@ -91,29 +91,56 @@ export function getElementalMultiplier(attacker: ElementType, defender: ElementT
 export function calculateDamage(
     attacker: BattleEntity,
     defender: BattleEntity,
-    skillMultiplier: number = 100 // Percentage
+    skillMultiplier: number = 100, // Percentage
+    options: {
+        critChanceOffset?: number    // 치명타 확률 보정 (0~100)
+        defensePierce?: number        // 방어력 무시 (%)
+        damageBonus?: number         // 최종 데미지 보너스 (%)
+    } = {}
 ): { damage: number; isCritical: boolean; multiplier: number } {
-    // 1. Base Damage (ATK based)
-    let damage = attacker.atk * (skillMultiplier / 100)
+    // 1. Calculate Effective Stats (Apply Status Effects)
+    let effectiveAtk = attacker.atk
+    for (const eff of attacker.statusEffects) {
+        if (eff.type === 'ATK_BUFF') effectiveAtk *= (1 + eff.value / 100)
+        if (eff.type === 'ATK_DEBUFF') effectiveAtk *= (1 - eff.value / 100)
+    }
+
+    let effectiveDef = defender.def
+    for (const eff of defender.statusEffects) {
+        if (eff.type === 'DEF_BUFF') effectiveDef *= (1 + eff.value / 100)
+        if (eff.type === 'DEF_DEBUFF') effectiveDef *= (1 - eff.value / 100)
+    }
+
+    // Apply skill multiplier to base attack
+    let damage = effectiveAtk * (skillMultiplier / 100)
 
     // 2. Elemental Multiplier
     const elementMultiplier = getElementalMultiplier(attacker.element, defender.element)
     damage *= elementMultiplier
 
-    // 3. Defense Mitigation (비율 감쇄 공식: Damage * (100 / (100 + Def * k)))
-    // k는 밸런스 계수 (권장값: 1.0)
+    // 3. Defense Mitigation (비율 감쇄 공식)
     const DEF_COEFFICIENT = 1.0
-    damage = Math.floor(damage * (100 / (100 + defender.def * DEF_COEFFICIENT)))
+    // Apply pierce from options
+    effectiveDef *= (1 - (options.defensePierce || 0) / 100)
+
+    damage = Math.floor(damage * (100 / (100 + effectiveDef * DEF_COEFFICIENT)))
     damage = Math.max(1, damage)
 
-    // 4. Critical Hit (10% base chance)
+    // 4. Critical Hit
     let isCritical = false
-    if (Math.random() < 0.1) {
+    const baseCritChance = 0.1 // 10% base
+    const finalCritChance = baseCritChance + (options.critChanceOffset || 0) / 100
+    if (Math.random() < finalCritChance) {
         isCritical = true
         damage *= 1.5
     }
 
-    // 5. Random Variance (+- 10%)
+    // 5. Damage Bonus
+    if (options.damageBonus) {
+        damage *= (1 + options.damageBonus / 100)
+    }
+
+    // 6. Random Variance (+- 10%)
     const variance = (Math.random() * 0.2) + 0.9 // 0.9 ~ 1.1
     damage = Math.floor(damage * variance)
 
@@ -196,4 +223,20 @@ export function addStatusEffect(entity: BattleEntity, effect: StatusEffect): Bat
         ...entity,
         statusEffects: newEffects
     }
+}
+
+/**
+ * Calculate effective stat based on status effects
+ */
+export function calculateEffectiveStat(baseValue: number, effects: StatusEffect[], type: 'ATK' | 'DEF'): number {
+    let multiplier = 1.0
+    const buffType = type === 'ATK' ? 'ATK_BUFF' : 'DEF_BUFF'
+    const debuffType = type === 'ATK' ? 'ATK_DEBUFF' : 'DEF_DEBUFF'
+
+    for (const eff of (effects || [])) {
+        if (eff.type === buffType) multiplier *= (1 + eff.value / 100)
+        if (eff.type === debuffType) multiplier *= (1 - eff.value / 100)
+    }
+
+    return Math.floor(baseValue * multiplier)
 }

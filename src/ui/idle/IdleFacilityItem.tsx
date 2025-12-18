@@ -34,11 +34,8 @@ const RESOURCE_NAMES: Record<string, string> = {
     potion_mp_small: '소형 마나 포션'
 }
 
-
-
 // Helper to get localized resource name
 const getResourceName = (key: string) => {
-    // Special overrides or fallback specific to idle game currency
     if (RESOURCE_NAMES[key]) return RESOURCE_NAMES[key]
     if (MATERIALS[key]) return MATERIALS[key].name
     return key
@@ -50,7 +47,7 @@ const getActionText = (facilityId: string) => {
         case 'blacksmith': return '제련 중...'
         case 'mine': return '채광 중...'
         case 'herb_farm': return '채집 중...'
-        default: return '생산 중...' // Default changed from '채집 중' to cover general cases
+        default: return '생산 중...'
     }
 }
 
@@ -58,7 +55,10 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
     const { lastCollectedAt, recentAdditions } = useGameStore()
     const levelData = facility.levels.find(l => l.level === currentLevel)
     const nextLevelData = facility.levels.find(l => l.level === currentLevel + 1)
-    const [collectedResources, setCollectedResources] = useState<string[]>([])
+
+    // Check if production can continue (has enough resources if cost exists)
+    const cost = levelData?.stats.cost
+    const hasEnoughResources = !cost || Object.entries(cost).every(([res, amount]) => (resources[res] || 0) >= amount)
 
     // Collection progress
     const intervalSeconds = levelData?.stats.intervalSeconds || 1
@@ -67,10 +67,13 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
         facility.id,
         intervalSeconds,
         lastCollectedAt[`${facility.id}-${currentLevel}`],
-        isPaused
+        isPaused,
+        hasEnoughResources // canLoop: 재료가 있을 때만 0%로 리셋
     )
 
+    const isStalled = !hasEnoughResources && progress >= 100
     const facilityKey = `${facility.id}-${currentLevel}`
+    const [collectedResources, setCollectedResources] = useState<string[]>([])
 
     // Watch for new additions from this facility
     useEffect(() => {
@@ -79,24 +82,18 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
             .map(addition => addition.resourceId)
 
         if (newCollections.length > 0) {
-            // Show the first resource (or you could show all)
             setCollectedResources(newCollections)
         }
     }, [recentAdditions, facilityKey])
 
     // If level 0, verify if we can construct (upgrade to level 1)
     if (currentLevel === 0) {
-        // Mock empty level data for rendering
+        const nextLevelData0 = facility.levels.find(l => l.level === 1)
+        const canUpgrade0 = nextLevelData0 && Object.entries(nextLevelData0.upgradeCost).every(([res, cost]) => (resources[res] || 0) >= cost)
 
-        // Next level is level 1
-        const nextLevelData = facility.levels.find(l => l.level === 1)
-
-        // Render minimal item for construction
-        const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([res, cost]) => (resources[res] || 0) >= cost)
-
-        const handleUpgrade = () => {
-            if (nextLevelData) {
-                onUpgrade(facility.id, nextLevelData.upgradeCost)
+        const handleUpgrade0 = () => {
+            if (nextLevelData0) {
+                onUpgrade(facility.id, nextLevelData0.upgradeCost)
             }
         }
 
@@ -107,12 +104,11 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                 padding: '12px',
                 marginBottom: '10px',
                 background: '#222',
-                color: '#aaa', // Dimmed text for unbuilt
+                color: '#aaa',
                 position: 'relative'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {/* Use level 1 icon or generic icon */}
                         <FacilityIcon id={facility.id} level={1} style={{ marginRight: '10px', filter: 'grayscale(1)' }} />
                         <h3 style={{ margin: 0 }}>{facility.name} (미보유)</h3>
                     </div>
@@ -121,26 +117,26 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
 
                 <div style={{ marginTop: '10px', borderTop: '1px solid #333', paddingTop: '10px' }}>
                     <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', color: '#fbbf24' }}>건설 비용:</p>
-                    {nextLevelData && (
+                    {nextLevelData0 && (
                         <div style={{ display: 'flex', gap: '10px', fontSize: '0.85em', flexWrap: 'wrap' }}>
-                            {Object.entries(nextLevelData.upgradeCost).map(([res, cost]) => (
-                                <span key={res} style={{ color: (resources[res] || 0) >= cost ? '#8f8' : '#f88' }}>
-                                    {getResourceName(res)}: {cost}
+                            {Object.entries(nextLevelData0.upgradeCost).map(([res, costVal]) => (
+                                <span key={res} style={{ color: (resources[res] || 0) >= costVal ? '#8f8' : '#f88' }}>
+                                    {getResourceName(res)}: {costVal}
                                 </span>
                             ))}
                         </div>
                     )}
                     <button
-                        onClick={handleUpgrade}
-                        disabled={!canUpgrade}
+                        onClick={handleUpgrade0}
+                        disabled={!canUpgrade0}
                         style={{
                             marginTop: '8px',
                             padding: '6px 12px',
-                            background: canUpgrade ? '#f59e0b' : '#555', // Orange for construction
+                            background: canUpgrade0 ? '#f59e0b' : '#555',
                             color: 'white',
                             border: 'none',
                             borderRadius: '4px',
-                            cursor: canUpgrade ? 'pointer' : 'not-allowed',
+                            cursor: canUpgrade0 ? 'pointer' : 'not-allowed',
                             fontSize: '0.9em',
                             fontWeight: 'bold',
                             width: '100%'
@@ -155,12 +151,7 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
 
     if (!levelData) return null
 
-    const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([res, cost]) => (resources[res] || 0) >= cost)
-
-    // Check if production is stalled due to missing resources
-    const cost = levelData.stats.cost
-    const hasEnoughResources = !cost || Object.entries(cost).every(([res, amount]) => (resources[res] || 0) >= amount)
-    const isStalled = !hasEnoughResources && progress >= 100
+    const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([res, costVal]) => (resources[res] || 0) >= costVal)
 
     const handleUpgrade = () => {
         if (nextLevelData) {
@@ -188,8 +179,6 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                 <span style={{ fontSize: '0.85em', color: '#aaa' }}>{intervalSeconds}초 / 회</span>
             </div>
 
-            {/* Collection Progress Bar */}
-            {/* Collection Progress Bar - Only show if intervalSeconds exists */}
             {levelData.stats.intervalSeconds && (
                 <div style={{ marginTop: '8px', marginBottom: '8px' }}>
                     <div style={{
@@ -200,18 +189,18 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                         overflow: 'hidden'
                     }}>
                         <div style={{
-                            width: `${Math.min(progress, 100)}%`, // Clamp to 100%
+                            width: `${Math.min(progress, 100)}%`,
                             height: '100%',
                             background: isPaused
-                                ? '#888' // 일시정지 시 회색
+                                ? '#888'
                                 : isStalled
-                                    ? '#ef4444' // 재료 부족 시 빨간색
+                                    ? '#ef4444'
                                     : facility.id === 'mine'
                                         ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
                                         : 'linear-gradient(90deg, #4a90e2, #63b3ed)',
-                            transition: (isPaused || isStalled) ? 'none' : 'width 0.05s linear', // 일시정지/중단 시 애니메이션 제거
+                            transition: (isPaused || isStalled) ? 'none' : 'width 0.05s linear',
                             boxShadow: (!isPaused && !isStalled && progress > 90) ? '0 0 8px rgba(255,255,255,0.5)' : 'none',
-                            opacity: (isPaused || isStalled) ? 0.7 : 1 // 투명도 조정
+                            opacity: (isPaused || isStalled) ? 0.7 : 1
                         }} />
                     </div>
                     <div style={{ fontSize: '0.75em', color: isStalled ? '#ef4444' : '#888', marginTop: '2px', textAlign: 'center', fontWeight: isStalled ? 'bold' : 'normal' }}>
@@ -251,9 +240,9 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                 <div style={{ marginTop: '10px', borderTop: '1px solid #333', paddingTop: '10px' }}>
                     <p style={{ margin: '0 0 5px 0', fontSize: '0.9em' }}>업그레이드 비용:</p>
                     <div style={{ display: 'flex', gap: '10px', fontSize: '0.85em', flexWrap: 'wrap' }}>
-                        {Object.entries(nextLevelData.upgradeCost).map(([res, cost]) => (
-                            <span key={res} style={{ color: (resources[res] || 0) >= cost ? '#8f8' : '#f88' }}>
-                                {getResourceName(res)}: {cost}
+                        {Object.entries(nextLevelData.upgradeCost).map(([res, costVal]) => (
+                            <span key={res} style={{ color: (resources[res] || 0) >= costVal ? '#8f8' : '#f88' }}>
+                                {getResourceName(res)}: {costVal}
                             </span>
                         ))}
                     </div>
@@ -278,7 +267,6 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                 <div style={{ color: '#8f8', marginTop: '10px', fontSize: '0.9em' }}>최대 레벨 달성</div>
             ) : null}
 
-            {/* Collection Animations */}
             {collectedResources.map((resourceId, index) => (
                 <CollectionAnimation
                     key={`${resourceId}-${index}`}
@@ -286,8 +274,6 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                     onComplete={() => {
                         setCollectedResources(prev => prev.filter((_, i) => i !== index))
                     }}
-                // Optional: Pass custom text/icon for 'empty' if CollectionAnimation supports it
-                // If not, we might need to modify CollectionAnimation or handle it here
                 />
             ))}
         </div>

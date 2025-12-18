@@ -62,6 +62,10 @@ interface GameState {
     consumableSlots: ConsumableSlot[]
     setConsumableSlots: (slots: ConsumableSlot[]) => void
     updateConsumableSlot: (slotId: 'hp' | 'status', updates: Partial<ConsumableSlot>) => void
+
+    // Battle Speed
+    battleSpeed: number
+    setBattleSpeed: (speed: number) => void
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -98,6 +102,9 @@ export const useGameStore = create<GameState>((set, get) => ({
             return { consumableSlots: newSlots }
         })
     },
+
+    battleSpeed: 1,
+    setBattleSpeed: (speed) => set({ battleSpeed: speed }),
 
     upgradeFacility: async (facilityId, cost) => {
         const state = get()
@@ -185,40 +192,52 @@ export const useGameStore = create<GameState>((set, get) => ({
     leaveDungeon: () => set({ activeDungeon: null, canvasView: 'map', battleState: null }),
 
     addResources: (rewards, source) => {
-        // ... (This function relies on useAlchemyStore which is external)
-        // Since we are in useGameStore, we should call useAlchemyStore actions
         const { addMaterial } = useAlchemyStore.getState()
+        const currentResources = get().resources
+        const updatedResources = { ...currentResources }
+        let goldAdded = 0
 
-        // 1. Add to AlchemyStore (Authoritative) - BUT skip 'gold' as it's not a material
+        // 1. Process Rewards
         Object.entries(rewards).forEach(([id, qty]) => {
             if (id === 'gold') {
-                // Handle gold separately - update local resources only (legacy system)
-                const currentGold = get().resources['gold'] || 0
-                set(state => ({
-                    resources: { ...state.resources, gold: currentGold + qty }
-                }))
-            } else {
+                goldAdded += qty
+            } else if (id !== 'empty') {
+                // materials are authoritative in AlchemyStore, but we mirror them for UI
                 addMaterial(id, qty)
+                updatedResources[id] = (updatedResources[id] || 0) + qty
             }
         })
 
-        // 2. Add to Recent Additions (for Animation)
+        if (goldAdded > 0) {
+            updatedResources['gold'] = (updatedResources['gold'] || 0) + goldAdded
+        }
+
+        // 2. Process Animations (Batch)
+        let newAdditions: any[] = []
         if (source) {
-            const newAdditions = Object.keys(rewards).map(id => ({
-                id: Math.random().toString(36).substr(2, 9),
-                facilityKey: source,
-                resourceId: id,
-                amount: rewards[id]
-            }))
+            newAdditions = Object.entries(rewards)
+                .filter(([id]) => id !== 'empty')
+                .map(([id, qty]) => ({
+                    id: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                    facilityKey: source,
+                    resourceId: id,
+                    amount: qty
+                }))
+        }
 
-            set(state => ({
-                recentAdditions: [...state.recentAdditions, ...newAdditions]
-            }))
+        // Single State Update for everything local
+        set(state => ({
+            resources: updatedResources,
+            recentAdditions: [...state.recentAdditions, ...newAdditions].slice(-50) // Max 50 to prevent memory bloat
+        }))
 
-            // Auto-clear after animation duration (e.g., 2s)
+        // Auto-clear animations after 2s
+        if (newAdditions.length > 0) {
             setTimeout(() => {
-                set(state => ({
-                    recentAdditions: state.recentAdditions.filter(a => !newAdditions.includes(a))
+                const state = get()
+                if (!state) return // Safety check
+                set(prev => ({
+                    recentAdditions: prev.recentAdditions.filter(a => !newAdditions.some(na => na.id === a.id))
                 }))
             }, 2000)
         }
@@ -480,57 +499,133 @@ export const useGameStore = create<GameState>((set, get) => ({
 
         if (selectedMonster && monsterData) {
             currentLevel = selectedMonster.level || 1
-            console.log('🎯 [Skill] monsterData.role:', monsterData.role)
-            const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
-            role = roleMap[monsterData.role] || 'TANK'
+            // FIXED: monsterData.role is already RoleType in legacy adapter
+            role = monsterData.role as RoleType
+            console.log(`🎯 [Skill] Monster: ${monsterName}, Role: ${role}, Level: ${currentLevel}`)
         }
 
         // Use ID directly
         const skillMonsterId = selectedMonsterType || ''
-        console.log('🎯 [Skill] Looking up skills for:', skillMonsterId, 'role:', role, 'level:', currentLevel)
-
         const skills = (selectedMonster && monsterData)
             ? getUnlockableSkills(skillMonsterId, role, currentLevel)
             : []
 
-        const activeSkills = skills.filter((s: any) => s.type === 'ACTIVE')
+        // ========================================
+        // 1. Passive Skills Application
+        // ========================================
+        let passiveCritChance = 0
+        let passivePierce = 0
+        let passiveDmgBonus = 0
+        let passiveStatMult = 1.0
+        let passiveDefMult = 1.0
 
-        // Skill Activation Logic (Per-skill triggerChance)
+        const passiveSkills = skills.filter((s: any) => s.type === 'PASSIVE')
+        for (const skill of passiveSkills) {
+            if (skill.effect.type === 'BUFF') {
+                const id = skill.id.toLowerCase()
+                if (id.includes('critical')) passiveCritChance += skill.effect.value
+                else if (id.includes('piercing')) passivePierce += skill.effect.value
+                else if (id.includes('sharp') || id.includes('claw') || id.includes('eye') || id.includes('strike')) {
+                    passiveStatMult += (skill.effect.value / 100)
+                }
+                else if (id.includes('balance') || id.includes('adapt') || id.includes('blessing')) {
+                    passiveStatMult += (skill.effect.value / 100)
+                    passiveDefMult += (skill.effect.value / 100)
+                }
+                else if (id.includes('guard') || id.includes('fortify') || id.includes('harden') || id.includes('shield')) {
+                    passiveDefMult += (skill.effect.value / 100)
+                } else {
+                    // Fallback: If it's a buff on self, assume attack or defense based on role
+                    if (role === 'TANK') passiveDefMult += (skill.effect.value / 100)
+                    else passiveStatMult += (skill.effect.value / 100)
+                }
+            } else if (skill.effect.type === 'DEBUFF') {
+                if (skill.id.includes('piercing')) passivePierce += skill.effect.value
+            }
+        }
+
+        // Apply Passive Stat Multipliers
+        currentPlayerAtk = Math.floor(currentPlayerAtk * passiveStatMult)
+        currentPlayerDef = Math.floor(currentPlayerDef * passiveDefMult)
+
+        // ========================================
+        // 2. Active Skill Activation Logic
+        // ========================================
+        const activeSkills = skills.filter((s: any) => s.type === 'ACTIVE')
         let skillLog: string | null = null
-        let skillBonusDmg = 0
+        let skillMultiplier = 100
         let skillHeal = 0
-        let skillBuffValue = 0
         let usedSkill: any = null
 
         // Try each active skill based on its individual triggerChance
-        console.log('🎯 [Skill] Active skills available:', activeSkills.length, activeSkills.map(s => s.name))
         for (const skill of activeSkills) {
             const triggerChance = skill.triggerChance ?? 30 // Default 30% if not set
-            const roll = Math.random() * 100
-            console.log(`🎯 [Skill] Checking ${skill.name}: roll=${roll.toFixed(1)} vs chance=${triggerChance}`)
-            if (roll < triggerChance) {
+            if (Math.random() * 100 < triggerChance) {
                 usedSkill = skill
-                console.log(`🎯 [Skill] TRIGGERED: ${skill.name}`)
                 break // Use the first skill that triggers
             }
         }
 
+        const playerStatusEffects = [...(state.battleState.playerStatusEffects || [])]
+        const enemyStatusEffects = [...(state.battleState.enemyStatusEffects || [])]
+
         if (usedSkill) {
-            if (usedSkill.effect.type === 'DAMAGE') {
-                skillBonusDmg = Math.floor(playerAtk * (usedSkill.effect.value / 100))
-                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 강력한 일격!`
-            } else if (usedSkill.effect.type === 'HEAL') {
-                skillHeal = Math.floor(playerMaxHp * (usedSkill.effect.value / 100))
-                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 체력을 ${skillHeal} 회복했습니다.`
-            } else if (usedSkill.effect.type === 'BUFF') {
-                skillBuffValue = Math.floor(playerAtk * (usedSkill.effect.value / 100))
-                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 공격력이 증가했습니다!`
-            } else if (usedSkill.effect.type === 'DEBUFF') {
-                skillBonusDmg = Math.floor(playerAtk * 0.5)
-                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 적을 약화시킵니다!`
-            } else if (usedSkill.effect.type === 'SPECIAL') {
-                skillBonusDmg = Math.floor(playerAtk * 0.3)
-                skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동! 특수 효과!`
+            skillLog = `${usedSkill.emoji} [${usedSkill.name}] 발동!`
+            const effect = usedSkill.effect
+
+            if (effect.type === 'DAMAGE') {
+                skillMultiplier = effect.value
+            } else if (effect.type === 'HEAL') {
+                skillHeal = Math.floor(playerMaxHp * (effect.value / 100))
+            } else if (effect.type === 'BUFF') {
+                const id = usedSkill.id.toLowerCase()
+                const buffType = id.includes('atk') || id.includes('berserk') || id.includes('might') || id.includes('roar') ? 'ATK_BUFF' : 'DEF_BUFF'
+                playerStatusEffects.push({
+                    id: `${usedSkill.id}-${Date.now()}`,
+                    type: buffType,
+                    value: effect.value || 20,
+                    duration: effect.duration || 3,
+                    sourceId: 'player',
+                    name: usedSkill.name,
+                    emoji: usedSkill.emoji
+                })
+            } else if (effect.type === 'DEBUFF') {
+                const id = usedSkill.id.toLowerCase()
+                const debuffType = id.includes('atk') || id.includes('weak') || id.includes('roar') ? 'ATK_DEBUFF' : 'DEF_DEBUFF'
+                enemyStatusEffects.push({
+                    id: `${usedSkill.id}-${Date.now()}`,
+                    type: debuffType,
+                    value: effect.value || 15,
+                    duration: effect.duration || 3,
+                    sourceId: 'player',
+                    name: usedSkill.name,
+                    emoji: usedSkill.emoji
+                })
+            } else if (effect.type === 'SPECIAL') {
+                const id = usedSkill.id.toLowerCase()
+                if (id.includes('taunt')) {
+                    // Taunt: Increase player's DEF and decrease enemy's ATK
+                    playerStatusEffects.push({
+                        id: `taunt-self-${Date.now()}`,
+                        type: 'DEF_BUFF', value: 20, duration: 3,
+                        sourceId: 'player', name: '도발(방어)', emoji: '🛡️'
+                    })
+                    enemyStatusEffects.push({
+                        id: `taunt-enemy-${Date.now()}`,
+                        type: 'ATK_DEBUFF', value: 15, duration: 3,
+                        sourceId: 'player', name: '도발(약화)', emoji: '💢'
+                    })
+                } else if (id.includes('shadow') || id.includes('mimic') || id.includes('dodge')) {
+                    // Utility specials: For now, give a major Evasion (treated as DEF buff)
+                    playerStatusEffects.push({
+                        id: `special-util-${Date.now()}`,
+                        type: 'DEF_BUFF', value: 30, duration: 2,
+                        sourceId: 'player', name: '회피/변이', emoji: '✨'
+                    })
+                } else {
+                    // Default special: extra damage
+                    skillMultiplier = 130
+                }
             }
         }
 
@@ -544,13 +639,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         const playerEntity: BattleEntity = {
             id: 'player',
             name: monsterName,
-            hp: currentPlayerHp, // 소모품 효과 적용된 HP
+            hp: currentPlayerHp,
             maxHp: playerMaxHp,
-            atk: currentPlayerAtk, // 소모품 효과 적용된 ATK
-            def: currentPlayerDef, // 소모품 효과 적용된 DEF
+            atk: currentPlayerAtk,
+            def: currentPlayerDef,
             element: (state.battleState.playerElement || 'EARTH') as any,
             isPlayer: true,
-            statusEffects: state.battleState.playerStatusEffects || []
+            statusEffects: playerStatusEffects
         }
 
         const enemyEntity: BattleEntity = {
@@ -562,7 +657,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             def: enemyDef,
             element: (state.battleState.enemyElement || 'EARTH') as any,
             isPlayer: false,
-            statusEffects: state.battleState.enemyStatusEffects || []
+            statusEffects: enemyStatusEffects
         }
 
         const newLogs = [...logs]
@@ -570,35 +665,35 @@ export const useGameStore = create<GameState>((set, get) => ({
             .filter(ft => ft.life > 0)
             .map(ft => ({ ...ft, life: ft.life - 1 }))
 
-        // Status Effects
+        // Status Effects Processing
         const playerStatusResult = processStatusEffects(playerEntity)
         const enemyStatusResult = processStatusEffects(enemyEntity)
 
         playerEntity.statusEffects = playerStatusResult.updatedEntity.statusEffects
         enemyEntity.statusEffects = enemyStatusResult.updatedEntity.statusEffects
+        playerEntity.hp = playerStatusResult.updatedEntity.hp
+        enemyEntity.hp = enemyStatusResult.updatedEntity.hp
 
-        if (playerStatusResult.damageTaken > 0) {
-            playerEntity.hp -= playerStatusResult.damageTaken
+        if (playerStatusResult.damageTaken !== 0) {
             floatingTexts.push({
                 id: `dot-player-${Date.now()}`,
                 x: 0, y: 0,
-                text: `-${playerStatusResult.damageTaken}`,
-                color: '#a855f7',
+                text: `${playerStatusResult.damageTaken > 0 ? '-' : '+'}${Math.abs(playerStatusResult.damageTaken)}`,
+                color: playerStatusResult.damageTaken > 0 ? '#a855f7' : '#4ade80',
                 life: 30,
                 target: 'PLAYER',
-                type: 'DAMAGE'
+                type: playerStatusResult.damageTaken > 0 ? 'DAMAGE' : 'HEAL'
             })
         }
-        if (enemyStatusResult.damageTaken > 0) {
-            enemyEntity.hp -= enemyStatusResult.damageTaken
+        if (enemyStatusResult.damageTaken !== 0) {
             floatingTexts.push({
                 id: `dot-enemy-${Date.now()}`,
                 x: 0, y: 0,
-                text: `-${enemyStatusResult.damageTaken}`,
-                color: '#a855f7',
+                text: `${enemyStatusResult.damageTaken > 0 ? '-' : '+'}${Math.abs(enemyStatusResult.damageTaken)}`,
+                color: enemyStatusResult.damageTaken > 0 ? '#a855f7' : '#4ade80',
                 life: 30,
                 target: 'ENEMY',
-                type: 'DAMAGE'
+                type: enemyStatusResult.damageTaken > 0 ? 'DAMAGE' : 'HEAL'
             })
         }
 
@@ -608,8 +703,12 @@ export const useGameStore = create<GameState>((set, get) => ({
         // Player Action
         let playerDmg = 0
         if (playerEntity.hp > 0) {
-            const result = calculateDamage(playerEntity, enemyEntity, 100 + skillBuffValue)
-            playerDmg = result.damage + skillBonusDmg
+            const result = calculateDamage(playerEntity, enemyEntity, skillMultiplier, {
+                critChanceOffset: passiveCritChance,
+                defensePierce: passivePierce,
+                damageBonus: passiveDmgBonus
+            })
+            playerDmg = result.damage
 
             if (skillLog) newLogs.push(skillLog)
 
@@ -640,7 +739,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             })
         }
 
-        // Apply Heals
+        // Apply Heals (Active Skill)
         if (skillHeal > 0 && playerEntity.hp > 0) {
             playerEntity.hp = Math.min(playerEntity.maxHp, playerEntity.hp + skillHeal)
             floatingTexts.push({

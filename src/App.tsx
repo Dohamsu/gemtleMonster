@@ -121,7 +121,7 @@ function App() {
         // If auth is done but offline reward is not claimed -> offline loading
         const isOfflineLoading = user && !offlineRewardState.claimed
         const currentAnimation = isOfflineLoading ? offlineLoadingAnimation : loadingAnimation
-        const loadingText = isOfflineLoading ? '오프라인 보상 계산 중...' : '로딩 중...'
+        const loadingText = isOfflineLoading ? '오프라인 보상 계산 중...' : '로그인 중...'
         const width = isOfflineLoading ? 200 : 150
         const height = isOfflineLoading ? 200 : 150
 

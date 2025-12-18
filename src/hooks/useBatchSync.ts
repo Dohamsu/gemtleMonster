@@ -91,12 +91,22 @@ export function useBatchSync(
     try {
       // 3. 재료 동기화 (Batch RPC 사용)
       if (Object.keys(updatesSnapshot).length > 0) {
-        const { error } = await supabase.rpc('batch_add_materials', {
-          p_user_id: userId,
-          p_materials: updatesSnapshot
-        })
+        // 'empty' 또는 비정상적인 키 필터링
+        const filteredUpdates = Object.entries(updatesSnapshot).reduce((acc, [k, v]) => {
+          if (k !== 'empty' && v !== 0) {
+            acc[k] = v
+          }
+          return acc
+        }, {} as Record<string, number>)
 
-        if (error) throw error
+        if (Object.keys(filteredUpdates).length > 0) {
+          const { error } = await supabase.rpc('batch_add_materials', {
+            p_user_id: userId,
+            p_materials: filteredUpdates
+          })
+
+          if (error) throw error
+        }
       }
 
       // 4. 시설 동기화

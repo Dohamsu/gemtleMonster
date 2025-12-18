@@ -5,9 +5,10 @@ import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { DUNGEONS } from '../../data/dungeonData'
 import { MATERIALS } from '../../data/alchemyData'
 import { MONSTER_DATA } from '../../data/monsterData'
+import { calculateEffectiveStat } from '../../lib/battleUtils'
 
 export default function BattleView() {
-    const { battleState, processTurn, endBattle, activeDungeon, consumeFloatingTexts } = useGameStore()
+    const { battleState, processTurn, endBattle, activeDungeon, consumeFloatingTexts, battleSpeed, setBattleSpeed } = useGameStore()
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
     const [animatingTexts, setAnimatingTexts] = useState<any[]>([])
 
@@ -152,10 +153,10 @@ export default function BattleView() {
 
         const timer = setInterval(() => {
             processTurn()
-        }, 1000)
+        }, 1000 / battleSpeed)
 
         return () => clearInterval(timer)
-    }, [battleState, processTurn])
+    }, [battleState, processTurn, battleSpeed])
 
     if (!battleState) return null
 
@@ -176,12 +177,49 @@ export default function BattleView() {
             height: '100%'
         }}>
             <div style={{
+                width: '100%',
                 position: 'relative',
                 display: 'flex',
-                justifyContent: 'flex-end',
-                marginBottom: '10px',
-                height: '30px'
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '15px',
+                minHeight: '30px'
             }}>
+                {/* Speed Control (New Location) */}
+                <div style={{
+                    display: 'flex',
+                    gap: '2px',
+                    background: 'rgba(0,0,0,0.5)',
+                    padding: '3px',
+                    borderRadius: '15px',
+                    border: '1px solid rgba(251, 191, 36, 0.3)',
+                }}>
+                    {[1, 2, 3].map(speed => (
+                        <button
+                            key={speed}
+                            onClick={() => setBattleSpeed(speed)}
+                            style={{
+                                width: isMobile ? '32px' : '38px',
+                                height: '22px',
+                                border: 'none',
+                                borderRadius: '11px',
+                                background: battleSpeed === speed ? '#fbbf24' : 'transparent',
+                                color: battleSpeed === speed ? '#000' : '#fbbf24',
+                                fontSize: '10px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: 0
+                            }}
+                        >
+                            {speed === 1 ? '▶' : speed === 2 ? '▶▶' : '▶▶▶'}
+                        </button>
+                    ))}
+                </div>
+
                 {!battleState.result && (
                     <button
                         onClick={endBattle}
@@ -189,10 +227,10 @@ export default function BattleView() {
                             background: 'rgba(239, 68, 68, 0.2)',
                             border: '1px solid #ef4444',
                             color: '#fca5a5',
-                            padding: '5px 12px',
+                            padding: isMobile ? '4px 8px' : '5px 12px',
                             borderRadius: '6px',
                             cursor: 'pointer',
-                            fontSize: '14px',
+                            fontSize: isMobile ? '12px' : '14px',
                             fontWeight: 'bold',
                             transition: 'all 0.2s',
                             display: 'flex',
@@ -209,7 +247,7 @@ export default function BattleView() {
                         }}
                     >
                         <span>🏳️</span>
-                        <span>전투 중단</span>
+                        <span>{isMobile ? '항복' : '전투 중단'}</span>
                     </button>
                 )}
             </div>
@@ -222,7 +260,7 @@ export default function BattleView() {
                 marginBottom: '20px',
                 padding: '0 20px',
                 position: 'relative',
-                overflow: 'visible'  // 플로팅 텍스트가 영역 밖으로 나갈 수 있도록
+                overflow: 'visible'
             }}>
                 {/* Floating Texts Overlay - 반드시 battle-arena 내부에서 렌더링되어야 함 */}
                 {animatingTexts.map(ft => {
@@ -316,8 +354,27 @@ export default function BattleView() {
                         justifyContent: 'center',
                         gap: '8px'
                     }}>
-                        <span>⚔️ {battleState.playerAtk}</span>
-                        <span>🛡️ {battleState.playerDef}</span>
+                        {(() => {
+                            const effectiveAtk = calculateEffectiveStat(battleState.playerAtk, battleState.playerStatusEffects || [], 'ATK')
+                            const effectiveDef = calculateEffectiveStat(battleState.playerDef, battleState.playerStatusEffects || [], 'DEF')
+
+                            return (
+                                <>
+                                    <span style={{
+                                        color: effectiveAtk > battleState.playerAtk ? '#4ade80' : effectiveAtk < battleState.playerAtk ? '#ef4444' : '#94a3b8',
+                                        transition: 'color 0.3s'
+                                    }}>
+                                        ⚔️ {effectiveAtk}
+                                    </span>
+                                    <span style={{
+                                        color: effectiveDef > battleState.playerDef ? '#4ade80' : effectiveDef < battleState.playerDef ? '#ef4444' : '#94a3b8',
+                                        transition: 'color 0.3s'
+                                    }}>
+                                        🛡️ {effectiveDef}
+                                    </span>
+                                </>
+                            )
+                        })()}
                         <span>{battleState.playerElement === 'FIRE' ? '🔥' :
                             battleState.playerElement === 'WATER' ? '💧' :
                                 battleState.playerElement === 'WIND' ? '🌪️' :
@@ -451,8 +508,27 @@ export default function BattleView() {
                         justifyContent: 'center',
                         gap: '8px'
                     }}>
-                        <span>⚔️ {battleState.enemyAtk}</span>
-                        <span>🛡️ {battleState.enemyDef}</span>
+                        {(() => {
+                            const effectiveAtk = calculateEffectiveStat(battleState.enemyAtk, battleState.enemyStatusEffects || [], 'ATK')
+                            const effectiveDef = calculateEffectiveStat(battleState.enemyDef, battleState.enemyStatusEffects || [], 'DEF')
+
+                            return (
+                                <>
+                                    <span style={{
+                                        color: effectiveAtk > battleState.enemyAtk ? '#4ade80' : effectiveAtk < battleState.enemyAtk ? '#ef4444' : '#94a3b8',
+                                        transition: 'color 0.3s'
+                                    }}>
+                                        ⚔️ {effectiveAtk}
+                                    </span>
+                                    <span style={{
+                                        color: effectiveDef > battleState.enemyDef ? '#4ade80' : effectiveDef < battleState.enemyDef ? '#ef4444' : '#94a3b8',
+                                        transition: 'color 0.3s'
+                                    }}>
+                                        🛡️ {effectiveDef}
+                                    </span>
+                                </>
+                            )
+                        })()}
                         <span>{battleState.enemyElement === 'FIRE' ? '🔥' :
                             battleState.enemyElement === 'WATER' ? '💧' :
                                 battleState.enemyElement === 'WIND' ? '🌪️' :

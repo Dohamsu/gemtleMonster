@@ -1005,7 +1005,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   addMaterial: async (materialId, quantity) => {
     const { userId, playerMaterials, batchSyncCallback } = get()
-    if (!userId) return
+    if (!userId || materialId === 'empty') return
 
     // 로컬 상태 먼저 업데이트 (즉시 반영)
     const currentAmount = playerMaterials[materialId] || 0
