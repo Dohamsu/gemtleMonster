@@ -44,72 +44,71 @@ export default function FacilityMobileView({
             position: 'relative',
             touchAction: 'pan-y' // 부모에서 none으로 막았으므로 여기서는 세로 스크롤 허용
         }}>
-            {/* Header */}
+            {/* Header - Shop Style Unification */}
             <header style={{
                 position: 'sticky',
                 top: 0,
-                zIndex: 40,
-                background: '#231f10f2',
-                backdropFilter: 'blur(8px)',
-                borderBottom: '1px solid #494122',
+                zIndex: 50,
+                background: 'rgba(28, 25, 23, 0.95)',
+                backdropFilter: 'blur(10px)',
+                borderBottom: '1px solid rgba(68, 68, 68, 0.5)',
                 margin: '0 -16px 20px -16px',
-                padding: '0 16px',
-                height: '64px',
+                padding: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                        width: '32px', height: '32px', borderRadius: '4px', background: 'rgba(247, 202, 24, 0.2)',
-                        border: '1px solid rgba(247, 202, 24, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#f7ca18'
-                    }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>castle</span>
-                    </div>
-                    <h1 style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold', margin: 0 }}>Kingdom Manager</h1>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                    {/* Back Button (Left) */}
                     <button onClick={onBack} style={{
-                        width: '36px', height: '36px', borderRadius: '50%', background: '#2a1810', border: '1px solid #494122',
-                        color: '#f0d090', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        width: '36px', height: '36px', borderRadius: '8px',
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#9ca3af',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer'
                     }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: 'currentColor' }}>
+                            <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="currentColor" />
+                        </svg>
                     </button>
+
+                    {/* Title */}
+                    <h1 style={{
+                        fontSize: '20px',
+                        fontWeight: 900,
+                        color: '#facc15',
+                        textTransform: 'uppercase',
+                        letterSpacing: '-0.02em',
+                        margin: 0,
+                        textShadow: '0 0 30px rgba(250, 204, 21, 0.2)',
+                        fontFamily: "'Space Grotesk', sans-serif"
+                    }}>
+                        시설 관리
+                    </h1>
+                </div>
+
+                {/* Gold Display (Right) */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    background: 'rgba(58, 53, 32, 0.6)',
+                    padding: '6px 12px',
+                    borderRadius: '9999px',
+                    border: '1px solid rgba(234, 179, 8, 0.3)',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+                }}>
+                    <img src="/assets/ui/gold_coin.png" alt="Gold" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+                    <span style={{
+                        color: 'white',
+                        fontWeight: 700,
+                        fontSize: '16px',
+                        fontFamily: "'Space Grotesk', sans-serif",
+                        letterSpacing: '0.02em'
+                    }}>
+                        {formatRes(getRes('gold'))}
+                    </span>
                 </div>
             </header>
-
-            {/* Resource Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                <ResourceCard
-                    label="Gold"
-                    value={formatRes(getRes('gold'))}
-                    icon="payments"
-                    color="#f7ca18"
-                    gradient="linear-gradient(to bottom, #3a2e18, #231f10)"
-                />
-                <ResourceCard
-                    label="Wood"
-                    value={formatRes(getRes('wood_branch'))}
-                    icon="forest"
-                    color="#cd853f"
-                    gradient="linear-gradient(to bottom, #2a1e15, #231f10)"
-                />
-                <ResourceCard
-                    label="Stone"
-                    value={formatRes(getRes('stone'))}
-                    icon="landscape"
-                    color="#a9a9a9"
-                    gradient="linear-gradient(to bottom, #252525, #1a1a1a)"
-                />
-                <ResourceCard
-                    label="Gems"
-                    value={formatRes(getRes('gem_fragment'))}
-                    icon="diamond"
-                    color="#ec4899"
-                    gradient="linear-gradient(to bottom, #2a1020, #1a0a10)"
-                />
-            </div>
 
             {/* Workforce Card */}
             <div style={{
@@ -126,12 +125,12 @@ export default function FacilityMobileView({
                     <span className="material-symbols-outlined">groups</span>
                 </div>
                 <div>
-                    <p style={{ color: 'rgba(240, 208, 144, 0.7)', fontSize: '12px', fontWeight: 'bold', margin: 0, textTransform: 'uppercase' }}>Workforce</p>
+                    <p style={{ color: 'rgba(240, 208, 144, 0.7)', fontSize: '12px', fontWeight: 'bold', margin: 0, textTransform: 'uppercase' }}>노동력 현황</p>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                         <span style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold' }}>{assignedCount}</span>
-                        <span style={{ color: '#7a7a7a', fontSize: '12px' }}>/ {playerMonsters.length} Total</span>
+                        <span style={{ color: '#7a7a7a', fontSize: '12px' }}>/ {playerMonsters.length} 전체 몬스터</span>
                     </div>
-                    <div style={{ color: '#0bda1d', fontSize: '10px', marginTop: '2px' }}>{availableCount} Available</div>
+                    <div style={{ color: '#0bda1d', fontSize: '10px', marginTop: '2px' }}>{availableCount}마리 배치 가능</div>
                 </div>
             </div>
 
@@ -142,7 +141,7 @@ export default function FacilityMobileView({
                     background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'
                 }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>home_work</span>
-                    Facilities
+                    시설
                     <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '2px', background: '#f7ca18', boxShadow: '0 0 10px rgba(247, 202, 24, 0.5)' }} />
                 </button>
                 <button style={{
@@ -150,14 +149,14 @@ export default function FacilityMobileView({
                     background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '8px'
                 }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>inventory_2</span>
-                    Inventory
+                    인벤토리
                 </button>
                 <button style={{
                     paddingBottom: '12px', color: '#7a7a7a', fontWeight: 'medium', fontSize: '14px',
                     background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '8px'
                 }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>science</span>
-                    Research
+                    연구
                 </button>
             </div>
 
@@ -190,29 +189,4 @@ export default function FacilityMobileView({
     )
 }
 
-function ResourceCard({ label, value, icon, color, gradient }: { label: string, value: string, icon: string, color: string, gradient: string }) {
-    return (
-        <div style={{
-            background: gradient,
-            padding: '16px',
-            borderRadius: '12px',
-            border: '1px solid #494122',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-            position: 'relative',
-            overflow: 'hidden'
-        }}>
-            <div style={{ width: '36px', height: '36px', background: 'rgba(73, 65, 34, 0.5)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: color }}>
-                <span className="material-symbols-outlined">{icon}</span>
-            </div>
-            <div>
-                <p style={{ color: 'rgba(240, 208, 144, 0.7)', fontSize: '10px', fontWeight: 'bold', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
-                <div style={{ display: 'baseline', gap: '4px' }}>
-                    <span style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold' }}>{value}</span>
-                </div>
-            </div>
-        </div>
-    )
-}
+

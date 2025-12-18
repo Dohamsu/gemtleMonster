@@ -7,9 +7,10 @@ interface PageLayoutProps {
     sidebar?: React.ReactNode
     onBack?: () => void
     title?: string
+    header?: React.ReactNode
 }
 
-export default function PageLayout({ children, sidebar, onBack, title }: PageLayoutProps) {
+export default function PageLayout({ children, sidebar, onBack, title, header }: PageLayoutProps) {
     const isMobile = isMobileView()
 
     return (
@@ -27,9 +28,17 @@ export default function PageLayout({ children, sidebar, onBack, title }: PageLay
             fontFamily: "'Inter', sans-serif"
         }}>
             {/* Header */}
-            <ResourceHeader onBack={onBack || (() => window.history.back())} />
+            {header ? header : <ResourceHeader onBack={onBack || (() => window.history.back())} />}
 
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+            <div style={{
+                display: 'flex',
+                flex: 1,
+                overflow: 'hidden',
+                width: '100%',
+                maxWidth: '1440px',
+                margin: '0 auto',
+                boxShadow: !isMobile ? '0 0 50px rgba(0,0,0,0.5)' : 'none' // Optional: adds depth to the centered column
+            }}>
                 {/* Sidebar (Optional) */}
                 {!isMobile && sidebar && (
                     <div style={{

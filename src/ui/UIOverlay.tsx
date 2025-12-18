@@ -138,8 +138,8 @@ export default function UIOverlay() {
             useGameStore.getState().setBatchFacilitySyncCallback((facilityId: string, newLevel: number) => {
                 queueFacilityUpdateRef.current(facilityId, newLevel)
             })
-            useGameStore.getState().setBatchAssignmentSyncCallback((facilityId: string, monsterId: string | null) => {
-                queueAssignmentUpdateRef.current(facilityId, monsterId)
+            useGameStore.getState().setBatchAssignmentSyncCallback((facilityId: string, monsterId: string | null, slotIndex: number) => {
+                queueAssignmentUpdateRef.current(facilityId, monsterId, slotIndex)
             })
         }
 

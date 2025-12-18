@@ -3,15 +3,19 @@ import { MONSTER_DATA } from '../../data/monsterData'
 
 interface MonsterAssignmentModalProps {
     facilityId: string
+    currentAssignments: (string | null)[]
     onClose: () => void
     onAssign: (monsterId: string | null) => void
 }
 
-export default function MonsterAssignmentModal({ facilityId, onClose, onAssign }: MonsterAssignmentModalProps) {
+export default function MonsterAssignmentModal({ facilityId, currentAssignments, onClose, onAssign }: MonsterAssignmentModalProps) {
     const { playerMonsters } = useAlchemyStore()
 
-    // Filter Production-related monsters (optional, showing all for now but sorting)
-    const sortedMonsters = [...playerMonsters].sort((a, b) => {
+    // Filter Production-related monsters
+    // Exclude monsters already assigned to OTHER slots in this facility
+    const availableMonsters = playerMonsters.filter(pm => !currentAssignments.includes(pm.id))
+
+    const sortedMonsters = [...availableMonsters].sort((a, b) => {
         const traitA = MONSTER_DATA[a.monster_id]?.factoryTrait
         const traitB = MONSTER_DATA[b.monster_id]?.factoryTrait
         const matchedA = traitA?.targetFacility === facilityId ? 1 : 0
@@ -59,8 +63,8 @@ export default function MonsterAssignmentModal({ facilityId, onClose, onAssign }
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <span className="material-symbols-outlined" style={{ color: '#f7ca18', fontSize: '24px' }}>person_add</span>
                         <div>
-                            <h3 style={{ margin: 0, fontSize: '18px', color: '#fff', fontWeight: 'bold', lineHeight: 1.2 }}>Assign Specialist</h3>
-                            <p style={{ margin: 0, fontSize: '12px', color: '#7a7a7a' }}>Select a worker to boost production</p>
+                            <h3 style={{ margin: 0, fontSize: '18px', color: '#fff', fontWeight: 'bold', lineHeight: 1.2 }}>동료 배치</h3>
+                            <p style={{ margin: 0, fontSize: '12px', color: '#7a7a7a' }}>생산을 도울 몬스터를 선택하세요</p>
                         </div>
                     </div>
                     <button
@@ -146,7 +150,7 @@ export default function MonsterAssignmentModal({ facilityId, onClose, onAssign }
                                             background: isMatched ? 'rgba(74, 222, 128, 0.1)' : 'transparent',
                                             padding: '2px 6px', borderRadius: '4px', border: isMatched ? '1px solid rgba(74, 222, 128, 0.2)' : 'none'
                                         }}>
-                                            +{data.factoryTrait.value}% Spd
+                                            {data.factoryTrait.effect.includes('속도') ? `+${data.factoryTrait.value}% Spd` : `+${data.factoryTrait.value}% Qty`}
                                         </div>
                                     )}
                                     <button style={{

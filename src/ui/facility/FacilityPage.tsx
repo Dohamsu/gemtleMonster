@@ -3,7 +3,8 @@ import { useGameStore } from '../../store/useGameStore'
 import { useFacilities } from '../../hooks/useFacilities'
 import { useAuth } from '../../hooks/useAuth'
 import { isMobileView } from '../../utils/responsiveUtils'
-import ResourceHeader from '../common/ResourceHeader'
+import PageLayout from '../common/PageLayout'
+import FacilityHeader from './FacilityHeader'
 import FacilitySidebar from './FacilitySidebar'
 import FacilityControlPanel from './FacilityControlPanel'
 import FacilityMobileView from './FacilityMobileView'
@@ -55,50 +56,33 @@ export default function FacilityPage() {
     }
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: '#1a0f0a',
-            color: '#f0d090',
-            display: 'flex',
-            flexDirection: 'column',
-            zIndex: 2000,
-            fontFamily: "'Inter', sans-serif"
-        }}>
-            {/* Header */}
-            <ResourceHeader onBack={() => setCanvasView('map')} />
-
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-                {/* Sidebar */}
+        <PageLayout
+            header={<FacilityHeader onBack={() => setCanvasView('map')} />}
+            sidebar={
                 <FacilitySidebar
                     facilities={masterFacilities}
                     playerFacilities={playerFacilities}
                     selectedId={selectedFacility?.id || null}
                     onSelect={setSelectedFacilityId}
                 />
-
-                {/* Main Content */}
-                <div style={{ flex: 1, padding: '20px', overflowY: 'auto', background: 'rgba(0,0,0,0.2)' }}>
-                    {loading ? (
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                            로딩 중...
-                        </div>
-                    ) : selectedFacility ? (
-                        <FacilityControlPanel
-                            facility={selectedFacility}
-                            currentLevel={currentLevel}
-                            onUpgrade={upgradeFacility}
-                        />
-                    ) : (
-                        <div style={{ textAlign: 'center', marginTop: '100px', opacity: 0.5 }}>
-                            시설을 선택해주세요
-                        </div>
-                    )}
+            }
+            onBack={() => setCanvasView('map')}
+        >
+            {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                    로딩 중...
                 </div>
-            </div>
-        </div>
+            ) : selectedFacility ? (
+                <FacilityControlPanel
+                    facility={selectedFacility}
+                    currentLevel={currentLevel}
+                    onUpgrade={upgradeFacility}
+                />
+            ) : (
+                <div style={{ textAlign: 'center', marginTop: '100px', opacity: 0.5 }}>
+                    시설을 선택해주세요
+                </div>
+            )}
+        </PageLayout>
     )
 }

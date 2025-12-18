@@ -39,9 +39,9 @@ const getFacilityIconUrl = (id: string, level: number): string | null => {
         case 'shop_building':
             return '/assets/facility/shop_building.png'
         case 'dungeon_dispatch':
-            return '/assets/facility/dungeon_entrance.png'
+            return '/assets/facility/dungeon_center.png'
         case 'training_ground':
-            return '/assets/facility/training_ground.png'
+            return '/assets/facility/training_center.png'
         case 'monster_farm':
             return '/assets/facility/monster_farm.png'
         default:

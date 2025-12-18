@@ -18,7 +18,7 @@ interface BatchSyncOptions {
  */
 interface FacilityUpdate {
   level?: number
-  assignedMonsterId?: string | null
+  assignedMonsterIds?: (string | null)[]
 }
 
 export function useBatchSync(
@@ -48,10 +48,17 @@ export function useBatchSync(
     }
   }, [])
 
-  const queueAssignmentUpdate = useCallback((facilityId: string, monsterId: string | null) => {
+  const queueAssignmentUpdate = useCallback((facilityId: string, monsterId: string | null, slotIndex: number) => {
+    const currentIds = pendingFacilityUpdates.current[facilityId]?.assignedMonsterIds || []
+    const newIds = [...currentIds]
+    while (newIds.length <= slotIndex) {
+      newIds.push(null)
+    }
+    newIds[slotIndex] = monsterId
+
     pendingFacilityUpdates.current[facilityId] = {
       ...pendingFacilityUpdates.current[facilityId],
-      assignedMonsterId: monsterId
+      assignedMonsterIds: newIds
     }
   }, [])
 
@@ -106,14 +113,14 @@ export function useBatchSync(
             facility_id: string
             updated_at: string
             current_level?: number
-            assigned_monster_id?: string | null
+            assigned_monster_ids?: (string | null)[]
           } = {
             user_id: userId,
             facility_id: facilityId,
             updated_at: new Date().toISOString()
           }
           if (update.level !== undefined) record.current_level = update.level
-          if (update.assignedMonsterId !== undefined) record.assigned_monster_id = update.assignedMonsterId
+          if (update.assignedMonsterIds !== undefined) record.assigned_monster_ids = update.assignedMonsterIds
           return record
         })
 

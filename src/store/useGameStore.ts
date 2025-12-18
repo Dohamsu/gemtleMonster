@@ -53,11 +53,11 @@ interface GameState {
     upgradeFacility: (facilityId: string, cost: Record<string, number>) => Promise<void>
 
     // Monster Assignment
-    assignedMonsters: Record<string, string | null>
-    assignMonster: (facilityId: string, monsterId: string | null) => void
-    setAssignedMonsters: (assignments: Record<string, string | null>) => void
-    batchAssignmentSyncCallback: ((facilityId: string, monsterId: string | null) => void) | null
-    setBatchAssignmentSyncCallback: (callback: ((facilityId: string, monsterId: string | null) => void) | null) => void
+    assignedMonsters: Record<string, (string | null)[]>
+    assignMonster: (facilityId: string, monsterId: string | null, slotIndex: number) => void
+    setAssignedMonsters: (assignments: Record<string, (string | null)[]>) => void
+    batchAssignmentSyncCallback: ((facilityId: string, monsterId: string | null, slotIndex: number) => void) | null
+    setBatchAssignmentSyncCallback: (callback: ((facilityId: string, monsterId: string | null, slotIndex: number) => void) | null) => void
 
     // Auto Collection
     lastCollectedAt: Record<string, number>
@@ -93,12 +93,30 @@ export const useGameStore = create<GameState>((set, get) => ({
     facilities: { 'herb_farm': 1, 'monster_farm': 1 }, // Default facilities
     setFacilities: (facilities) => set({ facilities }),
     assignedMonsters: {},
-    assignMonster: (facilityId, monsterId) => set(state => {
+    assignMonster: (facilityId, monsterId, slotIndex) => set(state => {
         if (state.batchAssignmentSyncCallback) {
-            state.batchAssignmentSyncCallback(facilityId, monsterId)
+            state.batchAssignmentSyncCallback(facilityId, monsterId, slotIndex)
         }
+
+        let currentAssignments = state.assignedMonsters[facilityId]
+
+        // Handle legacy state (string) safely
+        if (typeof currentAssignments === 'string') {
+            currentAssignments = [currentAssignments]
+        } else if (!Array.isArray(currentAssignments)) {
+            // Null or undefined
+            currentAssignments = []
+        }
+
+        // Ensure array is large enough
+        const newAssignments = [...currentAssignments]
+        while (newAssignments.length <= slotIndex) {
+            newAssignments.push(null)
+        }
+        newAssignments[slotIndex] = monsterId
+
         return {
-            assignedMonsters: { ...state.assignedMonsters, [facilityId]: monsterId }
+            assignedMonsters: { ...state.assignedMonsters, [facilityId]: newAssignments }
         }
     }),
     setAssignedMonsters: (assignedMonsters) => set({ assignedMonsters }),

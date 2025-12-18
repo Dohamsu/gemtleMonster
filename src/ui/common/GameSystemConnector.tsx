@@ -82,7 +82,7 @@ export default function GameSystemConnector() {
             useAlchemyStore.getState().setBatchSyncCallback((id: string, qty: number) => queueUpdateRef.current(id, qty))
             useAlchemyStore.getState().setForceSyncCallback(async () => await forceSyncNowRef.current())
             useGameStore.getState().setBatchFacilitySyncCallback((id: string, lv: number) => queueFacilityUpdateRef.current(id, lv))
-            useGameStore.getState().setBatchAssignmentSyncCallback((fId: string, mId: string | null) => queueAssignmentUpdateRef.current(fId, mId))
+            useGameStore.getState().setBatchAssignmentSyncCallback((fId: string, mId: string | null, sIdx: number) => queueAssignmentUpdateRef.current(fId, mId, sIdx))
         }
         return () => {
             useAlchemyStore.getState().setBatchSyncCallback(null)

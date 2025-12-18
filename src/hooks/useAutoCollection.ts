@@ -3,6 +3,7 @@ import { useGameStore } from '../store/useGameStore'
 import { supabase } from '../lib/supabase'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { MONSTER_DATA } from '../data/monsterData'
+import { getSeededRandom } from '../lib/prng'
 
 interface FacilityLevelStats {
     intervalSeconds: number
@@ -78,7 +79,13 @@ export function useAutoCollection(userId: string | undefined) {
                 let hasAnyDrop = false
                 if (stats.dropRates) {
                     for (let i = 0; i < actualCount; i++) {
-                        const random = Math.random()
+                        // Deterministic Seed: Base it on the EXACT production completion timestamp of THIS specific item
+                        const itemProductionTime = (lastCollectedAt[facilityKey] || Date.now()) + ((i + 1) * stats.intervalSeconds * 1000)
+                        const seed = Math.floor(itemProductionTime)
+
+                        // Use seeded random
+                        const random = getSeededRandom(seed)
+
                         let cumulative = 0
                         for (const [res, rate] of Object.entries(stats.dropRates)) {
                             cumulative += rate
@@ -127,22 +134,32 @@ export function useAutoCollection(userId: string | undefined) {
                 }
 
                 // --- Monster Bonus Calculation ---
+                // --- Monster Bonus Calculation ---
                 let bonusSpeed = 0 // Percentage reduction
                 let bonusAmount = 0 // Percentage increase
-                const assignedMonsterId = assignedMonsters[facilityId]
-                if (assignedMonsterId) {
-                    const playerMonster = playerMonsters.find(m => m.id === assignedMonsterId)
-                    if (playerMonster) {
-                        const monsterData = MONSTER_DATA[playerMonster.monster_id]
-                        if (monsterData?.factoryTrait && monsterData.factoryTrait.targetFacility === facilityId) {
-                            if (monsterData.factoryTrait.effect === '채굴 속도 증가' || monsterData.factoryTrait.effect === '채집 속도 증가' || monsterData.factoryTrait.effect === '생산 속도 증가') {
-                                bonusSpeed = monsterData.factoryTrait.value
-                            } else if (monsterData.factoryTrait.effect === '생산량 증가') {
-                                bonusAmount = monsterData.factoryTrait.value
+
+                // Get array of assigned monsters (new structure)
+                const assignedIds = assignedMonsters[facilityId]
+
+                if (Array.isArray(assignedIds)) {
+                    assignedIds.forEach(id => {
+                        if (!id) return
+                        const playerMonster = playerMonsters.find(m => m.id === id)
+                        if (playerMonster) {
+                            const monsterData = MONSTER_DATA[playerMonster.monster_id]
+                            if (monsterData?.factoryTrait && monsterData.factoryTrait.targetFacility === facilityId) {
+                                if (monsterData.factoryTrait.effect.includes('속도')) {
+                                    bonusSpeed += monsterData.factoryTrait.value
+                                } else if (monsterData.factoryTrait.effect === '생산량 증가') {
+                                    bonusAmount += monsterData.factoryTrait.value
+                                }
                             }
                         }
-                    }
+                    })
                 }
+
+                // Cap speed bonus to 90% to prevent infinite/instant production issues
+                if (bonusSpeed > 90) bonusSpeed = 90
 
                 const intervalMs = (stats.intervalSeconds * (1 - bonusSpeed / 100)) * 1000
                 const elapsed = now - lastTime

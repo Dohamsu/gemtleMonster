@@ -7,6 +7,7 @@ import { MATERIALS } from '../../data/alchemyData'
 import MonsterAssignmentModal from './MonsterAssignmentModal'
 import FacilityIcon from '../FacilityIcon'
 import ResourceIcon from '../ResourceIcon'
+import { useProductionPrediction } from '../../hooks/useProductionPrediction'
 
 interface FacilityControlPanelProps {
     facility: FacilityData
@@ -17,26 +18,45 @@ interface FacilityControlPanelProps {
 export default function FacilityControlPanel({ facility, currentLevel, onUpgrade }: FacilityControlPanelProps) {
     const { assignedMonsters, assignMonster, resources, lastCollectedAt } = useGameStore()
     const { playerMonsters, playerMaterials } = useAlchemyStore()
-    const [showMonsterModal, setShowMonsterModal] = useState(false)
+    const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null)
     const [progress, setProgress] = useState(0)
 
     const levelData = facility.levels.find(l => l.level === currentLevel)
     const nextLevelData = facility.levels.find(l => l.level === currentLevel + 1)
 
-    const assignedPlayerMonsterId = assignedMonsters[facility.id]
-    const assignedPlayerMonster = playerMonsters.find(m => m.id === assignedPlayerMonsterId)
-    const monsterData = assignedPlayerMonster ? MONSTER_DATA[assignedPlayerMonster.monster_id] : null
+    // Handle legacy state or array state safely
+    const rawAssignments = assignedMonsters[facility.id]
+    const currentAssignments: (string | null)[] = Array.isArray(rawAssignments)
+        ? rawAssignments
+        : (rawAssignments ? [rawAssignments] : [])
 
-    // Calculate Bonuses
+    // Ensure array size matches currentLevel (slots expand with level)
+    // We display slots 0 to currentLevel-1
+    const slots = Array.from({ length: currentLevel }, (_, i) => ({
+        index: i,
+        monsterId: currentAssignments[i] || null
+    }))
+
+    // Calculate Bonuses from ALL assigned monsters
     let bonusSpeed = 0
     let bonusAmount = 0
-    if (monsterData?.factoryTrait && monsterData.factoryTrait.targetFacility === facility.id) {
-        if (monsterData.factoryTrait.effect.includes('속도')) {
-            bonusSpeed = monsterData.factoryTrait.value
-        } else if (monsterData.factoryTrait.effect === '생산량 증가') {
-            bonusAmount = monsterData.factoryTrait.value
+
+    currentAssignments.forEach(mId => {
+        if (!mId) return
+        const pm = playerMonsters.find(m => m.id === mId)
+        if (pm) {
+            const mData = MONSTER_DATA[pm.monster_id]
+            if (mData?.factoryTrait && mData.factoryTrait.targetFacility === facility.id) {
+                if (mData.factoryTrait.effect.includes('속도')) {
+                    bonusSpeed += mData.factoryTrait.value
+                } else if (mData.factoryTrait.effect === '생산량 증가') {
+                    bonusAmount += mData.factoryTrait.value
+                }
+            }
         }
-    }
+    })
+
+    if (bonusSpeed > 90) bonusSpeed = 90
 
     // Effect for progress bar
     useEffect(() => {
@@ -60,6 +80,14 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
 
         return () => clearInterval(interval)
     }, [facility.id, currentLevel, levelData?.stats?.intervalSeconds, lastCollectedAt, bonusSpeed])
+
+    // Prediction
+    const predictedItem = useProductionPrediction({
+        facilityId: facility.id,
+        currentLevel,
+        stats: levelData?.stats,
+        lastCollectedAt: lastCollectedAt[`${facility.id}-${currentLevel}`]
+    })
 
     const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => {
         const owned = (resources[resId] ?? playerMaterials[resId] ?? 0)
@@ -92,7 +120,17 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                             <p style={{ margin: '5px 0 0 0', color: '#d0c0b0', fontStyle: 'italic' }}>&quot;{levelData?.name || facility.name}&quot;</p>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '0.8em', color: '#b0a090' }}>실시간 생산 현황</div>
+                            <div style={{ fontSize: '0.8em', color: '#b0a090', marginBottom: '4px' }}>실시간 생산 현황</div>
+                            {predictedItem ? (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '6px', marginBottom: '4px' }}>
+                                    <div style={{ width: '40px', height: '40px' }}>
+                                        <ResourceIcon resourceId={predictedItem} size={40} />
+                                    </div>
+                                    <span style={{ fontSize: '1em', color: '#fff', fontWeight: 'bold' }}>
+                                        {MATERIALS[predictedItem]?.name || predictedItem}
+                                    </span>
+                                </div>
+                            ) : null}
                             <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#f0d090' }}>{Math.floor(progress)}%</div>
                         </div>
                     </div>
@@ -104,56 +142,108 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '20px' }}>
                 {/* Production Stats Panel */}
-                <div style={{ background: '#2a1810', border: '1px solid #5a4030', borderRadius: '8px', padding: '20px' }}>
+                <div style={{ background: '#2a1810', border: '1px solid #5a4030', borderRadius: '8px', padding: '20px', height: 'fit-content' }}>
                     <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1em', color: '#f0d090', borderBottom: '1px solid #3d2b20', paddingBottom: '10px' }}>생산 효율 정보</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <StatRow label="기본 생산 간격" value={`${levelData?.stats?.intervalSeconds || 0}초`} />
-                        <StatRow label="몬스터 가속" value={`-${bonusSpeed}%`} color="#4ade80" />
+                        <StatRow label="몬스터 가속" value={`-${bonusSpeed}%`} color={bonusSpeed > 0 ? "#4ade80" : "#888"} />
                         <StatRow label="최종 생산 간격" value={`${((levelData?.stats?.intervalSeconds || 0) * (1 - bonusSpeed / 100)).toFixed(1)}초`} color="#facc15" />
                         <div style={{ height: '1px', background: '#3d2b20', margin: '5px 0' }} />
                         <StatRow label="기본 생산량" value={`x${levelData?.stats?.bundlesPerTick || 0}`} />
-                        <StatRow label="몬스터 보너스" value={`+${bonusAmount}%`} color="#4ade80" />
+                        <StatRow label="몬스터 보너스" value={`+${bonusAmount}%`} color={bonusAmount > 0 ? "#4ade80" : "#888"} />
                     </div>
-                </div>
 
-                {/* Monster Slot Panel */}
-                <div
-                    onClick={() => setShowMonsterModal(true)}
-                    style={{
-                        background: '#231610',
-                        border: assignedPlayerMonster ? '1px solid #facc15' : '1px dashed #5a4030',
-                        borderRadius: '8px',
-                        padding: '20px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#2a1c15'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#231610'}
-                >
-                    {assignedPlayerMonster ? (
+                    {/* Production List (Drop Rates) */}
+                    {levelData?.stats?.dropRates && Object.keys(levelData.stats.dropRates).length > 0 && (
                         <>
-                            <div style={{ fontSize: '3em', marginBottom: '10px' }}>{monsterData?.emoji}</div>
-                            <div style={{ color: '#facc15', fontWeight: 'bold' }}>{monsterData?.name}</div>
-                            <div style={{ fontSize: '0.8em', color: '#4ade80', marginTop: '5px' }}>
-                                {monsterData?.factoryTrait?.effect} +{monsterData?.factoryTrait?.value}%
+                            <div style={{ height: '1px', background: '#3d2b20', margin: '15px 0' }} />
+                            <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9em', color: '#b0a090', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#f7ca18' }}>inventory_2</span>
+                                생산 목록
+                            </h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {Object.entries(levelData.stats.dropRates).map(([resId, rate]) => (
+                                    <div key={resId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.2)', padding: '6px 10px', borderRadius: '6px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ width: '24px', height: '24px' }}>
+                                                <ResourceIcon resourceId={resId} size={24} />
+                                            </div>
+                                            <span style={{ fontSize: '0.9em', color: '#d0c0b0' }}>
+                                                {MATERIALS[resId]?.name || resId}
+                                            </span>
+                                        </div>
+                                        <span style={{ fontSize: '0.9em', color: '#facc15', fontWeight: 'bold' }}>
+                                            {(rate * 100).toFixed(0)}%
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
-                            <div style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '0.7em', color: '#b0a090' }}>교체하기</div>
-                        </>
-                    ) : (
-                        <>
-                            <div style={{ fontSize: '2.5em', color: '#5a4030', marginBottom: '10px' }}>➕</div>
-                            <div style={{ color: '#5a4030', fontWeight: 'bold' }}>몬스터 배치하기</div>
-                            <div style={{ fontSize: '0.8em', color: '#5a4030', marginTop: '5px' }}>생산 보너스를 받으세요</div>
                         </>
                     )}
+                </div>
+
+                {/* Monster Slot Panel (Grid) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.1em', color: '#f0d090', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className="material-symbols-outlined">groups</span>
+                        배치 슬롯 ({currentAssignments.filter(Boolean).length}/{currentLevel})
+                        {currentLevel < 5 && <span style={{ fontSize: '0.7em', color: '#7a7a7a', fontWeight: 'normal' }}> - 레벨업시 슬롯 추가</span>}
+                    </h3>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '15px' }}>
+                        {slots.map((slot) => {
+                            const assignedPM = slot.monsterId ? playerMonsters.find(m => m.id === slot.monsterId) : null
+                            const assignedData = assignedPM ? MONSTER_DATA[assignedPM.monster_id] : null
+
+                            return (
+                                <div
+                                    key={slot.index}
+                                    onClick={() => setActiveSlotIndex(slot.index)}
+                                    style={{
+                                        background: '#231610',
+                                        border: assignedData ? '1px solid #facc15' : '1px dashed #5a4030',
+                                        borderRadius: '8px',
+                                        padding: '15px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        position: 'relative',
+                                        minHeight: '140px',
+                                        aspectRatio: '1/1'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                >
+                                    {assignedData ? (
+                                        <>
+                                            <div style={{ width: '56px', height: '56px', marginBottom: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                                {assignedData.iconUrl ? (
+                                                    <img src={assignedData.iconUrl} alt={assignedData.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                ) : (
+                                                    <div style={{ fontSize: '3em' }}>{assignedData.emoji}</div>
+                                                )}
+                                            </div>
+                                            <div style={{ color: '#facc15', fontWeight: 'bold', fontSize: '0.9em', textAlign: 'center' }}>{assignedData.name}</div>
+                                            <div style={{ fontSize: '0.75em', color: '#4ade80', marginTop: '4px' }}>
+                                                {assignedData.factoryTrait?.value}% {assignedData.factoryTrait?.effect.includes('속도') ? '가속' : '증가'}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div style={{ fontSize: '2em', color: '#5a4030', marginBottom: '8px' }}>➕</div>
+                                            <div style={{ color: '#7a7a7a', fontSize: '0.9em' }}>빈 슬롯</div>
+                                            <div style={{ fontSize: '0.7em', color: '#5a4030', marginTop: '4px' }}>Level {slot.index + 1}</div>
+                                        </>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
             </div>
 
@@ -186,7 +276,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
 
                         <button
                             disabled={!canUpgrade}
-                            onClick={() => onUpgrade(facility.id, nextLevelData.upgradeCost)}
+                            onClick={() => onUpgrade(facility.id, nextLevelData!.upgradeCost)}
                             style={{
                                 width: '100%',
                                 padding: '15px',
@@ -210,17 +300,20 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
             </div>
 
             {/* Monster Selection Modal */}
-            {showMonsterModal && (
-                <MonsterAssignmentModal
-                    facilityId={facility.id}
-                    onClose={() => setShowMonsterModal(false)}
-                    onAssign={(monsterId: string | null) => {
-                        assignMonster(facility.id, monsterId)
-                        setShowMonsterModal(false)
-                    }}
-                />
-            )}
-        </div>
+            {
+                activeSlotIndex !== null && (
+                    <MonsterAssignmentModal
+                        facilityId={facility.id}
+                        currentAssignments={currentAssignments}
+                        onClose={() => setActiveSlotIndex(null)}
+                        onAssign={(monsterId: string | null) => {
+                            assignMonster(facility.id, monsterId, activeSlotIndex)
+                            setActiveSlotIndex(null)
+                        }}
+                    />
+                )
+            }
+        </div >
     )
 }
 
