@@ -74,7 +74,7 @@ function handleMapClick(
     setCanvasView: (view: CanvasView) => void,
     setDungeonModalOpen: (isOpen: boolean) => void
 ) {
-    // Check if clicking on alchemy workshop
+    // 1. Alchemy Workshop (Central Bottom)
     const workshopX = canvas.width * 0.5 - 64
     const workshopY = canvas.height * 0.7 - 64
 
@@ -83,7 +83,7 @@ function handleMapClick(
         return
     }
 
-    // Check if clicking on shop
+    // 2. Shop (Right Bottom)
     const shopX = canvas.width * 0.8 - 64
     const shopY = canvas.height * 0.7 - 64
 
@@ -92,7 +92,7 @@ function handleMapClick(
         return
     }
 
-    // Check if clicking on slime dungeon
+    // 3. Slime Dungeon (Left Bottom)
     const dungeonX = canvas.width * 0.15 - 64
     const dungeonY = canvas.height * 0.7 - 64
 
@@ -101,12 +101,14 @@ function handleMapClick(
         return
     }
 
-    // Check if clicking on monster farm
+    // 4. Monster Farm / Facilities (Central Middle)
+    // 기존에 farmX로 되어있던 부분을 시설 관리소로 활용
     const farmX = canvas.width * 0.5 - 64
     const farmY = canvas.height * 0.4 - 64
 
     if (x >= farmX && x <= farmX + 128 && y >= farmY && y <= farmY + 128) {
-        setCanvasView('monster_farm')
+        // 시설 관리소 페이지로 이동
+        setCanvasView('facility')
         return
     }
 }
