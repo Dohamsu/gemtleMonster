@@ -11,7 +11,7 @@ interface FacilityDetailModalProps {
     facility: FacilityData
     currentLevel: number
     onClose: () => void
-    onUpgrade: (id: string) => Promise<void>
+    onUpgrade: (id: string, cost: Record<string, number>) => Promise<void>
 }
 
 export default function FacilityDetailModal({
@@ -201,7 +201,7 @@ export default function FacilityDetailModal({
                                 })}
                             </div>
                             <button
-                                onClick={() => onUpgrade(facility.id)}
+                                onClick={() => onUpgrade(facility.id, nextLevelData.upgradeCost)}
                                 disabled={!Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => (resources[resId] ?? playerMaterials[resId] ?? 0) >= (amount as number))}
                                 style={{
                                     width: '100%', height: '48px', borderRadius: '8px',

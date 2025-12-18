@@ -9,7 +9,7 @@ interface FacilityMobileViewProps {
     facilities: FacilityData[]
     playerFacilities: Record<string, number>
     loading: boolean
-    upgradeFacility: (id: string) => Promise<void>
+    upgradeFacility: (id: string, cost: Record<string, number>) => Promise<void>
     onBack: () => void
 }
 
