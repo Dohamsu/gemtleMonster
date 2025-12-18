@@ -101,7 +101,13 @@ export function useBatchSync(
 
       if (Object.keys(facilitySnapshot).length > 0) {
         const facilityRecords = Object.entries(facilitySnapshot).map(([facilityId, update]) => {
-          const record: any = {
+          const record: {
+            user_id: string
+            facility_id: string
+            updated_at: string
+            current_level?: number
+            assigned_monster_id?: string | null
+          } = {
             user_id: userId,
             facility_id: facilityId,
             updated_at: new Date().toISOString()

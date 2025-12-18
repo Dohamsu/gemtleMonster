@@ -194,6 +194,15 @@ export default function ShopPage() {
         }
     }
 
+    const totalSelectedValue = useMemo(() => {
+        let total = 0
+        selectedItems.forEach(id => {
+            const item = sellItems.find(i => i.id === id)
+            if (item) total += item.price * (sellQuantities[id] || 1)
+        })
+        return total
+    }, [selectedItems, sellItems, sellQuantities])
+
     return (
         <PageLayout title="만물상점" onBack={() => setCanvasView('map')}>
             <div className="shop-container" style={{ padding: 0, height: 'auto', background: 'transparent' }}>
@@ -226,14 +235,7 @@ export default function ShopPage() {
                             selectedItems={selectedItems}
                             isBulkSelling={isBulkSelling}
                             isMobile={isMobile}
-                            totalSelectedValue={useMemo(() => {
-                                let total = 0
-                                selectedItems.forEach(id => {
-                                    const item = sellItems.find(i => i.id === id)
-                                    if (item) total += item.price * (sellQuantities[id] || 1)
-                                })
-                                return total
-                            }, [selectedItems, sellItems, sellQuantities])}
+                            totalSelectedValue={totalSelectedValue}
                             onToggleSelection={(id) => setSelectedItems(prev => {
                                 const newSet = new Set(prev)
                                 if (newSet.has(id)) newSet.delete(id)

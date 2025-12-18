@@ -30,7 +30,12 @@ export default function FacilityPage() {
         return (
             <div style={{
                 position: 'fixed',
-                inset: 0,
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                overflow: 'hidden',
+                touchAction: 'none',
                 background: '#1a1612',
                 display: 'flex',
                 flexDirection: 'column',

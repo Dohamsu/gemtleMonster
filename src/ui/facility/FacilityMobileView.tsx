@@ -41,7 +41,8 @@ export default function FacilityMobileView({
             overflowY: 'auto',
             background: '#1a1612',
             padding: '0 16px 80px 16px',
-            position: 'relative'
+            position: 'relative',
+            touchAction: 'pan-y' // 부모에서 none으로 막았으므로 여기서는 세로 스크롤 허용
         }}>
             {/* Header */}
             <header style={{
