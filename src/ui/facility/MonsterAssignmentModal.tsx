@@ -120,9 +120,13 @@ export default function MonsterAssignmentModal({ facilityId, onClose, onAssign }
                                         width: '48px', height: '48px', background: '#15120e',
                                         borderRadius: '8px', border: '1px solid #3a2e18',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: '24px'
+                                        fontSize: '24px', overflow: 'hidden'
                                     }}>
-                                        {data?.emoji}
+                                        {data?.iconUrl ? (
+                                            <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                        ) : (
+                                            data?.emoji
+                                        )}
                                     </div>
                                     <div>
                                         <div style={{ color: '#e0e0e0', fontWeight: 'bold', fontSize: '14px' }}>{data?.name}</div>

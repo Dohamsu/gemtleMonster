@@ -156,7 +156,18 @@ export default function FacilityDetailModal({
                     >
                         {assignedPlayerMonster ? (
                             <>
-                                <div style={{ fontSize: '24px' }}>{monsterData?.emoji}</div>
+                                <div style={{
+                                    width: '32px', height: '32px',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: '#15120e', borderRadius: '4px', border: '1px solid #3a2e18',
+                                    fontSize: '20px', overflow: 'hidden'
+                                }}>
+                                    {monsterData?.iconUrl ? (
+                                        <img src={monsterData.iconUrl} alt={monsterData.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    ) : (
+                                        monsterData?.emoji
+                                    )}
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: '#f0d090', fontSize: '14px', fontWeight: 'bold' }}>{monsterData?.name}</div>
                                     <div style={{ color: '#4ade80', fontSize: '10px' }}>{monsterData?.factoryTrait?.effect} +{monsterData?.factoryTrait?.value}%</div>
