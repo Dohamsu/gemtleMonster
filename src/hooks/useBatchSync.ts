@@ -63,7 +63,12 @@ export function useBatchSync(
     }
   }, [])
 
-  const queueLastCollectedUpdate = useCallback((facilityId: string, time: number) => {
+  const queueLastCollectedUpdate = useCallback((key: string, time: number) => {
+    // key 형식: "facilityId-level" (예: "herb_farm-4")
+    // facilityId만 추출 (마지막 '-숫자' 부분 제거)
+    const lastDashIndex = key.lastIndexOf('-')
+    const facilityId = lastDashIndex > 0 ? key.substring(0, lastDashIndex) : key
+
     pendingFacilityUpdates.current[facilityId] = {
       ...pendingFacilityUpdates.current[facilityId],
       lastCollectedAt: time
