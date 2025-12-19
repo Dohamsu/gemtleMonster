@@ -718,26 +718,49 @@ export const useGameStore = create<GameState>((set, get) => ({
         playerEntity.hp = playerStatusResult.updatedEntity.hp
         enemyEntity.hp = enemyStatusResult.updatedEntity.hp
 
-        if (playerStatusResult.damageTaken !== 0) {
+        if (playerStatusResult.damageTaken > 0) {
             floatingTexts.push({
                 id: `dot-player-${Date.now()}`,
                 x: 0, y: 0,
-                text: `${playerStatusResult.damageTaken > 0 ? '-' : '+'}${Math.abs(playerStatusResult.damageTaken)}`,
-                color: playerStatusResult.damageTaken > 0 ? '#a855f7' : '#4ade80',
+                text: `-${playerStatusResult.damageTaken}`,
+                color: '#a855f7',
                 life: 30,
                 target: 'PLAYER',
-                type: playerStatusResult.damageTaken > 0 ? 'DAMAGE' : 'HEAL'
+                type: 'DAMAGE'
             })
         }
-        if (enemyStatusResult.damageTaken !== 0) {
+        if (playerStatusResult.healingReceived > 0) {
+            floatingTexts.push({
+                id: `hot-player-${Date.now()}`,
+                x: 0, y: 0,
+                text: `+${playerStatusResult.healingReceived}`,
+                color: '#4ade80',
+                life: 30,
+                target: 'PLAYER',
+                type: 'HEAL'
+            })
+        }
+
+        if (enemyStatusResult.damageTaken > 0) {
             floatingTexts.push({
                 id: `dot-enemy-${Date.now()}`,
                 x: 0, y: 0,
-                text: `${enemyStatusResult.damageTaken > 0 ? '-' : '+'}${Math.abs(enemyStatusResult.damageTaken)}`,
-                color: enemyStatusResult.damageTaken > 0 ? '#a855f7' : '#4ade80',
+                text: `-${enemyStatusResult.damageTaken}`,
+                color: '#a855f7',
                 life: 30,
                 target: 'ENEMY',
-                type: enemyStatusResult.damageTaken > 0 ? 'DAMAGE' : 'HEAL'
+                type: 'DAMAGE'
+            })
+        }
+        if (enemyStatusResult.healingReceived > 0) {
+            floatingTexts.push({
+                id: `hot-enemy-${Date.now()}`,
+                x: 0, y: 0,
+                text: `+${enemyStatusResult.healingReceived}`,
+                color: '#4ade80',
+                life: 30,
+                target: 'ENEMY',
+                type: 'HEAL'
             })
         }
 
