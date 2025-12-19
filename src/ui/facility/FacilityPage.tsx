@@ -11,8 +11,8 @@ import FacilityMobileView from './FacilityMobileView'
 
 export default function FacilityPage() {
     const { user } = useAuth()
-    const { canvasView, setCanvasView } = useGameStore()
-    const { facilities: masterFacilities, playerFacilities, loading, upgradeFacility } = useFacilities(user?.id)
+    const { canvasView, setCanvasView, facilities, upgradeFacility: storeUpgrade } = useGameStore()
+    const { facilities: masterFacilities, loading } = useFacilities(user?.id)
     const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null)
     const [isMobile, setIsMobile] = useState(isMobileView())
 
@@ -25,7 +25,7 @@ export default function FacilityPage() {
     if (canvasView !== 'facility') return null
 
     const selectedFacility = masterFacilities.find(f => f.id === selectedFacilityId) || masterFacilities[0]
-    const currentLevel = (selectedFacilityId ? playerFacilities[selectedFacilityId] : playerFacilities[masterFacilities[0]?.id]) || 0
+    const currentLevel = (selectedFacilityId ? facilities[selectedFacilityId] : facilities[masterFacilities[0]?.id]) || 0
 
     if (isMobile) {
         return (
@@ -46,9 +46,9 @@ export default function FacilityPage() {
             }}>
                 <FacilityMobileView
                     facilities={masterFacilities}
-                    playerFacilities={playerFacilities}
+                    playerFacilities={facilities}
                     loading={loading}
-                    upgradeFacility={upgradeFacility}
+                    upgradeFacility={storeUpgrade}
                     onBack={() => setCanvasView('map')}
                 />
             </div>
@@ -61,7 +61,7 @@ export default function FacilityPage() {
             sidebar={
                 <FacilitySidebar
                     facilities={masterFacilities}
-                    playerFacilities={playerFacilities}
+                    playerFacilities={facilities}
                     selectedId={selectedFacility?.id || null}
                     onSelect={setSelectedFacilityId}
                 />
@@ -76,7 +76,7 @@ export default function FacilityPage() {
                 <FacilityControlPanel
                     facility={selectedFacility}
                     currentLevel={currentLevel}
-                    onUpgrade={upgradeFacility}
+                    onUpgrade={storeUpgrade}
                 />
             ) : (
                 <div style={{ textAlign: 'center', marginTop: '100px', opacity: 0.5 }}>

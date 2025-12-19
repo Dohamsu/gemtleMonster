@@ -40,13 +40,8 @@ function App() {
         if (Object.keys(dbFacilities).length > 0) {
             setFacilities(dbFacilities)
         }
-        if (Object.keys(dbAssignments).length > 0) {
-            // Convert legacy Record<string, string> to Record<string, string[]>
-            const converted: Record<string, (string | null)[]> = {}
-            Object.entries(dbAssignments).forEach(([key, value]) => {
-                converted[key] = value ? [value] : []
-            })
-            useGameStore.getState().setAssignedMonsters(converted)
+        if (dbAssignments && Object.keys(dbAssignments).length > 0) {
+            useGameStore.getState().setAssignedMonsters(dbAssignments)
         }
         if (Object.keys(dbProductionModes).length > 0) {
             Object.entries(dbProductionModes).forEach(([key, value]) => {

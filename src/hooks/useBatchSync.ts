@@ -121,6 +121,7 @@ export function useBatchSync(
             updated_at: string
             current_level?: number
             production_mode?: number
+            assigned_monster_id?: string | null
             assigned_monster_ids?: (string | null)[]
           } = {
             user_id: userId,
@@ -129,7 +130,11 @@ export function useBatchSync(
           }
           if (update.level !== undefined) record.current_level = update.level
           if (update.productionMode !== undefined) record.production_mode = update.productionMode
-          if (update.assignedMonsterIds !== undefined) record.assigned_monster_ids = update.assignedMonsterIds
+          if (update.assignedMonsterIds !== undefined) {
+            record.assigned_monster_ids = update.assignedMonsterIds
+            // 하위 호환성을 위해 첫 번째 슬롯의 몬스터를 assigned_monster_id에도 저장
+            record.assigned_monster_id = update.assignedMonsterIds[0] || null
+          }
           return record
         })
 

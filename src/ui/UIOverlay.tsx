@@ -55,6 +55,7 @@ export default function UIOverlay() {
     // ref를 사용하여 콜백 참조를 안정적으로 유지
     const queueUpdateRef = useRef(queueUpdate)
     const queueFacilityUpdateRef = useRef(queueFacilityUpdate)
+    const queueProductionModeUpdateRef = useRef(queueProductionModeUpdate)
     const queueAssignmentUpdateRef = useRef(queueAssignmentUpdate)
     const forceSyncNowRef = useRef(forceSyncNow)
 
@@ -62,9 +63,10 @@ export default function UIOverlay() {
     useEffect(() => {
         queueUpdateRef.current = queueUpdate
         queueFacilityUpdateRef.current = queueFacilityUpdate
+        queueProductionModeUpdateRef.current = queueProductionModeUpdate
         queueAssignmentUpdateRef.current = queueAssignmentUpdate
         forceSyncNowRef.current = forceSyncNow
-    }, [queueUpdate, queueFacilityUpdate, queueAssignmentUpdate, forceSyncNow])
+    }, [queueUpdate, queueFacilityUpdate, queueProductionModeUpdate, queueAssignmentUpdate, forceSyncNow])
 
     // 반응형 감지
     useEffect(() => {
@@ -142,7 +144,7 @@ export default function UIOverlay() {
                 queueAssignmentUpdateRef.current(facilityId, monsterId, slotIndex)
             })
             useGameStore.getState().setBatchProductionModeSyncCallback((facilityId: string, mode: number) => {
-                queueProductionModeUpdate(facilityId, mode)
+                queueProductionModeUpdateRef.current(facilityId, mode)
             })
         }
 
