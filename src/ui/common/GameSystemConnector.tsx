@@ -20,7 +20,7 @@ export default function GameSystemConnector() {
     const [showAccountLinkModal, setShowAccountLinkModal] = useState(false)
 
     // 배치 동기화 시스템
-    const { queueUpdate, queueFacilityUpdate, queueAssignmentUpdate, forceSyncNow } = useBatchSync(user?.id, {
+    const { queueUpdate, queueFacilityUpdate, queueAssignmentUpdate, queueProductionModeUpdate, queueLastCollectedUpdate, forceSyncNow } = useBatchSync(user?.id, {
         batchInterval: 30000,
         onSyncComplete: (success: boolean) => {
             if (success) console.log('✅ [SystemConnector] 배치 동기화 완료')
@@ -44,14 +44,18 @@ export default function GameSystemConnector() {
     const queueUpdateRef = useRef(queueUpdate)
     const queueFacilityUpdateRef = useRef(queueFacilityUpdate)
     const queueAssignmentUpdateRef = useRef(queueAssignmentUpdate)
+    const queueProductionModeUpdateRef = useRef(queueProductionModeUpdate)
+    const queueLastCollectedUpdateRef = useRef(queueLastCollectedUpdate)
     const forceSyncNowRef = useRef(forceSyncNow)
 
     useEffect(() => {
         queueUpdateRef.current = queueUpdate
         queueFacilityUpdateRef.current = queueFacilityUpdate
         queueAssignmentUpdateRef.current = queueAssignmentUpdate
+        queueProductionModeUpdateRef.current = queueProductionModeUpdate
+        queueLastCollectedUpdateRef.current = queueLastCollectedUpdate
         forceSyncNowRef.current = forceSyncNow
-    }, [queueUpdate, queueFacilityUpdate, queueAssignmentUpdate, forceSyncNow])
+    }, [queueUpdate, queueFacilityUpdate, queueAssignmentUpdate, queueProductionModeUpdate, queueLastCollectedUpdate, forceSyncNow])
 
     // 유저 프로필 관리
     useEffect(() => {
@@ -82,13 +86,17 @@ export default function GameSystemConnector() {
             useAlchemyStore.getState().setBatchSyncCallback((id: string, qty: number) => queueUpdateRef.current(id, qty))
             useAlchemyStore.getState().setForceSyncCallback(async () => await forceSyncNowRef.current())
             useGameStore.getState().setBatchFacilitySyncCallback((id: string, lv: number) => queueFacilityUpdateRef.current(id, lv))
-            useGameStore.getState().setBatchAssignmentSyncCallback((fId: string, mId: string | null, sIdx: number) => queueAssignmentUpdateRef.current(fId, mId, sIdx))
+            useGameStore.getState().setBatchAssignmentSyncCallback((fId: string, mIds: (string | null)[]) => queueAssignmentUpdateRef.current(fId, mIds))
+            useGameStore.getState().setBatchProductionModeSyncCallback((id: string, mode: number) => queueProductionModeUpdateRef.current(id, mode))
+            useGameStore.getState().setBatchLastCollectedSyncCallback((id: string, time: number) => queueLastCollectedUpdateRef.current(id, time))
         }
         return () => {
             useAlchemyStore.getState().setBatchSyncCallback(null)
             useAlchemyStore.getState().setForceSyncCallback(null)
             useGameStore.getState().setBatchFacilitySyncCallback(null)
             useGameStore.getState().setBatchAssignmentSyncCallback(null)
+            useGameStore.getState().setBatchProductionModeSyncCallback(null)
+            useGameStore.getState().setBatchLastCollectedSyncCallback(null)
         }
     }, [user?.id])
 

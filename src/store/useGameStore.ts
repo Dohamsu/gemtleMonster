@@ -56,8 +56,8 @@ interface GameState {
     assignedMonsters: Record<string, (string | null)[]>
     assignMonster: (facilityId: string, monsterId: string | null, slotIndex: number) => void
     setAssignedMonsters: (assignments: Record<string, (string | null)[]>) => void
-    batchAssignmentSyncCallback: ((facilityId: string, monsterId: string | null, slotIndex: number) => void) | null
-    setBatchAssignmentSyncCallback: (callback: ((facilityId: string, monsterId: string | null, slotIndex: number) => void) | null) => void
+    batchAssignmentSyncCallback: ((facilityId: string, monsterIds: (string | null)[]) => void) | null
+    setBatchAssignmentSyncCallback: (callback: ((facilityId: string, monsterIds: (string | null)[]) => void) | null) => void
 
     // Production Mode (High Efficiency for Low Tier)
     productionModes: Record<string, number>
@@ -72,6 +72,8 @@ interface GameState {
     setBatchFacilitySyncCallback: (callback: ((id: string, level: number) => void) | null) => void
     batchProductionModeSyncCallback: ((id: string, mode: number) => void) | null
     setBatchProductionModeSyncCallback: (callback: ((id: string, mode: number) => void) | null) => void
+    batchLastCollectedSyncCallback: ((id: string, time: number) => void) | null
+    setBatchLastCollectedSyncCallback: (callback: ((id: string, time: number) => void) | null) => void
 
     // Consumable Auto-Use Settings
     consumableSlots: ConsumableSlot[]
@@ -100,10 +102,6 @@ export const useGameStore = create<GameState>((set, get) => ({
     setFacilities: (facilities) => set({ facilities }),
     assignedMonsters: {},
     assignMonster: (facilityId, monsterId, slotIndex) => set(state => {
-        if (state.batchAssignmentSyncCallback) {
-            state.batchAssignmentSyncCallback(facilityId, monsterId, slotIndex)
-        }
-
         let currentAssignments = state.assignedMonsters[facilityId]
 
         // Handle legacy state (string) safely
@@ -120,6 +118,11 @@ export const useGameStore = create<GameState>((set, get) => ({
             newAssignments.push(null)
         }
         newAssignments[slotIndex] = monsterId
+
+        if (state.batchAssignmentSyncCallback) {
+            console.log(`📡 [GameStore] 배치 동기화 콜백 호출: ${facilityId}`, newAssignments)
+            state.batchAssignmentSyncCallback(facilityId, newAssignments)
+        }
 
         return {
             assignedMonsters: { ...state.assignedMonsters, [facilityId]: newAssignments }
@@ -138,6 +141,18 @@ export const useGameStore = create<GameState>((set, get) => ({
             productionModes: { ...state.productionModes, [facilityId]: level }
         }
     }),
+
+    lastCollectedAt: {},
+    setLastCollectedAt: (id, time) => set(state => {
+        if (state.batchLastCollectedSyncCallback) {
+            state.batchLastCollectedSyncCallback(id, time)
+        }
+        return {
+            lastCollectedAt: { ...state.lastCollectedAt, [id]: time }
+        }
+    }),
+    batchLastCollectedSyncCallback: null,
+    setBatchLastCollectedSyncCallback: (callback) => set({ batchLastCollectedSyncCallback: callback }),
 
     batchFacilitySyncCallback: null,
     setBatchFacilitySyncCallback: (callback) => set({ batchFacilitySyncCallback: callback }),
@@ -237,10 +252,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 
 
-    lastCollectedAt: {},
-    setLastCollectedAt: (id, time) => set(state => ({
-        lastCollectedAt: { ...state.lastCollectedAt, [id]: time }
-    })),
 
     battleState: null,
 
