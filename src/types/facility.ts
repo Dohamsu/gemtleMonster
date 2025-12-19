@@ -17,6 +17,7 @@ export interface FacilityStats {
 
 export interface FacilityLevel {
   level: number
+  name?: string
   stats: FacilityStats
   upgradeCost: Record<string, number>
 }

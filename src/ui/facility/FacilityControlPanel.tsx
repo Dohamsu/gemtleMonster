@@ -16,13 +16,19 @@ interface FacilityControlPanelProps {
 }
 
 export default function FacilityControlPanel({ facility, currentLevel, onUpgrade }: FacilityControlPanelProps) {
-    const { assignedMonsters, assignMonster, resources, lastCollectedAt } = useGameStore()
+    const { assignedMonsters, assignMonster, resources, lastCollectedAt, productionModes, setProductionMode } = useGameStore()
     const { playerMonsters, playerMaterials } = useAlchemyStore()
     const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null)
     const [progress, setProgress] = useState(0)
 
     const levelData = facility.levels.find(l => l.level === currentLevel)
     const nextLevelData = facility.levels.find(l => l.level === currentLevel + 1)
+
+    // Production Mode Logic
+    const currentModeLevel = productionModes[facility.id] || currentLevel
+    const modeLevelData = facility.levels.find(l => l.level === currentModeLevel)
+    const effectiveDropRates = modeLevelData?.stats?.dropRates || {}
+    const isHighEfficiency = currentModeLevel < currentLevel
 
     // Handle legacy state or array state safely
     const rawAssignments = assignedMonsters[facility.id]
@@ -85,7 +91,10 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
     const predictedItem = useProductionPrediction({
         facilityId: facility.id,
         currentLevel,
-        stats: levelData?.stats,
+        stats: levelData?.stats ? {
+            ...levelData.stats,
+            dropRates: effectiveDropRates
+        } : undefined,
         lastCollectedAt: lastCollectedAt[`${facility.id}-${currentLevel}`]
     })
 
@@ -117,7 +126,33 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
                         <div>
                             <h2 style={{ margin: 0, fontSize: '2em', color: '#facc15' }}>{facility.name} <span style={{ fontSize: '0.5em', color: '#b0a090', verticalAlign: 'middle' }}>Lv.{currentLevel}</span></h2>
-                            <p style={{ margin: '5px 0 0 0', color: '#d0c0b0', fontStyle: 'italic' }}>&quot;{levelData?.name || facility.name}&quot;</p>
+                            <p style={{ margin: '5px 0 0 0', color: '#d0c0b0', fontStyle: 'italic' }}>
+                                &quot;{levelData?.name || facility.name}&quot;
+                            </p>
+
+                            {/* Production Mode Selector */}
+                            <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '12px', color: '#b0a090' }}>생산 단계:</span>
+                                <select
+                                    value={currentModeLevel}
+                                    onChange={(e) => setProductionMode(facility.id, Number(e.target.value))}
+                                    style={{
+                                        background: '#231f10', color: '#facc15', border: '1px solid #494122',
+                                        borderRadius: '6px', padding: '4px 8px', fontSize: '12px', fontWeight: 'bold'
+                                    }}
+                                >
+                                    {facility.levels.filter(l => l.level <= currentLevel).map(l => (
+                                        <option key={l.level} value={l.level}>
+                                            Lv.{l.level} {l.name || facility.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {isHighEfficiency && (
+                                    <span style={{ fontSize: '0.8em', color: '#facc15', background: 'rgba(250, 204, 21, 0.1)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(250, 204, 21, 0.3)' }}>
+                                        고효율 모드 (Lv.{currentLevel} 속도)
+                                    </span>
+                                )}
+                            </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                             <div style={{ fontSize: '0.8em', color: '#b0a090', marginBottom: '4px' }}>실시간 생산 현황</div>
@@ -164,7 +199,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                                 생산 목록
                             </h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {Object.entries(levelData.stats.dropRates).map(([resId, rate]) => (
+                                {Object.entries(effectiveDropRates).map(([resId, rate]) => (
                                     <div key={resId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.2)', padding: '6px 10px', borderRadius: '6px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <div style={{ width: '24px', height: '24px' }}>
@@ -276,7 +311,11 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
 
                         <button
                             disabled={!canUpgrade}
-                            onClick={() => onUpgrade(facility.id, nextLevelData!.upgradeCost)}
+                            onClick={() => {
+                                if (nextLevelData) {
+                                    onUpgrade(facility.id, nextLevelData.upgradeCost)
+                                }
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '15px',

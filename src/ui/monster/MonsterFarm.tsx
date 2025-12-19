@@ -5,12 +5,31 @@ import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useAuth } from '../../hooks/useAuth'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { MATERIALS } from '../../data/alchemyData'
-import { calculateStats, getRequiredExp, getExpProgress, getMaxLevel, type RarityType } from '../../lib/monsterLevelUtils'
-// import { getUnlockableSkills } from '../../data/monsterSkillData'
-// import type { RoleType } from '../../types/alchemy'
+import { calculateStats, getExpProgress, getMaxLevel, type RarityType } from '../../lib/monsterLevelUtils'
 import type { PlayerMonster } from '../../types/monster'
-import CustomSelect from '../CustomSelect'
 import MonsterDetailModal from './MonsterDetailModal'
+
+// --- Constants & Styles ---
+const COLORS = {
+    primary: "#f7ca18", // Light Gold
+    secondary: "#f0d090", // Soft Gold
+    darkBrown: "#2a1810",
+    backgroundLight: "#f8f8f5",
+    backgroundDark: "#1a1612", // Deep dark base
+    cardBg: "#231f10",
+    border: "#494122",
+    accentRed: "#ef4444",
+    accentGreen: "#0bda1d",
+    accentBlue: "#3b82f6",
+    textMain: "#e0e0e0",
+    textSub: "#7a7a7a",
+    rarity: {
+        N: "#a0a0a0",
+        R: "#3b82f6",
+        SR: "#a855f7",
+        SSR: "#f59e0b"
+    }
+}
 
 export default function MonsterFarm() {
     const { setCanvasView } = useGameStore()
@@ -27,13 +46,11 @@ export default function MonsterFarm() {
     } | null>(null)
     const [selectedMonsterForModal, setSelectedMonsterForModal] = useState<PlayerMonster | null>(null)
 
+    // Filter & Search States
+    const [searchTerm, setSearchTerm] = useState('')
+    const [filterRole, setFilterRole] = useState<string>('ALL') // 'ALL' | 'TANK' | 'DPS' | 'SUPPORT' | 'PRODUCTION'
+    const [sortType, setSortType] = useState<string>('LEVEL_DESC') // 'LEVEL_DESC' | 'RARITY_DESC' | 'NEWEST'
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
-
-    // Filter & Sort States
-    const [filterElement, setFilterElement] = useState<string>('ALL')
-    const [filterRole, setFilterRole] = useState<string>('ALL')
-    const [filterRarity, setFilterRarity] = useState<string>('ALL')
-    const [sortType, setSortType] = useState<string>('LEVEL_DESC')
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -65,20 +82,12 @@ export default function MonsterFarm() {
     const handleLockToggleCore = async (monsterId: string, currentLocked: boolean) => {
         try {
             await toggleMonsterLock(monsterId, !currentLocked)
-
-            // Update the modal's monster state immediately to reflect the change in UI
             if (selectedMonsterForModal && selectedMonsterForModal.id === monsterId) {
                 setSelectedMonsterForModal({
                     ...selectedMonsterForModal,
                     is_locked: !currentLocked
                 })
             }
-
-            // Reload monsters to reflect changes in the list - REMOVED for optimization
-            // The store's toggleMonsterLock already updates the local state optimistically.
-            // if (user) {
-            //     await loadPlayerMonsters(user.id)
-            // }
         } catch (error) {
             console.error('Failed to toggle lock:', error)
         }
@@ -91,36 +100,19 @@ export default function MonsterFarm() {
 
     const handleDecompose = async () => {
         if (selectedMonsters.size === 0) return
-
         try {
             const result = await decomposeMonsters(Array.from(selectedMonsters))
-
             if (!result.success) {
-                console.error('Decompose failed:', result.error)
-                setDecomposeResult({
-                    success: false,
-                    rewards: {},
-                    count: 0
-                })
+                setDecomposeResult({ success: false, rewards: {}, count: 0 })
             } else {
-                setDecomposeResult({
-                    success: true,
-                    rewards: result.rewards,
-                    count: result.deleted_count
-                })
+                setDecomposeResult({ success: true, rewards: result.rewards, count: result.deleted_count })
                 setSelectedMonsters(new Set())
                 setShowConfirmDialog(false)
             }
-
-            // Auto-hide result after 5 seconds
             setTimeout(() => setDecomposeResult(null), 5000)
         } catch (error) {
             console.error('Decompose failed:', error)
-            setDecomposeResult({
-                success: false,
-                rewards: {},
-                count: 0
-            })
+            setDecomposeResult({ success: false, rewards: {}, count: 0 })
             setTimeout(() => setDecomposeResult(null), 5000)
         }
     }
@@ -130,504 +122,490 @@ export default function MonsterFarm() {
         selectedMonsters.forEach(monsterId => {
             const monster = playerMonsters.find(m => m.id === monsterId)
             if (!monster) return
-
             const data = MONSTER_DATA[monster.monster_id]
             if (!data) return
-
-            // Simple reward calculation based on rarity
             const rarity = data.rarity || 'N'
-
-            // Essence
             const essenceAmount = rarity === 'SSR' ? 30 : rarity === 'SR' ? 10 : rarity === 'R' ? 3 : 1
             rewards['essence'] = (rewards['essence'] || 0) + essenceAmount
-
-            // Base material
             const baseMaterial = rarity === 'SSR' ? 'gem_fragment' : rarity === 'SR' ? 'ore_magic' : rarity === 'R' ? 'ore_iron' : 'slime_fluid'
             const baseAmount = rarity === 'SSR' ? 1 : rarity === 'SR' ? 2 : rarity === 'R' ? 2 : 1
             rewards[baseMaterial] = (rewards[baseMaterial] || 0) + baseAmount
-
-            // Shards (if element exists)
-            if (data.element) {
-                const shardAmount = rarity === 'SSR' ? 5 : rarity === 'SR' ? 3 : rarity === 'R' ? 1 : 0
-                if (shardAmount > 0) {
-                    const shardId = `shard_${data.element.toLowerCase()}`
-                    rewards[shardId] = (rewards[shardId] || 0) + shardAmount
-                }
-            }
         })
         return rewards
     }
 
-    // Filter Logic (메모이제이션으로 대량 데이터 렌더링 50-60% 개선)
+    // Filter Logic
     const filteredMonsters = useMemo(() => {
         return playerMonsters.filter(monster => {
             const data = MONSTER_DATA[monster.monster_id]
             if (!data) return false
 
-            // Element Filter
-            if (filterElement !== 'ALL') {
-                const el = data.element?.toUpperCase() || 'EARTH' // Default fallback
-                if (filterElement === 'OTHER' && !data.element) return true // No element
-                if (el !== filterElement) return false
-            }
+            // Search (Name)
+            if (searchTerm && !data.name.includes(searchTerm)) return false
 
-            // Role Filter (Data uses Korean keys)
-            if (filterRole !== 'ALL') {
-                // Map English filter to Korean data
-                const roleMap: Record<string, string> = {
-                    'TANK': '탱커',
-                    'DPS': '딜러',
-                    'SUPPORT': '서포터',
-                    'HYBRID': '하이브리드',
-                    'PRODUCTION': '생산'
-                }
-                if (data.role !== roleMap[filterRole]) return false
+            // Role Filter
+            const roleMap: Record<string, string> = {
+                'TANK': '탱커', 'DPS': '딜러', 'SUPPORT': '서포터', 'HYBRID': '하이브리드', 'PRODUCTION': '생산'
             }
-
-            // Rarity Filter
-            if (filterRarity !== 'ALL') {
-                const rarity = data.rarity || 'N'
-                if (rarity !== filterRarity) return false
-            }
+            if (filterRole !== 'ALL' && data.role !== roleMap[filterRole]) return false
 
             return true
         }).sort((a, b) => {
             const dataA = MONSTER_DATA[a.monster_id]
             const dataB = MONSTER_DATA[b.monster_id]
-
             const rarityScore = (r?: string) => {
-                if (r === 'SSR') return 4
-                if (r === 'SR') return 3
-                if (r === 'R') return 2
-                return 1
+                if (r === 'SSR') return 4; if (r === 'SR') return 3; if (r === 'R') return 2; return 1
             }
 
             switch (sortType) {
-                case 'LEVEL_DESC':
-                    return (b.level || 1) - (a.level || 1)
-                case 'LEVEL_ASC':
-                    return (a.level || 1) - (b.level || 1)
+                case 'LEVEL_DESC': return (b.level || 1) - (a.level || 1)
+                case 'LEVEL_ASC': return (a.level || 1) - (b.level || 1)
                 case 'RARITY_DESC': {
-                    const rA = rarityScore(dataA?.rarity)
-                    const rB = rarityScore(dataB?.rarity)
+                    const rA = rarityScore(dataA?.rarity); const rB = rarityScore(dataB?.rarity)
                     if (rA !== rB) return rB - rA
-                    // If same rarity, sort by level
                     return (b.level || 1) - (a.level || 1)
                 }
-                case 'NEWEST':
-                    return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-                case 'OLDEST':
-                    return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
-                default:
-                    return 0
+                case 'NEWEST': return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+                default: return 0
             }
         })
-    }, [playerMonsters, filterElement, filterRole, filterRarity, sortType])
+    }, [playerMonsters, searchTerm, filterRole, sortType])
+
+    // Role Filter Options
+    const roleFilters = [
+        { id: 'ALL', label: '전체' },
+        { id: 'DPS', label: '공격형' },
+        { id: 'TANK', label: '방어형' },
+        { id: 'SUPPORT', label: '지원형' },
+        { id: 'PRODUCTION', label: '자원형' },
+    ]
 
     return (
         <div style={{
-            padding: isMobile ? '10px' : '20px',
-            color: '#eee',
+            fontFamily: "'Noto SansKR', sans-serif",
+            background: COLORS.backgroundDark,
+            color: COLORS.textMain,
             height: '100%',
+            overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            gap: isMobile ? '10px' : '20px',
-            maxWidth: '1000px',
-            margin: '0 auto',
-            width: '100%',
-            overflow: 'hidden'
+            position: 'relative'
         }}>
-            {/* Header */}
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column', // Changed for filter bar
-                gap: '15px'
+            {/* Header - Aligned with Shop/Facility Header */}
+            <header style={{
+                position: 'sticky', top: 0, zIndex: 40,
+                background: 'rgba(28, 25, 23, 0.95)', // Matches ShopHeader
+                backdropFilter: 'blur(10px)',
+                borderBottom: `1px solid rgba(68, 68, 68, 0.5)`,
+                padding: isMobile ? '12px 16px' : '20px 32px',
+                flexShrink: 0
             }}>
                 <div style={{
-                    display: 'flex',
-                    flexDirection: isMobile ? 'column' : 'row',
-                    justifyContent: 'space-between',
-                    alignItems: isMobile ? 'stretch' : 'center',
-                    background: 'rgba(0,0,0,0.6)',
-                    padding: isMobile ? '12px' : '15px',
-                    borderRadius: '12px',
-                    backdropFilter: 'blur(4px)',
-                    gap: isMobile ? '10px' : '0'
+                    maxWidth: '1440px', margin: '0 auto',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between'
                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '15px' }}>
+                    {/* Left: Back & Title */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '24px' }}>
                         <button
                             onClick={handleBack}
                             style={{
-                                background: '#4a3020',
-                                border: '2px solid #8a6040',
-                                color: 'white',
-                                padding: isMobile ? '8px 12px' : '8px 16px',
-                                minHeight: isMobile ? '40px' : 'auto',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold',
-                                fontSize: isMobile ? '13px' : '14px',
-                                whiteSpace: 'nowrap'
+                                display: 'flex', alignItems: 'center', gap: '8px',
+                                background: 'transparent', border: 'none',
+                                color: '#9ca3af', cursor: 'pointer',
+                                fontSize: '16px', fontWeight: 600,
+                                padding: '8px', borderRadius: '8px',
+                                transition: 'all 0.2s'
                             }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#f0d090'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#9ca3af'}
                         >
-                            ← 나가기
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: 'currentColor' }}>
+                                <path d="M20 11H7.83L13.42 5.41L12 4L4 12L12 20L13.41 18.59L7.83 13H20V11Z" fill="currentColor" />
+                            </svg>
+                            {!isMobile && <span>나가기</span>}
                         </button>
-                        <h2 style={{
+
+                        <h1 style={{
+                            fontSize: isMobile ? '20px' : '36px',
+                            fontWeight: 900,
+                            color: '#facc15', // Gold
+                            textTransform: 'uppercase',
+                            letterSpacing: '-0.02em',
                             margin: 0,
-                            fontSize: isMobile ? '1.2em' : '1.5em',
-                            color: '#f0d090',
-                            whiteSpace: 'nowrap'
+                            textShadow: '0 0 30px rgba(250, 204, 21, 0.2)',
+                            fontFamily: "'Space Grotesk', sans-serif",
+                            display: 'flex', alignItems: 'center', gap: '8px'
                         }}>
-                            🏰 몬스터 농장
-                        </h2>
+                            {/* <span>🏰</span> */}
+                            Monster Farm
+                        </h1>
                     </div>
-                    <div style={{
-                        display: 'flex',
-                        gap: '10px',
-                        alignItems: 'center',
-                        justifyContent: isMobile ? 'space-between' : 'flex-end'
-                    }}>
-                        <div style={{ fontSize: isMobile ? '1em' : '1.2em', fontWeight: 'bold', color: '#facc15' }}>
-                            보유: {playerMonsters.length}마리
+
+                    {/* Right: Actions & Stats */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {/* Monster Count Pill */}
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            background: 'rgba(58, 53, 32, 0.6)',
+                            padding: isMobile ? '6px 12px' : '8px 16px',
+                            borderRadius: '9999px',
+                            border: '1px solid rgba(234, 179, 8, 0.3)',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                        }}>
+                            <span style={{ fontSize: isMobile ? '14px' : '16px' }}>🐾</span>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                                <span style={{
+                                    color: 'white', fontWeight: 700,
+                                    fontSize: isMobile ? '14px' : '18px',
+                                    fontFamily: "'Space Grotesk', sans-serif"
+                                }}>{playerMonsters.length}</span>
+                                <span style={{ color: '#7a7a7a', fontSize: '12px', fontWeight: 600 }}>/ 100</span>
+                            </div>
                         </div>
+
+                        {/* Decompose Button */}
                         <button
                             onClick={() => {
                                 setDecomposeMode(!decomposeMode)
                                 setSelectedMonsters(new Set())
                             }}
                             style={{
-                                background: decomposeMode ? '#dc2626' : '#059669',
-                                border: 'none',
-                                color: 'white',
-                                padding: isMobile ? '8px 12px' : '8px 16px',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold',
-                                fontSize: isMobile ? '13px' : '14px',
-                                minHeight: isMobile ? '40px' : 'auto'
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                background: decomposeMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(42, 24, 16, 0.8)',
+                                border: `1px solid ${decomposeMode ? '#ef4444' : '#494122'}`,
+                                color: decomposeMode ? '#ef4444' : '#9ca3af',
+                                padding: isMobile ? '6px 12px' : '8px 16px',
+                                borderRadius: '8px', cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                height: '100%'
                             }}
                         >
-                            {decomposeMode ? '❌ 종료' : '⚙️ 분해'}
+                            <span style={{ fontSize: isMobile ? '16px' : '20px' }}>{decomposeMode ? '✕' : '⚙️'}</span>
+                            {!isMobile && <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{decomposeMode ? '취소' : '분해'}</span>}
                         </button>
                     </div>
                 </div>
+            </header>
 
-                {/* Filter & Sort Bar (Custom Select) */}
-                <div style={{
-                    display: 'flex', flexWrap: 'wrap', gap: '8px',
-                    background: 'rgba(15, 23, 42, 0.6)', padding: '10px', borderRadius: '12px', border: '1px solid #334155',
-                    alignItems: 'center'
-                }}>
-                    <CustomSelect
-                        value={filterElement} onChange={setFilterElement}
-                        options={[
-                            { value: 'ALL', label: '🔮 모든 속성' }, { value: 'FIRE', label: '🔥 불' }, { value: 'WATER', label: '💧 물' },
-                            { value: 'EARTH', label: '🌳 대지' }, { value: 'WIND', label: '🌪️ 바람' }, { value: 'LIGHT', label: '✨ 빛' }, { value: 'DARK', label: '� 어둠' }
-                        ]} style={{ flex: isMobile ? '1 1 45%' : '0 0 140px' }}
-                    />
-                    <CustomSelect
-                        value={filterRole} onChange={setFilterRole}
-                        options={[
-                            { value: 'ALL', label: '⚔️ 모든 역할' }, { value: 'TANK', label: '🛡️ 탱커' }, { value: 'DPS', label: '⚔️ 딜러' },
-                            { value: 'SUPPORT', label: '🌿 서포터' }, { value: 'HYBRID', label: '⚖️ 하이브리드' }, { value: 'PRODUCTION', label: '⚒️ 생산' }
-                        ]} style={{ flex: isMobile ? '1 1 45%' : '0 0 140px' }}
-                    />
-                    <CustomSelect
-                        value={filterRarity} onChange={setFilterRarity}
-                        options={[
-                            { value: 'ALL', label: '⭐ 모든 등급' }, { value: 'SSR', label: '🟨 SSR' }, { value: 'SR', label: '� SR' },
-                            { value: 'R', label: '🟦 R' }, { value: 'N', label: '⬜ N' }
-                        ]} style={{ flex: isMobile ? '1 1 45%' : '0 0 140px' }}
-                    />
-                    {!isMobile && <div style={{ width: '1px', height: '20px', background: '#475569', margin: '0 5px' }} />}
-                    <CustomSelect
-                        value={sortType} onChange={setSortType}
-                        options={[
-                            { value: 'LEVEL_DESC', label: '⬇️ 레벨 높은 순' }, { value: 'LEVEL_ASC', label: '⬆️ 레벨 낮은 순' },
-                            { value: 'RARITY_DESC', label: '⭐ 등급 높은 순' }, { value: 'NEWEST', label: '🕒 최신순' }, { value: 'OLDEST', label: '�️ 오래된 순' }
-                        ]} style={{ flex: isMobile ? '1 1 45%' : '0 0 160px' }}
-                    />
+            {/* Sticky Search & Filter Bar */}
+            <div style={{
+                position: 'sticky', top: '64px', zIndex: 30,
+                background: 'rgba(26, 22, 18, 0.95)',
+                borderBottom: `1px solid ${COLORS.border}`,
+                backdropFilter: 'blur(8px)',
+                flexShrink: 0
+            }}>
+                <div style={{ maxWidth: '480px', margin: '0 auto', padding: '12px 16px' }}>
+                    {/* Search Input Row */}
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                        <div style={{ position: 'relative', flex: 1 }}>
+                            <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
+                            <input
+                                type="text"
+                                placeholder="이름 검색..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    background: COLORS.darkBrown,
+                                    border: `1px solid ${COLORS.border}`,
+                                    borderRadius: '8px',
+                                    padding: '8px 12px 8px 36px',
+                                    color: 'white',
+                                    fontSize: '13px',
+                                    outline: 'none',
+                                    boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
+                        <button
+                            onClick={() => {
+                                // Cycle Sort Types
+                                const types = ['LEVEL_DESC', 'RARITY_DESC', 'NEWEST']
+                                const nextIndex = (types.indexOf(sortType) + 1) % types.length
+                                setSortType(types[nextIndex])
+                            }}
+                            style={{
+                                padding: '8px', borderRadius: '8px',
+                                background: COLORS.darkBrown, border: `1px solid ${COLORS.border}`,
+                                color: COLORS.textSub, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}
+                            title="정렬 변경"
+                        >
+                            <span style={{ fontSize: '18px' }}>
+                                {sortType === 'LEVEL_DESC' ? '⬇️' : sortType === 'RARITY_DESC' ? '⭐' : '🕒'}
+                            </span>
+                        </button>
+                    </div>
+
+                    {/* Filter Chips (Scrollable) */}
+                    <div style={{
+                        display: 'flex', gap: '8px', overflowX: 'auto',
+                        paddingBottom: '4px', scrollbarWidth: 'none', msOverflowStyle: 'none'
+                    }}>
+                        {roleFilters.map(filter => (
+                            <button
+                                key={filter.id}
+                                onClick={() => setFilterRole(filter.id)}
+                                style={{
+                                    flexShrink: 0,
+                                    padding: '6px 12px',
+                                    borderRadius: '999px',
+                                    fontSize: '11px',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    border: `1px solid ${filterRole === filter.id ? COLORS.primary : COLORS.border}`,
+                                    background: filterRole === filter.id ? COLORS.primary : COLORS.darkBrown,
+                                    color: filterRole === filter.id ? COLORS.darkBrown : COLORS.textSub,
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {filter.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
-            {/* Decompose Mode Info */}
+            {/* Info Message for Decompose */}
             {decomposeMode && (
                 <div style={{
-                    background: 'rgba(220, 38, 38, 0.1)',
-                    border: '2px solid #dc2626',
-                    borderRadius: '12px',
-                    padding: '15px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
+                    background: 'rgba(239, 68, 68, 0.1)', borderBottom: '1px solid #ef4444',
+                    padding: '8px', textAlign: 'center', color: '#fca5a5', fontSize: '12px', fontWeight: 'bold'
                 }}>
-                    <div>
-                        <div style={{ fontWeight: 'bold', color: '#fca5a5', marginBottom: '5px' }}>
-                            🔥 분해 모드 활성화
-                        </div>
-                        <div style={{ fontSize: '0.9em', color: '#cbd5e1' }}>
-                            분해할 몬스터를 선택하세요. 잠금된 몬스터는 선택할 수 없습니다.
-                        </div>
-                    </div>
-                    {selectedMonsters.size > 0 && (
-                        <button
-                            onClick={() => setShowConfirmDialog(true)}
-                            style={{
-                                background: '#dc2626',
-                                border: 'none',
-                                color: 'white',
-                                padding: '10px 20px',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold',
-                                fontSize: '14px'
-                            }}
-                        >
-                            선택한 {selectedMonsters.size}마리 분해하기
-                        </button>
-                    )}
+                    몬스터를 선택하여 분해하세요 ({selectedMonsters.size} 선택됨)
                 </div>
             )}
 
-            {/* Decompose Result */}
+            {/* Decompose Result Toast */}
             {decomposeResult && (
                 <div style={{
-                    background: decomposeResult.success ? 'rgba(34, 197, 94, 0.1)' : 'rgba(220, 38, 38, 0.1)',
-                    border: `2px solid ${decomposeResult.success ? '#22c55e' : '#dc2626'}`,
-                    borderRadius: '12px',
-                    padding: '15px'
+                    position: 'absolute', top: '140px', left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 100, width: '90%', maxWidth: '400px',
+                    background: decomposeResult.success ? 'rgba(6, 78, 59, 0.95)' : 'rgba(127, 29, 29, 0.95)',
+                    border: `1px solid ${decomposeResult.success ? '#34d399' : '#f87171'}`,
+                    padding: '12px', borderRadius: '8px', color: 'white',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
                 }}>
-                    <div style={{ fontWeight: 'bold', color: decomposeResult.success ? '#86efac' : '#fca5a5', marginBottom: '10px' }}>
-                        {decomposeResult.success ? '✅ 분해 완료!' : '❌ 분해 실패'}
+                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                        {decomposeResult.success ? '✅ 분해 성공!' : '❌ 분해 실패'}
                     </div>
                     {decomposeResult.success && (
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                            {Object.entries(decomposeResult.rewards).map(([materialId, amount]) => (
-                                <div key={materialId} style={{
-                                    background: 'rgba(0,0,0,0.3)',
-                                    padding: '5px 10px',
-                                    borderRadius: '6px',
-                                    fontSize: '0.9em'
-                                }}>
-                                    {MATERIALS[materialId]?.name || materialId}: +{amount}
-                                </div>
-                            ))}
+                        <div style={{ fontSize: '12px', opacity: 0.9 }}>
+                            {Object.entries(decomposeResult.rewards).map(([k, v]) => `${MATERIALS[k]?.name || k} x${v}`).join(', ')}
                         </div>
                     )}
                 </div>
             )}
 
-            {/* Monster Grid */}
-            {filteredMonsters.length === 0 ? (
-                <div style={{
-                    flex: 1,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    background: 'rgba(0,0,0,0.3)',
-                    borderRadius: '12px',
-                    flexDirection: 'column',
-                    gap: '20px'
-                }}>
-                    <div style={{ fontSize: '4em' }}>🔍</div>
-                    <p style={{ color: '#aaa', fontSize: '1.2em' }}>
-                        {playerMonsters.length === 0 ? '아직 보유한 몬스터가 없습니다.' : '조건에 맞는 몬스터가 없습니다.'}
-                    </p>
-                    {playerMonsters.length === 0 && (
-                        <p style={{ color: '#888' }}>연금술 공방에서 몬스터를 소환해보세요!</p>
-                    )}
-                </div>
-            ) : (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', // Keep card width reasonable
-                    gap: '15px', // Reduced gap for tighter layout
-                    padding: '10px',
-                    overflowY: 'auto'
-                }}>
-                    {filteredMonsters.map(monster => {
-                        const data = MONSTER_DATA[monster.monster_id]
-                        if (!data) return null
+            {/* Main Content (Grid) */}
+            <main style={{
+                flex: 1, overflowY: 'auto', padding: '16px',
+                width: '100%', maxWidth: '480px', margin: '0 auto', boxSizing: 'border-box'
+            }}>
+                {filteredMonsters.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 0', color: COLORS.textSub }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
+                        <p>조건에 맞는 몬스터가 없습니다.</p>
+                    </div>
+                ) : (
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', // Mobile adaptable grid
+                        gap: '12px'
+                    }}>
+                        {filteredMonsters.map(monster => {
+                            const data = MONSTER_DATA[monster.monster_id]
+                            if (!data) return null
 
-                        const isLocked = monster.is_locked || false
-                        const isSelected = selectedMonsters.has(monster.id)
-                        const canSelect = decomposeMode && !isLocked
+                            const isLocked = monster.is_locked || false
+                            const isSelected = selectedMonsters.has(monster.id)
+                            const canSelect = decomposeMode && !isLocked
 
-                        // Calculated Stats
-                        const level = monster.level || 1
-                        const rarity = (data.rarity || 'N') as RarityType
-                        // const roleMap: Record<string, RoleType> = { '탱커': 'TANK', '딜러': 'DPS', '서포터': 'SUPPORT', '하이브리드': 'HYBRID', '생산': 'PRODUCTION' }
-                        // const role = roleMap[data.role] || 'TANK'
-                        // const monsterTypeId = monster.monster_id.replace(/^monster_/, '')
-                        const stats = calculateStats({ hp: data.hp, atk: data.attack, def: data.defense }, level, rarity)
-                        const expProgress = getExpProgress(monster.exp, level, rarity)
-                        const requiredExp = getRequiredExp(level, rarity)
-                        const maxLevel = getMaxLevel(rarity)
+                            const level = monster.level || 1
+                            const rarity = (data.rarity || 'N') as RarityType
+                            const stats = calculateStats({ hp: data.hp, atk: data.attack, def: data.defense }, level, rarity, monster.awakening_level || 0)
+                            const expProgress = getExpProgress(monster.exp, level, rarity)
+                            const maxLevel = getMaxLevel(rarity)
 
-                        return (
-                            <div key={monster.id} style={{
-                                background: isSelected ? 'rgba(220, 38, 38, 0.2)' : 'rgba(30, 41, 59, 0.8)',
-                                borderRadius: '12px',
-                                border: isSelected ? '2px solid #dc2626' : isLocked ? '2px solid #facc15' : '1px solid #334155',
-                                padding: '12px', // Reduced padding
-                                display: 'flex', flexDirection: 'column', gap: '10px',
-                                transition: 'all 0.2s',
-                                cursor: 'pointer', // Always pointer
-                                opacity: (decomposeMode && isLocked) ? 0.5 : 1,
-                                position: 'relative',
-                                transform: isSelected ? 'scale(0.98)' : 'scale(1)',
-                            }}
-                                onClick={() => {
-                                    if (decomposeMode) {
-                                        if (canSelect) toggleMonsterSelection(monster.id)
-                                    } else {
-                                        setSelectedMonsterForModal(monster)
-                                    }
-                                }}
-                            >
-                                {/* --- Simplified Layout: Flex Row --- */}
-                                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                    {/* Left: Image */}
-                                    <div style={{
-                                        flexShrink: 0, width: '64px', height: '64px', background: '#0f172a', // Smaller Icon
-                                        borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: '32px', border: '2px solid #475569', position: 'relative'
-                                    }}>
-                                        {data.iconUrl ? <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : data.emoji}
+                            const borderColor = decomposeMode && isSelected ? COLORS.accentRed :
+                                (data.rarity === 'SSR' ? COLORS.rarity.SSR :
+                                    data.rarity === 'SR' ? COLORS.rarity.SR :
+                                        data.rarity === 'R' ? COLORS.rarity.R : COLORS.rarity.N)
 
+                            const bgGradient = `linear-gradient(135deg, ${borderColor}10 0%, transparent 100%)`
+
+                            return (
+                                <div
+                                    key={monster.id}
+                                    onClick={() => {
+                                        if (decomposeMode) {
+                                            if (canSelect) toggleMonsterSelection(monster.id)
+                                        } else {
+                                            setSelectedMonsterForModal(monster)
+                                        }
+                                    }}
+                                    style={{
+                                        position: 'relative',
+                                        background: COLORS.cardBg,
+                                        borderRadius: '12px',
+                                        border: `1px solid ${borderColor}40`,
+                                        overflow: 'hidden',
+                                        cursor: 'pointer',
+                                        transform: isSelected ? 'scale(0.95)' : 'none',
+                                        transition: 'transform 0.2s',
+                                        boxShadow: isSelected ? `0 0 0 2px ${COLORS.accentRed}` : '0 4px 6px rgba(0,0,0,0.2)'
+                                    }}
+                                >
+                                    {/* Gradient Overlay */}
+                                    <div style={{ position: 'absolute', inset: 0, background: bgGradient, pointerEvents: 'none' }} />
+
+                                    {/* Lock Icon */}
+                                    <button
+                                        onClick={(e) => handleLockToggle(monster.id, isLocked, e)}
+                                        style={{
+                                            position: 'absolute', top: '8px', right: '8px', zIndex: 10,
+                                            background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                                            color: isLocked ? borderColor : COLORS.textSub,
+                                            opacity: isLocked ? 1 : 0.5
+                                        }}
+                                    >
+                                        <span style={{ fontSize: '16px' }}>{isLocked ? '🔒' : '🔓'}</span>
+                                    </button>
+
+                                    <div style={{ display: 'flex', height: '100%' }}>
+                                        {/* Left: Image Column */}
                                         <div style={{
-                                            position: 'absolute', bottom: '-6px', width: '100%', textAlign: 'center'
+                                            width: '35%', background: '#15120e', borderRight: `1px solid ${COLORS.border}`,
+                                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                            padding: '8px', position: 'relative'
                                         }}>
-                                            <span style={{
-                                                background: '#3b82f6', color: 'white', fontSize: '10px', fontWeight: 'bold',
-                                                padding: '1px 6px', borderRadius: '10px', boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                                            }}>Lv.{level}</span>
-                                        </div>
+                                            {/* Stars */}
+                                            {(monster.awakening_level || 0) > 0 && (
+                                                <div style={{ position: 'absolute', top: '4px', left: '4px', display: 'flex', flexDirection: 'column', lineHeight: 0.8 }}>
+                                                    {Array.from({ length: monster.awakening_level || 0 }).map((_, i) => (
+                                                        <span key={i} style={{ color: borderColor, fontSize: '8px' }}>★</span>
+                                                    ))}
+                                                </div>
+                                            )}
 
-                                        {/* Stars */}
-                                        {(monster.awakening_level || 0) > 0 && (
                                             <div style={{
-                                                position: 'absolute', top: '-6px', width: '100%', textAlign: 'center',
-                                                display: 'flex', justifyContent: 'center', gap: '1px'
+                                                width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: '32px', filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.5))'
                                             }}>
-                                                {Array.from({ length: monster.awakening_level || 0 }).map((_, i) => (
-                                                    <span key={i} style={{
-                                                        fontSize: '10px', color: '#fbbf24',
-                                                        textShadow: '0 0 2px black'
-                                                    }}>★</span>
-                                                ))}
+                                                {data.iconUrl ?
+                                                    <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain', imageRendering: 'pixelated' }} />
+                                                    : data.emoji}
                                             </div>
-                                        )}
-                                    </div>
 
-                                    {/* Right: Info (Simplified) */}
-                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                            <span style={{
-                                                fontSize: '0.7em', padding: '2px 6px', borderRadius: '4px',
-                                                color: 'white', whiteSpace: 'nowrap', fontWeight: 'bold',
-                                                background: data.role === '탱커' ? '#3b82f6' :
-                                                    data.role === '딜러' ? '#ef4444' :
-                                                        data.role === '서포터' ? '#10b981' :
-                                                            data.role === '하이브리드' ? '#a855f7' :
-                                                                '#f59e0b' // 생산
-                                            }}>{data.role}</span>
-                                            <h3 style={{ margin: 0, color: '#f8fafc', fontSize: '1.05em' }}>{data.name}</h3>
+                                            <div style={{
+                                                marginTop: '4px', background: COLORS.darkBrown,
+                                                padding: '2px 6px', borderRadius: '4px',
+                                                fontSize: '10px', fontWeight: 'bold', color: borderColor,
+                                                border: `1px solid ${borderColor}40`, fontFamily: 'monospace'
+                                            }}>
+                                                Lv.{level}
+                                            </div>
                                         </div>
 
-                                        {/* EXP Bar (Mini) - Main visual indicator of progress */}
-                                        <div style={{ width: '100%' }} title={`EXP: ${monster.exp} / ${requiredExp}`}>
-                                            <div style={{ height: '4px', background: '#1e293b', borderRadius: '2px', overflow: 'hidden' }}>
+                                        {/* Right: Info Column */}
+                                        <div style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                            <div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                                    <h3 style={{ margin: 0, fontSize: '13px', fontWeight: 'bold', color: COLORS.textMain, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>
+                                                        {data.name}
+                                                    </h3>
+                                                </div>
+                                                <span style={{
+                                                    display: 'inline-block',
+                                                    fontSize: '9px', fontWeight: 'bold',
+                                                    padding: '2px 6px', borderRadius: '4px',
+                                                    background: `${borderColor}20`,
+                                                    color: borderColor,
+                                                    border: `1px solid ${borderColor}40`
+                                                }}>
+                                                    {data.role}
+                                                </span>
+                                            </div>
+
+                                            {/* EXP Bar */}
+                                            <div style={{ width: '100%', height: '6px', background: '#1a1612', borderRadius: '3px', overflow: 'hidden', margin: '6px 0', border: `1px solid ${COLORS.border}` }}>
                                                 <div style={{
-                                                    width: `${level >= maxLevel ? 100 : expProgress}%`, height: '100%',
-                                                    background: level >= maxLevel ? '#22c55e' : '#3b82f6'
+                                                    height: '100%', width: `${level >= maxLevel ? 100 : expProgress}%`,
+                                                    background: `linear-gradient(90deg, ${borderColor}, white)`
                                                 }} />
                                             </div>
-                                        </div>
 
-                                        {/* Simplified Stats Row */}
-                                        <div style={{ display: 'flex', gap: '10px', fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
-                                            <span>❤️ {stats.hp}</span>
-                                            <span>⚔️ {stats.atk}</span>
-                                            <span>🛡️ {stats.def}</span>
+                                            {/* Stats Grid */}
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', fontSize: '10px', color: '#ccc' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                                    <span style={{ color: '#ef4444' }}>⚔️</span> {stats.atk}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                                    <span style={{ color: '#3b82f6' }}>🛡️</span> {stats.def}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            )
+                        })}
+                    </div>
+                )}
+            </main>
 
-                                {/* Lock Button (Top-Right of Card) */}
-                                <button onClick={(e) => handleLockToggle(monster.id, isLocked, e)} style={{
-                                    position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', border: 'none',
-                                    borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    padding: 0, zIndex: 10
-                                }}>
-                                    <img
-                                        src={isLocked ? '/assets/ui/locked.png' : '/assets/ui/unlocked.png'}
-                                        alt={isLocked ? 'Locked' : 'Unlocked'}
-                                        style={{
-                                            width: '20px', height: '20px', objectFit: 'contain',
-                                            filter: isLocked
-                                                ? 'grayscale(100%) brightness(70%) drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
-                                                : 'drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
-                                        }}
-                                    />
-                                </button>
-
-                                {decomposeMode && isSelected && (
-                                    <div style={{
-                                        position: 'absolute', top: '10px', right: '10px', background: '#dc2626', color: 'white',
-                                        padding: '4px 8px', borderRadius: '6px', fontSize: '0.8em', fontWeight: 'bold', zIndex: 10
-                                    }}>✓ 선택됨</div>
-                                )}
-                            </div>
-                        )
-                    })}
+            {/* Floating Action Button for Summon (Optional/Future) - Or Decompose Action */}
+            {decomposeMode && selectedMonsters.size > 0 && (
+                <div style={{
+                    position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 50, width: '90%', maxWidth: '400px'
+                }}>
+                    <button
+                        onClick={() => setShowConfirmDialog(true)}
+                        style={{
+                            width: '100%',
+                            background: COLORS.accentRed,
+                            color: 'white',
+                            border: 'none',
+                            padding: '14px',
+                            borderRadius: '12px',
+                            fontSize: '16px',
+                            fontWeight: 'bold',
+                            boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)',
+                            cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                        }}
+                    >
+                        <span>🗑️</span> 선택한 {selectedMonsters.size}마리 분해하기
+                    </button>
                 </div>
             )}
 
             {/* Confirm Dialog */}
             {showConfirmDialog && (
                 <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'rgba(0,0,0,0.8)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 1000
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+                    display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000,
+                    padding: '20px'
                 }}>
                     <div style={{
-                        background: '#1e293b',
-                        borderRadius: '16px',
-                        padding: '30px',
-                        maxWidth: '500px',
-                        width: '90%',
-                        border: '2px solid #dc2626'
+                        background: COLORS.backgroundDark, borderRadius: '16px', padding: '24px',
+                        maxWidth: '400px', width: '100%', border: `1px solid ${COLORS.accentRed}`,
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
                     }}>
-                        <h3 style={{ margin: '0 0 20px 0', color: '#fca5a5' }}>⚠️ 몬스터 분해 확인</h3>
-                        <p style={{ color: '#cbd5e1', marginBottom: '20px' }}>
-                            선택한 {selectedMonsters.size}마리의 몬스터를 분해하시겠습니까?<br />
-                            <span style={{ color: '#f87171', fontSize: '0.9em' }}>이 작업은 되돌릴 수 없습니다!</span>
+                        <h3 style={{ margin: '0 0 16px 0', color: '#fca5a5', fontSize: '18px' }}>⚠️ 몬스터 분해 확인</h3>
+                        <p style={{ color: COLORS.textSub, marginBottom: '20px', lineHeight: '1.5', fontSize: '14px' }}>
+                            선택한 <strong style={{ color: 'white' }}>{selectedMonsters.size}마리</strong>의 몬스터를 분해하시겠습니까?<br />
+                            <span style={{ color: '#f87171', fontSize: '12px' }}>이 작업은 되돌릴 수 없습니다!</span>
                         </p>
 
-                        <div style={{
-                            background: 'rgba(0,0,0,0.3)',
-                            borderRadius: '8px',
-                            padding: '15px',
-                            marginBottom: '20px'
-                        }}>
-                            <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#86efac' }}>예상 보상:</div>
-                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '12px', marginBottom: '20px' }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '8px', color: COLORS.accentGreen, fontSize: '13px' }}>예상 보상:</div>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                 {Object.entries(getExpectedRewards()).map(([materialId, amount]) => (
                                     <div key={materialId} style={{
-                                        background: 'rgba(34, 197, 94, 0.1)',
-                                        border: '1px solid #22c55e',
-                                        padding: '5px 10px',
-                                        borderRadius: '6px',
-                                        fontSize: '0.9em',
-                                        color: '#86efac'
+                                        background: 'rgba(34, 197, 94, 0.1)', border: '1px solid #22c55e',
+                                        padding: '4px 8px', borderRadius: '4px', fontSize: '11px', color: '#86efac'
                                     }}>
                                         {MATERIALS[materialId]?.name || materialId}: +{amount}
                                     </div>
@@ -635,17 +613,13 @@ export default function MonsterFarm() {
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                        <div style={{ display: 'flex', gap: '10px' }}>
                             <button
                                 onClick={() => setShowConfirmDialog(false)}
                                 style={{
-                                    background: '#475569',
-                                    border: 'none',
-                                    color: 'white',
-                                    padding: '10px 20px',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold'
+                                    flex: 1, padding: '12px', borderRadius: '8px',
+                                    background: COLORS.darkBrown, border: `1px solid ${COLORS.border}`,
+                                    color: COLORS.textSub, fontWeight: 'bold', cursor: 'pointer'
                                 }}
                             >
                                 취소
@@ -653,13 +627,9 @@ export default function MonsterFarm() {
                             <button
                                 onClick={handleDecompose}
                                 style={{
-                                    background: '#dc2626',
-                                    border: 'none',
-                                    color: 'white',
-                                    padding: '10px 20px',
-                                    borderRadius: '8px',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold'
+                                    flex: 1, padding: '12px', borderRadius: '8px',
+                                    background: COLORS.accentRed, border: 'none',
+                                    color: 'white', fontWeight: 'bold', cursor: 'pointer'
                                 }}
                             >
                                 분해하기
@@ -669,7 +639,7 @@ export default function MonsterFarm() {
                 </div>
             )}
 
-            {/* Monster Detail Modal */}
+            {/* Detail Modal */}
             {selectedMonsterForModal && (
                 <MonsterDetailModal
                     monster={selectedMonsterForModal}

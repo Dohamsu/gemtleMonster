@@ -409,7 +409,7 @@
                 },
                 {
                     "type": "facilityLevel",
-                    "facilityId": "alchemy_lab",
+                    "facilityId": "alchemy_workshop",
                     "min": 1
                 }
             ],
@@ -626,7 +626,7 @@
                 },
                 {
                     "type": "facilityLevel",
-                    "facilityId": "alchemy_lab",
+                    "facilityId": "alchemy_workshop",
                     "min": 2
                 }
             ],

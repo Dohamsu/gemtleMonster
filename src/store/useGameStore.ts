@@ -59,6 +59,10 @@ interface GameState {
     batchAssignmentSyncCallback: ((facilityId: string, monsterId: string | null, slotIndex: number) => void) | null
     setBatchAssignmentSyncCallback: (callback: ((facilityId: string, monsterId: string | null, slotIndex: number) => void) | null) => void
 
+    // Production Mode (High Efficiency for Low Tier)
+    productionModes: Record<string, number>
+    setProductionMode: (facilityId: string, level: number) => void
+
     // Auto Collection
     lastCollectedAt: Record<string, number>
     setLastCollectedAt: (id: string, time: number) => void
@@ -122,6 +126,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     setAssignedMonsters: (assignedMonsters) => set({ assignedMonsters }),
     batchAssignmentSyncCallback: null,
     setBatchAssignmentSyncCallback: (callback) => set({ batchAssignmentSyncCallback: callback }),
+
+    productionModes: {},
+    setProductionMode: (facilityId, level) => set(state => ({
+        productionModes: { ...state.productionModes, [facilityId]: level }
+    })),
+
     batchFacilitySyncCallback: null,
     setBatchFacilitySyncCallback: (callback) => set({ batchFacilitySyncCallback: callback }),
 

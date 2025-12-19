@@ -12,8 +12,6 @@ interface UseProductionPredictionProps {
 }
 
 export function useProductionPrediction({
-    facilityId,
-    currentLevel,
     stats,
     lastCollectedAt
 }: UseProductionPredictionProps) {
@@ -44,7 +42,7 @@ export function useProductionPrediction({
         }
 
         return null
-    }, [facilityId, currentLevel, stats, lastCollectedAt])
+    }, [stats, lastCollectedAt])
 
     return nextDrop
 }

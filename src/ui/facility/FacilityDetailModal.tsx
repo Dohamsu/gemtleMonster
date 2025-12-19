@@ -23,12 +23,19 @@ export default function FacilityDetailModal({
     onClose,
     onUpgrade
 }: FacilityDetailModalProps) {
-    const { assignedMonsters, assignMonster, resources, lastCollectedAt } = useGameStore()
+    const { assignedMonsters, assignMonster, resources, lastCollectedAt, productionModes, setProductionMode } = useGameStore()
     const { playerMonsters, playerMaterials } = useAlchemyStore()
     const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null)
 
     const levelData = facility.levels.find((l) => l.level === currentLevel)
     const nextLevelData = facility.levels.find((l) => l.level === currentLevel + 1)
+
+    // Production Mode Logic
+    const currentModeLevel = productionModes[facility.id] || currentLevel
+    const modeLevelData = facility.levels.find(l => l.level === currentModeLevel)
+    // Use mode's drops but current level's interval/bundles for stats display
+    const effectiveDropRates = modeLevelData?.stats?.dropRates || {}
+    const isHighEfficiency = currentModeLevel < currentLevel
 
     // Handle legacy state or array state safely
     const rawAssignments = assignedMonsters[facility.id]
@@ -74,7 +81,10 @@ export default function FacilityDetailModal({
     const predictedItem = useProductionPrediction({
         facilityId: facility.id,
         currentLevel,
-        stats: levelData?.stats,
+        stats: levelData?.stats ? {
+            ...levelData.stats,
+            dropRates: effectiveDropRates
+        } : undefined,
         lastCollectedAt: lastCollected
     })
 
@@ -130,7 +140,32 @@ export default function FacilityDetailModal({
                     <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#f0d090', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#f7ca18' }}>precision_manufacturing</span>
                         생산 현황
+                        {isHighEfficiency && (
+                            <span style={{ fontSize: '10px', background: '#facc15', color: '#000', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+                                고효율 모드 가동 중
+                            </span>
+                        )}
                     </h3>
+
+                    {/* Mode Selector */}
+                    <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', color: '#b0a090' }}>생산 단계:</span>
+                        <select
+                            value={currentModeLevel}
+                            onChange={(e) => setProductionMode(facility.id, Number(e.target.value))}
+                            style={{
+                                background: '#231f10', color: '#facc15', border: '1px solid #494122',
+                                borderRadius: '6px', padding: '4px 8px', fontSize: '12px', fontWeight: 'bold'
+                            }}
+                        >
+                            {facility.levels.filter(l => l.level <= currentLevel).map(l => (
+                                <option key={l.level} value={l.level}>
+                                    Lv.{l.level} {l.name || facility.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div style={{ marginBottom: '16px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', alignItems: 'center' }}>
                             <span style={{ fontSize: '12px', color: '#f0d090' }}>현재 작업</span>
@@ -187,7 +222,7 @@ export default function FacilityDetailModal({
                             생산 목록
                         </h3>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '10px' }}>
-                            {Object.entries(levelData.stats.dropRates).map(([itemId, rate]) => (
+                            {Object.entries(effectiveDropRates).map(([itemId, rate]) => (
                                 <div key={itemId} style={{
                                     background: '#231f10', padding: '10px', borderRadius: '8px', border: '1px solid rgba(73, 65, 34, 0.5)',
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px'
@@ -322,17 +357,19 @@ export default function FacilityDetailModal({
                 </div>
             </div>
 
-            {activeSlotIndex !== null && (
-                <MonsterAssignmentModal
-                    facilityId={facility.id}
-                    currentAssignments={currentAssignments}
-                    onClose={() => setActiveSlotIndex(null)}
-                    onAssign={(monsterId) => {
-                        assignMonster(facility.id, monsterId, activeSlotIndex)
-                        setActiveSlotIndex(null)
-                    }}
-                />
-            )}
-        </div>
+            {
+                activeSlotIndex !== null && (
+                    <MonsterAssignmentModal
+                        facilityId={facility.id}
+                        currentAssignments={currentAssignments}
+                        onClose={() => setActiveSlotIndex(null)}
+                        onAssign={(monsterId) => {
+                            assignMonster(facility.id, monsterId, activeSlotIndex)
+                            setActiveSlotIndex(null)
+                        }}
+                    />
+                )
+            }
+        </div >
     )
 }

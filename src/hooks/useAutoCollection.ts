@@ -15,7 +15,7 @@ interface FacilityLevelStats {
 type FacilityStatsMap = Record<string, Record<number, FacilityLevelStats>>
 
 export function useAutoCollection(userId: string | undefined) {
-    const { facilities, assignedMonsters, lastCollectedAt, addResources, setLastCollectedAt, canvasView, isOfflineProcessing } = useGameStore()
+    const { facilities, assignedMonsters, lastCollectedAt, addResources, setLastCollectedAt, canvasView, isOfflineProcessing, productionModes } = useGameStore()
     const { playerMonsters } = useAlchemyStore()
     const statsRef = useRef<FacilityStatsMap>({})
     const processingRef = useRef<Set<string>>(new Set())
@@ -175,17 +175,35 @@ export function useAutoCollection(userId: string | undefined) {
                     continue
                 }
 
+
+                // --- Production Mode Logic ---
+                // dropStats: Stats used for Drop Rates and Cost (Target Mode)
+                // efficiencyStats: Stats used for Interval and Bundles (Current Level - High Efficiency)
+                const targetModeLevel = productionModes[facilityId]
+                let dropStats = stats
+
+                if (targetModeLevel && targetModeLevel < currentLevel) {
+                    const targetStats = facilityStats[targetModeLevel]
+                    // Validate that target stats exist and have drops (safety check)
+                    if (targetStats) {
+                        dropStats = targetStats
+                    }
+                }
+
                 // Apply quantity bonus to bundlesPerTick (probabilistic for fractions)
+                // Use stats.bundlesPerTick (Current Level) for high efficiency
                 const baseBundles = stats.bundlesPerTick
                 const adjustedBundles = baseBundles * (1 + bonusAmount / 100)
                 const actualBundles = Math.floor(adjustedBundles) + (Math.random() < (adjustedBundles % 1) ? 1 : 0)
 
                 const nextTime = lastTime + (productionCount * intervalMs)
-                // Fire and forget (internal locking handles it)
-                collectFromBatch(facilityKey, { ...stats, bundlesPerTick: actualBundles }, productionCount, nextTime)
+                // Use dropStats for Drops/Cost, but passed stats (current level) implicitly determines interval via the loop logic above
+                // We pass 'dropStats' to collectFromBatch so it uses the correct drop table/cost
+                // BUT we pass 'actualBundles' (calculated from current stats) to override the quantity
+                collectFromBatch(facilityKey, { ...dropStats, intervalSeconds: stats.intervalSeconds, bundlesPerTick: actualBundles }, productionCount, nextTime)
             }
         }, 100) // 0.1s tick
 
         return () => clearInterval(intervalId)
-    }, [userId, facilities, assignedMonsters, playerMonsters, canvasView, lastCollectedAt, addResources, setLastCollectedAt, isOfflineProcessing])
+    }, [userId, facilities, assignedMonsters, playerMonsters, canvasView, lastCollectedAt, addResources, setLastCollectedAt, isOfflineProcessing, productionModes])
 }

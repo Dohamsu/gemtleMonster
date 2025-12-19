@@ -277,30 +277,8 @@ export default function UIOverlay() {
                 </div>
             </div>
 
-            {/* Page Navigation Button */}
-            <div style={{ marginBottom: isMobile ? '10px' : '15px' }}>
-                <button
-                    onClick={() => useGameStore.getState().setCanvasView('facility')}
-                    style={{
-                        width: '100%',
-                        padding: isMobile ? '12px' : '10px',
-                        background: 'linear-gradient(135deg, #5a4030 0%, #3d2b20 100%)',
-                        color: '#f0d090',
-                        border: '1px solid #facc15',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontSize: '1em',
-                        fontWeight: 'bold',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px'
-                    }}
-                >
-                    🏰 시설 관리소 이동
-                </button>
-            </div>
+            {/* Page Navigation Button - Removed as per user request (UI overlay cleanup) */}
+            {/* <div style={{ marginBottom: isMobile ? '10px' : '15px' }}> ... </div> */}
 
             {/* Tabs (Now only Alchemy/Inventory related?) */}
             <div style={{

@@ -170,6 +170,9 @@ export default function FacilityMobileView({
                             key={facility.id}
                             facility={facility}
                             level={playerFacilities[facility.id] || 0}
+                            lastCollectedAt={useGameStore.getState().lastCollectedAt}
+                            assignedMonsters={assignedMonsters}
+                            playerMonsters={playerMonsters}
                             onClick={() => setSelectedFacilityId(facility.id)}
                         />
                     ))

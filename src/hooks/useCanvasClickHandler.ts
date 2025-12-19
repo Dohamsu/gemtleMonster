@@ -101,13 +101,44 @@ function handleMapClick(
         return
     }
 
-    // 4. Monster Farm / Facilities (Central Middle)
-    // 기존에 farmX로 되어있던 부분을 시설 관리소로 활용
+    // 4. Monster Farm (Central Middle) - 몬스터 농장 전용 뷰로 이동
     const farmX = canvas.width * 0.5 - 64
     const farmY = canvas.height * 0.4 - 64
 
     if (x >= farmX && x <= farmX + 128 && y >= farmY && y <= farmY + 128) {
-        // 시설 관리소 페이지로 이동
+        setCanvasView('monster_farm')
+        return
+    }
+
+    // 5. Facilities (Managed via FacilityPage)
+    // Herb Farm (Left Middle)
+    const herbX = canvas.width * 0.3 - 64
+    const herbY = canvas.height * 0.4 - 64
+    if (x >= herbX && x <= herbX + 128 && y >= herbY && y <= herbY + 128) {
+        setCanvasView('facility')
+        return
+    }
+
+    // Mine (Right Middle)
+    const mineX = canvas.width * 0.7 - 64
+    const mineY = canvas.height * 0.4 - 64
+    if (x >= mineX && x <= mineX + 128 && y >= mineY && y <= mineY + 128) {
+        setCanvasView('facility')
+        return
+    }
+
+    // Blacksmith (Right Top)
+    const blacksmithX = canvas.width * 0.8 - 64
+    const blacksmithY = canvas.height * 0.25 - 64
+    if (x >= blacksmithX && x <= blacksmithX + 128 && y >= blacksmithY && y <= blacksmithY + 128) {
+        setCanvasView('facility')
+        return
+    }
+
+    // Spirit Sanctum (Left Top)
+    const sanctumX = canvas.width * 0.2 - 64
+    const sanctumY = canvas.height * 0.2 - 64
+    if (x >= sanctumX && x <= sanctumX + 128 && y >= sanctumY && y <= sanctumY + 128) {
         setCanvasView('facility')
         return
     }

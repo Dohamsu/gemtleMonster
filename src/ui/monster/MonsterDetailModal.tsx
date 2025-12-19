@@ -1,4 +1,5 @@
-// import React from 'react'
+
+import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useState } from 'react'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { calculateStats, getExpProgress, getMaxLevel, getRequiredExp, type RarityType } from '../../lib/monsterLevelUtils'
@@ -7,6 +8,28 @@ import type { PlayerMonster } from '../../types/monster'
 import type { RoleType } from '../../types/alchemy'
 import AwakeningModal from './AwakeningModal'
 
+const COLORS = {
+    primary: "#f7ca18", // Light Gold
+    secondary: "#f0d090", // Soft Gold
+    darkBrown: "#2a1810",
+    darkOverlay: "#2a2a2a",
+    backgroundLight: "#f8f8f5",
+    backgroundDark: "#1a1612", // Deep dark base
+    cardBg: "#231f10",
+    border: "#494122",
+    accentRed: "#ef4444",
+    accentGreen: "#0bda1d",
+    accentBlue: "#3b82f6",
+    textMain: "#e0e0e0",
+    textSub: "#a0a0a0",
+    rarity: {
+        N: "#a0a0a0",
+        R: "#3b82f6",
+        SR: "#a855f7",
+        SSR: "#f59e0b"
+    }
+}
+
 interface MonsterDetailModalProps {
     monster: PlayerMonster
     onClose: () => void
@@ -14,6 +37,7 @@ interface MonsterDetailModalProps {
 }
 
 export default function MonsterDetailModal({ monster, onClose, onToggleLock }: MonsterDetailModalProps) {
+    const { playerMonsters } = useAlchemyStore()
     const [showAwakeningModal, setShowAwakeningModal] = useState(false)
     const data = MONSTER_DATA[monster.monster_id]
     if (!data) return null
@@ -26,253 +50,360 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
     const monsterTypeId = monster.monster_id.replace(/^monster_/, '')
     const stats = calculateStats({ hp: data.hp, atk: data.attack, def: data.defense }, level, rarity, monster.awakening_level || 0)
     const expProgress = getExpProgress(monster.exp, level, rarity)
-    const maxLevel = getMaxLevel(rarity, monster.awakening_level || 0)
+    // Awakening Logic
+    const awakeningLevel = monster.awakening_level || 0
+    const maxLevel = getMaxLevel(rarity)
+
+    // Skills
     const skills = getUnlockableSkills(monsterTypeId, role, level)
     const nextSkillLevel = getNextSkillUnlockLevel(monsterTypeId, role, level)
 
     // Rarity Color
-    const getRarityColor = (r: string) => {
-        switch (r) {
-            case 'SSR': return '#fbbf24' // Amber-400
-            case 'SR': return '#c084fc' // Purple-400
-            case 'R': return '#60a5fa' // Blue-400
-            default: return '#94a3b8' // Slate-400
-        }
-    }
-    const rarityColor = getRarityColor(rarity)
+    const rarityColor = COLORS.rarity[rarity] || COLORS.rarity.N
 
-    // Awakening Logic
-    const awakeningLevel = monster.awakening_level || 0
+    // Next stats for preview (used in Transcendence section)
     const nextAwakeningLevel = awakeningLevel + 1
     const canAwaken = awakeningLevel < 5 // Max 5 stars
     const nextStats = canAwaken ? calculateStats({ hp: data.hp, atk: data.attack, def: data.defense }, level, rarity, nextAwakeningLevel) : stats
 
+    const isLocked = monster.is_locked || false
+
     return (
         <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
-            display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 1000, padding: '10px' // Reduced outer padding
-        }} onClick={onClose}>
+            position: 'fixed', inset: 0, zIndex: 100,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            pointerEvents: 'none' // Inner modal will activate pointer events
+        }}>
+            {/* Backdrop */}
+            <div
+                style={{
+                    position: 'absolute', inset: 0,
+                    background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)',
+                    cursor: 'pointer', pointerEvents: 'auto', transition: 'opacity 0.3s'
+                }}
+                onClick={onClose}
+            />
+
+            {/* Modal Content */}
             <div style={{
-                background: '#1e293b',
-                width: '100%', maxWidth: '450px', // Standard width
-                // On very small screens, ensure we don't overflow horizontally
-                minWidth: '300px',
-                borderRadius: '16px',
-                border: `2px solid ${rarityColor}`,
-                overflow: 'hidden',
-                boxShadow: `0 0 20px ${rarityColor}40`,
                 position: 'relative',
+                width: '100%', maxWidth: '480px',
+                height: '85vh', maxHeight: '900px',
+                background: COLORS.backgroundDark,
+                borderRadius: '16px',
+                border: `1px solid ${COLORS.border}`,
+                boxShadow: '0 0 50px rgba(0,0,0,0.8)',
+                overflow: 'hidden',
                 display: 'flex', flexDirection: 'column',
-                maxHeight: '90vh',
-                margin: 'auto' // Center if flex fails or for safety
-            }} onClick={e => e.stopPropagation()}>
-
-                {/* Header / Top Section */}
+                pointerEvents: 'auto',
+                transition: 'transform 0.3s ease-out',
+                fontFamily: "'Noto SansKR', sans-serif" // Base font set to KR
+            }}>
+                {/* Header Section */}
                 <div style={{
-                    background: `linear-gradient(180deg, ${rarityColor}20 0%, #1e293b 100%)`,
-                    padding: '24px 20px 10px',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px'
+                    position: 'relative', flexShrink: 0,
+                    background: COLORS.cardBg,
+                    borderBottom: `1px solid ${COLORS.border}`,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    padding: '32px 24px 24px'
                 }}>
-                    <button onClick={onClose} style={{
-                        position: 'absolute', top: '15px', right: '15px',
-                        background: 'rgba(0,0,0,0.3)', border: 'none', color: '#cbd5e1',
-                        width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer',
-                        fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}>✕</button>
+                    {/* Close Button */}
+                    <button
+                        onClick={onClose}
+                        style={{
+                            position: 'absolute', top: '16px', right: '16px',
+                            padding: '8px', color: COLORS.textSub,
+                            background: COLORS.darkBrown, borderRadius: '50%',
+                            border: `1px solid ${COLORS.border}`,
+                            cursor: 'pointer', transition: 'all 0.2s',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}
+                    >
+                        <span style={{ fontSize: '20px', lineHeight: 1 }}>✕</span>
+                    </button>
 
-                    {/* Image Area */}
+                    {/* Image Container */}
                     <div style={{
-                        width: '120px', height: '120px',
+                        position: 'relative', width: '128px', height: '128px',
+                        borderRadius: '16px', background: '#15120e',
+                        border: `2px solid ${rarityColor}`,
+                        boxShadow: `0 0 20px ${rarityColor}40`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '60px',
-                        filter: 'drop-shadow(0 8px 8px rgba(0,0,0,0.5))',
-                        animation: 'float 3s ease-in-out infinite',
-                        position: 'relative',
-                        // Add visible border/glow when locked
-                        border: monster.is_locked ? '3px solid #facc15' : 'none',
-                        borderRadius: '20px', // slightly rounded square for image container if border is present
-                        boxShadow: monster.is_locked ? '0 0 15px rgba(250, 204, 21, 0.5)' : 'none',
-                        transition: 'all 0.3s ease'
+                        marginBottom: '20px', overflow: 'visible'
                     }}>
-                        {data.iconUrl ?
-                            <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                            : data.emoji}
+                        {/* Glow Effect */}
+                        <div style={{
+                            position: 'absolute', inset: 0,
+                            background: `radial-gradient(circle, ${rarityColor}40 0%, transparent 70%)`
+                        }} />
 
-                        {/* Lock Button (Top-Left of Image) */}
-                        <button onClick={(e) => {
-                            e.stopPropagation()
-                            onToggleLock(monster.id, monster.is_locked || false)
-                        }} style={{
-                            position: 'absolute', top: '-12px', left: '-12px',
-                            background: monster.is_locked ? '#facc15' : 'rgba(0,0,0,0.6)', // Gold background if locked
-                            border: '2px solid #1e293b',
-                            borderRadius: '50%', width: '32px', height: '32px',
-                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            padding: 0, zIndex: 10,
-                            transition: 'all 0.2s ease',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                        }}>
+                        {/* Monster Image */}
+                        {data.iconUrl ? (
                             <img
-                                src={monster.is_locked ? '/assets/ui/locked.png' : '/assets/ui/unlocked.png'}
-                                alt={monster.is_locked ? 'Locked' : 'Unlocked'}
+                                src={data.iconUrl}
+                                alt={data.name}
                                 style={{
-                                    width: '18px', height: '18px', objectFit: 'contain',
-                                    filter: monster.is_locked
-                                        ? 'none' // No filter for locked, keep it clear
-                                        : 'drop-shadow(0 2px 2px rgba(0,0,0,0.5)) invert(1)' // Invert unlocked to make it white-ish on dark bg
+                                    width: '96px', height: '96px', objectFit: 'contain',
+                                    imageRendering: 'pixelated', position: 'relative', zIndex: 10,
+                                    filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))'
                                 }}
                             />
-                        </button>
-
-                        {/* Awakening Stars (Bottom Center) */}
-                        {awakeningLevel > 0 && (
-                            <div style={{
-                                position: 'absolute', bottom: '-15px', left: '50%', transform: 'translateX(-50%)',
-                                display: 'flex', gap: '2px',
-                                background: 'rgba(0,0,0,0.6)', padding: '2px 8px', borderRadius: '10px'
-                            }}>
-                                {Array.from({ length: awakeningLevel }).map((_, i) => (
-                                    <span key={i} style={{ color: '#fbbf24', fontSize: '14px', textShadow: '0 0 5px #f59e0b' }}>★</span>
-                                ))}
-                            </div>
+                        ) : (
+                            <span style={{ fontSize: '64px', position: 'relative', zIndex: 10 }}>{data.emoji}</span>
                         )}
+
+                        {/* Rarity Badge */}
+                        <div style={{
+                            position: 'absolute', top: '-12px', right: '-12px',
+                            width: '36px', height: '36px',
+                            borderRadius: '8px',
+                            background: `linear-gradient(135deg, ${rarityColor}, ${COLORS.darkBrown})`,
+                            border: `2px solid ${COLORS.backgroundDark}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'white', fontWeight: '900', fontSize: '12px',
+                            boxShadow: '0 4px 6px rgba(0,0,0,0.3)', zIndex: 20
+                        }}>
+                            {rarity}
+                        </div>
+
+                        {/* Lock Toggle (Top Left) */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                onToggleLock(monster.id, isLocked)
+                            }}
+                            style={{
+                                position: 'absolute', top: '-10px', left: '-10px',
+                                width: '32px', height: '32px', borderRadius: '50%',
+                                background: isLocked ? COLORS.primary : 'rgba(0,0,0,0.6)',
+                                border: `2px solid ${COLORS.backgroundDark}`,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', zIndex: 20, boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                            }}
+                        >
+                            <span style={{ fontSize: '14px' }}>{isLocked ? '🔒' : '🔓'}</span>
+                        </button>
                     </div>
 
-                    {/* Name & Basic Info */}
-                    <div style={{ textAlign: 'center' }}>
-                        <div style={{
-                            display: 'inline-block', padding: '4px 12px', borderRadius: '20px',
-                            background: rarityColor, color: '#1e293b', fontWeight: 'bold', fontSize: '12px',
-                            marginBottom: '6px'
+                    {/* Title & Info */}
+                    <h2 style={{
+                        marginTop: 0, marginBottom: '8px',
+                        fontSize: '24px', fontWeight: 'bold', color: 'white',
+                        fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '0.02em',
+                        textAlign: 'center'
+                    }}>
+                        {data.name}
+                    </h2>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                            fontSize: '11px', fontWeight: 'bold', fontFamily: 'monospace',
+                            color: COLORS.primary, background: COLORS.darkBrown,
+                            padding: '2px 8px', borderRadius: '4px', border: `1px solid ${COLORS.border}`
                         }}>
-                            {rarity} GRADE
-                        </div>
-                        <h2 style={{ margin: '0 0 4px', color: '#f8fafc', fontSize: '1.5em' }}>{data.name}</h2>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.9em', color: '#94a3b8' }}>
-                            <span>Lv.{level}</span>
-                            <span style={{
-                                padding: '2px 8px',
-                                borderRadius: '12px',
-                                fontSize: '0.85em',
-                                fontWeight: 'bold',
-                                color: 'white',
-                                background: role === 'TANK' ? '#3b82f6' :
-                                    role === 'DPS' ? '#ef4444' :
-                                        role === 'SUPPORT' ? '#10b981' :
-                                            role === 'HYBRID' ? '#a855f7' :
-                                                '#f59e0b' // Production
-                            }}>
-                                {data.role}
-                            </span>
-                        </div>
+                            Lv. {level}
+                        </span>
+                        <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: COLORS.border }} />
+                        <span style={{ fontSize: '12px', fontWeight: '500', color: COLORS.textSub }}>
+                            {data.role} ({roleMap[data.role] || '알 수 없음'})
+                        </span>
                     </div>
                 </div>
 
-                {/* Content Body (Everything below Header scrolls) */}
-                <div style={{ padding: '0 20px 24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
+                {/* Scrollable Content Body */}
+                <div style={{
+                    flex: 1, overflowY: 'auto', padding: '20px',
+                    background: COLORS.backgroundDark,
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: `${COLORS.darkBrown} transparent`
+                }}>
                     {/* Stats Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                    <div style={{
+                        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px',
+                        marginBottom: '24px'
+                    }}>
                         {[
-                            { label: 'HP', value: stats.hp, color: '#ef4444' },
-                            { label: 'ATK', value: stats.atk, color: '#eab308' },
-                            { label: 'DEF', value: stats.def, color: '#3b82f6' }
+                            { label: '체력', value: stats.hp, icon: '❤️', color: 'white' },
+                            { label: '공격력', value: stats.atk, icon: '⚔️', color: 'white' },
+                            { label: '방어력', value: stats.def, icon: '🛡️', color: 'white' }
                         ].map(stat => (
                             <div key={stat.label} style={{
-                                background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', padding: '12px',
-                                textAlign: 'center', border: '1px solid #334155'
+                                background: 'rgba(42, 24, 16, 0.4)',
+                                borderRadius: '12px', border: `1px solid ${COLORS.darkBrown}`,
+                                padding: '12px', display: 'flex', flexDirection: 'column',
+                                alignItems: 'center', justifyContent: 'center', gap: '4px'
                             }}>
-                                <div style={{ fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>{stat.label}</div>
-                                <div style={{ fontSize: '16px', fontWeight: 'bold', color: stat.color }}>{stat.value}</div>
+                                <div style={{ fontSize: '18px', marginBottom: '2px' }}>{stat.icon}</div>
+                                <div style={{
+                                    color: stat.color, fontFamily: 'monospace',
+                                    fontWeight: 'bold', fontSize: '14px'
+                                }}>{stat.value.toLocaleString()}</div>
+                                <div style={{
+                                    fontSize: '10px', color: COLORS.textSub, // Slightly larger font for KR readability
+                                    fontWeight: 'bold', letterSpacing: '0.05em'
+                                }}>{stat.label}</div>
                             </div>
                         ))}
                     </div>
 
                     {/* EXP Bar */}
-                    <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#cbd5e1', marginBottom: '6px' }}>
-                            <span>경험치</span>
-                            <span>{level >= maxLevel ? '(MAX)' : `${Math.floor(expProgress)}%`}</span>
+                    <div style={{ marginBottom: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '12px', color: COLORS.textSub, fontWeight: '500' }}>경험치</span>
+                            <span style={{ fontSize: '10px', color: COLORS.primary, fontFamily: 'monospace', fontWeight: 'bold' }}>
+                                {monster.exp.toLocaleString()} / {getRequiredExp(level, rarity).toLocaleString()}
+                            </span>
                         </div>
-                        <div style={{ height: '8px', background: '#334155', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{
+                            width: '100%', height: '10px',
+                            background: '#15120e', borderRadius: '999px',
+                            overflow: 'hidden', border: `1px solid ${COLORS.darkBrown}`,
+                            position: 'relative'
+                        }}>
                             <div style={{
-                                width: `${level >= maxLevel ? 100 : expProgress}%`, height: '100%',
-                                background: level >= maxLevel ? '#22c55e' : '#3b82f6',
-                                transition: 'width 0.5s ease'
-                            }} />
+                                width: `${Math.min(100, expProgress)}%`, height: '100%',
+                                background: `linear-gradient(90deg, #b48e00, ${COLORS.primary})`,
+                                position: 'relative',
+                                boxShadow: `0 0 8px ${COLORS.primary}60`
+                            }}>
+                                {/* Diagonal Stripe Pattern Overlay (simulated via repeating-linear-gradient) */}
+                                <div style={{
+                                    position: 'absolute', inset: 0, opacity: 0.3,
+                                    backgroundImage: 'linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent)',
+                                    backgroundSize: '10px 10px'
+                                }} />
+                            </div>
                         </div>
                         {level < maxLevel && (
-                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', textAlign: 'right' }}>
+                            <div style={{ textAlign: 'right', fontSize: '10px', color: '#555', marginTop: '4px' }}>
                                 다음 레벨까지: {getRequiredExp(level, rarity) - monster.exp} EXP
                             </div>
                         )}
                     </div>
 
-                    {/* Awakening Section */}
+                    {/* Transcendence Section */}
                     {canAwaken && (
                         <div style={{
-                            background: 'linear-gradient(90deg, #1e1b4b 0%, #312e81 100%)',
-                            borderRadius: '12px', padding: '16px', border: '1px solid #4338ca'
+                            background: `linear-gradient(135deg, ${COLORS.darkBrown}, ${COLORS.backgroundDark})`,
+                            border: `1px solid ${COLORS.primary}30`,
+                            borderRadius: '12px', padding: '16px',
+                            position: 'relative', overflow: 'hidden',
+                            marginBottom: '24px'
                         }}>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', gap: '10px' }}>
-                                <div style={{ color: '#fbbf24', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <span>⭐ 초월 ({awakeningLevel}/5)</span>
-                                </div>
-                                <button
-                                    onClick={() => setShowAwakeningModal(true)}
-                                    style={{
-                                        background: '#fbbf24', color: '#451a03',
-                                        border: 'none', padding: '6px 12px', borderRadius: '8px',
-                                        fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9em'
+                            {/* Bg Decoration */}
+                            <div style={{
+                                position: 'absolute', top: 0, right: 0, width: '100%', height: '100%',
+                                background: `radial-gradient(circle at top right, ${COLORS.primary}10, transparent 60%)`,
+                                pointerEvents: 'none'
+                            }} />
+
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', position: 'relative', zIndex: 10 }}>
+                                <h3 style={{
+                                    margin: 0, fontSize: '14px', fontWeight: 'bold', color: COLORS.secondary,
+                                    display: 'flex', alignItems: 'center', gap: '8px'
+                                }}>
+                                    <span style={{ fontSize: '18px' }}>✨</span> 초월
+                                </h3>
+                                {(playerMonsters?.filter(m => m.monster_id === monster.monster_id && m.id !== monster.id).length || 0) > 0 && (
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: '4px',
+                                        background: 'rgba(11, 218, 29, 0.1)', border: `1px solid rgba(11, 218, 29, 0.2)`,
+                                        padding: '2px 8px', borderRadius: '4px', color: COLORS.accentGreen, fontSize: '9px', fontWeight: 'bold'
                                     }}>
-                                    초월하기
-                                </button>
+                                        <span>✓</span> 초월 가능
+                                    </div>
+                                )}
                             </div>
-                            <div style={{ fontSize: '0.85em', color: '#c7d2fe', lineHeight: '1.4' }}>
-                                <div>
-                                    동일한 몬스터를 재료로 사용하여 스탯을 강화하세요.<br />
-                                    <span style={{ color: '#86efac', display: 'inline-block', marginTop: '4px' }}>
-                                        [예상] HP {stats.hp}→{nextStats.hp}, ATK {stats.atk}→{nextStats.atk}
-                                    </span>
+
+                            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', position: 'relative', zIndex: 10 }}>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: COLORS.textSub }}>
+                                        <span>최대 레벨</span>
+                                        <span style={{ color: COLORS.accentGreen, fontWeight: 'bold' }}>
+                                            {maxLevel - 5 * awakeningLevel} <span style={{ color: '#555' }}>→</span> {maxLevel - 5 * awakeningLevel + 5}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: COLORS.textSub }}>
+                                        <span>기본 능력치</span>
+                                        <span style={{ color: COLORS.accentGreen, fontWeight: 'bold' }}>+15%</span>
+                                    </div>
+                                    <div style={{ fontSize: '11px', color: '#555', marginTop: '4px' }}>
+                                        미리보기: 체력 {stats.hp} → <span style={{ color: COLORS.accentGreen }}>{nextStats.hp}</span>
+                                    </div>
                                 </div>
                             </div>
+
+                            <button
+                                onClick={() => setShowAwakeningModal(true)}
+                                style={{
+                                    width: '100%', padding: '10px',
+                                    background: COLORS.primary, color: COLORS.darkBrown,
+                                    border: 'none', borderRadius: '8px',
+                                    fontWeight: 'bold', fontSize: '14px',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                    boxShadow: `0 0 15px ${COLORS.primary}40`,
+                                    transition: 'transform 0.2s', position: 'relative', zIndex: 10
+                                }}
+                            >
+                                <span style={{ fontSize: '16px' }}>⬆️</span> 몬스터 초월
+                            </button>
                         </div>
                     )}
 
-                    {/* Skills */}
-                    <div>
-                        <h3 style={{ fontSize: '1.1em', color: '#f1f5f9', margin: '0 0 12px', paddingBottom: '8px', borderBottom: '1px solid #334155' }}>스킬</h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            {skills.length === 0 ? (
-                                <div style={{ color: '#64748b', fontSize: '0.9em', textAlign: 'center', padding: '10px' }}>
-                                    습득한 스킬이 없습니다.
-                                </div>
-                            ) : (
-                                skills.map(skill => (
-                                    <div key={skill.id} style={{
-                                        background: 'rgba(30, 41, 59, 0.5)', borderRadius: '8px', padding: '12px',
-                                        display: 'flex', gap: '12px', alignItems: 'flex-start'
+                    {/* Skills Section */}
+                    <div style={{ marginBottom: '24px' }}>
+                        <h3 style={{
+                            fontSize: '14px', fontWeight: 'bold', color: 'white',
+                            marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '4px'
+                        }}>
+                            <span style={{ fontSize: '18px', color: COLORS.textSub }}>📖</span> 보유 스킬
+                        </h3>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {skills.length > 0 ? skills.map(skill => (
+                                <div key={skill.id} style={{
+                                    background: COLORS.cardBg, padding: '12px', borderRadius: '12px',
+                                    border: `1px solid ${COLORS.border}`, display: 'flex', gap: '12px',
+                                    transition: 'border-color 0.2s'
+                                }}>
+                                    <div style={{
+                                        width: '40px', height: '40px', borderRadius: '8px',
+                                        background: '#15120e', border: `1px solid ${COLORS.border}`,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        flexShrink: 0, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)'
                                     }}>
-                                        <div style={{ width: '32px', height: '32px', flexShrink: 0, background: 'rgba(0,0,0,0.3)', borderRadius: '6px', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <img
-                                                src={getSkillIconUrl(skill)}
-                                                alt={skill.name}
-                                                style={{ width: '100%', height: '100%', objectFit: 'contain', imageRendering: 'pixelated' }}
-                                            />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 'bold', color: '#e2e8f0', fontSize: '0.95em', marginBottom: '2px' }}>{skill.name}</div>
-                                            <div style={{ fontSize: '0.85em', color: '#94a3b8' }}>{skill.description}</div>
-                                        </div>
+                                        <img
+                                            src={getSkillIconUrl(skill)}
+                                            alt={skill.name}
+                                            style={{ width: '80%', height: '80%', objectFit: 'contain', imageRendering: 'pixelated' }}
+                                        />
                                     </div>
-                                ))
+                                    <div>
+                                        <div style={{
+                                            display: 'flex', alignItems: 'center', gap: '8px',
+                                            fontSize: '14px', fontWeight: 'bold', color: COLORS.secondary, marginBottom: '2px'
+                                        }}>
+                                            {skill.name}
+                                            <span style={{
+                                                fontSize: '9px', color: '#555', background: '#1a1612',
+                                                border: `1px solid ${COLORS.border}`, padding: '1px 4px', borderRadius: '4px'
+                                            }}>Lv 1</span>
+                                        </div>
+                                        <p style={{ margin: 0, fontSize: '12px', color: COLORS.textSub, lineHeight: '1.4' }}>
+                                            {skill.description}
+                                        </p>
+                                    </div>
+                                </div>
+                            )) : (
+                                <div style={{ textAlign: 'center', padding: '20px', color: COLORS.textSub, fontSize: '13px', fontStyle: 'italic' }}>
+                                    해금된 스킬이 없습니다.
+                                </div>
                             )}
+
                             {nextSkillLevel && (
                                 <div style={{
                                     background: 'rgba(251, 191, 36, 0.05)', border: '1px dashed #fbbf24', borderRadius: '8px', padding: '10px',
-                                    textAlign: 'center', fontSize: '0.85em', color: '#fbbf24'
+                                    textAlign: 'center', fontSize: '12px', color: '#fbbf24', marginTop: '8px'
                                 }}>
                                     Lv.{nextSkillLevel} 달성 시 새로운 스킬 해금!
                                 </div>
@@ -280,28 +411,65 @@ export default function MonsterDetailModal({ monster, onClose, onToggleLock }: M
                         </div>
                     </div>
 
-                    {/* Lore / Description */}
-                    <div>
-                        <h3 style={{ fontSize: '1.1em', color: '#f1f5f9', margin: '0 0 12px', paddingBottom: '8px', borderBottom: '1px solid #334155' }}>소개</h3>
+                    {/* Story Section */}
+                    <div style={{ paddingBottom: '32px' }}>
+                        <h3 style={{
+                            fontSize: '14px', fontWeight: 'bold', color: 'white',
+                            marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '4px'
+                        }}>
+                            <span style={{ fontSize: '18px', color: COLORS.textSub }}>📜</span> 배경 이야기
+                        </h3>
                         <div style={{
-                            background: '#0f172a', padding: '15px', borderRadius: '12px',
-                            color: '#cbd5e1', fontSize: '0.9em', lineHeight: '1.6', fontStyle: 'italic'
+                            fontSize: '12px', color: COLORS.textSub, lineHeight: '1.6',
+                            fontStyle: 'italic', borderLeft: `2px solid ${COLORS.border}`,
+                            paddingLeft: '16px', paddingTop: '4px', paddingBottom: '4px'
                         }}>
                             &quot;{data.description}&quot;
                         </div>
                     </div>
-
                 </div>
 
+                {/* Footer Actions */}
+                <div style={{
+                    padding: '16px', background: COLORS.cardBg,
+                    borderTop: `1px solid ${COLORS.border}`,
+                    display: 'flex', gap: '12px'
+                }}>
+                    <button style={{
+                        flex: 1, padding: '12px', borderRadius: '8px',
+                        border: `1px solid ${COLORS.border}`, background: 'transparent',
+                        color: COLORS.textSub, fontSize: '12px', fontWeight: 'bold',
+                        cursor: 'not-allowed', textTransform: 'uppercase', letterSpacing: '0.05em'
+                    }} disabled>
+                        장비 관리
+                    </button>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            flex: 1, padding: '12px', borderRadius: '8px',
+                            background: COLORS.darkBrown, color: 'white',
+                            border: 'none', fontSize: '12px', fontWeight: 'bold',
+                            cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em',
+                            transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#3a2e18'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = COLORS.darkBrown}
+                    >
+                        닫기
+                    </button>
+                </div>
             </div>
 
+            {/* Awakening Modal Overlay (Nested) */}
             {showAwakeningModal && (
                 <AwakeningModal
                     targetMonster={monster}
                     onClose={() => setShowAwakeningModal(false)}
                     onSuccess={() => {
                         setShowAwakeningModal(false)
-                        onClose() // Close detail modal too to refresh list from outside
+                        // Note: Monster details won't auto-update if passed as prop unless parent updates.
+                        // Assuming parent updates the monster prop or we trigger a refetch.
+                        // Ideally onToggleLock or similar callback triggers re-render.
                     }}
                 />
             )}
