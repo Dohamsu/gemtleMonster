@@ -58,7 +58,7 @@ export default function GameSystemConnector() {
         const fetchOrStepUpProfile = async () => {
             if (!user?.id) return
             try {
-                const { data } = await supabase.from('profiles').select('nickname').eq('id', user.id).single()
+                const { data } = await supabase.from('profiles').select('nickname').eq('id', user.id).maybeSingle()
                 if (data?.nickname) {
                     setNickname(data.nickname)
                 } else {

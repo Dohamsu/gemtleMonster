@@ -70,6 +70,8 @@ interface GameState {
     // Sync Callbacks
     batchFacilitySyncCallback: ((id: string, level: number) => void) | null
     setBatchFacilitySyncCallback: (callback: ((id: string, level: number) => void) | null) => void
+    batchProductionModeSyncCallback: ((id: string, mode: number) => void) | null
+    setBatchProductionModeSyncCallback: (callback: ((id: string, mode: number) => void) | null) => void
 
     // Consumable Auto-Use Settings
     consumableSlots: ConsumableSlot[]
@@ -128,12 +130,19 @@ export const useGameStore = create<GameState>((set, get) => ({
     setBatchAssignmentSyncCallback: (callback) => set({ batchAssignmentSyncCallback: callback }),
 
     productionModes: {},
-    setProductionMode: (facilityId, level) => set(state => ({
-        productionModes: { ...state.productionModes, [facilityId]: level }
-    })),
+    setProductionMode: (facilityId, level) => set(state => {
+        if (state.batchProductionModeSyncCallback) {
+            state.batchProductionModeSyncCallback(facilityId, level)
+        }
+        return {
+            productionModes: { ...state.productionModes, [facilityId]: level }
+        }
+    }),
 
     batchFacilitySyncCallback: null,
     setBatchFacilitySyncCallback: (callback) => set({ batchFacilitySyncCallback: callback }),
+    batchProductionModeSyncCallback: null,
+    setBatchProductionModeSyncCallback: (callback) => set({ batchProductionModeSyncCallback: callback }),
 
     // Consumable Auto-Use Settings
     consumableSlots: [

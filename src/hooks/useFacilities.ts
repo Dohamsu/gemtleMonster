@@ -6,12 +6,14 @@ import type { FacilityData } from '../types/idle'
 interface PlayerFacility {
     facility_id: string
     current_level: number
+    production_mode: number | null
     assigned_monster_id: string | null
 }
 
 export function useFacilities(userId: string | undefined) {
     const [facilities, setFacilities] = useState<FacilityData[]>([])
     const [playerFacilities, setPlayerFacilities] = useState<Record<string, number>>({})
+    const [productionModes, setProductionModes] = useState<Record<string, number>>({})
     const [assignedMonsters, setAssignedMonsters] = useState<Record<string, string | null>>({})
     const [loading, setLoading] = useState(true)
 
@@ -39,7 +41,7 @@ export function useFacilities(userId: string | undefined) {
             ] = await Promise.all([
                 supabase.from('facility').select('id, name, category'),
                 supabase.from('facility_level').select('facility_id, level, name, stats, upgrade_cost'),
-                supabase.from('player_facility').select('facility_id, current_level, assigned_monster_id').eq('user_id', userId)
+                supabase.from('player_facility').select('facility_id, current_level, production_mode, assigned_monster_id').eq('user_id', userId)
             ])
 
             // Combine data
@@ -67,12 +69,15 @@ export function useFacilities(userId: string | undefined) {
 
             if (playerFacilitiesData) {
                 const playerFacilityMap: Record<string, number> = {}
+                const productionModeMap: Record<string, number> = {}
                 const assignmentMap: Record<string, string | null> = {}
                 playerFacilitiesData.forEach((pf: PlayerFacility) => {
                     playerFacilityMap[pf.facility_id] = pf.current_level
+                    productionModeMap[pf.facility_id] = pf.production_mode || pf.current_level
                     assignmentMap[pf.facility_id] = pf.assigned_monster_id
                 })
                 setPlayerFacilities(playerFacilityMap)
+                setProductionModes(productionModeMap)
                 setAssignedMonsters(assignmentMap)
             }
 
@@ -116,5 +121,5 @@ export function useFacilities(userId: string | undefined) {
         setPlayerFacilities(prev => ({ ...prev, [facilityId]: newLevel }))
     }
 
-    return { facilities, playerFacilities, assignedMonsters, loading, upgradeFacility }
+    return { facilities, playerFacilities, productionModes, assignedMonsters, loading, upgradeFacility }
 }

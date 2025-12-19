@@ -195,7 +195,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                         <>
                             <div style={{ height: '1px', background: '#3d2b20', margin: '15px 0' }} />
                             <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9em', color: '#b0a090', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#f7ca18' }}>inventory_2</span>
+                                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#facc15' }}>inventory_2</span>
                                 생산 목록
                             </h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -210,10 +210,47 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                                             </span>
                                         </div>
                                         <span style={{ fontSize: '0.9em', color: '#facc15', fontWeight: 'bold' }}>
-                                            {(rate * 100).toFixed(0)}%
+                                            {(rate as number * 100).toFixed(0)}%
                                         </span>
                                     </div>
                                 ))}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Consumption Info (Costs) */}
+                    {levelData?.stats?.cost && Object.keys(levelData.stats.cost).length > 0 && (
+                        <>
+                            <div style={{ height: '1px', background: '#3d2b20', margin: '15px 0' }} />
+                            <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9em', color: '#b0a090', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#ef4444' }}>shopping_cart_checkout</span>
+                                소모 정보 (틱당 소모량)
+                            </h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {Object.entries(levelData.stats.cost).map(([resId, amount]) => {
+                                    const owned = (resources[resId] ?? playerMaterials[resId] ?? 0)
+                                    const enough = owned >= (amount as number)
+                                    return (
+                                        <div key={resId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.2)', padding: '6px 10px', borderRadius: '6px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div style={{ width: '24px', height: '24px' }}>
+                                                    <ResourceIcon resourceId={resId} size={24} />
+                                                </div>
+                                                <span style={{ fontSize: '0.9em', color: enough ? '#d0c0b0' : '#ef4444' }}>
+                                                    {MATERIALS[resId]?.name || resId}
+                                                </span>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <div style={{ fontSize: '0.9em', color: enough ? '#facc15' : '#ef4444', fontWeight: 'bold' }}>
+                                                    -{amount}
+                                                </div>
+                                                <div style={{ fontSize: '0.7em', color: '#888' }}>
+                                                    (보유: {owned.toLocaleString()})
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
                             </div>
                         </>
                     )}

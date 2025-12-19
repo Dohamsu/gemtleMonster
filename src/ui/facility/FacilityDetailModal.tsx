@@ -239,6 +239,45 @@ export default function FacilityDetailModal({
                     </div>
                 )}
 
+                {/* Consumption Info (Costs) */}
+                {levelData?.stats?.cost && Object.keys(levelData.stats.cost).length > 0 && (
+                    <div style={{
+                        background: 'rgba(42, 24, 16, 0.4)', borderRadius: '16px', border: '1px solid #494122',
+                        padding: '16px', marginBottom: '20px', backdropFilter: 'blur(4px)'
+                    }}>
+                        <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#f0d090', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#ef4444' }}>shopping_cart_checkout</span>
+                            소모 정보 (틱당 소모량)
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {Object.entries(levelData.stats.cost).map(([resId, amount]) => {
+                                const owned = (resources[resId] ?? playerMaterials[resId] ?? 0)
+                                const enough = owned >= (amount as number)
+                                return (
+                                    <div key={resId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#231f10', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(73, 65, 34, 0.3)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ width: '28px', height: '28px' }}>
+                                                <ResourceIcon resourceId={resId} size={28} />
+                                            </div>
+                                            <span style={{ fontSize: '13px', color: enough ? '#d0c0b0' : '#ef4444' }}>
+                                                {MATERIALS[resId]?.name || resId}
+                                            </span>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div style={{ fontSize: '13px', color: enough ? '#facc15' : '#ef4444', fontWeight: 'bold' }}>
+                                                -{amount}
+                                            </div>
+                                            <div style={{ fontSize: '10px', color: '#7a7a7a' }}>
+                                                ({owned.toLocaleString()} 보유)
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {/* Workforce Allocation (Horizontal Scroll for Slots) */}
                 <div style={{
                     background: 'rgba(42, 24, 16, 0.4)', borderRadius: '16px', border: '1px solid #494122',

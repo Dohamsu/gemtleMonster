@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { processStatusEffects, BattleEntity, StatusEffect } from './battleUtils'
+import { processStatusEffects } from './battleUtils'
+import type { BattleEntity, StatusEffect } from './battleUtils'
 
 describe('battleUtils', () => {
     describe('processStatusEffects', () => {
@@ -67,7 +68,7 @@ describe('battleUtils', () => {
         })
 
         it('should handle both damage and healing in same turn', () => {
-             const entity = {
+            const entity = {
                 ...baseEntity,
                 hp: 50,
                 statusEffects: [

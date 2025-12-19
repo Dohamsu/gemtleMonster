@@ -18,6 +18,7 @@ interface BatchSyncOptions {
  */
 interface FacilityUpdate {
   level?: number
+  productionMode?: number
   assignedMonsterIds?: (string | null)[]
 }
 
@@ -40,11 +41,17 @@ export function useBatchSync(
     pendingUpdates.current[materialId] =
       (pendingUpdates.current[materialId] || 0) + quantity
   }, [])
-
   const queueFacilityUpdate = useCallback((facilityId: string, newLevel: number) => {
     pendingFacilityUpdates.current[facilityId] = {
       ...pendingFacilityUpdates.current[facilityId],
       level: newLevel
+    }
+  }, [])
+
+  const queueProductionModeUpdate = useCallback((facilityId: string, mode: number) => {
+    pendingFacilityUpdates.current[facilityId] = {
+      ...pendingFacilityUpdates.current[facilityId],
+      productionMode: mode
     }
   }, [])
 
@@ -113,6 +120,7 @@ export function useBatchSync(
             facility_id: string
             updated_at: string
             current_level?: number
+            production_mode?: number
             assigned_monster_ids?: (string | null)[]
           } = {
             user_id: userId,
@@ -120,6 +128,7 @@ export function useBatchSync(
             updated_at: new Date().toISOString()
           }
           if (update.level !== undefined) record.current_level = update.level
+          if (update.productionMode !== undefined) record.production_mode = update.productionMode
           if (update.assignedMonsterIds !== undefined) record.assigned_monster_ids = update.assignedMonsterIds
           return record
         })
@@ -176,6 +185,7 @@ export function useBatchSync(
   return {
     queueUpdate,
     queueFacilityUpdate,
+    queueProductionModeUpdate,
     queueAssignmentUpdate,
     forceSyncNow,
     getPendingUpdates: () => ({ ...pendingUpdates.current }),

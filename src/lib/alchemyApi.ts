@@ -51,7 +51,7 @@ export async function getPlayerAlchemy(userId: string): Promise<PlayerAlchemy | 
     .from('player_alchemy')
     .select('level, experience, workshop_level, global_success_bonus, global_time_reduction')
     .eq('user_id', userId)
-    .single()
+    .maybeSingle()
 
   if (error) {
     // 데이터가 없으면 초기화
@@ -173,7 +173,7 @@ export async function getLastCollectedAt(userId: string): Promise<Date | null> {
     .select('amount')
     .eq('user_id', userId)
     .eq('resource_id', 'offline_reward_timestamp')
-    .single()
+    .maybeSingle()
 
   if (error) {
     return null
@@ -220,7 +220,7 @@ export async function getConsecutiveFailures(userId: string): Promise<number> {
     .select('amount')
     .eq('user_id', userId)
     .eq('resource_id', 'alchemy_consecutive_failures')
-    .single()
+    .maybeSingle()
 
   if (error) {
     return 0

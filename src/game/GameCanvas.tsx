@@ -472,7 +472,12 @@ export default function GameCanvas(props: GameCanvasProps) {
                                     {/* Material Name */}
                                     <span style={{ flex: 1 }}>{MATERIALS[materialId]?.name || materialId}</span>
                                     {/* Quantity */}
-                                    <span style={{ fontWeight: 'bold', color: '#fbbf24' }}>+{quantity}</span>
+                                    <span style={{
+                                        fontWeight: 'bold',
+                                        color: quantity >= 0 ? '#fbbf24' : '#ef4444'
+                                    }}>
+                                        {quantity >= 0 ? `+${quantity}` : quantity}
+                                    </span>
                                 </div>
                             ))}
                         </div>

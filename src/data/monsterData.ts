@@ -82,7 +82,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🧚',
         iconUrl: '/assets/monsters/fairySpirit.png',
         rarity: 'R',
-        element: 'wind'
+        element: 'wind',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '정령 기운 응축', value: 8 }
     },
     'wolf_dark': {
         name: '어둠 늑대',
@@ -94,7 +95,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐺',
         iconUrl: '/assets/monsters/hound_basic.png',
         rarity: 'SR',
-        element: 'dark'
+        element: 'dark',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '그림자 추적', value: 12 }
     },
     'slime_king': {
         name: '왕슬라임',
@@ -119,7 +121,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🔥',
         iconUrl: '/assets/monsters/ironGolem.png',
         rarity: 'SR',
-        element: 'fire'
+        element: 'fire',
+        factoryTrait: { targetFacility: 'blacksmith', effect: '화염의 열기 보조', value: 12 }
     },
     'slime_nightmare': {
         name: '악몽 슬라임',
@@ -131,7 +134,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '👻',
         iconUrl: '/assets/monsters/monster_slime_nightmare.png',
         rarity: 'R',
-        element: 'dark'
+        element: 'dark',
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '악몽 가루 추출', value: 10 }
     },
     'fairy_dawn': {
         name: '새벽 정령',
@@ -143,7 +147,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '✨',
         iconUrl: '/assets/monsters/monster_fairy_dawn.png',
         rarity: 'R',
-        element: 'light'
+        element: 'light',
+        factoryTrait: { targetFacility: 'training_ground', effect: '성장 경험치 증가', value: 10 }
     },
     'guardian_tiger': {
         name: '호랑이 수호령',
@@ -155,7 +160,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐯',
         iconUrl: '/assets/monsters/monster_guardian_tiger.png',
         rarity: 'SSR',
-        element: 'light'
+        element: 'light',
+        factoryTrait: { targetFacility: 'training_ground', effect: '훈련 파괴력 증가', value: 15 }
     },
     'slime_water': {
         name: '워터 슬라임',
@@ -168,7 +174,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/slime_water.png',
         rarity: 'R',
         element: 'water',
-        factoryTrait: { targetFacility: 'water_purifier', effect: '정화 속도 증가', value: 10 }
+        factoryTrait: { targetFacility: 'herb_farm', effect: '수분 공급 효율', value: 10 }
     },
     'slime_dark': {
         name: '다크 슬라임',
@@ -180,7 +186,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🌑',
         iconUrl: '/assets/monsters/slime_dark.png',
         rarity: 'R',
-        element: 'dark'
+        element: 'dark',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '어둠의 기습', value: 10 }
     },
     'golem_wood': {
         name: '나무 골렘',
@@ -192,7 +199,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🌳',
         iconUrl: '/assets/monsters/woodGolem.png',
         rarity: 'R',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '생태 정원 관리', value: 12 }
     },
     'mushroom': {
         name: '머쉬룸',
@@ -204,7 +212,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🍄',
         iconUrl: '/assets/monsters/mushroom.png',
         rarity: 'N',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '천연 비료 공급', value: 5 }
     },
     'mushroom_dark': {
         name: '다크 머쉬룸',
@@ -216,7 +225,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🍄',
         iconUrl: '/assets/monsters/mushroom_dark.png',
         rarity: 'R',
-        element: 'dark'
+        element: 'dark',
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '어둠 독소 정제', value: 8 }
     },
     'golem_gem': {
         name: '보석 골렘',
@@ -228,7 +238,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '💎',
         iconUrl: '/assets/monsters/golem_gem.png',
         rarity: 'SR',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'mine', effect: '희귀 광석 감별', value: 15 }
     },
     // 눈꽃 몬스터 (Snow/Ice Monsters)
     'snowflake_sprite': {
@@ -270,7 +281,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'water',
         drops: [
             { materialId: 'scrap_leather', chance: 60, min: 1, max: 2 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'monster_farm', effect: '행복도 고무', value: 5 }
     },
     'snow_fairy': {
         name: '설화 요정',
@@ -296,7 +308,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🟢',
         iconUrl: '/assets/monsters/slime_basic.png', // Placeholder
         rarity: 'N',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '기초 비료 비축', value: 3 }
     },
     'slime_blue': {
         name: '파랑 슬라임',
@@ -308,7 +321,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🔵',
         iconUrl: '/assets/monsters/slime_water.png', // Placeholder
         rarity: 'N',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '미세 수분 조절', value: 3 }
     },
     'lake_fairy': {
         name: '호수의 요정',
@@ -320,7 +334,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🧚‍♀️',
         iconUrl: '/assets/monsters/fairySpirit.png', // Placeholder
         rarity: 'R',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '맑은 영혼의 물', value: 10 }
     },
     'slime_water_giant': {
         name: '거대 워터 슬라임',
@@ -332,7 +347,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🌊',
         iconUrl: '/assets/monsters/slime_water_big.png',
         rarity: 'SR',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'monster_farm', effect: '물놀이 시설 가동', value: 15 }
     },
     'crystal_mite': {
         name: '수정 진드기',
@@ -344,7 +360,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🕷️',
         iconUrl: '/assets/monsters/gem_ant.png',
         rarity: 'N',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'mine', effect: '정밀 채굴 보조', value: 8 }
     },
     'mana_spirit': {
         name: '마력의 정령',
@@ -356,7 +373,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '✨',
         iconUrl: '/assets/monsters/gem_spirit.png',
         rarity: 'R',
-        element: 'light'
+        element: 'light',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '마력 파동 증폭', value: 12 }
     },
     'crystal_golem': {
         name: '수정 골렘',
@@ -368,7 +386,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '💎',
         iconUrl: '/assets/monsters/crystal_golem.png',
         rarity: 'SR',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'mine', effect: '광산 견고함 증대', value: 18 }
     },
     // Christmas Dungeon Enemies (크리스마스 던전 적)
     'snowball_slime': {
@@ -381,7 +400,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '⛄',
         iconUrl: '/assets/monsters/monster_ice_slime.png',
         rarity: 'N',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'monster_farm', effect: '겨울 분위기 조성', value: 8 }
     },
     'frost_sprite': {
         name: '서리 요정',
@@ -393,7 +413,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '❄️',
         iconUrl: '/assets/monsters/monster_snowflake_sprite.png',
         rarity: 'N',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '서리의 축복', value: 5 }
     },
     'ice_wolf': {
         name: '얼음 늑대',
@@ -405,7 +426,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐺',
         iconUrl: '/assets/monsters/ice_wolf.png',
         rarity: 'R',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '설원 추적 파견', value: 10 }
     },
     'christmas_tree_ent': {
         name: '크리스마스 트리 엔트',
@@ -417,19 +439,21 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🎄',
         iconUrl: '/assets/monsters/woodGolem.png',
         rarity: 'SR',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '겨울 숲 가꾸기', value: 12 }
     },
     'santa_golem': {
         name: '산타 골렘',
-        description: '겨울 왕국을 지키는 거대한 눈 골렘. 산타 복장을 하고 있지만 선물 대신 강력한 주먹을 선사합니다. 🎅',
-        role: '탱커',
+        description: '산타 모자를 쓴 거대한 얼음 골렘. 겨울 축제의 주인공으로서 선물을 나눠주며 아군에게 활력을 줍니다.',
+        role: '서포터',
         hp: 500,
         attack: 50,
         defense: 35,
         emoji: '🎅',
-        iconUrl: '/assets/monsters/santa_golem.png',
+        iconUrl: '/assets/monsters/monster_ice_slime.png',
         rarity: 'SR',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'monster_farm', effect: '겨울 축제 주동', value: 20 }
     },
     // Volcano Dungeon Enemies
     'fire_slime': {
@@ -442,7 +466,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🔥',
         iconUrl: '/assets/monsters/magma_slime.png',
         rarity: 'N',
-        element: 'fire'
+        element: 'fire',
+        factoryTrait: { targetFacility: 'blacksmith', effect: '용광로 온도 유지', value: 10 }
     },
     'magma_golem': {
         name: '마그마 골렘',
@@ -454,7 +479,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🌋',
         iconUrl: '/assets/monsters/magma_golem.png',
         rarity: 'SR',
-        element: 'fire'
+        element: 'fire',
+        factoryTrait: { targetFacility: 'blacksmith', effect: '무기 제련 강화', value: 18 }
     },
     // Sky Dungeon Enemies
     'cloud_slime': {
@@ -467,7 +493,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '☁️',
         iconUrl: '/assets/monsters/cloud_slime.png',
         rarity: 'N',
-        element: 'wind'
+        element: 'wind',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '공중 정찰 파견', value: 12 }
     },
     'sky_dragon_hatchling': {
         name: '스카이 드래곤 해츨링',
@@ -502,7 +529,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         drops: [
             { materialId: 'bear_skin', chance: 50, min: 1, max: 1 },
             { materialId: 'claw_sharp', chance: 40, min: 1, max: 2 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'training_ground', effect: '실전 야생 훈련', value: 15 }
     },
     'moss_snail': {
         name: '이끼 달팽이',
@@ -518,7 +546,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         drops: [
             { materialId: 'shell_snail', chance: 100, min: 1, max: 2 },
             { materialId: 'slime_fluid', chance: 50, min: 1, max: 1 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'herb_farm', effect: '토양 습도 유지', value: 5 }
     },
     'thorn_boar': {
         name: '가시 멧돼지',
@@ -534,7 +563,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         drops: [
             { materialId: 'tusk_boar', chance: 100, min: 1, max: 1 },
             { materialId: 'leather_beast', chance: 40, min: 1, max: 1 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '무력 돌격 파견', value: 8 }
     },
     'forest_spider': {
         name: '숲 거미',
@@ -550,7 +580,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         drops: [
             { materialId: 'silk_spider', chance: 100, min: 1, max: 2 },
             { materialId: 'herb_common', chance: 30, min: 1, max: 1 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '거미줄 재료 수급', value: 10 }
     },
     'acorn_squirrel': {
         name: '도토리 다람쥐',
@@ -566,7 +597,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         drops: [
             { materialId: 'acorn_magic', chance: 80, min: 1, max: 1 },
             { materialId: 'scrap_leather', chance: 40, min: 1, max: 1 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'monster_farm', effect: '비축량 관리', value: 5 }
     },
     'leaf_sprite': {
         name: '나뭇잎 정령',
@@ -582,7 +614,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         drops: [
             { materialId: 'leaf_life', chance: 100, min: 1, max: 1 },
             { materialId: 'spirit_dust', chance: 50, min: 1, max: 1 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'herb_farm', effect: '나뭇잎 영양제', value: 10 }
     },
     'penguin': {
         name: '아기 펭귄',
@@ -594,7 +627,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐧',
         iconUrl: '/assets/monsters/baby_penguin.png',
         rarity: 'N',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'monster_farm', effect: '빙판 놀이터', value: 10 }
     },
     'gazelle': {
         name: '바람 가젤',
@@ -610,7 +644,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         drops: [
             { materialId: 'scrap_leather', chance: 50, min: 1, max: 2 },
             { materialId: 'bone_fragment', chance: 30, min: 1, max: 1 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '바람의 전령', value: 12 }
     },
     // Conditional Monsters
     'owl_night': {
@@ -623,7 +658,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🦉',
         iconUrl: '/assets/monsters/owl_night.png',
         rarity: 'R',
-        element: 'wind'
+        element: 'wind',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '야간 시야 정찰', value: 15 }
     },
     'rooster_morning': {
         name: '새벽의 닭',
@@ -635,7 +671,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐓',
         iconUrl: '/assets/monsters/rooster_morning.png',
         rarity: 'N',
-        element: 'fire'
+        element: 'fire',
+        factoryTrait: { targetFacility: 'training_ground', effect: '새벽 정신 수양', value: 8 }
     },
     'turtle_weekend': {
         name: '주말 거북이',
@@ -647,7 +684,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐢',
         iconUrl: '/assets/monsters/turtle_weekend.png',
         rarity: 'R',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'monster_farm', effect: '주말의 안식', value: 20 }
     },
     'golem_desktop': {
         name: 'PC 골렘',
@@ -659,7 +697,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🖥️',
         iconUrl: '/assets/monsters/golem_desktop.png',
         rarity: 'SSR',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '고급 연계 연산', value: 25 }
     },
     'slime_mobile': {
         name: '모바일 슬라임',
@@ -671,7 +710,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '📱',
         iconUrl: '/assets/monsters/slime_mobile.png',
         rarity: 'R',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '포터블 빠른 파견', value: 12 }
     },
 
     // ==========================================
@@ -708,7 +748,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/angel_arch.png',
         rarity: 'SSR',
         element: 'light',
-        factoryTrait: { targetFacility: 'cathedral', effect: '성스러운 기운 증가', value: 20 },
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '천상의 빛 하사', value: 20 },
         drops: [
             { materialId: 'angel_feather', chance: 100, min: 1, max: 1 },
             { materialId: 'shard_light', chance: 50, min: 2, max: 3 },
@@ -730,7 +770,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'demon_horn', chance: 100, min: 1, max: 1 },
             { materialId: 'dark_crystal', chance: 60, min: 2, max: 4 },
             { materialId: 'soul_fragment', chance: 30, min: 1, max: 2 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'training_ground', effect: '공포의 실전 압축', value: 30 }
     },
     'kraken_abyss': {
         name: '심연의 크라켄',
@@ -747,7 +788,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'kraken_leg', chance: 100, min: 1, max: 1 },
             { materialId: 'shard_water', chance: 60, min: 5, max: 8 },
             { materialId: 'gem_fragment', chance: 30, min: 2, max: 3 }
-        ]
+        ],
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '심해 보물 인양', value: 25 }
     },
 
     // SR Monsters
@@ -761,7 +803,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '👻',
         iconUrl: '/assets/monsters/knight_spectral.png',
         rarity: 'SR',
-        element: 'dark'
+        element: 'dark',
+        factoryTrait: { targetFacility: 'training_ground', effect: '유령 기사단 규율', value: 18 }
     },
     'shaman_goblin': {
         name: '고블린 대주술사',
@@ -773,7 +816,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '👺',
         iconUrl: '/assets/monsters/shaman_goblin.png',
         rarity: 'SR',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '주술적 지혜 공유', value: 18 }
     },
     'assassin_shadow': {
         name: '그림자 암살자',
@@ -785,7 +829,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🥷',
         iconUrl: '/assets/monsters/assassin_shadow.png',
         rarity: 'SR',
-        element: 'dark'
+        element: 'dark',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '그림자 암살 수행', value: 20 }
     },
     'phoenix_baby': {
         name: '아기 불사조',
@@ -797,7 +842,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🐦',
         iconUrl: '/assets/monsters/phoenix_baby.png',
         rarity: 'SR',
-        element: 'fire'
+        element: 'fire',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '불멸의 온기 주입', value: 15 }
     },
     'yeti_ancient': {
         name: '고대 예티',
@@ -809,7 +855,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🦍',
         iconUrl: '/assets/monsters/yeti_ancient.png',
         rarity: 'SR',
-        element: 'water'
+        element: 'water',
+        factoryTrait: { targetFacility: 'mine', effect: '극한 지형 채굴', value: 12 }
     },
     // New Craftable Monsters (Using new materials)
     'skeleton_soldier': {
@@ -822,7 +869,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '💀',
         iconUrl: '/assets/monsters/skeleton.png',
         rarity: 'N',
-        element: 'dark'
+        element: 'dark',
+        factoryTrait: { targetFacility: 'training_ground', effect: '불멸의 전투 훈련', value: 5 }
     },
     'scarecrow': {
         name: '허수아비',
@@ -834,7 +882,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🌾',
         iconUrl: '/assets/monsters/scarecrow.png',
         rarity: 'N',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '조류 접근 금지', value: 5 }
     },
     'copper_golem': {
         name: '구리 골렘',
@@ -846,7 +895,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🥉',
         iconUrl: '/assets/monsters/ironGolem.png',
         rarity: 'N',
-        element: 'earth'
+        element: 'earth',
+        factoryTrait: { targetFacility: 'blacksmith', effect: '구리 연성 보조', value: 8 }
     },
     'silver_wolf': {
         name: '은빛 늑대',
@@ -858,7 +908,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🥈',
         iconUrl: '/assets/monsters/ice_wolf.png',
         rarity: 'R',
-        element: 'light'
+        element: 'light',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '은빛 정찰 파견', value: 10 }
     },
     'golden_bat': {
         name: '황금 박쥐',
@@ -870,7 +921,8 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         emoji: '🦇',
         iconUrl: '/assets/monsters/owl_night.png', // Fallback to owl (winged)
         rarity: 'SR',
-        element: 'wind'
+        element: 'wind',
+        factoryTrait: { targetFacility: 'mine', effect: '황금 광맥 발견', value: 12 }
     }
 }
 

@@ -348,9 +348,11 @@
                     "stats": {
                         "intervalSeconds": 30,
                         "bundlesPerTick": 1,
-                        "dropRates": {},
+                        "dropRates": {
+                            "potion_base": 1.0
+                        },
                         "cost": {
-                            "herb_common": 3
+                            "herb_common": 2
                         }
                     },
                     "upgradeCost": {
@@ -364,9 +366,11 @@
                     "stats": {
                         "intervalSeconds": 25,
                         "bundlesPerTick": 1,
-                        "dropRates": {},
+                        "dropRates": {
+                            "potion_base": 1.0
+                        },
                         "cost": {
-                            "herb_common": 5
+                            "herb_common": 4
                         }
                     },
                     "upgradeCost": {
@@ -381,7 +385,9 @@
                     "stats": {
                         "intervalSeconds": 20,
                         "bundlesPerTick": 2,
-                        "dropRates": {},
+                        "dropRates": {
+                            "potion_base": 1.0
+                        },
                         "cost": {
                             "herb_rare": 1
                         }

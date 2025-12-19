@@ -8,7 +8,8 @@ export const CONSUMABLE_EFFECTS: Record<string, ConsumableEffect> = {
     'potion_mp_small': { type: 'HEAL_HP', value: 30 },  // MP 없으므로 HP로 대체
     'potion_stamina': { type: 'BUFF_ATK', value: 20, duration: 3 },
     'potion_ironskin': { type: 'BUFF_DEF', value: 30, duration: 3 },
-    'potion_light': { type: 'CURE_STATUS', value: 0 }  // 상태이상 해제
+    'potion_light': { type: 'CURE_STATUS', value: 0 },  // 상태이상 해제
+    'potion_base': { type: 'HEAL_HP', value: 5 } // 미미한 회복 효과 가진 베이스 포션
 }
 export const MATERIALS: Record<string, Material> = {
     'herb_common': { id: 'herb_common', name: '일반 약초', type: 'PLANT', description: '흔하게 볼 수 있는 약초.', rarity: 'N', iconUrl: '/assets/materials/herb_common.png', sellPrice: 10 },
@@ -71,11 +72,12 @@ export const MATERIALS: Record<string, Material> = {
     'wood_branch': { id: 'wood_branch', name: '나뭇가지', type: 'PLANT', description: '마력이 깃든 나뭇가지.', rarity: 'N', iconUrl: '/assets/materials/wood_branch.png' },
 
     // Consumables (Potions)
-    'potion_hp_small': { id: 'potion_hp_small', name: '소형 체력 포션', type: 'CONSUMABLE', description: '체력을 50 회복시켜줍니다.', rarity: 'N', iconUrl: '/assets/materials/potion_hp_small.png', sellPrice: 20 },
-    'potion_mp_small': { id: 'potion_mp_small', name: '소형 마나 포션', type: 'CONSUMABLE', description: '마나를 30 회복시켜줍니다.', rarity: 'N', iconUrl: '/assets/materials/potion_mp_small.png', sellPrice: 20 },
-    'potion_stamina': { id: 'potion_stamina', name: '스태미나 포션', type: 'CONSUMABLE', description: '활력을 불어넣어주는 포션.', rarity: 'N', iconUrl: '/assets/materials/potion_stamina.png', sellPrice: 30 },
-    'potion_ironskin': { id: 'potion_ironskin', name: '강철 피부 포션', type: 'CONSUMABLE', description: '피부를 단단하게 만들어주는 포션.', rarity: 'N', iconUrl: '/assets/materials/potion_ironskin.png', sellPrice: 40 },
-    'potion_light': { id: 'potion_light', name: '빛의 물약', type: 'CONSUMABLE', description: '어둠을 밝혀주는 빛나는 물약.', rarity: 'R', iconUrl: '/assets/materials/potion_light.png', sellPrice: 60 },
+    'potion_hp_small': { id: 'potion_hp_small', name: '소형 체력 포션', type: 'CONSUMABLE', description: '체력을 50 회복시켜줍니다.', rarity: 'N', iconUrl: '/assets/useItem/potion_hp_small.png', sellPrice: 20 },
+    'potion_mp_small': { id: 'potion_mp_small', name: '소형 마나 포션', type: 'CONSUMABLE', description: '마나를 30 회복시켜줍니다.', rarity: 'N', iconUrl: '/assets/useItem/potion_mp_small.png', sellPrice: 20 },
+    'potion_stamina': { id: 'potion_stamina', name: '스태미나 포션', type: 'CONSUMABLE', description: '활력을 불어넣어주는 포션.', rarity: 'N', iconUrl: '/assets/useItem/potion_stamina.png', sellPrice: 30 },
+    'potion_ironskin': { id: 'potion_ironskin', name: '강철 피부 포션', type: 'CONSUMABLE', description: '피부를 단단하게 만들어주는 포션.', rarity: 'N', iconUrl: '/assets/useItem/potion_ironskin.png', sellPrice: 40 },
+    'potion_light': { id: 'potion_light', name: '빛의 물약', type: 'CONSUMABLE', description: '어둠을 밝혀주는 빛나는 물약.', rarity: 'R', iconUrl: '/assets/useItem/potion_light.png', sellPrice: 60 },
+    'potion_base': { id: 'potion_base', name: '베이스 포션', type: 'CONSUMABLE', description: '모든 연금술 포션의 기초가 되는 액체.', rarity: 'N', iconUrl: '/assets/useItem/basic_potion.png', sellPrice: 5 },
 
     // Mining Tiers
     'stone': { id: 'stone', name: '돌멩이', type: 'MINERAL', description: '흔히 볼 수 있는 돌멩이입니다. 단단해서 던지면 아픕니다.', rarity: 'N', iconUrl: '/assets/materials/stone.png', sellPrice: 1 },
@@ -169,7 +171,8 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 100,
         ingredients: [
-            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 1, isCatalyst: false },
             { materialId: 'slime_fluid', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -189,7 +192,8 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false, // Initially visible
         priority: 99,
         ingredients: [
-            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 1, isCatalyst: false },
             { materialId: 'crystal_mana', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -209,7 +213,8 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 98,
         ingredients: [
-            { materialId: 'herb_common', quantity: 3, isCatalyst: false },
+            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
             { materialId: 'stone', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -229,7 +234,8 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 97,
         ingredients: [
-            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 1, isCatalyst: false },
             { materialId: 'ore_iron', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -249,7 +255,8 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 96,
         ingredients: [
-            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 1, isCatalyst: false },
             { materialId: 'spirit_dust', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -1201,6 +1208,7 @@ export function getMaterialsForDB() {
         'BEAST': 'BEAST',
         'SLIME': 'SLIME',
         'SPIRIT': 'SPIRIT',
+        'CONSUMABLE': 'ITEM',
         'SPECIAL': 'MINERAL' // SPECIAL은 MINERAL로 매핑하고 is_special=true로 설정
     }
 

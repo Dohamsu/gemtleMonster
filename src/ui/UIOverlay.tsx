@@ -20,7 +20,7 @@ export default function UIOverlay() {
 
     // Phase 1: 배치 동기화 시스템
     const { loadAllData } = useAlchemyStore()
-    const { queueUpdate, queueFacilityUpdate, queueAssignmentUpdate, forceSyncNow } = useBatchSync(user?.id, {
+    const { queueUpdate, queueFacilityUpdate, queueProductionModeUpdate, queueAssignmentUpdate, forceSyncNow } = useBatchSync(user?.id, {
         batchInterval: 30000, // 30초마다 자동 저장
         onSyncComplete: (success) => {
             if (success) {
@@ -141,6 +141,9 @@ export default function UIOverlay() {
             useGameStore.getState().setBatchAssignmentSyncCallback((facilityId: string, monsterId: string | null, slotIndex: number) => {
                 queueAssignmentUpdateRef.current(facilityId, monsterId, slotIndex)
             })
+            useGameStore.getState().setBatchProductionModeSyncCallback((facilityId: string, mode: number) => {
+                queueProductionModeUpdate(facilityId, mode)
+            })
         }
 
         return () => {
@@ -148,6 +151,7 @@ export default function UIOverlay() {
             useAlchemyStore.getState().setForceSyncCallback(null)
             useGameStore.getState().setBatchFacilitySyncCallback(null)
             useGameStore.getState().setBatchAssignmentSyncCallback(null)
+            useGameStore.getState().setBatchProductionModeSyncCallback(null)
         }
     }, [user?.id]) // queueUpdate, forceSyncNow 의존성 제거
 
