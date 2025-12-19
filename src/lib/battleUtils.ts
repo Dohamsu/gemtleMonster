@@ -149,15 +149,17 @@ export function calculateDamage(
 
 /**
  * Process Status Effects (Turn Start/End)
- * Returns logs and damage taken from effects (Burn/Poison)
+ * Returns logs and damage taken/healing received from effects (Burn/Poison/Regen)
  */
 export function processStatusEffects(entity: BattleEntity): {
     updatedEntity: BattleEntity
     logs: string[]
     damageTaken: number
+    healingReceived: number
 } {
     const logs: string[] = []
     let damageTaken = 0
+    let healingReceived = 0
     const activeEffects: StatusEffect[] = []
 
     // Create a copy to modify stats if needed (though stats are usually recalculated from base + effects)
@@ -175,12 +177,8 @@ export function processStatusEffects(entity: BattleEntity): {
             damageTaken += dmg
             // logs.push(`${entity.name}은(는) 독으로 ${dmg}의 피해를 입었습니다.`)
         } else if (effect.type === 'REGEN') {
-            // Handle positive effects (Heal) - wait, this function returns "damageTaken". 
-            // We might need "healingReceived" too, or just negative damage?
-            // Let's stick to damage for now for DoT. Healing should probably be handled separately or passed back.
-            // Simple hack: negative damage = heal
             const heal = Math.floor(entity.maxHp * 0.05)
-            damageTaken -= heal
+            healingReceived += heal
         }
 
         // Decrement Duration
@@ -194,13 +192,18 @@ export function processStatusEffects(entity: BattleEntity): {
 
     nextEntity.statusEffects = activeEffects
 
-    // Apply final HP change
-    nextEntity.hp = Math.max(0, Math.min(nextEntity.maxHp, nextEntity.hp - damageTaken))
+    // Apply final HP change (Heal first, then damage, but clamp to bounds)
+    // Actually, simple way: current - damage + healing
+    let newHp = nextEntity.hp - damageTaken + healingReceived
+    newHp = Math.max(0, Math.min(nextEntity.maxHp, newHp))
+
+    nextEntity.hp = newHp
 
     return {
         updatedEntity: nextEntity,
         logs,
-        damageTaken
+        damageTaken,
+        healingReceived
     }
 }
 
