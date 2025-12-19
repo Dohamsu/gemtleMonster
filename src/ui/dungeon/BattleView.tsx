@@ -147,21 +147,43 @@ export default function BattleView() {
         }
     }, [battleState?.logs, battleState?.result])
 
+    const isProcessingRef = useRef(false)
+
     // Auto-battle loop
     useEffect(() => {
         if (!battleState || battleState.result) return
 
         let timerId: ReturnType<typeof setTimeout> | undefined
+        let isMounted = true
 
         const runTurn = async () => {
-            await processTurn()
-            // Turn 간격을 배속에 맞춰 조정
-            timerId = setTimeout(runTurn, 1000 / battleSpeed)
+            if (!isMounted) return
+
+            // 1. Check Lock: If a turn is already processing (e.g. from previous effect), wait and retry.
+            if (isProcessingRef.current) {
+                timerId = setTimeout(runTurn, 100) // Spin-wait (check again in 100ms)
+                return
+            }
+
+            // 2. Acquire Lock
+            isProcessingRef.current = true
+            try {
+                await processTurn()
+            } finally {
+                // 3. Release Lock
+                isProcessingRef.current = false
+            }
+
+            // 4. Schedule next turn if still mounted
+            if (isMounted) {
+                timerId = setTimeout(runTurn, 1000 / battleSpeed)
+            }
         }
 
         timerId = setTimeout(runTurn, 1000 / battleSpeed)
 
         return () => {
+            isMounted = false
             if (timerId) clearTimeout(timerId)
         }
     }, [battleState?.isBattling, battleState?.result, processTurn, battleSpeed]) // eslint-disable-line react-hooks/exhaustive-deps

@@ -833,8 +833,9 @@ export const useGameStore = create<GameState>((set, get) => ({
             } : null
         }))
 
-        // Wait for visual delay (500ms)
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Wait for visual delay (500ms) - Adjusted by Battle Speed
+        const currentSpeed = get().battleSpeed || 1
+        await new Promise(resolve => setTimeout(resolve, 500 / currentSpeed))
 
         // --------------------------------------------------------
         // Phase 2: Enemy Attack (if alive)

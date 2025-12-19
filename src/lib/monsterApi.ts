@@ -169,20 +169,7 @@ export async function updateMonsterExp(
   const { processLevelUp } = await import('./monsterLevelUtils')
   const { getNewlyUnlockedSkills } = await import('../data/monsterSkillData')
 
-  // 지수형 경험치 곡선 적용된 레벨업 처리
-  // Note: updateMonsterExp에서는 현재 초월 레벨을 알 수 없어 기본 maxLevel을 사용합니다.
-  // 정확한 처리를 위해서는 awakening_level을 인자로 받아야 하지만, 
-  // 기존 코드 호환성을 위해 우선 기본 maxLevel 로직을 유지하거나, 필요한 경우 DB 조회를 해야 합니다.
-  // 여기서는 getMaxLevel 호출 시 awakeningLevel을 0으로 가정하거나, 호출처에서 처리해야 합니다.
-  // processLevelUp 내부에서 getMaxLevel을 호출하므로, processLevelUp도 수정이 필요할 수 있습니다.
-  // 하지만 monsterLevelUtils.ts의 processLevelUp은 내부적으로 getMaxLevel(rarity)를 호출합니다.
-  // 이를 awakeningLevel을 받도록 수정해야 완벽하지만, 일단은 0으로 처리됩니다.
-  // *Critical Fix*: processLevelUp이 내부적으로 getMaxLevel(rarity)만 호출하면 초월로 늘어난 만렙을 인식 못함.
-  // 따라서 processLevelUp에 awakeningLevel 인자를 추가해야 함 (lib 수정 필요).
-  // 일단 여기서는 기존 로직대로 호출하고, 추후 processLevelUp 시그니처 변경에 대응해야 합니다.
-
-  // For now, let's assume awakeningLevel is 0 here to avoid breaking without reading current awakening.
-  // DB에서 읽어오는게 가장 안전.
+  // awakening_level 조회
   const { data: currentMonster } = await supabase
     .from('player_monster')
     .select('awakening_level')
@@ -191,16 +178,7 @@ export async function updateMonsterExp(
 
   const currentAwakeningLevel = currentMonster?.awakening_level || 0
 
-  // We need to update processLevelUp to accept awakeningLevel.
-  // Since I haven't updated processLevelUp signature in step 2 (I only updated getMaxLevel/calculateStats),
-  // I must update processLevelUp in monsterLevelUtils.ts FIRST or pass a custom maxLevel if possible.
-  // Let's look at monsterLevelUtils.ts again... I missed processLevelUp in previous step.
-  // I will fix monsterLevelUtils.ts in next step or use a workaround.
-  // Workaround: processLevelUp imports getMaxLevel, but I changed getMaxLevel signature to (rarity, awakening=0).
-  // So existing processLevelUp using getMaxLevel(rarity) works but uses 0 awakening.
-  // This means leveled up monsters won't reach expanded cap. THIS IS A BUG.
-  // I will fix monsterLevelUtils.ts processLevelUp in a separate tool call.
-
+  // awakeningLevel을 포함하여 레벨업 처리 (최대 레벨 확장 적용)
   const result = processLevelUp(currentLevel, currentExp, addedExp, rarity, currentAwakeningLevel)
   const { newLevel, newExp, leveledUp, levelsGained } = result
 
@@ -296,11 +274,8 @@ export async function awakenMonster(
   const target = monsters.find(m => m.id === targetMonsterId)
   if (!target) return { success: false, newAwakeningLevel: 0, error: '대상 몬스터 오류' }
 
-  // 2. Validate conditions
-  if (target.awakening_level + materialMonsterIds.length > 5) { // Assuming MAX is 5
-    return { success: false, newAwakeningLevel: 0, error: '최대 초월 레벨을 초과합니다.' }
-  }
-
+  // 2. Validate conditions & Calculate Value
+  let addedValue = 0
   for (const matId of materialMonsterIds) {
     const material = monsters.find(m => m.id === matId)
     if (!material) return { success: false, newAwakeningLevel: 0, error: '재료 몬스터 오류' }
@@ -314,6 +289,15 @@ export async function awakenMonster(
     if (material.id === target.id) {
       return { success: false, newAwakeningLevel: 0, error: '자기 자신을 재료로 사용할 수 없습니다.' }
     }
+
+    // Calculate value: 1 + awakening_level (Matches utils/getMaterialValue logic)
+    addedValue += 1 + (material.awakening_level || 0)
+  }
+
+  const newAwakeningLevel = target.awakening_level + addedValue
+
+  if (newAwakeningLevel > 5) {
+    return { success: false, newAwakeningLevel: 0, error: `최대 초월 레벨(5)을 초과합니다. (현재: ${target.awakening_level}, 추가: ${addedValue})` }
   }
 
   // 3. Execute Transaction 
@@ -329,7 +313,7 @@ export async function awakenMonster(
   }
 
   // Update target
-  const newAwakeningLevel = target.awakening_level + materialMonsterIds.length
+  // newAwakeningLevel is already calculated above
   const { error: updateError } = await supabase
     .from('player_monster')
     .update({ awakening_level: newAwakeningLevel })

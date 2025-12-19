@@ -27,3 +27,11 @@ export function canAwaken(currentAwakeningLevel: number): boolean {
 export function getAwakeningSuccessRate(): number {
     return 100
 }
+/**
+ * 재료 몬스터의 가치 계산
+ * 기본 1 + 초월 레벨
+ * 예: 0초월 -> 1, 1초월 -> 2, ...
+ */
+export function getMaterialValue(monster: { awakening_level?: number }): number {
+    return 1 + (monster.awakening_level || 0)
+}

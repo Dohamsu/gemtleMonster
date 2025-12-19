@@ -15,6 +15,13 @@ interface AwakeningModalProps {
 export default function AwakeningModal({ targetMonster, onClose, onSuccess }: AwakeningModalProps) {
     const { user } = useAuth()
     const { playerMonsters, loadPlayerMonsters } = useAlchemyStore()
+
+    // Refresh data on mount to ensure fresh state
+    useState(() => {
+        if (user) {
+            loadPlayerMonsters(user.id).catch(console.error)
+        }
+    })
     const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([])
     const [isProcessing, setIsProcessing] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -34,17 +41,31 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
         if (selectedMaterialIds.includes(id)) {
             setSelectedMaterialIds(prev => prev.filter(mid => mid !== id))
         } else {
-            // Check max level limit
-            const currentLevel = targetMonster.awakening_level || 0
-            const projectedLevel = currentLevel + selectedMaterialIds.length + 1
-            if (projectedLevel > 5) return // Max level 5
-
+            // Allow selection even if it exceeds max level, but show warning later
             setSelectedMaterialIds(prev => [...prev, id])
         }
     }
 
+    // Calculate projected level
+    const currentLevel = targetMonster.awakening_level || 0
+    const addedValue = selectedMaterialIds.reduce((sum, id) => {
+        const mat = availableMaterials.find(m => m.id === id)
+        return sum + (1 + (mat?.awakening_level || 0))
+    }, 0)
+    const projectedLevel = currentLevel + addedValue
+    const isOverMax = projectedLevel > 5
+
     const handleAwaken = async () => {
-        if (!user || selectedMaterialIds.length === 0) return
+        console.log('🌟 [Awakening] Attempting to awaken:', { target: targetMonster.id, materials: selectedMaterialIds })
+
+        if (!user) {
+            console.error('❌ [Awakening] No user found')
+            setError('로그인이 필요합니다.')
+            return
+        }
+
+        if (selectedMaterialIds.length === 0) return
+
         setIsProcessing(true)
         setError(null)
         setAnimationState('ANIMATING')
@@ -55,12 +76,14 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
 
             // Actual API call
             const result = await awakenMonster(user.id, targetMonster.id, selectedMaterialIds)
+            console.log('✅ [Awakening] API Result:', result)
 
             if (result.success) {
                 // Success Flash
                 setResultLevel(result.newAwakeningLevel) // Store result
                 setAnimationState('SUCCESS')
                 await loadPlayerMonsters(user.id)
+                console.log('✅ [Awakening] Player data refreshed')
 
                 // Show success state for a moment
                 await new Promise(resolve => setTimeout(resolve, 2000)) // Increased duration slightly for reading
@@ -68,11 +91,12 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
                 onSuccess() // Trigger parent refresh
                 onClose()
             } else {
+                console.error('❌ [Awakening] Failed:', result.error)
                 setError(result.error || '초월에 실패했습니다.')
                 setAnimationState('SELECT')
             }
         } catch (err) {
-            console.error(err)
+            console.error('❌ [Awakening] Exception:', err)
             setError('시스템 오류가 발생했습니다.')
             setAnimationState('SELECT')
         } finally {
@@ -116,7 +140,8 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(8px)',
             display: 'flex', justifyContent: 'center', alignItems: 'center',
-            zIndex: 1100, padding: '20px'
+            zIndex: 1100, padding: '20px',
+            pointerEvents: 'auto'
         }} onClick={animationState === 'SELECT' ? onClose : undefined}>
             <style>{animationStyles}</style>
 
@@ -204,7 +229,10 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
                             <span style={{ color: '#93c5fd', fontWeight: 'bold' }}>{data.name}</span>을(를) 초월하시겠습니까?<br />
                             <span style={{ fontSize: '0.85em', color: '#94a3b8' }}>
                                 선택된 <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>{selectedMaterialIds.length}</span>마리의 재료는
-                                <span style={{ color: '#f87171' }}> 소멸</span>됩니다.
+                                <span style={{ color: '#f87171' }}> 소멸</span>됩니다.<br />
+                                <span style={{ color: isOverMax ? '#ef4444' : '#fbbf24' }}>
+                                    예상 결과: Lv.{targetMonster.awakening_level || 0} → Lv.{projectedLevel}
+                                </span>
                             </span>
                         </div>
 
@@ -281,9 +309,13 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
                             )}
                         </div>
 
-                        {error && (
-                            <div style={{ color: '#ef4444', textAlign: 'center', fontSize: '0.9em', background: 'rgba(220, 38, 38, 0.1)', padding: '8px', borderRadius: '8px' }}>
-                                {error}
+                        {/* Warning or Error Message */}
+                        {(error || isOverMax) && (
+                            <div style={{
+                                color: '#ef4444', textAlign: 'center', fontSize: '0.9em',
+                                background: 'rgba(220, 38, 38, 0.1)', padding: '8px', borderRadius: '8px'
+                            }}>
+                                {error || `최대 초월 레벨(5)을 초과할 수 없습니다. (예상: Lv.${projectedLevel})`}
                             </div>
                         )}
 
@@ -295,16 +327,16 @@ export default function AwakeningModal({ targetMonster, onClose, onSuccess }: Aw
 
                             <button
                                 onClick={handleAwaken}
-                                disabled={selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT'}
+                                disabled={selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT' || isOverMax}
                                 style={{
                                     padding: '10px 20px', borderRadius: '8px', border: 'none',
-                                    background: (selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT') ? '#94a3b8' : '#fbbf24',
-                                    color: (selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT') ? '#e2e8f0' : '#451a03',
-                                    cursor: (selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT') ? 'not-allowed' : 'pointer',
+                                    background: (selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT' || isOverMax) ? '#94a3b8' : '#fbbf24',
+                                    color: (selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT' || isOverMax) ? '#e2e8f0' : '#451a03',
+                                    cursor: (selectedMaterialIds.length === 0 || isProcessing || animationState !== 'SELECT' || isOverMax) ? 'not-allowed' : 'pointer',
                                     fontWeight: 'bold', display: 'flex', gap: '8px', alignItems: 'center'
                                 }}
                             >
-                                {isProcessing ? '처리 중...' : `초월하기 (+${selectedMaterialIds.length})`}
+                                {isProcessing ? '처리 중...' : `초월하기 (+${addedValue})`}
                             </button>
                         </div>
                     </>

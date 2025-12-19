@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import * as alchemyApi from '../lib/alchemyApi'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { useGameStore } from '../store/useGameStore'
+import { MONSTER_DATA } from '../data/monsterData'
 
 interface FacilityLevelStats {
   intervalSeconds: number
@@ -18,7 +19,7 @@ const MAX_OFFLINE_HOURS = 8 // 최대 8시간 보상
  * 오프라인 보상을 계산하고 지급하는 Hook
  *
  * @param userId - 사용자 ID
- * @param facilities - 외부에서 주입된 시설 데이터 (Race Condition 방지)
+ * @param facilities - 외부에서 주입된 시설 데이터 (Note: We also read from store for consistency with other hooks if needed, but props ensure race-prevention)
  * @param areFacilitiesLoading - 시설 데이터 로딩 여부 (from useFacilities)
  * @returns claimed: 보상 지급 여부, rewards: 지급된 보상
  */
@@ -30,49 +31,48 @@ export function useOfflineRewards(
   const [claimed, setClaimed] = useState(false)
   const [rewards, setRewards] = useState<Record<string, number>>({})
   const [elapsedTime, setElapsedTime] = useState(0)
-  // const { facilities } = useGameStore() // REMOVED: Use props instead to avoid sync delay
+
+  // Store access for Monster Traits & Production Modes
+  const { assignedMonsters, productionModes } = useGameStore()
+  const { playerMonsters, isLoading: isAlchemyLoading } = useAlchemyStore()
 
   const isCalculatingRef = useRef(false)
-
-  // 시설 데이터가 DB에서 로드되었는지 확인
   const facilitiesLoadedRef = useRef(false)
 
+  // Reset state on user change
   useEffect(() => {
-    // userID가 변경되면(로그아웃/로그인) 상태 초기화
-    if (userId) {
-      // 새 유저 로그인 시: 초기화는 필요 없으나(컴포넌트 키가 바뀌면 자동이지만, App 최상위라 안바뀜),
-      // 로그아웃 -> 로그인 시나리오에서 refs가 오염될 수 있음.
-      // 그러나 아래 useEffect에서 reset을 처리함.
-    } else {
-      // 로그아웃 시 상태 초기화
+    if (!userId) {
       setClaimed(false)
       setRewards({})
       setElapsedTime(0)
       facilitiesLoadedRef.current = false
       isCalculatingRef.current = false
-      // Note: claimed가 false가 되면 로딩 화면이 다시 나올 수 있음 (App.tsx 로직)
-      // 하지만 로그아웃 상태이므로 LoginScreen이 나옴.
     }
   }, [userId])
 
+  // Track facility loading state
   useEffect(() => {
-    // 시설 로딩이 완료되었으면 로드된 것으로 표시
-    // (기존에는 시설 개수로 추측했으나, 신규 유저는 기본 시설만 가지므로 추측 불가)
     if (!areFacilitiesLoading && !facilitiesLoadedRef.current) {
       facilitiesLoadedRef.current = true
       console.log('✅ [OfflineRewards] 시설 데이터 로드 확인 (로딩 완료)')
     } else if (areFacilitiesLoading) {
-      // 로딩 중으로 바뀌면(재로그인 등) 다시 false로 리셋
       facilitiesLoadedRef.current = false
     }
   }, [areFacilitiesLoading])
 
+  // Main Calculation Logic
   useEffect(() => {
+    // 1. Basic Checks
     if (!userId || claimed || isCalculatingRef.current) return
-
-    // 시설 데이터가 로드될 때까지 대기
     if (!facilitiesLoadedRef.current) {
       console.log('⏳ [OfflineRewards] 시설 데이터 로드 대기 중...')
+      return
+    }
+
+    // 2. Wait for Alchemy Data (Player Monsters) for Traits
+    // Even if no monsters, useAlchemyStore should finish loading to confirm empty list.
+    if (isAlchemyLoading) {
+      console.log('⏳ [OfflineRewards] 플레이어 데이터(몬스터) 로드 대기 중...')
       return
     }
 
@@ -82,7 +82,7 @@ export function useOfflineRewards(
         useGameStore.getState().setIsOfflineProcessing(true) // Start critical section
         console.log('🎁 [OfflineRewards] 오프라인 보상 계산 시작...')
 
-        // 1. 마지막 수집 시간 가져오기
+        // --- Step 1: Time Calculation ---
         const lastCollectedAt = await alchemyApi.getLastCollectedAt(userId)
         if (!lastCollectedAt) {
           console.log('ℹ️ [OfflineRewards] 마지막 수집 시간 없음 (첫 접속)')
@@ -91,210 +91,212 @@ export function useOfflineRewards(
           return
         }
 
-        // 2. 경과 시간 계산
         const now = new Date()
         const elapsedMs = now.getTime() - lastCollectedAt.getTime()
         const elapsedSeconds = Math.floor(elapsedMs / 1000)
 
-        // 최소 시간 체크 (5분 미만이면 보상 없음)
+        // Minimum time check (5 minutes)
         if (elapsedSeconds < 60 * 5) {
           console.log('ℹ️ [OfflineRewards] 경과 시간 너무 짧음:', elapsedSeconds, '초')
-
-          // 마지막 수집 시간 업데이트 (자동 수집이 10분 초과로 멈추는 것 방지)
-          const now = new Date()
           await alchemyApi.updateLastCollectedAt(userId, now)
 
-          // 로컬 스토어 수집 시간도 업데이트
+          // Sync local lastCollectedAt to avoid double counting
           const gameStore = useGameStore.getState()
           const nowTime = now.getTime()
-          Object.keys(facilities).forEach(facilityId => {
-            const level = facilities[facilityId]
-            if (level > 0) {
-              for (let l = 1; l <= level; l++) {
-                gameStore.setLastCollectedAt(`${facilityId}-${l}`, nowTime)
-              }
-            }
+          Object.entries(facilities).forEach(([fid, level]) => {
+            if (level > 0) gameStore.setLastCollectedAt(`${fid}-${level}`, nowTime)
           })
 
           setClaimed(true)
           return
         }
 
-        // 최대 시간 제한 (8시간)
         const maxSeconds = MAX_OFFLINE_HOURS * 60 * 60
         const cappedSeconds = Math.min(elapsedSeconds, maxSeconds)
 
-        console.log(`⏱️ [OfflineRewards] 경과 시간: ${elapsedSeconds}초 (${Math.floor(elapsedSeconds / 60)}분)`)
-        console.log(`⏱️ [OfflineRewards] 보상 계산 시간: ${cappedSeconds}초 (${Math.floor(cappedSeconds / 60)}분)`)
-
+        console.log(`⏱️ [OfflineRewards] 경과 시간: ${elapsedSeconds}초 (적용: ${cappedSeconds}초)`)
         setElapsedTime(cappedSeconds)
 
-        // 3. 시설 정보 가져오기
-        const { data: facilitiesData } = await supabase
-          .from('facility')
-          .select('id, name, category')
-
+        // --- Step 2: Fetch Master Data ---
         const { data: levelsData } = await supabase
           .from('facility_level')
           .select('facility_id, level, stats')
 
-        if (!facilitiesData || !levelsData) {
+        if (!levelsData) {
           console.error('❌ [OfflineRewards] 시설 데이터 로드 실패')
           setClaimed(true)
           return
         }
 
-        // Fetch current materials for cost calculation
+        // --- Step 3: Player Resources (for Cost) ---
         const playerMaterials = await alchemyApi.getPlayerMaterials(userId)
-        // Convert array to record for faster lookup: { material_id: quantity }
         const currentMaterials: Record<string, number> = {}
         playerMaterials.forEach(m => {
           currentMaterials[m.material_id] = m.quantity
         })
 
-        // 4. 각 시설/레벨별 생산량 계산
+        // --- Step 4: Calculate Per Facility ---
         const totalRewards: Record<string, number> = {}
-
-        console.log('🏭 [OfflineRewards] 계산 기준 시설 정보:', facilities)
 
         for (const [facilityId, currentLevel] of Object.entries(facilities)) {
           if (currentLevel <= 0) continue
 
-          for (let level = 1; level <= currentLevel; level++) {
-            const levelData = levelsData.find(l => l.facility_id === facilityId && l.level === level)
-            if (!levelData) continue
+          // MATCHING useAutoCollection: Only process current level
+          // Get Interval Stats (Current Level)
+          const intervalLevelData = levelsData.find(l => l.facility_id === facilityId && l.level === currentLevel)
+          if (!intervalLevelData) continue
 
-            const stats = levelData.stats as FacilityLevelStats
-            const intervalSeconds = stats.intervalSeconds
+          const intervalStats = intervalLevelData.stats as FacilityLevelStats
 
-            // 1. 이론상 최대 생산 횟수 (시간 기준)
-            const maxProductionByTime = Math.floor(cappedSeconds / intervalSeconds)
-            if (maxProductionByTime <= 0) continue
+          // Get Drop Stats (Target Mode or Current Level)
+          const targetModeLevel = productionModes[facilityId]
+          let dropStats = intervalStats
 
-            let actualProductionCount = maxProductionByTime
-
-            // 2. 비용이 있는 경우, 자원 기준 최대 생산 횟수 계산
-            if (stats.cost && Object.keys(stats.cost).length > 0) {
-              let maxAffordable = maxProductionByTime
-
-              for (const [costId, costAmount] of Object.entries(stats.cost)) {
-                const available = currentMaterials[costId] || 0
-                const affordable = Math.floor(available / costAmount)
-                maxAffordable = Math.min(maxAffordable, affordable)
-              }
-
-              actualProductionCount = maxAffordable
+          if (targetModeLevel && targetModeLevel < currentLevel) {
+            const targetData = levelsData.find(l => l.facility_id === facilityId && l.level === targetModeLevel)
+            if (targetData) {
+              dropStats = targetData.stats as FacilityLevelStats
             }
+          }
 
-            if (actualProductionCount <= 0) continue
+          // --- Monster Traits Calculation ---
+          let bonusSpeed = 0
+          let bonusAmount = 0
 
-            // 3. 자원 소모 기록 (비용이 있는 경우)
-            if (stats.cost) {
-              for (const [costId, costAmount] of Object.entries(stats.cost)) {
-                // 소모량은 음수로 기록
-                const totalCost = costAmount * actualProductionCount
-                totalRewards[costId] = (totalRewards[costId] || 0) - totalCost
-
-                // 로컬 계산용 잔여 자원 차감 (같은 루프 내 다른 시설 영향을 위해)
-                currentMaterials[costId] = (currentMaterials[costId] || 0) - totalCost
+          const assignedIds = assignedMonsters[facilityId]
+          if (Array.isArray(assignedIds)) {
+            assignedIds.forEach(id => {
+              if (!id) return
+              const playerMonster = playerMonsters.find(m => m.id === id)
+              if (playerMonster) {
+                const monsterData = MONSTER_DATA[playerMonster.monster_id]
+                if (monsterData?.factoryTrait && monsterData.factoryTrait.targetFacility === facilityId) {
+                  if (monsterData.factoryTrait.effect.includes('속도')) {
+                    bonusSpeed += monsterData.factoryTrait.value
+                  } else if (monsterData.factoryTrait.effect === '생산량 증가') {
+                    bonusAmount += monsterData.factoryTrait.value
+                  }
+                }
               }
+            })
+          }
+          if (bonusSpeed > 90) bonusSpeed = 90
+
+          // --- Production Logic ---
+          // 1. Calculate Modified Interval
+          const intervalMs = (intervalStats.intervalSeconds * (1 - bonusSpeed / 100)) * 1000
+          const intervalSec = intervalMs / 1000
+
+          // 2. Calculate Total Ticks possible in elapsed time
+          const maxTicks = Math.floor(cappedSeconds / intervalSec)
+          if (maxTicks <= 0) continue
+
+          // 3. Calculate Bundles per Tick (averaged with bonus)
+          // Average yield = Base * (1 + Bonus/100)
+          const bundlesPerTickAvg = intervalStats.bundlesPerTick * (1 + bonusAmount / 100)
+
+          // 4. Calculate Max Possible based on Costs
+          let actualTicks = maxTicks
+          if (dropStats.cost && Object.keys(dropStats.cost).length > 0) {
+            let maxAffordableTicks = maxTicks
+
+            for (const [costId, costPerAction] of Object.entries(dropStats.cost)) {
+              const available = currentMaterials[costId] || 0
+              const affordableTicks = Math.floor(available / costPerAction)
+              maxAffordableTicks = Math.min(maxAffordableTicks, affordableTicks)
             }
+            actualTicks = maxAffordableTicks
+          }
 
-            // 4. 생산품 추가
-            // 각 생산마다 확률 기반으로 재료 선택
-            for (let i = 0; i < actualProductionCount; i++) {
-              const random = Math.random()
-              let cumulativeProbability = 0
+          if (actualTicks <= 0) continue
 
-              for (const [materialId, dropRate] of Object.entries(stats.dropRates)) {
-                cumulativeProbability += dropRate
-                if (random < cumulativeProbability) {
-                  totalRewards[materialId] = (totalRewards[materialId] || 0) + stats.bundlesPerTick
-                  break
+          // 5. Apply Cost
+          if (dropStats.cost) {
+            for (const [costId, costPerAction] of Object.entries(dropStats.cost)) {
+              const totalCost = costPerAction * actualTicks
+              totalRewards[costId] = (totalRewards[costId] || 0) - totalCost
+              currentMaterials[costId] = (currentMaterials[costId] || 0) - totalCost
+            }
+          }
+
+          // 6. Apply Rewards
+          // Total Bundles = actualTicks * bundlesPerTickAvg
+          // For each item in dropRates:
+          // Expected Hits = actualTicks * dropRate
+          // Quantity = Expected Hits * bundlesPerTickAvg
+
+          if (dropStats.dropRates) {
+            for (const [materialId, rate] of Object.entries(dropStats.dropRates)) {
+              const expectedHits = Math.floor(actualTicks * rate)
+              // Add probability for remainder? E.g. 10.5 hits
+              const remainder = (actualTicks * rate) - expectedHits
+              const extraHit = Math.random() < remainder ? 1 : 0
+              const totalHits = expectedHits + extraHit
+
+              if (totalHits > 0) {
+                // Calculate quantity for these hits
+                // Each hit gives 'bundlesPerTickAvg' items
+                // We can use same averaging logic: Floor(Total) + random
+                const totalQuantity = totalHits * bundlesPerTickAvg
+                const flooredQty = Math.floor(totalQuantity)
+                const extraQty = Math.random() < (totalQuantity - flooredQty) ? 1 : 0
+
+                const finalQty = flooredQty + extraQty
+                if (finalQty > 0) {
+                  totalRewards[materialId] = (totalRewards[materialId] || 0) + finalQty
                 }
               }
             }
           }
         }
 
-        // 전체 보상에 0.2 효율 적용 (확률적 반올림)
-        // 단, 소모 비용(음수)은 효율 감소 없이 그대로 적용 (100% 소모)
-        for (const key of Object.keys(totalRewards)) {
-          const value = totalRewards[key]
-
-          // 소모 비용(음수)은 건너뜀 (이미 정확한 양으로 계산됨)
-          if (value < 0) continue
-
-          const rawAmount = value * 0.2
-          const integerPart = Math.floor(rawAmount)
-          const decimalPart = rawAmount - integerPart
-
-          // 소모된 비용은 유지하고, 생산된 보상만 효율 적용 후 덮어쓰기
-          // 소수점 확률에 따라 +1
-          const finalAmount = integerPart + (Math.random() < decimalPart ? 1 : 0)
-
-          if (finalAmount > 0) {
-            totalRewards[key] = finalAmount
-          } else {
-            delete totalRewards[key]
-          }
-        }
+        // --- Step 5: Finalize ---
+        // 20% penalty REMOVED. 100% Efficiency.
 
         console.log('🎁 [OfflineRewards] 계산된 보상:', totalRewards)
 
-        // 5. 보상이 있으면 DB에 저장하고 로컬 상태 업데이트
         if (Object.keys(totalRewards).length > 0) {
           await alchemyApi.batchAddMaterials(userId, totalRewards)
 
-          // 로컬 상태 업데이트
+          // Local Store Update
           const alchemyStore = useAlchemyStore.getState()
           const gameStore = useGameStore.getState()
-          const newGameResources = { ...gameStore.resources }
 
-          for (const [materialId, quantity] of Object.entries(totalRewards)) {
-            newGameResources[materialId] = (newGameResources[materialId] || 0) + quantity
+          // Update Resources in GameStore (Visual)
+          const newResources = { ...gameStore.resources }
+          for (const [mid, qty] of Object.entries(totalRewards)) {
+            newResources[mid] = (newResources[mid] || 0) + qty
           }
+          gameStore.setResources(newResources)
 
-          gameStore.setResources(newGameResources)
-          await alchemyStore.loadPlayerData(userId) // 재로드하여 동기화
-
-          console.log('✅ [OfflineRewards] 보상 지급 완료')
-        } else {
-          console.log('ℹ️ [OfflineRewards] 지급할 보상 없음')
+          // Reload Player Data to ensure sync
+          await alchemyStore.loadPlayerData(userId)
         }
 
-        // 6. 마지막 수집 시간 업데이트 (DB)
+        // Update Last Collected (DB)
         await alchemyApi.updateLastCollectedAt(userId, now)
 
-        // 7. 로컬 스토어 수집 시간도 업데이트 (중요: useAutoCollection 중복 실행 방지)
+        // Update Last Collected (Local)
         const gameStore = useGameStore.getState()
         const nowTime = now.getTime()
-        Object.keys(facilities).forEach(facilityId => {
-          const level = facilities[facilityId]
-          if (level > 0) {
-            // 모든 레벨의 키에 대해 업데이트 (useAutoCollection은 facilityId-level 키를 사용함)
-            // 하지만 useAutoCollection은 현재 활성화된 레벨만 체크하므로, 현재 레벨들만 업데이트해도 됨?
-            // useAutoCollection logic: iterates 1..currentLevel.
-            for (let l = 1; l <= level; l++) {
-              gameStore.setLastCollectedAt(`${facilityId}-${l}`, nowTime)
-            }
-          }
+        Object.entries(facilities).forEach(([fid, level]) => {
+          if (level > 0) gameStore.setLastCollectedAt(`${fid}-${level}`, nowTime)
         })
 
         setRewards(totalRewards)
         console.log('🎉 [OfflineRewards] 오프라인 보상 처리 완료')
 
-      } catch (error) {
-        console.error('❌ [OfflineRewards] 오프라인 보상 처리 실패:', error)
+      } catch (e) {
+        console.error('❌ [OfflineRewards] 오프라인 보상 처리 실패:', e)
       } finally {
         setClaimed(true)
         isCalculatingRef.current = false
-        useGameStore.getState().setIsOfflineProcessing(false) // End critical section
+        useGameStore.getState().setIsOfflineProcessing(false)
       }
     }
 
     calculateAndClaimRewards()
-  }, [userId, claimed, facilities, areFacilitiesLoading])
+  }, [userId, claimed, facilities, areFacilitiesLoading, isAlchemyLoading, assignedMonsters, productionModes, playerMonsters])
 
   return {
     claimed,
