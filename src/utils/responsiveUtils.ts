@@ -231,27 +231,3 @@ export function getAlchemyLayout(canvasWidth: number, canvasHeight: number): Alc
     }
 }
 
-/**
- * UI Overlay 레이아웃 파라미터 반환
- */
-export interface UIOverlayLayoutParams {
-    isMobile: boolean
-    isSlideUp: boolean // 모바일에서 슬라이드업 패널 사용 여부
-
-    // 모바일 슬라이드업 패널
-    handleHeight: number // 드래그 핸들 높이
-    collapsedHeight: number // 접혔을 때 높이
-    expandedHeight: string // 펼쳤을 때 높이 (%, vh 등)
-}
-
-export function getUIOverlayLayout(width: number = window.innerWidth): UIOverlayLayoutParams {
-    const isMobile = isMobileView(width)
-
-    return {
-        isMobile,
-        isSlideUp: isMobile,
-        handleHeight: 60,
-        collapsedHeight: 60,
-        expandedHeight: '70%'
-    }
-}

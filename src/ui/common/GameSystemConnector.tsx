@@ -10,7 +10,7 @@ import AccountLinkModal from '../AccountLinkModal'
 
 /**
  * GameSystemConnector
- * UIOverlay에 있던 비시각적 핵심 로직(동기화, 프로필 관리 등)을 
+ * 비시각적 핵심 로직(동기화, 프로필 관리 등)을 
  * 화면 없이 백그라운드에서 처리하기 위한 컴포넌트입니다.
  */
 export default function GameSystemConnector() {

@@ -27,7 +27,7 @@ function App() {
      * TODO: 레거시 시스템 제거 시 이 부분도 제거 필요
      */
     const { resources: dbResources } = useResources(user?.id)
-    const { playerFacilities: dbFacilities, productionModes: dbProductionModes, assignedMonsters: dbAssignments, loading: facilitiesLoading } = useFacilities(user?.id)
+    const { playerFacilities: dbFacilities, productionModes: dbProductionModes, assignedMonsters: dbAssignments, lastCollectedAt: dbLastCollected, loading: facilitiesLoading } = useFacilities(user?.id)
 
     // Sync DB data to local store when loaded (레거시 호환성)
     useEffect(() => {
@@ -48,7 +48,12 @@ function App() {
                 useGameStore.getState().setProductionMode(key, value)
             })
         }
-    }, [dbFacilities, dbAssignments, dbProductionModes, setFacilities])
+        if (dbLastCollected && Object.keys(dbLastCollected).length > 0) {
+            Object.entries(dbLastCollected).forEach(([key, value]) => {
+                useGameStore.getState().setLastCollectedAt(key, value)
+            })
+        }
+    }, [dbFacilities, dbAssignments, dbProductionModes, dbLastCollected, setFacilities])
 
     // Auto-collect resources from facilities (updates local store)
     useAutoCollection(user?.id)

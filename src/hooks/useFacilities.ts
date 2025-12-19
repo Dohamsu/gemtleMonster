@@ -9,6 +9,7 @@ interface PlayerFacility {
     production_mode: number | null
     assigned_monster_id: string | null
     assigned_monster_ids: string[] | null
+    last_collected_at: string | null
 }
 
 export function useFacilities(userId: string | undefined) {
@@ -16,6 +17,7 @@ export function useFacilities(userId: string | undefined) {
     const [playerFacilities, setPlayerFacilities] = useState<Record<string, number>>({})
     const [productionModes, setProductionModes] = useState<Record<string, number>>({})
     const [assignedMonsters, setAssignedMonsters] = useState<Record<string, (string | null)[]>>({})
+    const [lastCollectedAt, setLastCollectedAt] = useState<Record<string, number>>({})
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -42,7 +44,7 @@ export function useFacilities(userId: string | undefined) {
             ] = await Promise.all([
                 supabase.from('facility').select('id, name, category'),
                 supabase.from('facility_level').select('facility_id, level, name, stats, upgrade_cost'),
-                supabase.from('player_facility').select('facility_id, current_level, production_mode, assigned_monster_id, assigned_monster_ids').eq('user_id', userId)
+                supabase.from('player_facility').select('facility_id, current_level, production_mode, assigned_monster_id, assigned_monster_ids, last_collected_at').eq('user_id', userId)
             ])
 
             // Combine data
@@ -72,6 +74,7 @@ export function useFacilities(userId: string | undefined) {
                 const playerFacilityMap: Record<string, number> = {}
                 const productionModeMap: Record<string, number> = {}
                 const assignmentMap: Record<string, (string | null)[]> = {}
+                const lastCollectedMap: Record<string, number> = {}
                 playerFacilitiesData.forEach((pf: PlayerFacility) => {
                     playerFacilityMap[pf.facility_id] = pf.current_level
                     productionModeMap[pf.facility_id] = pf.production_mode || pf.current_level
@@ -80,10 +83,15 @@ export function useFacilities(userId: string | undefined) {
                         ? pf.assigned_monster_ids
                         : (pf.assigned_monster_id ? [pf.assigned_monster_id] : [])
                     assignmentMap[pf.facility_id] = assignments
+
+                    if (pf.last_collected_at) {
+                        lastCollectedMap[`${pf.facility_id}-${pf.current_level}`] = new Date(pf.last_collected_at).getTime()
+                    }
                 })
                 setPlayerFacilities(playerFacilityMap)
                 setProductionModes(productionModeMap)
                 setAssignedMonsters(assignmentMap)
+                setLastCollectedAt(lastCollectedMap)
             }
 
             setLoading(false)
@@ -126,5 +134,5 @@ export function useFacilities(userId: string | undefined) {
         setPlayerFacilities(prev => ({ ...prev, [facilityId]: newLevel }))
     }
 
-    return { facilities, playerFacilities, productionModes, assignedMonsters, loading, upgradeFacility }
+    return { facilities, playerFacilities, productionModes, assignedMonsters, lastCollectedAt, loading, upgradeFacility }
 }
