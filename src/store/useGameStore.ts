@@ -75,6 +75,10 @@ interface GameState {
     batchLastCollectedSyncCallback: ((id: string, time: number) => void) | null
     setBatchLastCollectedSyncCallback: (callback: ((id: string, time: number) => void) | null) => void
 
+    // Force Sync Callback (즉시 동기화)
+    forceSyncCallback: (() => Promise<void>) | null
+    setForceSyncCallback: (callback: (() => Promise<void>) | null) => void
+
     // Consumable Auto-Use Settings
     consumableSlots: ConsumableSlot[]
     setConsumableSlots: (slots: ConsumableSlot[]) => void
@@ -122,6 +126,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         if (state.batchAssignmentSyncCallback) {
             console.log(`📡 [GameStore] 배치 동기화 콜백 호출: ${facilityId}`, newAssignments)
             state.batchAssignmentSyncCallback(facilityId, newAssignments)
+            // 즉시 동기화 트리거
+            if (state.forceSyncCallback) {
+                state.forceSyncCallback()
+            }
         }
 
         return {
@@ -136,6 +144,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     setProductionMode: (facilityId, level) => set(state => {
         if (state.batchProductionModeSyncCallback) {
             state.batchProductionModeSyncCallback(facilityId, level)
+            // 즉시 동기화 트리거
+            if (state.forceSyncCallback) {
+                state.forceSyncCallback()
+            }
         }
         return {
             productionModes: { ...state.productionModes, [facilityId]: level }
@@ -158,6 +170,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     setBatchFacilitySyncCallback: (callback) => set({ batchFacilitySyncCallback: callback }),
     batchProductionModeSyncCallback: null,
     setBatchProductionModeSyncCallback: (callback) => set({ batchProductionModeSyncCallback: callback }),
+
+    forceSyncCallback: null,
+    setForceSyncCallback: (callback) => set({ forceSyncCallback: callback }),
 
     // Consumable Auto-Use Settings
     consumableSlots: [
@@ -247,6 +262,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         // 6. Trigger sync callback (Facility Level)
         if (state.batchFacilitySyncCallback) {
             state.batchFacilitySyncCallback(facilityId, newLevel)
+            // 즉시 동기화 트리거
+            if (state.forceSyncCallback) {
+                state.forceSyncCallback()
+            }
         }
     },
 

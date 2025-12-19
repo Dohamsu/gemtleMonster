@@ -89,6 +89,8 @@ export default function GameSystemConnector() {
             useGameStore.getState().setBatchAssignmentSyncCallback((fId: string, mIds: (string | null)[]) => queueAssignmentUpdateRef.current(fId, mIds))
             useGameStore.getState().setBatchProductionModeSyncCallback((id: string, mode: number) => queueProductionModeUpdateRef.current(id, mode))
             useGameStore.getState().setBatchLastCollectedSyncCallback((id: string, time: number) => queueLastCollectedUpdateRef.current(id, time))
+            // 즉시 동기화 콜백 등록
+            useGameStore.getState().setForceSyncCallback(async () => await forceSyncNowRef.current())
         }
         return () => {
             useAlchemyStore.getState().setBatchSyncCallback(null)
@@ -97,6 +99,7 @@ export default function GameSystemConnector() {
             useGameStore.getState().setBatchAssignmentSyncCallback(null)
             useGameStore.getState().setBatchProductionModeSyncCallback(null)
             useGameStore.getState().setBatchLastCollectedSyncCallback(null)
+            useGameStore.getState().setForceSyncCallback(null)
         }
     }, [user?.id])
 
