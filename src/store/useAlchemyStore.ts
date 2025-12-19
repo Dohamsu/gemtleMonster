@@ -126,6 +126,8 @@ interface AlchemyState {
 
   // Actions - Error Handling
   resetError: () => void
+
+  reset: () => void
 }
 
 export const useAlchemyStore = create<AlchemyState>((set, get) => ({
@@ -156,6 +158,30 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
   forceSyncCallback: null as (() => Promise<void>) | null,
 
   resetError: () => set({ error: null }),
+
+  reset: () => set({
+    // Keep Master Data (allMaterials, allRecipes) to avoid re-fetching on next login
+    playerMaterials: {},
+    playerRecipes: {},
+    playerAlchemy: null,
+    playerMonsters: [],
+    alchemyMode: 'MONSTER',
+    selectedRecipeId: null,
+    selectedIngredients: {},
+    selectedTab: 'recipes',
+    inventoryTab: 'materials',
+    craftQuantity: 1,
+    isBrewing: false,
+    brewStartTime: null,
+    brewProgress: 0,
+    brewResult: { type: 'idle' },
+    error: null,
+    isLoading: false,
+    userId: null,
+    batchSyncCallback: null,
+    forceSyncCallback: null,
+    alchemyContext: null
+  }),
 
   // ============================================
   // 데이터 로딩

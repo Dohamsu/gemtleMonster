@@ -8,6 +8,7 @@ import MonsterAssignmentModal from './MonsterAssignmentModal'
 import FacilityIcon from '../FacilityIcon'
 import ResourceIcon from '../ResourceIcon'
 import { useProductionPrediction } from '../../hooks/useProductionPrediction'
+import { calculateFacilityBonus } from '../../utils/facilityUtils'
 
 interface FacilityControlPanelProps {
     facility: FacilityData
@@ -44,23 +45,19 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
     }))
 
     // Calculate Bonuses from ALL assigned monsters
-    let bonusSpeed = 0
-    let bonusAmount = 0
-
+    const activeTraits: any[] = []
     currentAssignments.forEach(mId => {
         if (!mId) return
         const pm = playerMonsters.find(m => m.id === mId)
         if (pm) {
             const mData = MONSTER_DATA[pm.monster_id]
             if (mData?.factoryTrait && mData.factoryTrait.targetFacility === facility.id) {
-                if (mData.factoryTrait.effect.includes('속도')) {
-                    bonusSpeed += mData.factoryTrait.value
-                } else if (mData.factoryTrait.effect === '생산량 증가') {
-                    bonusAmount += mData.factoryTrait.value
-                }
+                activeTraits.push(mData.factoryTrait)
             }
         }
     })
+
+    let { speed: bonusSpeed, amount: bonusAmount } = calculateFacilityBonus(activeTraits)
 
     if (bonusSpeed > 90) bonusSpeed = 90
 
@@ -301,9 +298,15 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                                                 )}
                                             </div>
                                             <div style={{ color: '#facc15', fontWeight: 'bold', fontSize: '0.9em', textAlign: 'center' }}>{assignedData.name}</div>
-                                            <div style={{ fontSize: '0.75em', color: '#4ade80', marginTop: '4px' }}>
-                                                {assignedData.factoryTrait?.value}% {assignedData.factoryTrait?.effect.includes('속도') ? '가속' : '증가'}
-                                            </div>
+                                            {assignedData.factoryTrait?.targetFacility === facility.id ? (
+                                                <div style={{ fontSize: '0.75em', color: '#4ade80', marginTop: '4px' }}>
+                                                    {assignedData.factoryTrait?.value}% {assignedData.factoryTrait?.effect.includes('속도') ? '가속' : '증가'}
+                                                </div>
+                                            ) : (
+                                                <div style={{ fontSize: '0.75em', color: '#7a7a7a', marginTop: '4px' }}>
+                                                    (효과 미적용)
+                                                </div>
+                                            )}
                                         </>
                                     ) : (
                                         <>
@@ -315,6 +318,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                                 </div>
                             )
                         })}
+
                     </div>
                 </div>
             </div>

@@ -148,4 +148,19 @@ export function renderMapView({ ctx, canvas, images, facilities }: MapRendererPr
         // Debug log only if missing (to avoid spamming loop)
         // console.log('Spirit Sanctum missing:', { img: !!images.herb_farm, fac: facilities['spirit_sanctum'] })
     }
+
+    // Render My Home
+    if (images.my_home) {
+        const homeX = canvas.width * 0.5 - 48 // slightly smaller or just 48 offset
+        const homeY = canvas.height * 0.25 - 48
+        // Draw slightly larger than 32x32 pixel art, maybe 64x64 or 96x96
+        ctx.drawImage(images.my_home, homeX, homeY, 96, 96)
+
+        ctx.fillStyle = '#fef3c7' // Light yellow/cream
+        ctx.font = 'bold 14px Arial'
+        ctx.shadowColor = 'black'
+        ctx.shadowBlur = 4
+        ctx.fillText('마이 홈', homeX + 25, homeY + 110)
+        ctx.shadowBlur = 0
+    }
 }

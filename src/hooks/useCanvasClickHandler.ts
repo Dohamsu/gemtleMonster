@@ -15,6 +15,7 @@ interface ClickHandlerProps {
     isBrewing: boolean
     removeIngredient: (materialId: string, quantity: number) => void
     setDungeonModalOpen: (isOpen: boolean) => void
+    onOpenMyPage: () => void
 }
 
 /**
@@ -29,7 +30,8 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
         selectedIngredients,
         isBrewing,
         removeIngredient,
-        setDungeonModalOpen
+        setDungeonModalOpen,
+        onOpenMyPage
     } = props
 
     return useCallback(
@@ -42,7 +44,7 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
             const y = (event.clientY - rect.top) * scaleY
 
             if (canvasView === 'map') {
-                handleMapClick(canvas, x, y, setCanvasView, setDungeonModalOpen)
+                handleMapClick(canvas, x, y, setCanvasView, setDungeonModalOpen, onOpenMyPage)
             } else if (canvasView === 'alchemy_workshop') {
                 handleAlchemyWorkshopClick(
                     canvas,
@@ -62,7 +64,8 @@ export function useCanvasClickHandler(props: ClickHandlerProps) {
             selectedIngredients,
             isBrewing,
             removeIngredient,
-            setDungeonModalOpen
+            setDungeonModalOpen,
+            onOpenMyPage
         ]
     )
 }
@@ -72,8 +75,17 @@ function handleMapClick(
     x: number,
     y: number,
     setCanvasView: (view: CanvasView) => void,
-    setDungeonModalOpen: (isOpen: boolean) => void
+    setDungeonModalOpen: (isOpen: boolean) => void,
+    onOpenMyPage: () => void
 ) {
+    // 0. My Home (Top Center)
+    const homeX = canvas.width * 0.5 - 48
+    const homeY = canvas.height * 0.25 - 48
+    if (x >= homeX && x <= homeX + 96 && y >= homeY && y <= homeY + 96) {
+        onOpenMyPage()
+        return
+    }
+
     // 1. Alchemy Workshop (Central Bottom)
     const workshopX = canvas.width * 0.5 - 64
     const workshopY = canvas.height * 0.7 - 64

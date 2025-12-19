@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { MONSTER_DATA } from '../data/monsterData'
 import { getSeededRandom } from '../lib/prng'
+import { calculateFacilityBonus } from '../utils/facilityUtils'
 
 interface FacilityLevelStats {
     intervalSeconds: number
@@ -135,11 +136,8 @@ export function useAutoCollection(userId: string | undefined) {
 
                 // --- Monster Bonus Calculation ---
                 // --- Monster Bonus Calculation ---
-                let bonusSpeed = 0 // Percentage reduction
-                let bonusAmount = 0 // Percentage increase
-
-                // Get array of assigned monsters (new structure)
                 const assignedIds = assignedMonsters[facilityId]
+                const activeTraits: any[] = []
 
                 if (Array.isArray(assignedIds)) {
                     assignedIds.forEach(id => {
@@ -148,17 +146,15 @@ export function useAutoCollection(userId: string | undefined) {
                         if (playerMonster) {
                             const monsterData = MONSTER_DATA[playerMonster.monster_id]
                             if (monsterData?.factoryTrait && monsterData.factoryTrait.targetFacility === facilityId) {
-                                if (monsterData.factoryTrait.effect.includes('속도')) {
-                                    bonusSpeed += monsterData.factoryTrait.value
-                                } else if (monsterData.factoryTrait.effect === '생산량 증가') {
-                                    bonusAmount += monsterData.factoryTrait.value
-                                }
+                                activeTraits.push(monsterData.factoryTrait)
                             }
                         }
                     })
                 }
 
-                // Cap speed bonus to 90% to prevent infinite/instant production issues
+                let { speed: bonusSpeed, amount: bonusAmount } = calculateFacilityBonus(activeTraits)
+
+                // Cap speed bonus to 90% to prevent infinite/instant production issues (redundant with utils but safe)
                 if (bonusSpeed > 90) bonusSpeed = 90
 
                 const intervalMs = (stats.intervalSeconds * (1 - bonusSpeed / 100)) * 1000

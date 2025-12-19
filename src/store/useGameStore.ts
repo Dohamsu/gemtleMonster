@@ -85,8 +85,11 @@ interface GameState {
     updateConsumableSlot: (slotId: 'hp' | 'status', updates: Partial<ConsumableSlot>) => void
 
     // Battle Speed
+
     battleSpeed: number
     setBattleSpeed: (speed: number) => void
+
+    reset: () => void
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -268,6 +271,32 @@ export const useGameStore = create<GameState>((set, get) => ({
             }
         }
     },
+
+    reset: () => set({
+        canvasView: 'map',
+        activeDungeon: null,
+        battleState: null,
+        resources: {},
+        facilities: { 'herb_farm': 1, 'monster_farm': 1 },
+        assignedMonsters: {},
+        productionModes: {},
+        lastCollectedAt: {},
+        consumableSlots: [
+            { id: 'hp', consumableId: null, threshold: 30, statusTypes: [], enabled: false },
+            { id: 'status', consumableId: null, threshold: 0, statusTypes: ['BURN', 'POISON'], enabled: false }
+        ],
+        activeTab: 'facilities',
+        isOfflineProcessing: false,
+        recentAdditions: [],
+        battleSpeed: 1,
+        // Callbacks are usually bound to components/pages, can optionally keep them or clear them
+        // Clearing them is safer to prevent callbacks firing for logged out user if components linger
+        batchFacilitySyncCallback: null,
+        batchProductionModeSyncCallback: null,
+        batchLastCollectedSyncCallback: null,
+        batchAssignmentSyncCallback: null,
+        forceSyncCallback: null
+    }),
 
 
 

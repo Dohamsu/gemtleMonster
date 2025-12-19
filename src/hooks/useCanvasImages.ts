@@ -12,6 +12,7 @@ export interface CanvasImages {
     cauldron_pixel: HTMLImageElement | null
     dungeon_forest: HTMLImageElement | null
     spirit_sanctum: HTMLImageElement | null
+    my_home: HTMLImageElement | null
     blacksmith: Record<number, HTMLImageElement>
     materials: Record<string, HTMLImageElement>
 }
@@ -31,6 +32,7 @@ export function useCanvasImages() {
         cauldron_pixel: null,
         dungeon_forest: null,
         spirit_sanctum: null,
+        my_home: null,
         blacksmith: {},
         materials: {}
     })
@@ -71,6 +73,7 @@ export function useCanvasImages() {
             loadImage('/assets/cauldron_pixel.png'),
             loadImage('/assets/dungeon_entrance.png'),
             loadImage('/assets/facility/spirit_santuary.png'),
+            loadImage('/assets/structures/my_home.png'),
             loadMaterialImages(),
             // Load Blacksmith images for levels 1-5
             Promise.all([
@@ -87,7 +90,7 @@ export function useCanvasImages() {
                 5: lv5
             }))
         ])
-            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, dungeonForest, spiritSanctum, materials, blacksmithImages]) => {
+            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, dungeonForest, spiritSanctum, myHome, materials, blacksmithImages]) => {
                 setImages({
                     background: bg as HTMLImageElement,
                     herb_farm: herbFarm as HTMLImageElement,
@@ -99,7 +102,8 @@ export function useCanvasImages() {
                     dungeon_forest: dungeonForest as HTMLImageElement,
                     spirit_sanctum: spiritSanctum as HTMLImageElement,
                     blacksmith: blacksmithImages as Record<number, HTMLImageElement>,
-                    materials: materials as Record<string, HTMLImageElement>
+                    materials: materials as Record<string, HTMLImageElement>,
+                    my_home: myHome as HTMLImageElement
                 })
             })
             .catch((err) => console.error('Failed to load images:', err))

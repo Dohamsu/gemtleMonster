@@ -1,6 +1,8 @@
 /* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useGameStore } from '../store/useGameStore'
+import { useAlchemyStore } from '../store/useAlchemyStore'
 import type { User } from '@supabase/supabase-js'
 
 interface AuthState {
@@ -177,6 +179,10 @@ export function useAuth() {
 
     // 로그아웃
     const signOut = useCallback(async (): Promise<void> => {
+        // Clear Local State
+        useGameStore.getState().reset()
+        useAlchemyStore.getState().reset()
+
         await supabase.auth.signOut()
         setState({
             user: null,

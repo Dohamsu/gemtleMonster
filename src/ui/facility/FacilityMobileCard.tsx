@@ -3,6 +3,7 @@ import type { PlayerMonster } from '../../types/monster'
 import type { FacilityData } from '../../types/facility'
 import FacilityIcon from '../FacilityIcon'
 import { useCollectionProgress } from '../../hooks/useCollectionProgress'
+import { calculateFacilityBonus } from '../../utils/facilityUtils'
 
 interface FacilityMobileCardProps {
     facility: FacilityData
@@ -24,8 +25,9 @@ export default function FacilityMobileCard({
     const levelData = facility.levels.find((l) => l.level === level)
 
     // Calculate Bonuses from assigned monsters
-    const currentAssignments = assignedMonsters[facility.id] || []
-    let bonusSpeed = 0
+    const currentAssignments = assignedMonsters[facility.id]
+    const activeTraits: any[] = []
+
     if (Array.isArray(currentAssignments)) {
         currentAssignments.forEach(mId => {
             if (!mId) return
@@ -33,13 +35,13 @@ export default function FacilityMobileCard({
             if (pm) {
                 const mData = MONSTER_DATA[pm.monster_id]
                 if (mData?.factoryTrait && mData.factoryTrait.targetFacility === facility.id) {
-                    if (mData.factoryTrait.effect.includes('속도')) {
-                        bonusSpeed += mData.factoryTrait.value
-                    }
+                    activeTraits.push(mData.factoryTrait)
                 }
             }
         })
     }
+
+    let { speed: bonusSpeed } = calculateFacilityBonus(activeTraits)
 
     if (bonusSpeed > 90) bonusSpeed = 90
 

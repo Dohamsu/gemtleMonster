@@ -18,59 +18,90 @@ export async function initializePlayer(userId: string) {
         }
 
         if (existingProfile) {
-            console.log('Player already initialized')
-            return // Player already initialized
+            console.log('Player already initialized (checking for missing specific tables...)')
+        } else {
+            console.log('Initializing new player:', userId)
+
+            // Create player profile
+            const { error: profileError } = await supabase.from('player_profile').insert({
+                user_id: userId,
+                player_level: 1,
+                experience: 0,
+            })
+
+            if (profileError) {
+                console.error('Error creating player profile:', profileError)
+                throw profileError
+            }
+
+            // Initialize starting resources
+            const { error: resourceError } = await supabase.from('player_resource').insert([
+                { user_id: userId, resource_id: 'gold', amount: 1000 },
+            ])
+
+            if (resourceError) {
+                console.error('Error creating player resources:', resourceError)
+                throw resourceError
+            }
+
+            // Initialize starting facility (herb_farm at level 1)
+            const { error: facilityError } = await supabase.from('player_facility').insert({
+                user_id: userId,
+                facility_id: 'herb_farm',
+                current_level: 1,
+            })
+
+            if (facilityError) {
+                console.error('Error creating player facility:', facilityError)
+                throw facilityError
+            }
+
+            // Initialize player_alchemy (use upsert to avoid duplicate key error)
+            const { error: alchemyError } = await supabase.from('player_alchemy').upsert({
+                user_id: userId,
+                level: 1,
+                experience: 0,
+                workshop_level: 1,
+                global_success_bonus: 0,
+                global_time_reduction: 0,
+            }, { onConflict: 'user_id' })
+
+            if (alchemyError) {
+                console.error('Error creating player alchemy:', alchemyError)
+                throw alchemyError
+            }
         }
 
-        console.log('Initializing new player:', userId)
+        // Initialize public profile with random nickname
+        const { data: profileCheck } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', userId)
+            .maybeSingle()
 
-        // Create player profile
-        const { error: profileError } = await supabase.from('player_profile').insert({
-            user_id: userId,
-            player_level: 1,
-            experience: 0,
-        })
+        if (!profileCheck) {
+            // Generate random nickname
+            const { data: randomNickname, error: nickError } = await supabase.rpc('generate_random_nickname')
 
-        if (profileError) {
-            console.error('Error creating player profile:', profileError)
-            throw profileError
-        }
+            if (nickError) {
+                console.error('Error generating nickname:', nickError)
+                // Fallback if RPC fails
+            }
 
-        // Initialize starting resources
-        const { error: resourceError } = await supabase.from('player_resource').insert([
-            { user_id: userId, resource_id: 'gold', amount: 1000 },
-        ])
+            const nickname = randomNickname || `User_${userId.substring(0, 8)}`
 
-        if (resourceError) {
-            console.error('Error creating player resources:', resourceError)
-            throw resourceError
-        }
+            const { error: profileError } = await supabase.from('profiles').insert({
+                id: userId,
+                nickname: nickname
+            })
 
-        // Initialize starting facility (herb_farm at level 1)
-        const { error: facilityError } = await supabase.from('player_facility').insert({
-            user_id: userId,
-            facility_id: 'herb_farm',
-            current_level: 1,
-        })
-
-        if (facilityError) {
-            console.error('Error creating player facility:', facilityError)
-            throw facilityError
-        }
-
-        // Initialize player_alchemy (use upsert to avoid duplicate key error)
-        const { error: alchemyError } = await supabase.from('player_alchemy').upsert({
-            user_id: userId,
-            level: 1,
-            experience: 0,
-            workshop_level: 1,
-            global_success_bonus: 0,
-            global_time_reduction: 0,
-        }, { onConflict: 'user_id' })
-
-        if (alchemyError) {
-            console.error('Error creating player alchemy:', alchemyError)
-            throw alchemyError
+            if (profileError) {
+                console.error('Error creating public profile:', profileError)
+                // Don't throw here to avoid blocking login if just profile fails? 
+                // But better to be consistent. Let's log and proceed or throw?
+                // Throwing is safer to ensure integrity.
+                throw profileError
+            }
         }
 
         console.log('✅ Player initialized successfully')

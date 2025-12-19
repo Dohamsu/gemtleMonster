@@ -8,6 +8,7 @@ import ResourceIcon from '../ResourceIcon'
 import MonsterAssignmentModal from './MonsterAssignmentModal'
 import { useCollectionProgress } from '../../hooks/useCollectionProgress'
 import { useProductionPrediction } from '../../hooks/useProductionPrediction'
+import { calculateFacilityBonus } from '../../utils/facilityUtils'
 import type { FacilityData } from '../../types/facility'
 
 interface FacilityDetailModalProps {
@@ -50,23 +51,19 @@ export default function FacilityDetailModal({
     }))
 
     // Calculate Bonuses from ALL assigned monsters
-    let bonusSpeed = 0
-    let bonusAmount = 0
-
+    const activeTraits: any[] = []
     currentAssignments.forEach(mId => {
         if (!mId) return
         const pm = playerMonsters.find(m => m.id === mId)
         if (pm) {
             const mData = MONSTER_DATA[pm.monster_id]
             if (mData?.factoryTrait && mData.factoryTrait.targetFacility === facility.id) {
-                if (mData.factoryTrait.effect.includes('속도')) {
-                    bonusSpeed += mData.factoryTrait.value
-                } else if (mData.factoryTrait.effect === '생산량 증가') {
-                    bonusAmount += mData.factoryTrait.value
-                }
+                activeTraits.push(mData.factoryTrait)
             }
         }
     })
+
+    let { speed: bonusSpeed, amount: bonusAmount } = calculateFacilityBonus(activeTraits)
 
     if (bonusSpeed > 90) bonusSpeed = 90
 
@@ -331,9 +328,15 @@ export default function FacilityDetailModal({
                                                 )}
                                             </div>
                                             <div style={{ color: '#f0d090', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>{assignedData.name}</div>
-                                            <div style={{ color: '#4ade80', fontSize: '10px', whiteSpace: 'nowrap' }}>
-                                                {assignedData.factoryTrait?.value}% {assignedData.factoryTrait?.effect.includes('속도') ? 'Spd' : 'Qty'}
-                                            </div>
+                                            {assignedData.factoryTrait?.targetFacility === facility.id ? (
+                                                <div style={{ color: '#4ade80', fontSize: '10px', whiteSpace: 'nowrap' }}>
+                                                    {assignedData.factoryTrait?.value}% {assignedData.factoryTrait?.effect.includes('속도') ? 'Spd' : 'Qty'}
+                                                </div>
+                                            ) : (
+                                                <div style={{ color: '#7a7a7a', fontSize: '10px', whiteSpace: 'nowrap' }}>
+                                                    (효과 미적용)
+                                                </div>
+                                            )}
                                         </>
                                     ) : (
                                         <>

@@ -19,6 +19,7 @@ import DungeonModal from '../ui/dungeon/DungeonModal'
 import { MATERIALS } from '../data/alchemyData'
 import { isMobileView } from '../utils/responsiveUtils'
 import FacilityPage from '../ui/facility/FacilityPage'
+import MyPageModal from '../ui/MyPageModal'
 
 /**
  * Optimized GameCanvas Component
@@ -110,6 +111,7 @@ export default function GameCanvas(props: GameCanvasProps) {
     const images = useCanvasImages()
 
     const [showDungeonModal, setShowDungeonModal] = useState(false)
+    const [showMyPageModal, setShowMyPageModal] = useState(false)
 
     // Optimized click handler
     const baseClickHandler = useCanvasClickHandler({
@@ -120,6 +122,7 @@ export default function GameCanvas(props: GameCanvasProps) {
         isBrewing,
         removeIngredient,
         setDungeonModalOpen: setShowDungeonModal,
+        onOpenMyPage: () => setShowMyPageModal(true)
     })
 
     // 모바일 탭 클릭 처리를 위한 래퍼
@@ -385,6 +388,10 @@ export default function GameCanvas(props: GameCanvasProps) {
                 isOpen={showDungeonModal}
                 onClose={() => setShowDungeonModal(false)}
             />
+
+            {showMyPageModal && (
+                <MyPageModal onClose={() => setShowMyPageModal(false)} />
+            )}
 
             {/* Offline Rewards Modal */}
             {showOfflineRewardModal && (
