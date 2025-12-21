@@ -114,6 +114,13 @@ export const MATERIALS: Record<string, Material> = {
     'phoenix_feather': { id: 'phoenix_feather', name: '불사조의 깃털', type: 'SPIRIT', description: '꺼지지 않는 불씨가 남아있는 깃털.', rarity: 'SR', iconUrl: '/assets/materials/phoenix_feather.png' },
     'yeti_fur': { id: 'yeti_fur', name: '예티의 털', type: 'BEAST', description: '추위를 완벽하게 막아주는 두꺼운 털.', rarity: 'SR', iconUrl: '/assets/materials/yeti_fur.png' },
 
+    // Desert Materials
+    'sand_dust': { id: 'sand_dust', name: '고운 모래', type: 'MINERAL', description: '반짝이는 고운 금빛 모래.', rarity: 'N', iconUrl: '/assets/materials/sand_dust.png' },
+    'cactus_flower': { id: 'cactus_flower', name: '선인장 꽃', type: 'PLANT', description: '가시 사이에서 피어난 아름다운 꽃.', rarity: 'N', iconUrl: '/assets/materials/cactus_flower.png' },
+    'scorpion_tail': { id: 'scorpion_tail', name: '전갈 꼬리', type: 'BEAST', description: '독이 들어있는 날카로운 전갈의 꼬리.', rarity: 'R', iconUrl: '/assets/materials/scorpion_tail.png' },
+    'ancient_bandage': { id: 'ancient_bandage', name: '고대의 붕대', type: 'SPECIAL', description: '오랜 시간이 지났지만 삭지 않은 붕대.', rarity: 'N', iconUrl: '/assets/materials/ancient_bandage.png' },
+    'golden_scarab': { id: 'golden_scarab', name: '황금 스키라베', type: 'SPECIAL', description: '순금으로 만들어진 고대의 풍뎅이 장식.', rarity: 'SR', iconUrl: '/assets/materials/golden_scarab.png' },
+
     // Beast Forest New Materials
     'shell_snail': { id: 'shell_snail', name: '달팽이 껍질', type: 'BEAST', description: '이끼가 낀 단단한 껍질.', rarity: 'N', iconUrl: '/assets/materials/stone.png' },
     'tusk_boar': { id: 'tusk_boar', name: '멧돼지 송곳니', type: 'BEAST', description: '거칠고 날카로운 송곳니.', rarity: 'N', iconUrl: '/assets/materials/beast_fang.png' },
@@ -689,6 +696,94 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         ],
         conditions: []
     },
+    // Desert Monster Recipes
+    {
+        id: 'recipe_slime_sand',
+        resultMonsterId: 'slime_sand',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 5,
+        costGold: 40,
+        requiredAlchemyLevel: 1,
+        expGain: 180,
+        isHidden: false,
+        priority: 91,
+        ingredients: [
+            { materialId: 'sand_dust', quantity: 2, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_cactus_warrior',
+        resultMonsterId: 'cactus_warrior',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 8,
+        costGold: 50,
+        requiredAlchemyLevel: 2,
+        expGain: 200,
+        isHidden: false,
+        priority: 89,
+        ingredients: [
+            { materialId: 'cactus_flower', quantity: 1, isCatalyst: false },
+            { materialId: 'wood_branch', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_scorpion_king',
+        resultMonsterId: 'scorpion_king',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 15,
+        costGold: 150,
+        requiredAlchemyLevel: 4,
+        expGain: 400,
+        isHidden: false,
+        priority: 80,
+        ingredients: [
+            { materialId: 'scorpion_tail', quantity: 2, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 3, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_mummy',
+        resultMonsterId: 'mummy',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 12,
+        costGold: 100,
+        requiredAlchemyLevel: 3,
+        expGain: 350,
+        isHidden: false,
+        priority: 85,
+        ingredients: [
+            { materialId: 'ancient_bandage', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_dark', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_sphinx',
+        resultMonsterId: 'sphinx',
+        resultCount: 1,
+        baseSuccessRate: 80,
+        craftTimeSec: 30,
+        costGold: 500,
+        requiredAlchemyLevel: 6,
+        expGain: 800,
+        isHidden: false,
+        priority: 60,
+        ingredients: [
+            { materialId: 'golden_scarab', quantity: 1, isCatalyst: true },
+            { materialId: 'stone', quantity: 10, isCatalyst: false },
+            { materialId: 'shard_earth', quantity: 3, isCatalyst: false }
+        ],
+        conditions: []
+    },
+
     // New Beast Forest Monsters
     {
         id: 'recipe_moss_snail',

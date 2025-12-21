@@ -715,6 +715,93 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
 
     // ==========================================
+    // Desert Dungeon Monsters (사막 유적)
+    'slime_sand': {
+        name: '샌드 슬라임',
+        description: '사막의 모래가 뭉쳐져 만들어진 슬라임. 건조하고 거칠지만 귀여운 외모를 가지고 있습니다.',
+        role: '탱커',
+        hp: 400,
+        attack: 50,
+        defense: 50,
+        emoji: '🏜️',
+        iconUrl: '/assets/monsters/slime_sand.png',
+        rarity: 'N',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'mine', effect: '모래 채취', value: 8 },
+        drops: [
+            { materialId: 'sand_dust', chance: 100, min: 1, max: 2 },
+            { materialId: 'slime_fluid', chance: 40, min: 1, max: 1 }
+        ]
+    },
+    'cactus_warrior': {
+        name: '선인장 전사',
+        description: '사막의 열기를 견디며 자라난 선인장 전사. 온몸의 가시를 세우고 검을 휘두릅니다.',
+        role: '딜러',
+        hp: 500,
+        attack: 70,
+        defense: 30,
+        emoji: '🌵',
+        iconUrl: '/assets/monsters/cactus_warrior.png',
+        rarity: 'N',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'training_ground', effect: '가시 훈련', value: 10 },
+        drops: [
+            { materialId: 'cactus_flower', chance: 60, min: 1, max: 1 },
+            { materialId: 'wood_branch', chance: 80, min: 1, max: 2 }
+        ]
+    },
+    'scorpion_king': {
+        name: '스콜피온 킹',
+        description: '황금빛 갑각을 두른 전갈들의 왕. 치명적인 독침으로 적을 마비시킵니다.',
+        role: '딜러',
+        hp: 700,
+        attack: 90,
+        defense: 60,
+        emoji: '🦂',
+        iconUrl: '/assets/monsters/scorpion_king.png',
+        rarity: 'R',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '독침 추출', value: 15 },
+        drops: [
+            { materialId: 'scorpion_tail', chance: 80, min: 1, max: 1 },
+            { materialId: 'beast_fang', chance: 50, min: 1, max: 2 }
+        ]
+    },
+    'mummy': {
+        name: '미라',
+        description: '고대 유적을 배회하는 붕대 감긴 언데드. 영원한 안식을 방해하는 자를 저주합니다.',
+        role: '탱커',
+        hp: 800,
+        attack: 60,
+        defense: 40,
+        emoji: '🤕',
+        iconUrl: '/assets/monsters/mummy.png',
+        rarity: 'R',
+        element: 'dark',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '유적 탐사', value: 12 },
+        drops: [
+            { materialId: 'ancient_bandage', chance: 90, min: 1, max: 2 },
+            { materialId: 'scrap_cloth', chance: 50, min: 1, max: 2 }
+        ]
+    },
+    'sphinx': {
+        name: '스핑크스',
+        description: '사막의 비밀을 간직한 수수께끼의 수호자. 강력한 마법으로 침입자를 심판합니다.',
+        role: '서포터',
+        hp: 1200,
+        attack: 100,
+        defense: 80,
+        emoji: '🦁',
+        iconUrl: '/assets/monsters/sphinx.png',
+        rarity: 'SR',
+        element: 'light',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '고대의 지혜', value: 20 },
+        drops: [
+            { materialId: 'golden_scarab', chance: 100, min: 1, max: 1 },
+            { materialId: 'gem_fragment', chance: 60, min: 2, max: 4 }
+        ]
+    },
+
     // New High-Grade Monsters (SR/SSR Expansion)
     // ==========================================
 

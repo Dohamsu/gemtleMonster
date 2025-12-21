@@ -22,9 +22,13 @@
     "types:generate": "supabase gen types typescript --project-id zcqejdvtwubaodfpjvbm --schema public > src/types/database.types.ts",
     "types:local": "supabase gen types typescript --local --schema public > src/types/database.types.ts",
     "db:pull": "supabase db pull",
-    "db:push": "supabase db push"
+    "db:push": "supabase db push",
+    "test": "vitest"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -34,6 +38,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "jsdom": "^27.3.0",
     "prettier": "^3.2.5",
     "tsx": "^4.20.6",
     "typescript": "~5.9.3",

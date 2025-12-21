@@ -480,6 +480,85 @@ export const BEAST_DUNGEON: Dungeon = {
     ]
 }
 
+export const DESERT_DUNGEON: Dungeon = {
+    id: 'dungeon_desert_ruins',
+    name: '사막 유적',
+    description: '모래 폭풍 속에 감춰진 고대 유적. 뜨거운 태양 아래 선인장 전사와 전갈들이 침입자를 경계하고, 유적 깊은 곳에는 영원히 잠들지 못하는 미라가 배회합니다.',
+    recommendedLevel: 15,
+    iconUrl: '/assets/dungeons/desert_ruins.png',
+    enemies: [
+        {
+            id: 'slime_sand',
+            name: '샌드 슬라임',
+            level: 13,
+            hp: 400,
+            attack: 50,
+            defense: 50,
+            exp: 1000,
+            drops: [
+                { materialId: 'sand_dust', chance: 80, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'slime_fluid', chance: 40, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'cactus_warrior',
+            name: '선인장 전사',
+            level: 15,
+            hp: 500,
+            attack: 70,
+            defense: 30,
+            exp: 1200,
+            drops: [
+                { materialId: 'cactus_flower', chance: 60, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'wood_branch', chance: 80, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'beast_fang', chance: 30, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'scorpion_king',
+            name: '스콜피온 킹',
+            level: 17,
+            hp: 700,
+            attack: 90,
+            defense: 60,
+            exp: 1500,
+            drops: [
+                { materialId: 'scorpion_tail', chance: 80, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'beast_fang', chance: 50, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'gem_fragment', chance: 20, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'mummy',
+            name: '미라',
+            level: 18,
+            hp: 800,
+            attack: 60,
+            defense: 40,
+            exp: 1800,
+            drops: [
+                { materialId: 'ancient_bandage', chance: 90, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'scrap_cloth', chance: 50, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'shard_dark', chance: 30, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'sphinx',
+            name: '스핑크스',
+            level: 20,
+            hp: 1200,
+            attack: 100,
+            defense: 80,
+            exp: 3000,
+            drops: [
+                { materialId: 'golden_scarab', chance: 100, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'gem_fragment', chance: 60, minQuantity: 2, maxQuantity: 4 },
+                { materialId: 'shard_earth', chance: 50, minQuantity: 1, maxQuantity: 2 }
+            ]
+        }
+    ]
+}
+
 // Helper to add global drops and gold
 function addGlobalDrops(dungeons: Dungeon[]): Dungeon[] {
     return dungeons.map(dungeon => ({
@@ -514,5 +593,5 @@ const SKY_WITH_DROPS = {
     }))
 }
 
-export const DUNGEONS = addGlobalDrops([SLIME_DUNGEON, LAKE_DUNGEON, CRYSTAL_DUNGEON, BEAST_DUNGEON, CHRISTMAS_DUNGEON, VOLCANO_WITH_DROPS, SKY_WITH_DROPS])
+export const DUNGEONS = addGlobalDrops([SLIME_DUNGEON, LAKE_DUNGEON, CHRISTMAS_DUNGEON, CRYSTAL_DUNGEON, BEAST_DUNGEON, DESERT_DUNGEON, VOLCANO_WITH_DROPS, SKY_WITH_DROPS])
 

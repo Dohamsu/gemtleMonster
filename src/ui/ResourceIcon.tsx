@@ -61,6 +61,13 @@ const RESOURCE_ICONS: Record<string, string> = {
 
     // New Basic Materials (Placeholders)
     scrap_leather: '/assets/materials/scrap_leather.png',
+    // Desert Materials
+    sand_dust: '/assets/materials/sand_dust.png',
+    cactus_flower: '/assets/materials/cactus_flower.png',
+    scorpion_tail: '/assets/materials/scorpion_tail.png',
+    ancient_bandage: '/assets/materials/ancient_bandage.png',
+    golden_scarab: '/assets/materials/golden_scarab.png',
+
     scrap_cloth: '/assets/materials/scrap_cloth.png',
     feather_common: '/assets/materials/feather_common.png',
     bone_fragment: '/assets/materials/bone_fragment.png',
