@@ -191,7 +191,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'golem_wood': {
         name: '나무 골렘',
-        description: '오래된 숲의 수호목이 움직이기 시작한 골렘. 자연의 수호력을 빌려 아군을 단단히 감싸 보호합니다.',
+        description: '오래된 숲의 수호목이 움직이기 시작한 골렘. 단단한 나무 팔로 통나무를 효율적으로 정리하며 벌목장의 작업을 돕습니다.',
         role: '서포터',
         hp: 180,
         attack: 30,
@@ -200,7 +200,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/woodGolem.png',
         rarity: 'R',
         element: 'earth',
-        factoryTrait: { targetFacility: 'herb_farm', effect: '생태 정원 관리', value: 12 }
+        factoryTrait: { targetFacility: 'lumber_mill', effect: '통나무 정리 보조', value: 12 }
     },
     'mushroom': {
         name: '머쉬룸',
@@ -365,7 +365,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'mana_spirit': {
         name: '마력의 정령',
-        description: '순수한 마력이 뭉쳐 태어난 정령. 동굴 내부를 부유하며 침입자에게 마력탄을 발사합니다.',
+        description: '순수한 마력이 뭉쳐 태어난 정령. 마법의 탑에서 흘러나오는 마력을 조절하여 광석의 품질을 높여줍니다.',
         role: '딜러',
         hp: 120,
         attack: 25,
@@ -374,7 +374,7 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/gem_spirit.png',
         rarity: 'R',
         element: 'light',
-        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '마력 파동 증폭', value: 12 }
+        factoryTrait: { targetFacility: 'magic_tower', effect: '마력 평형 유지', value: 12 }
     },
     'crystal_golem': {
         name: '수정 골렘',
@@ -799,6 +799,40 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         drops: [
             { materialId: 'golden_scarab', chance: 100, min: 1, max: 1 },
             { materialId: 'gem_fragment', chance: 60, min: 2, max: 4 }
+        ]
+    },
+    'beaver_lumberjack': {
+        name: '비버 벌목꾼',
+        description: '붉은 체크 셔츠가 잘 어울리는 비버 수인. 예리한 톱질 솜씨로 벌목장의 생산 효율을 비약적으로 높여줍니다.',
+        role: '딜러',
+        hp: 220,
+        attack: 65,
+        defense: 30,
+        emoji: '🦫',
+        iconUrl: '/assets/monsters/beaver_warrior.png',
+        rarity: 'SR',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'lumber_mill', effect: '정밀 벌목 기술', value: 20 },
+        drops: [
+            { materialId: 'wood_branch', chance: 100, min: 3, max: 5 },
+            { materialId: 'beast_fang', chance: 40, min: 1, max: 2 }
+        ]
+    },
+    'wizard_owl': {
+        name: '현자 부엉이',
+        description: '오랜 시간 마법 도서관을 지켜온 영리한 부엉이. 마법의 탑의 마력 순환 구조를 분석하여 생산 속도를 가속합니다.',
+        role: '서포터',
+        hp: 180,
+        attack: 40,
+        defense: 45,
+        emoji: '🦉',
+        iconUrl: '/assets/monsters/owl_wizard.png',
+        rarity: 'SR',
+        element: 'wind',
+        factoryTrait: { targetFacility: 'magic_tower', effect: '마력 순환 가속', value: 20 },
+        drops: [
+            { materialId: 'feather_common', chance: 100, min: 2, max: 4 },
+            { materialId: 'crystal_mana', chance: 50, min: 1, max: 2 }
         ]
     },
 

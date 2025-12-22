@@ -121,6 +121,11 @@ export function useBatchSync(
 
       if (Object.keys(facilitySnapshot).length > 0) {
         console.log('📡 [BatchSync] 시설 업데이트 전송 시작:', facilitySnapshot)
+
+        // 최신 레벨 정보를 가져오기 위해 store 직접 참조 (upsert 제약 조건 위반 방지)
+        const { useGameStore } = await import('../store/useGameStore')
+        const currentFacilities = useGameStore.getState().facilities
+
         const facilityRecords = Object.entries(facilitySnapshot).map(([facilityId, update]) => {
           const record: {
             user_id: string
@@ -136,7 +141,14 @@ export function useBatchSync(
             facility_id: facilityId,
             updated_at: new Date().toISOString()
           }
-          if (update.level !== undefined) record.current_level = update.level
+
+          // level이 명시되지 않은 경우 스토어에서 보충 (NOT NULL 제약 조건 보호)
+          if (update.level !== undefined) {
+            record.current_level = update.level
+          } else {
+            record.current_level = currentFacilities[facilityId] || 0
+          }
+
           if (update.productionMode !== undefined) record.production_mode = update.productionMode
           if (update.assignedMonsterIds !== undefined) {
             record.assigned_monster_ids = update.assignedMonsterIds

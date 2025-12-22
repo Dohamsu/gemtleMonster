@@ -1338,6 +1338,42 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
             { materialId: 'pearl_black', quantity: 1, isCatalyst: true }
         ],
         conditions: []
+    },
+    {
+        id: 'recipe_beaver_lumberjack',
+        resultMonsterId: 'beaver_lumberjack',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 15,
+        costGold: 200,
+        requiredAlchemyLevel: 4,
+        expGain: 400,
+        isHidden: false,
+        priority: 70,
+        ingredients: [
+            { materialId: 'wood_branch', quantity: 15, isCatalyst: false },
+            { materialId: 'leather_beast', quantity: 5, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 3, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_wizard_owl',
+        resultMonsterId: 'wizard_owl',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 15,
+        costGold: 220,
+        requiredAlchemyLevel: 5,
+        expGain: 450,
+        isHidden: false,
+        priority: 68,
+        ingredients: [
+            { materialId: 'feather_common', quantity: 10, isCatalyst: false },
+            { materialId: 'ore_magic', quantity: 5, isCatalyst: false },
+            { materialId: 'crystal_mana', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
     }
 ]
 

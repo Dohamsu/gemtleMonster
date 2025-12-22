@@ -166,7 +166,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                                     </span>
                                 </div>
                             ) : null}
-                            <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#f0d090' }}>{Math.floor(progress)}%</div>
+                            <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#f0d090' }}>{currentLevel > 0 ? `${Math.floor(progress)}%` : '---'}</div>
                         </div>
                     </div>
 
@@ -182,9 +182,9 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                 <div style={{ background: '#2a1810', border: '1px solid #5a4030', borderRadius: '8px', padding: '20px', height: 'fit-content' }}>
                     <h3 style={{ margin: '0 0 15px 0', fontSize: '1.1em', color: '#f0d090', borderBottom: '1px solid #3d2b20', paddingBottom: '10px' }}>생산 효율 정보</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <StatRow label="기본 생산 간격" value={`${levelData?.stats?.intervalSeconds || 0}초`} />
-                        <StatRow label="몬스터 가속" value={`-${bonusSpeed}%`} color={bonusSpeed > 0 ? "#4ade80" : "#888"} />
-                        <StatRow label="최종 생산 간격" value={`${((levelData?.stats?.intervalSeconds || 0) * (1 - bonusSpeed / 100)).toFixed(1)}초`} color="#facc15" />
+                        <StatRow label="기본 생산 간격" value={currentLevel > 0 ? `${levelData?.stats?.intervalSeconds || 0}초` : "---"} />
+                        <StatRow label="몬스터 가속" value={currentLevel > 0 ? `-${bonusSpeed}%` : "---"} color={bonusSpeed > 0 ? "#4ade80" : "#888"} />
+                        <StatRow label="최종 생산 간격" value={currentLevel > 0 ? `${((levelData?.stats?.intervalSeconds || 0) * (1 - bonusSpeed / 100)).toFixed(1)}초` : "미건설"} color="#facc15" />
                         <div style={{ height: '1px', background: '#3d2b20', margin: '5px 0' }} />
                         <StatRow label="기본 생산량" value={`x${levelData?.stats?.bundlesPerTick || 0}`} />
                         <StatRow label="몬스터 보너스" value={`+${bonusAmount}%`} color={bonusAmount > 0 ? "#4ade80" : "#888"} />

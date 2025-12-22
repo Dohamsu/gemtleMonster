@@ -45,10 +45,12 @@ const getFacilityIconUrl = (id: string, level: number): string | null => {
         case 'monster_farm':
             return '/assets/facility/monster_farm.png'
         case 'lumber_mill': {
+            if (level <= 0) return null
             const levelIdx = Math.min(level, 3)
             return `/assets/facility/lumber_mill_${levelIdx}.png`
         }
         case 'magic_tower': {
+            if (level <= 0) return null
             const levelIdx = Math.min(level, 3)
             return `/assets/facility/magic_tower_${levelIdx}.png`
         }
