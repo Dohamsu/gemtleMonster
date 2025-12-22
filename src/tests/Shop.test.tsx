@@ -1,34 +1,65 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any, no-console */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+
 import { describe, it, expect, vi } from 'vitest'
 import ShopPage from '../ui/shop/ShopPage'
 
 // Hoist mocks to ensure they are available in vi.mock factory
-const { mockBuyItem, mockAddMaterials, mockRemoveGold, mockAddGold, mockRemoveMaterials } = vi.hoisted(() => {
+const { mockBuyItem, mockGameStoreState, mockAlchemyStoreState, mockShopStoreState, mockUnifiedInventoryState } = vi.hoisted(() => {
+    const mockBuyItem = vi.fn()
+    const mockAddMaterials = vi.fn()
+    const mockRemoveGold = vi.fn()
+    const mockAddGold = vi.fn()
+    const mockRemoveMaterials = vi.fn()
+
+    const mockGameStoreState = {
+        resources: { gold: 1000 },
+        inventory: { 'herb_common': 5 },
+        addMaterials: mockAddMaterials,
+        removeGold: mockRemoveGold,
+        addGold: mockAddGold,
+        removeMaterials: mockRemoveMaterials,
+        user: { id: 'test-user' },
+        setResources: vi.fn(),
+        setCanvasView: vi.fn()
+    }
+
+    const mockAlchemyStoreState = {
+        addMaterial: vi.fn(),
+        consumeMaterials: vi.fn(),
+        materialCounts: { 'herb_common': 5 },
+        playerMaterials: { 'herb_common': 5 }
+    }
+
+    const mockShopStoreState = {
+        shopItems: [
+            { id: 'potion_red', quantity: 10, price: 100 },
+        ],
+        nextRefreshTime: Date.now() + 10000,
+        buyItem: mockBuyItem,
+        checkRefresh: vi.fn()
+    }
+
+    const mockUnifiedInventoryState = {
+        materialCounts: { 'herb_common': 5, 'potion_red': 0 }
+    }
+
     return {
-        mockBuyItem: vi.fn(),
-        mockAddMaterials: vi.fn(),
-        mockRemoveGold: vi.fn(),
-        mockAddGold: vi.fn(),
-        mockRemoveMaterials: vi.fn()
+        mockBuyItem,
+        mockAddMaterials,
+        mockRemoveGold,
+        mockAddGold,
+        mockRemoveMaterials,
+        mockGameStoreState,
+        mockAlchemyStoreState,
+        mockShopStoreState,
+        mockUnifiedInventoryState
     }
 })
 
 vi.mock('../store/useGameStore', () => ({
     useGameStore: (selector: any) => {
-        const state = {
-            resources: { gold: 1000 },
-            inventory: { 'herb_common': 5 },
-            addMaterials: mockAddMaterials,
-            removeGold: mockRemoveGold,
-            addGold: mockAddGold,
-            removeMaterials: mockRemoveMaterials,
-            user: { id: 'test-user' },
-            setResources: vi.fn(),
-            setCanvasView: vi.fn()
-        }
-        return selector ? selector(state) : state
+        return selector ? selector(mockGameStoreState) : mockGameStoreState
     }
 }))
 
@@ -42,31 +73,18 @@ vi.mock('../data/shopData', () => ({
 
 // Mock Alchemy Store
 vi.mock('../store/useAlchemyStore', () => ({
-    useAlchemyStore: () => ({
-        addMaterial: vi.fn(),
-        consumeMaterials: vi.fn(),
-        materialCounts: { 'herb_common': 5 } // If used here
-    })
+    useAlchemyStore: () => mockAlchemyStoreState
 }))
 
 // Mock Shop Store
 vi.mock('../store/useShopStore', () => ({
     BASE_SELL_PRICES: { 'N': 10 },
-    useShopStore: () => ({
-        shopItems: [
-            { id: 'potion_red', quantity: 10, price: 100 },
-        ],
-        nextRefreshTime: Date.now() + 10000,
-        buyItem: mockBuyItem,
-        checkRefresh: vi.fn()
-    })
+    useShopStore: () => mockShopStoreState
 }))
 
 // Mock Unified Inventory Hook if needed
 vi.mock('../hooks/useUnifiedInventory', () => ({
-    useUnifiedInventory: () => ({
-        materialCounts: { 'herb_common': 5, 'potion_red': 0 }
-    })
+    useUnifiedInventory: () => mockUnifiedInventoryState
 }))
 
 // Mock Alchemy Data for item names/prices
@@ -78,6 +96,8 @@ vi.mock('../data/alchemyData', () => ({
 }))
 
 describe('Shop Feature', () => {
+
+
     it('buys an item successfully', async () => {
         render(<ShopPage />)
 
@@ -90,14 +110,15 @@ describe('Shop Feature', () => {
         // First button should be for the first item '빨간 포션'
         const purchaseButton = purchaseButtons[0]
 
-        const user = userEvent.setup()
-        await user.click(purchaseButton)
+        // const user = userEvent.setup()
+        // await user.click(purchaseButton)
+        fireEvent.click(purchaseButton)
 
         // Assert store update
         // TODO: Fix mock assertion. mockBuyItem is not being tracked correctly in test environment.
-        // await waitFor(() => {
-        //     expect(mockBuyItem).toHaveBeenCalled()
-        // })
+        await waitFor(() => {
+            expect(mockBuyItem).toHaveBeenCalled()
+        })
     })
 
     it('sells an item successfully', async () => {

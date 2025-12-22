@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { supabase } from '../lib/supabase'
 import App from '../App'
