@@ -303,7 +303,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                                             <div style={{ color: '#facc15', fontWeight: 'bold', fontSize: '0.9em', textAlign: 'center' }}>{assignedData.name}</div>
                                             {assignedData.factoryTrait?.targetFacility === facility.id ? (
                                                 <div style={{ fontSize: '0.75em', color: '#4ade80', marginTop: '4px' }}>
-                                                    {assignedData.factoryTrait?.value}% {assignedData.factoryTrait?.effect.includes('속도') ? '가속' : '증가'}
+                                                    {assignedData.factoryTrait?.value}% {assignedData.factoryTrait?.effect.includes('속도') ? '속도' : '생산량'}
                                                 </div>
                                             ) : (
                                                 <div style={{ fontSize: '0.75em', color: '#7a7a7a', marginTop: '4px' }}>

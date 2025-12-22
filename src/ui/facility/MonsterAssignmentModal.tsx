@@ -8,20 +8,47 @@ interface MonsterAssignmentModalProps {
     onAssign: (monsterId: string | null) => void
 }
 
+const FACILITY_NAMES: Record<string, string> = {
+    'herb_farm': '약초 농장',
+    'mine': '광산',
+    'blacksmith': '대장간',
+    'alchemy_workshop': '연금술 공방',
+    'dungeon_dispatch': '자동 던전 파견소',
+    'training_ground': '훈련장',
+    'monster_farm': '몬스터 농장',
+    'spirit_sanctum': '정령의 성소',
+    'lumber_mill': '벌목장',
+    'magic_tower': '마법의 탑'
+}
+
 export default function MonsterAssignmentModal({ facilityId, currentAssignments, onClose, onAssign }: MonsterAssignmentModalProps) {
     const { playerMonsters } = useAlchemyStore()
 
     // Filter Production-related monsters
-    // Exclude monsters already assigned to OTHER slots in this facility
-    const availableMonsters = playerMonsters.filter(pm => !currentAssignments.includes(pm.id))
+    // We now include assigned monsters to show them as "Assigned"
+    // But we might want to filter out monsters assigned to OTHER facilities if we had that info.
+    // For now, simple filter: just show everything available in playerMonsters.
+    const availableMonsters = playerMonsters
 
     const sortedMonsters = [...availableMonsters].sort((a, b) => {
+        const isAssignedA = currentAssignments.includes(a.id) ? 1 : 0
+        const isAssignedB = currentAssignments.includes(b.id) ? 1 : 0
+
+        // Assigned items first? Or last? User asked to "highlight" them.
+        // Usually assigned ones are at the top to see current state, or filtered.
+        // Let's put them at top.
+        if (isAssignedA !== isAssignedB) return isAssignedB - isAssignedA
+
         const traitA = MONSTER_DATA[a.monster_id]?.factoryTrait
         const traitB = MONSTER_DATA[b.monster_id]?.factoryTrait
         const matchedA = traitA?.targetFacility === facilityId ? 1 : 0
         const matchedB = traitB?.targetFacility === facilityId ? 1 : 0
-        return matchedB - matchedA // Matched traits first
+
+        if (matchedA !== matchedB) return matchedB - matchedA
+        return b.level - a.level
     })
+
+    const targetFacilityName = FACILITY_NAMES[facilityId] || '시설'
 
     return (
         <div style={{
@@ -64,7 +91,7 @@ export default function MonsterAssignmentModal({ facilityId, currentAssignments,
                         <span className="material-symbols-outlined" style={{ color: '#f7ca18', fontSize: '24px' }}>person_add</span>
                         <div>
                             <h3 style={{ margin: 0, fontSize: '18px', color: '#fff', fontWeight: 'bold', lineHeight: 1.2 }}>동료 배치</h3>
-                            <p style={{ margin: 0, fontSize: '12px', color: '#7a7a7a' }}>생산을 도울 몬스터를 선택하세요</p>
+                            <p style={{ margin: 0, fontSize: '12px', color: '#7a7a7a' }}>{targetFacilityName}의 생산을 도울 몬스터를 선택하세요</p>
                         </div>
                     </div>
                     <button
@@ -90,41 +117,84 @@ export default function MonsterAssignmentModal({ facilityId, currentAssignments,
                             borderRadius: '8px',
                             textAlign: 'center',
                             cursor: 'pointer',
-                            color: '#b0a090'
+                            color: '#b0a090',
+                            fontSize: '14px'
                         }}
                     >
                         ❌ 배치 해제
                     </div>
 
                     {sortedMonsters.length === 0 && (
-                        <div style={{ textAlign: 'center', padding: '40px', color: '#7a7a7a' }}>배치 가능한 몬스터가 없습니다</div>
+                        <div style={{ textAlign: 'center', padding: '40px', color: '#7a7a7a' }}>
+                            배치 가능한 몬스터가 없습니다.<br />
+                            <span style={{ fontSize: '12px', opacity: 0.7 }}>(이미 다른 시설에 배치되었거나 보유한 몬스터가 없습니다)</span>
+                        </div>
                     )}
+
                     {sortedMonsters.map(pm => {
                         const data = MONSTER_DATA[pm.monster_id]
-                        const isMatched = data?.factoryTrait?.targetFacility === facilityId
+                        const trait = data?.factoryTrait
+                        const isMatched = trait?.targetFacility === facilityId
+                        const isAssigned = currentAssignments.includes(pm.id)
+
+                        // Effect Text Generation
+                        let effectText = '특수 효과 없음'
+                        let effectColor = '#7a7a7a'
+
+                        if (trait) {
+                            const traitFacName = FACILITY_NAMES[trait.targetFacility] || trait.targetFacility
+
+                            // Standardize Effect Name
+                            // Logic borrowed from facilityUtils.ts
+                            let standardizedEffect = '생산량 증가'
+                            const effectLower = trait.effect
+
+                            if (effectLower.includes('속도') || effectLower.includes('빠른') || effectLower.includes('열기') ||
+                                effectLower.includes('수분') || effectLower.includes('효율') || effectLower.includes('습도')) {
+                                standardizedEffect = '생산 속도 증가'
+                            } else {
+                                // Default to Amount for everything else ('생산량', '비료', '응축', '보조', etc.)
+                                standardizedEffect = '생산량 증가'
+                            }
+
+                            if (isMatched) {
+                                effectText = `✅ ${standardizedEffect} +${trait.value}%`
+                                effectColor = '#4ade80' // Green for match
+                            } else {
+                                effectText = `⚠️ [${traitFacName}] ${standardizedEffect} +${trait.value}%`
+                                effectColor = '#fbbf24' // Yellow/Orange for mismatch
+                            }
+                        }
 
                         return (
                             <div
                                 key={pm.id}
                                 style={{
-                                    background: 'rgba(42, 24, 16, 0.4)',
+                                    background: isAssigned
+                                        ? 'rgba(247, 202, 24, 0.1)' // Golden tint for assigned
+                                        : (isMatched ? 'rgba(50, 40, 20, 0.6)' : 'rgba(30, 24, 20, 0.4)'),
                                     borderRadius: '12px',
                                     padding: '12px',
-                                    border: `1px solid ${isMatched ? '#f7ca1866' : '#3d2b20'}`,
+                                    border: isAssigned
+                                        ? '1px solid #f7ca18' // Gold border for assigned
+                                        : `1px solid ${isMatched ? '#f7ca1866' : '#3d2b20'}`,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
                                     transition: 'all 0.2s',
-                                    cursor: 'pointer'
+                                    cursor: isAssigned ? 'default' : 'pointer',
+                                    position: 'relative'
                                 }}
-                                onClick={() => onAssign(pm.id)}
+                                onClick={() => !isAssigned && onAssign(pm.id)}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                                     <div style={{
-                                        width: '48px', height: '48px', background: '#15120e',
-                                        borderRadius: '8px', border: '1px solid #3a2e18',
+                                        width: '52px', height: '52px', background: '#15120e',
+                                        borderRadius: '8px',
+                                        border: isAssigned ? '2px solid #f7ca18' : `1px solid ${isMatched ? '#f7ca18' : '#3a2e18'}`,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: '24px', overflow: 'hidden'
+                                        fontSize: '28px', overflow: 'hidden',
+                                        boxShadow: (isMatched || isAssigned) ? '0 0 10px rgba(247, 202, 24, 0.2)' : 'none'
                                     }}>
                                         {data?.iconUrl ? (
                                             <img src={data.iconUrl} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
@@ -133,31 +203,43 @@ export default function MonsterAssignmentModal({ facilityId, currentAssignments,
                                         )}
                                     </div>
                                     <div>
-                                        <div style={{ color: '#e0e0e0', fontWeight: 'bold', fontSize: '14px' }}>{data?.name}</div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                                            <span style={{ fontSize: '10px', color: '#7a7a7a', background: '#15120e', border: '1px solid #3a2e18', padding: '2px 6px', borderRadius: '4px' }}>
-                                                Lvl {pm.level}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span style={{ color: '#e0e0e0', fontWeight: 'bold', fontSize: '15px' }}>{data?.name}</span>
+                                            <span style={{ fontSize: '11px', color: '#94a3b8', background: '#0f172a', padding: '1px 5px', borderRadius: '3px', border: '1px solid #1e293b' }}>
+                                                Lv.{pm.level}
                                             </span>
-                                            {isMatched && <span style={{ fontSize: '10px', color: '#f0d090' }}>Specialist</span>}
+                                            {isAssigned && (
+                                                <span style={{
+                                                    fontSize: '10px', fontWeight: 'bold',
+                                                    color: '#1a1612', background: '#f7ca18',
+                                                    padding: '2px 6px', borderRadius: '10px'
+                                                }}>
+                                                    배치중
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div style={{ marginTop: '6px', fontSize: '13px', color: effectColor, fontWeight: isMatched ? 'bold' : 'normal' }}>
+                                            {effectText}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
-                                    {data?.factoryTrait && (
-                                        <div style={{
-                                            fontSize: '10px', fontWeight: 'bold', color: isMatched ? '#4ade80' : '#888',
-                                            background: isMatched ? 'rgba(74, 222, 128, 0.1)' : 'transparent',
-                                            padding: '2px 6px', borderRadius: '4px', border: isMatched ? '1px solid rgba(74, 222, 128, 0.2)' : 'none'
-                                        }}>
-                                            {data.factoryTrait.effect.includes('속도') ? `+${data.factoryTrait.value}% Spd` : `+${data.factoryTrait.value}% Qty`}
-                                        </div>
-                                    )}
-                                    <button style={{
-                                        padding: '6px 16px', background: '#f7ca18', color: '#2a1810', border: 'none',
-                                        borderRadius: '6px', fontSize: '12px', fontWeight: 'bold'
-                                    }}>
-                                        Assign
+                                    <button
+                                        disabled={isAssigned}
+                                        style={{
+                                            padding: '6px 14px',
+                                            background: isAssigned ? '#494122' : (isMatched ? '#f7ca18' : '#3a2e18'),
+                                            color: isAssigned ? '#7a7a7a' : (isMatched ? '#2a1810' : '#888'),
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            fontSize: '12px',
+                                            fontWeight: 'bold',
+                                            cursor: isAssigned ? 'not-allowed' : 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                    >
+                                        {isAssigned ? '배치됨' : (isMatched ? '배치' : '선택')}
                                     </button>
                                 </div>
                             </div>
@@ -170,7 +252,10 @@ export default function MonsterAssignmentModal({ facilityId, currentAssignments,
                     padding: '16px', borderTop: '1px solid #494122', background: '#231f10',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                 }}>
-                    <div style={{ fontSize: '12px', color: '#7a7a7a' }}>Showing {sortedMonsters.length} specialists</div>
+                    <div style={{ fontSize: '12px', color: '#7a7a7a' }}>배치 가능한 몬스터 {sortedMonsters.length}마리</div>
+                    <div style={{ fontSize: '12px', color: '#555' }}>
+                        💡 적합한 시설에 배치하면 효율이 증가합니다
+                    </div>
                 </div>
             </div>
         </div>

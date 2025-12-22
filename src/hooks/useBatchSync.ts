@@ -122,9 +122,12 @@ export function useBatchSync(
       if (Object.keys(facilitySnapshot).length > 0) {
         console.log('📡 [BatchSync] 시설 업데이트 전송 시작:', facilitySnapshot)
 
-        // 최신 레벨 정보를 가져오기 위해 store 직접 참조 (upsert 제약 조건 위반 방지)
+        // 최신 정보를 가져오기 위해 store 직접 참조
         const { useGameStore } = await import('../store/useGameStore')
-        const currentFacilities = useGameStore.getState().facilities
+        const state = useGameStore.getState()
+        const currentFacilities = state.facilities
+        const currentAssignments = state.assignedMonsters
+        const currentModes = state.productionModes
 
         const facilityRecords = Object.entries(facilitySnapshot).map(([facilityId, update]) => {
           const record: {
@@ -132,7 +135,7 @@ export function useBatchSync(
             facility_id: string
             updated_at: string
             current_level?: number
-            production_mode?: number
+            production_mode?: number | null
             assigned_monster_id?: string | null
             assigned_monster_ids?: (string | null)[]
             last_collected_at?: string
@@ -142,22 +145,57 @@ export function useBatchSync(
             updated_at: new Date().toISOString()
           }
 
-          // level이 명시되지 않은 경우 스토어에서 보충 (NOT NULL 제약 조건 보호)
+          // 1. Level: Update 우선 -> Store fallback -> 0
           if (update.level !== undefined) {
             record.current_level = update.level
           } else {
             record.current_level = currentFacilities[facilityId] || 0
           }
 
-          if (update.productionMode !== undefined) record.production_mode = update.productionMode
-          if (update.assignedMonsterIds !== undefined) {
-            record.assigned_monster_ids = update.assignedMonsterIds
-            // 하위 호환성을 위해 첫 번째 슬롯의 몬스터를 assigned_monster_id에도 저장
-            record.assigned_monster_id = update.assignedMonsterIds[0] || null
+          // 2. Production Mode: Update 우선 -> Store fallback -> null
+          if (update.productionMode !== undefined) {
+            record.production_mode = update.productionMode
+          } else {
+            record.production_mode = currentModes[facilityId] || null
           }
+
+          // 3. Assignments: Update 우선 -> Store fallback -> Empty
+          let finalAssignments: (string | null)[] = []
+          if (update.assignedMonsterIds !== undefined) {
+            finalAssignments = update.assignedMonsterIds
+          } else {
+            finalAssignments = currentAssignments[facilityId] || []
+          }
+
+          record.assigned_monster_ids = finalAssignments
+          record.assigned_monster_id = finalAssignments[0] || null
+
+          // 4. Last Collected: Update Only (Store value might be stale or not needed for sync unless changed)
+          // 하지만 lastCollectedAt은 변경된 경우에만 update 객체에 들어오므로, 여기서는 update가 있으면 넣고 없으면 안 넣어도 됨?
+          // 아니요, 배치 upsert에서 모양을 맞추는 게 안전합니다.
+          // 다만 last_collected_at은 DB 트리거 등으로 자동 갱신되지 않으므로, 변경사항이 없으면 굳이 덮어쓸 필요는 없는데...
+          // "Heterogeneous Batch" 문제를 피하려면 키를 포함시키는 게 좋습니다.
+          // Store에서 가져올까요?
           if (update.lastCollectedAt !== undefined) {
             record.last_collected_at = new Date(update.lastCollectedAt).toISOString()
           }
+          // Note: last_collected_at은 자주 바뀌므로, 포함되지 않은 레코드에 대해 null을 보내면 안 됩니다.
+          // 하지만 Supabase upsert가 'undefined' 키는 무시하는데, '다른 레코드에 키가 있으면' null로 처리하는게 문제입니다.
+          // 안전을 위해, 만약 lastCollectedAt이 없으면 현재 시간을 보내는 건 위험하고(수집 안했는데 갱신됨),
+          // DB의 기존 값을 유지해야 합니다.
+          // Upsert의 한계입니다.
+          // => 해결책: last_collected_at은 별도로 분리하거나, 혹은 모든 레코드에 값을 채워야 합니다.
+          // 하지만 lastCollectedAt을 Store에서 가져오기엔 정밀도가 중요할 수 있습니다.
+          // 일단 할당 정보(중요 데이터)가 날아가는 걸 막는 게 최우선이므로, 할당 정보는 무조건 채워서 보냅니다.
+          // last_collected_at은 nullable이고, 보통 수집 시점에 업데이트되므로, 다른 시설이 수집될 때 내 시설의 수집 시간이 null이 되면 안됩니다.
+          // 따라서 store의 lastCollectedAt도 가져와서 넣어줍니다.
+          if (update.lastCollectedAt === undefined) {
+            const lastTime = state.lastCollectedAt[`${facilityId}-${record.current_level}`]
+            if (lastTime) {
+              record.last_collected_at = new Date(lastTime).toISOString()
+            }
+          }
+
           return record
         })
 
@@ -165,11 +203,14 @@ export function useBatchSync(
           .from('player_facility')
           .upsert(facilityRecords, { onConflict: 'user_id,facility_id' })
 
+
         if (facilityError) {
-          console.error('❌ [BatchSync] 시설 업데이트 실패:', facilityError)
+          console.error('❌ [BatchSync] 시설 업데이트 실패 (Error Detail):', facilityError)
+          console.error('❌ [BatchSync] Failed Records:', facilityRecords)
           throw facilityError
         }
         console.log('✅ [BatchSync] 시설 업데이트 성공')
+
       }
 
       onSyncCompleteRef.current?.(true, updatesSnapshot)

@@ -73,6 +73,13 @@ const RESOURCE_ICONS: Record<string, string> = {
     bone_fragment: '/assets/materials/bone_fragment.png',
     wood_branch: '/assets/materials/wood_branch.png',
 
+    // New Update Materials
+    star_fragment: '/assets/materials/star_fragment.png',
+    moon_stone: '/assets/materials/moon_stone.png',
+    ancient_bamboo: '/assets/materials/ancient_bamboo.png',
+    obsidian: '/assets/materials/obsidian.png',
+    fairy_wing: '🧚', // Placeholder, image generation failed
+
 
     // Abyssal Materials
     jelly_biolum: '/assets/materials/jelly_biolum.png',

@@ -200,7 +200,11 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/woodGolem.png',
         rarity: 'R',
         element: 'earth',
-        factoryTrait: { targetFacility: 'lumber_mill', effect: '통나무 정리 보조', value: 12 }
+        factoryTrait: { targetFacility: 'lumber_mill', effect: '통나무 정리 보조', value: 12 },
+        drops: [
+            { materialId: 'ancient_bamboo', chance: 40, min: 1, max: 2 },
+            { materialId: 'wood_branch', chance: 80, min: 2, max: 4 }
+        ]
     },
     'mushroom': {
         name: '머쉬룸',
@@ -226,7 +230,10 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/mushroom_dark.png',
         rarity: 'R',
         element: 'dark',
-        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '어둠 독소 정제', value: 8 }
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '어둠 독소 정제', value: 8 },
+        drops: [
+            { materialId: 'obsidian', chance: 30, min: 1, max: 1 }
+        ]
     },
     'golem_gem': {
         name: '보석 골렘',
@@ -253,7 +260,10 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/monster_snowflake_sprite.png',
         rarity: 'N',
         element: 'water',
-        factoryTrait: { targetFacility: 'herb_farm', effect: '희귀 약초 확률 증가', value: 3 }
+        factoryTrait: { targetFacility: 'herb_farm', effect: '희귀 약초 확률 증가', value: 3 },
+        drops: [
+            { materialId: 'fairy_wing', chance: 40, min: 1, max: 1 }
+        ]
     },
     'ice_slime': {
         name: '아이스 슬라임',
@@ -361,7 +371,10 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/gem_ant.png',
         rarity: 'N',
         element: 'earth',
-        factoryTrait: { targetFacility: 'mine', effect: '정밀 채굴 보조', value: 8 }
+        factoryTrait: { targetFacility: 'mine', effect: '정밀 채굴 보조', value: 8 },
+        drops: [
+            { materialId: 'star_fragment', chance: 50, min: 1, max: 2 }
+        ]
     },
     'mana_spirit': {
         name: '마력의 정령',
@@ -374,7 +387,10 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         iconUrl: '/assets/monsters/gem_spirit.png',
         rarity: 'R',
         element: 'light',
-        factoryTrait: { targetFacility: 'magic_tower', effect: '마력 평형 유지', value: 12 }
+        factoryTrait: { targetFacility: 'magic_tower', effect: '마력 평형 유지', value: 12 },
+        drops: [
+            { materialId: 'moon_stone', chance: 30, min: 1, max: 1 }
+        ]
     },
     'crystal_golem': {
         name: '수정 골렘',
@@ -712,6 +728,89 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'R',
         element: 'water',
         factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '포터블 빠른 파견', value: 12 }
+    },
+
+    // ==========================================
+    // New Monsters (Update)
+    'panda_monk': {
+        name: '판다 수도승',
+        description: '대나무 숲에서 수련을 쌓은 판다. 부드러운 외모와 달리 강력한 무술 실력을 겸비하고 있습니다.',
+        role: '탱커',
+        hp: 400,
+        attack: 45,
+        defense: 60,
+        emoji: '🐼',
+        iconUrl: '/assets/monsters/panda_monk.png',
+        rarity: 'R',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'training_ground', effect: '집중적 훈련 효율', value: 15 },
+        drops: [
+            { materialId: 'ancient_bamboo', chance: 100, min: 1, max: 2 }
+        ]
+    },
+    'moon_rabbit': {
+        name: '달토끼',
+        description: '달에서 절구를 찧다 내려온 토끼. 신비한 달의 기운으로 연금술을 도와줍니다.',
+        role: '서포터',
+        hp: 150,
+        attack: 30,
+        defense: 20,
+        emoji: '🐇',
+        iconUrl: '/assets/monsters/moon_rabbit.png',
+        rarity: 'R',
+        element: 'light',
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '달빛 촉매 작용', value: 12 },
+        drops: [
+            { materialId: 'moon_stone', chance: 80, min: 1, max: 1 }
+        ]
+    },
+    'star_golem': {
+        name: '스타 골렘',
+        description: '별의 파편으로 이루어진 골렘. 우주의 에너지를 품고 있어 마법 시설에 큰 도움을 줍니다.',
+        role: '딜러',
+        hp: 350,
+        attack: 65,
+        defense: 45,
+        emoji: '🗿',
+        iconUrl: '/assets/monsters/star_golem.png',
+        rarity: 'SR',
+        element: 'light',
+        factoryTrait: { targetFacility: 'magic_tower', effect: '별빛 에너지 공명', value: 15 },
+        drops: [
+            { materialId: 'star_fragment', chance: 100, min: 1, max: 2 }
+        ]
+    },
+    'lava_turtle': {
+        name: '용암 거북',
+        description: '등껍질에서 용암이 흐르는 거북. 대장간의 온도를 높이는 데 탁월한 능력을 발휘합니다.',
+        role: '탱커',
+        hp: 600,
+        attack: 40,
+        defense: 90,
+        emoji: '🐢',
+        iconUrl: '/assets/monsters/lava_turtle.png',
+        rarity: 'SR',
+        element: 'fire',
+        factoryTrait: { targetFacility: 'blacksmith', effect: '고열 전도', value: 15 },
+        drops: [
+            { materialId: 'obsidian', chance: 80, min: 1, max: 2 }
+        ]
+    },
+    'wind_spirit': {
+        name: '바람의 정령',
+        description: '자유로운 바람의 형상. 던전 탐험 시 바람을 타고 빠르게 이동할 수 있게 돕습니다.',
+        role: '서포터',
+        hp: 120,
+        attack: 35,
+        defense: 25,
+        emoji: '🍃',
+        iconUrl: '/assets/monsters/wind_spirit.png',
+        rarity: 'R',
+        element: 'wind',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '순풍의 가호', value: 10 },
+        drops: [
+            { materialId: 'fairy_wing', chance: 50, min: 1, max: 2 }
+        ]
     },
 
     // ==========================================

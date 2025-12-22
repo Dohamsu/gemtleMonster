@@ -333,7 +333,7 @@ export default function FacilityDetailModal({
                                             <div style={{ color: '#f0d090', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>{assignedData.name}</div>
                                             {assignedData.factoryTrait?.targetFacility === facility.id ? (
                                                 <div style={{ color: '#4ade80', fontSize: '10px', whiteSpace: 'nowrap' }}>
-                                                    {assignedData.factoryTrait?.value}% {assignedData.factoryTrait?.effect.includes('속도') ? 'Spd' : 'Qty'}
+                                                    {assignedData.factoryTrait?.value}% {assignedData.factoryTrait?.effect.includes('속도') ? '속도' : '생산'}
                                                 </div>
                                             ) : (
                                                 <div style={{ color: '#7a7a7a', fontSize: '10px', whiteSpace: 'nowrap' }}>

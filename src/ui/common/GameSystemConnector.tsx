@@ -83,6 +83,9 @@ export default function GameSystemConnector() {
     // 스토어에 콜백 등록
     useEffect(() => {
         if (user?.id) {
+            // Load all game data (monsters, recipes, materials, etc.)
+            loadAllData(user.id)
+
             useAlchemyStore.getState().setBatchSyncCallback((id: string, qty: number) => queueUpdateRef.current(id, qty))
             useAlchemyStore.getState().setForceSyncCallback(async () => await forceSyncNowRef.current())
             useGameStore.getState().setBatchFacilitySyncCallback((id: string, lv: number) => queueFacilityUpdateRef.current(id, lv))
@@ -101,7 +104,8 @@ export default function GameSystemConnector() {
             useGameStore.getState().setBatchLastCollectedSyncCallback(null)
             useGameStore.getState().setForceSyncCallback(null)
         }
-    }, [user?.id])
+    }, [user?.id, loadAllData])
+
 
     // 전역적으로 접근 가능한 계정 연결 모달 트리거 (커스텀 이벤트 등 활용 가능)
     useEffect(() => {

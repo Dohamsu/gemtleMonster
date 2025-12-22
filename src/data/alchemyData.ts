@@ -134,6 +134,13 @@ export const MATERIALS: Record<string, Material> = {
     'angler_light_bulb': { id: 'angler_light_bulb', name: '초롱 등불', type: 'BEAST', description: '어둠을 밝히는 초롱아귀의 발광 기관.', rarity: 'R', iconUrl: '/assets/materials/angler_light_bulb.png' },
     'kraken_ink': { id: 'kraken_ink', name: '심해 먹물', type: 'SLIME', description: '강력한 점성을 가진 검은 먹물.', rarity: 'R', iconUrl: '/assets/materials/kraken_ink.png' },
     'pearl_black': { id: 'pearl_black', name: '흑진주', type: 'MINERAL', description: '심해의 보물이라 불리는 희귀한 검은 진주.', rarity: 'SSR', iconUrl: '/assets/materials/pearl_black.png', sellPrice: 2000 },
+
+    // New Update Materials
+    'star_fragment': { id: 'star_fragment', name: '별의 파편', type: 'MINERAL', description: '밤하늘의 별이 부서져 떨어진 조각.', rarity: 'R', iconUrl: '/assets/materials/star_fragment.png' },
+    'moon_stone': { id: 'moon_stone', name: '달의 돌', type: 'MINERAL', description: '달빛을 머금어 은은하게 빛나는 돌.', rarity: 'R', iconUrl: '/assets/materials/moon_stone.png' },
+    'ancient_bamboo': { id: 'ancient_bamboo', name: '천년 대나무', type: 'PLANT', description: '천 년을 살아 마력을 품은 대나무.', rarity: 'R', iconUrl: '/assets/materials/ancient_bamboo.png' },
+    'fairy_wing': { id: 'fairy_wing', name: '요정의 날개', type: 'SPIRIT', description: '요정의 가루가 묻어있는 투명한 날개.', rarity: 'R', iconUrl: '/assets/materials/fairy_wing.png' }, // Placeholder icon in ResourceIcon.tsx
+    'obsidian': { id: 'obsidian', name: '흑요석', type: 'MINERAL', description: '용암이 급격히 식어 만들어진 검은 유리질 암석.', rarity: 'R', iconUrl: '/assets/materials/obsidian.png' },
 }
 
 

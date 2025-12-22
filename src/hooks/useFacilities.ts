@@ -83,7 +83,11 @@ export function useFacilities(userId: string | undefined) {
                     const assignments = (pf.assigned_monster_ids && pf.assigned_monster_ids.length > 0)
                         ? pf.assigned_monster_ids
                         : (pf.assigned_monster_id ? [pf.assigned_monster_id] : [])
+
+
+
                     assignmentMap[pf.facility_id] = assignments
+
 
                     if (pf.last_collected_at) {
                         lastCollectedMap[`${pf.facility_id}-${pf.current_level}`] = new Date(pf.last_collected_at).getTime()
