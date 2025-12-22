@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { FacilityData } from '../../types/idle'
+import type { MonsterFactoryTrait } from '../../types/monster'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { MONSTER_DATA } from '../../data/monsterData'
@@ -45,7 +46,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
     }))
 
     // Calculate Bonuses from ALL assigned monsters
-    const activeTraits: any[] = []
+    const activeTraits: MonsterFactoryTrait[] = []
     currentAssignments.forEach(mId => {
         if (!mId) return
         const pm = playerMonsters.find(m => m.id === mId)
@@ -57,7 +58,9 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
         }
     })
 
-    let { speed: bonusSpeed, amount: bonusAmount } = calculateFacilityBonus(activeTraits)
+    const bonus = calculateFacilityBonus(activeTraits)
+    let bonusSpeed = bonus.speed
+    const bonusAmount = bonus.amount
 
     if (bonusSpeed > 90) bonusSpeed = 90
 

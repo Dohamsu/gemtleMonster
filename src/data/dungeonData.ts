@@ -577,6 +577,89 @@ function addGlobalDrops(dungeons: Dungeon[]): Dungeon[] {
 }
 
 // Add specific shard drops manually where missing before exporting
+export const ABYSS_DUNGEON: Dungeon = {
+    id: 'dungeon_abyss_trench',
+    name: '심해의 협곡',
+    description: '빛이 닿지 않는 깊은 바다. 기묘한 발광 생물들과 고대의 바다 괴수가 잠들어 있습니다.',
+    recommendedLevel: 30,
+    iconUrl: '/assets/dungeons/abyss_dungeon.png',
+    enemies: [
+        {
+            id: 'jellyfish_abyss',
+            name: '심해 해파리',
+            level: 28,
+            hp: 80,
+            attack: 20,
+            defense: 20,
+            exp: 5000,
+            element: 'WATER',
+            drops: [
+                { materialId: 'jelly_biolum', chance: 100, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'slime_fluid', chance: 50, minQuantity: 1, maxQuantity: 2 }
+            ]
+        },
+        {
+            id: 'starfish_warrior',
+            name: '불가사리 전사',
+            level: 30,
+            hp: 100,
+            attack: 40,
+            defense: 30,
+            exp: 6000,
+            element: 'WATER',
+            drops: [
+                { materialId: 'starfish_skin', chance: 80, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'scrap_leather', chance: 40, minQuantity: 1, maxQuantity: 2 }
+            ]
+        },
+        {
+            id: 'angler_fish',
+            name: '초롱아귀',
+            level: 32,
+            hp: 150,
+            attack: 60,
+            defense: 20,
+            exp: 7000,
+            element: 'DARK',
+            drops: [
+                { materialId: 'angler_light_bulb', chance: 90, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'beast_fang', chance: 50, minQuantity: 2, maxQuantity: 3 },
+                { materialId: 'shard_dark', chance: 30, minQuantity: 1, maxQuantity: 1 }
+            ]
+        },
+        {
+            id: 'golem_coral',
+            name: '산호 골렘',
+            level: 35,
+            hp: 250,
+            attack: 40,
+            defense: 60,
+            exp: 8000,
+            element: 'WATER',
+            drops: [
+                { materialId: 'coral_fragment', chance: 100, minQuantity: 2, maxQuantity: 4 },
+                { materialId: 'stone', chance: 60, minQuantity: 3, maxQuantity: 5 },
+                { materialId: 'shard_water', chance: 30, minQuantity: 1, maxQuantity: 2 }
+            ]
+        },
+        {
+            id: 'kraken_hatchling',
+            name: '크라켄 새끼',
+            level: 40,
+            hp: 300,
+            attack: 80,
+            defense: 40,
+            exp: 12000,
+            element: 'WATER',
+            drops: [
+                { materialId: 'kraken_ink', chance: 100, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'pearl_black', chance: 50, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'shard_water', chance: 50, minQuantity: 2, maxQuantity: 3 }
+            ]
+        }
+    ]
+}
+
 const VOLCANO_WITH_DROPS = {
     ...VOLCANO_DUNGEON,
     enemies: VOLCANO_DUNGEON.enemies.map(e => ({
@@ -593,5 +676,5 @@ const SKY_WITH_DROPS = {
     }))
 }
 
-export const DUNGEONS = addGlobalDrops([SLIME_DUNGEON, LAKE_DUNGEON, CHRISTMAS_DUNGEON, CRYSTAL_DUNGEON, BEAST_DUNGEON, DESERT_DUNGEON, VOLCANO_WITH_DROPS, SKY_WITH_DROPS])
+export const DUNGEONS = addGlobalDrops([SLIME_DUNGEON, LAKE_DUNGEON, CHRISTMAS_DUNGEON, CRYSTAL_DUNGEON, BEAST_DUNGEON, DESERT_DUNGEON, VOLCANO_WITH_DROPS, SKY_WITH_DROPS, ABYSS_DUNGEON])
 

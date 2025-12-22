@@ -5,6 +5,7 @@ import { useAlchemyStore } from '../store/useAlchemyStore'
 import { MONSTER_DATA } from '../data/monsterData'
 import { getSeededRandom } from '../lib/prng'
 import { calculateFacilityBonus } from '../utils/facilityUtils'
+import type { MonsterFactoryTrait } from '../types/monster'
 
 interface FacilityLevelStats {
     intervalSeconds: number
@@ -137,7 +138,7 @@ export function useAutoCollection(userId: string | undefined) {
                 // --- Monster Bonus Calculation ---
                 // --- Monster Bonus Calculation ---
                 const assignedIds = assignedMonsters[facilityId]
-                const activeTraits: any[] = []
+                const activeTraits: MonsterFactoryTrait[] = []
 
                 if (Array.isArray(assignedIds)) {
                     assignedIds.forEach(id => {
@@ -152,7 +153,9 @@ export function useAutoCollection(userId: string | undefined) {
                     })
                 }
 
-                let { speed: bonusSpeed, amount: bonusAmount } = calculateFacilityBonus(activeTraits)
+                const bonus = calculateFacilityBonus(activeTraits)
+                let bonusSpeed = bonus.speed
+                const bonusAmount = bonus.amount
 
                 // Cap speed bonus to 90% to prevent infinite/instant production issues (redundant with utils but safe)
                 if (bonusSpeed > 90) bonusSpeed = 90

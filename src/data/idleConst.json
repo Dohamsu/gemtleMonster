@@ -689,6 +689,136 @@
                     }
                 }
             ]
+        },
+        {
+            "id": "lumber_mill",
+            "name": "벌목장",
+            "category": "resource_production",
+            "unlockConditions": [
+                {
+                    "type": "playerLevel",
+                    "min": 2
+                }
+            ],
+            "levels": [
+                {
+                    "level": 1,
+                    "name": "나무 오두막",
+                    "stats": {
+                        "intervalSeconds": 20,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "wood_branch": 1.0
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 200
+                    }
+                },
+                {
+                    "level": 2,
+                    "name": "물레방아 제재소",
+                    "stats": {
+                        "intervalSeconds": 15,
+                        "bundlesPerTick": 2,
+                        "dropRates": {
+                            "wood_branch": 0.9,
+                            "scrap_leather": 0.1
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 600,
+                        "wood_branch": 50
+                    }
+                },
+                {
+                    "level": 3,
+                    "name": "마법 벌목 기지",
+                    "stats": {
+                        "intervalSeconds": 10,
+                        "bundlesPerTick": 3,
+                        "dropRates": {
+                            "wood_branch": 0.8,
+                            "scrap_leather": 0.1,
+                            "herb_rare": 0.1
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 1500,
+                        "wood_branch": 150,
+                        "ore_iron": 30
+                    }
+                }
+            ]
+        },
+        {
+            "id": "magic_tower",
+            "name": "마법의 탑",
+            "category": "resource_production",
+            "unlockConditions": [
+                {
+                    "type": "playerLevel",
+                    "min": 5
+                },
+                {
+                    "type": "facilityLevel",
+                    "facilityId": "alchemy_workshop",
+                    "min": 2
+                }
+            ],
+            "levels": [
+                {
+                    "level": 1,
+                    "name": "낡은 돌 탑",
+                    "stats": {
+                        "intervalSeconds": 45,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "ore_magic": 1.0
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 1000,
+                        "stone": 100
+                    }
+                },
+                {
+                    "level": 2,
+                    "name": "마법사 탑",
+                    "stats": {
+                        "intervalSeconds": 35,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "ore_magic": 0.8,
+                            "spirit_dust": 0.2
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 3000,
+                        "ore_magic": 50,
+                        "herb_rare": 30
+                    }
+                },
+                {
+                    "level": 3,
+                    "name": "신비한 부유 탑",
+                    "stats": {
+                        "intervalSeconds": 25,
+                        "bundlesPerTick": 2,
+                        "dropRates": {
+                            "ore_magic": 0.7,
+                            "spirit_dust": 0.2,
+                            "crystal_mana": 0.1
+                        }
+                    },
+                    "upgradeCost": {
+                        "gold": 8000,
+                        "ore_magic": 150,
+                        "spirit_dust": 50,
+                        "gem_fragment": 20
+                    }
+                }
+            ]
         }
     ]
 }

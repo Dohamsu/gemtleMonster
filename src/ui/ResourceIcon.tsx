@@ -73,6 +73,15 @@ const RESOURCE_ICONS: Record<string, string> = {
     bone_fragment: '/assets/materials/bone_fragment.png',
     wood_branch: '/assets/materials/wood_branch.png',
 
+
+    // Abyssal Materials
+    jelly_biolum: '/assets/materials/jelly_biolum.png',
+    starfish_skin: '/assets/materials/starfish_skin.png',
+    coral_fragment: '/assets/materials/coral_fragment.png',
+    angler_light_bulb: '/assets/materials/angler_light_bulb.png',
+    kraken_ink: '/assets/materials/kraken_ink.png',
+    pearl_black: '/assets/materials/pearl_black.png',
+
     // Mining
     stone: '/assets/materials/stone.png',
     ore_copper: '/assets/materials/ore_copper.png',

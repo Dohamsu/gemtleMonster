@@ -127,6 +127,13 @@ export const MATERIALS: Record<string, Material> = {
     'silk_spider': { id: 'silk_spider', name: '거미줄', type: 'BEAST', description: '질기고 끈적한 거미줄.', rarity: 'N', iconUrl: '/assets/materials/scrap_cloth.png' },
     'acorn_magic': { id: 'acorn_magic', name: '마력 도토리', type: 'PLANT', description: '마력을 머금어 커진 도토리.', rarity: 'R', iconUrl: '/assets/materials/seed_ancient.png' },
     'leaf_life': { id: 'leaf_life', name: '생명의 나뭇잎', type: 'PLANT', description: '생명력이 넘치는 싱싱한 잎사귀.', rarity: 'R', iconUrl: '/assets/materials/herb_yggdrasil.png' },
+    // Abyssal Materials
+    'jelly_biolum': { id: 'jelly_biolum', name: '발광 젤리', type: 'SLIME', description: '스스로 빛을 내는 신비한 젤리.', rarity: 'N', iconUrl: '/assets/materials/jelly_biolum.png' },
+    'starfish_skin': { id: 'starfish_skin', name: '불가사리 가죽', type: 'BEAST', description: '거칠고 단단한 불가사리의 표피.', rarity: 'N', iconUrl: '/assets/materials/starfish_skin.png' },
+    'coral_fragment': { id: 'coral_fragment', name: '산호 조각', type: 'MINERAL', description: '알록달록한 산호의 조각.', rarity: 'N', iconUrl: '/assets/materials/coral_fragment.png' },
+    'angler_light_bulb': { id: 'angler_light_bulb', name: '초롱 등불', type: 'BEAST', description: '어둠을 밝히는 초롱아귀의 발광 기관.', rarity: 'R', iconUrl: '/assets/materials/angler_light_bulb.png' },
+    'kraken_ink': { id: 'kraken_ink', name: '심해 먹물', type: 'SLIME', description: '강력한 점성을 가진 검은 먹물.', rarity: 'R', iconUrl: '/assets/materials/kraken_ink.png' },
+    'pearl_black': { id: 'pearl_black', name: '흑진주', type: 'MINERAL', description: '심해의 보물이라 불리는 희귀한 검은 진주.', rarity: 'SSR', iconUrl: '/assets/materials/pearl_black.png', sellPrice: 2000 },
 }
 
 
@@ -1243,6 +1250,92 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
             { materialId: 'ore_gold', quantity: 3, isCatalyst: false },
             { materialId: 'ore_copper', quantity: 5, isCatalyst: false },
             { materialId: 'scrap_cloth', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    // Abyssal Monsters Recipes
+    {
+        id: 'recipe_jellyfish_abyss',
+        resultMonsterId: 'jellyfish_abyss',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 5,
+        costGold: 40,
+        requiredAlchemyLevel: 1,
+        expGain: 180,
+        isHidden: false,
+        priority: 92,
+        ingredients: [
+            { materialId: 'jelly_biolum', quantity: 2, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_starfish_warrior',
+        resultMonsterId: 'starfish_warrior',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 8,
+        costGold: 50,
+        requiredAlchemyLevel: 1,
+        expGain: 200,
+        isHidden: false,
+        priority: 91,
+        ingredients: [
+            { materialId: 'starfish_skin', quantity: 2, isCatalyst: false },
+            { materialId: 'scrap_leather', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_angler_fish',
+        resultMonsterId: 'angler_fish',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 15,
+        costGold: 100,
+        requiredAlchemyLevel: 3,
+        expGain: 350,
+        isHidden: false,
+        priority: 85,
+        ingredients: [
+            { materialId: 'angler_light_bulb', quantity: 1, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_golem_coral',
+        resultMonsterId: 'golem_coral',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 15,
+        costGold: 120,
+        requiredAlchemyLevel: 3,
+        expGain: 400,
+        isHidden: false,
+        priority: 84,
+        ingredients: [
+            { materialId: 'coral_fragment', quantity: 2, isCatalyst: false },
+            { materialId: 'stone', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_kraken_hatchling',
+        resultMonsterId: 'kraken_hatchling',
+        resultCount: 1,
+        baseSuccessRate: 80,
+        craftTimeSec: 30,
+        costGold: 250,
+        requiredAlchemyLevel: 5,
+        expGain: 600,
+        isHidden: false,
+        priority: 75,
+        ingredients: [
+            { materialId: 'kraken_ink', quantity: 2, isCatalyst: false },
+            { materialId: 'pearl_black', quantity: 1, isCatalyst: true }
         ],
         conditions: []
     }

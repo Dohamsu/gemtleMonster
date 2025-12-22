@@ -1010,6 +1010,89 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         rarity: 'SR',
         element: 'wind',
         factoryTrait: { targetFacility: 'mine', effect: '황금 광맥 발견', value: 12 }
+    },
+    // Abyssal Dungeon Monsters
+    'jellyfish_abyss': {
+        name: '심해 해파리',
+        description: '깊은 바닷속에서 스스로 빛을 내는 해파리. 몽환적인 빛으로 먹이를 유인합니다.',
+        role: '서포터',
+        hp: 80,
+        attack: 20,
+        defense: 20,
+        emoji: '🪼',
+        iconUrl: '/assets/monsters/jellyfish_abyss.png',
+        rarity: 'N',
+        element: 'water',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '심해 수분 공급', value: 5 },
+        drops: [{ materialId: 'jelly_biolum', chance: 100, min: 1, max: 2 }]
+    },
+    'starfish_warrior': {
+        name: '불가사리 전사',
+        description: '단단한 피부를 가진 불가사리 전사. 바닷속의 용맹한 수호자입니다.',
+        role: '딜러',
+        hp: 100,
+        attack: 40,
+        defense: 30,
+        emoji: '⭐',
+        iconUrl: '/assets/monsters/starfish_warrior.png',
+        rarity: 'N',
+        element: 'water',
+        factoryTrait: { targetFacility: 'training_ground', effect: '재생 훈련', value: 8 },
+        drops: [
+            { materialId: 'starfish_skin', chance: 80, min: 1, max: 2 },
+            { materialId: 'scrap_leather', chance: 40, min: 1, max: 1 }
+        ]
+    },
+    'angler_fish': {
+        name: '초롱아귀',
+        description: '어둠 속에서 빛나는 미끼로 사냥하는 심해의 포식자. 날카로운 이빨을 조심해야 합니다.',
+        role: '딜러',
+        hp: 150,
+        attack: 60,
+        defense: 20,
+        emoji: '🐟',
+        iconUrl: '/assets/monsters/angler_fish.png',
+        rarity: 'R',
+        element: 'dark',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '심해 탐사', value: 10 },
+        drops: [
+            { materialId: 'angler_light_bulb', chance: 90, min: 1, max: 1 },
+            { materialId: 'beast_fang', chance: 50, min: 1, max: 2 }
+        ]
+    },
+    'golem_coral': {
+        name: '산호 골렘',
+        description: '아름다운 산호초가 뭉쳐 움직이는 골렘. 바다의 생명력을 품고 있습니다.',
+        role: '탱커',
+        hp: 250,
+        attack: 40,
+        defense: 60,
+        emoji: '🪸',
+        iconUrl: '/assets/monsters/golem_coral.png',
+        rarity: 'R',
+        element: 'water',
+        factoryTrait: { targetFacility: 'mine', effect: '해저 광물 채집', value: 12 },
+        drops: [
+            { materialId: 'coral_fragment', chance: 100, min: 1, max: 2 },
+            { materialId: 'stone', chance: 60, min: 2, max: 4 }
+        ]
+    },
+    'kraken_hatchling': {
+        name: '크라켄 새끼',
+        description: '전설적인 괴수 크라켄의 새끼. 작지만 무시무시한 잠재력을 가지고 있습니다.',
+        role: '딜러',
+        hp: 300,
+        attack: 80,
+        defense: 40,
+        emoji: '🦑',
+        iconUrl: '/assets/monsters/kraken_hatchling.png',
+        rarity: 'SR',
+        element: 'water',
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '먹물 연금술', value: 15 },
+        drops: [
+            { materialId: 'kraken_ink', chance: 100, min: 1, max: 2 },
+            { materialId: 'pearl_black', chance: 50, min: 1, max: 1 }
+        ]
     }
 }
 

@@ -1,5 +1,5 @@
 import { MONSTER_DATA } from '../../data/monsterData'
-import type { PlayerMonster } from '../../types/monster'
+import type { PlayerMonster, MonsterFactoryTrait } from '../../types/monster'
 import type { FacilityData } from '../../types/facility'
 import FacilityIcon from '../FacilityIcon'
 import { useCollectionProgress } from '../../hooks/useCollectionProgress'
@@ -26,7 +26,7 @@ export default function FacilityMobileCard({
 
     // Calculate Bonuses from assigned monsters
     const currentAssignments = assignedMonsters[facility.id]
-    const activeTraits: any[] = []
+    const activeTraits: MonsterFactoryTrait[] = []
 
     if (Array.isArray(currentAssignments)) {
         currentAssignments.forEach(mId => {

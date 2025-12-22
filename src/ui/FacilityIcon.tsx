@@ -44,6 +44,14 @@ const getFacilityIconUrl = (id: string, level: number): string | null => {
             return '/assets/facility/training_center.png'
         case 'monster_farm':
             return '/assets/facility/monster_farm.png'
+        case 'lumber_mill': {
+            const levelIdx = Math.min(level, 3)
+            return `/assets/facility/lumber_mill_${levelIdx}.png`
+        }
+        case 'magic_tower': {
+            const levelIdx = Math.min(level, 3)
+            return `/assets/facility/magic_tower_${levelIdx}.png`
+        }
         default:
             return null
     }
@@ -79,6 +87,16 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
             const colors = ['#fca5a5', '#f87171', '#ef4444', '#dc2626', '#facc15']
             const color = colors[Math.min(level - 1, 4)]
             return { emoji: '🏡', color }
+        }
+        if (id === 'lumber_mill') {
+            const colors = ['#a0522d', '#8b4513', '#d2691e', '#cd853f', '#f4a460']
+            const color = colors[Math.min(level - 1, 4)]
+            return { emoji: '🪵', color }
+        }
+        if (id === 'magic_tower') {
+            const colors = ['#9370db', '#8a2be2', '#4b0082', '#483d8b', '#7b68ee']
+            const color = colors[Math.min(level - 1, 4)]
+            return { emoji: '🔮', color }
         }
         if (id === 'blacksmith') {
             const colors = ['#fdba74', '#fb923c', '#f97316', '#ea580c', '#c2410c'] // Orange/Fire
