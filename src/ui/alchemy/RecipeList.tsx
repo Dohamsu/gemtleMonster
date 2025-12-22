@@ -28,7 +28,8 @@ export default function RecipeList({
     alchemyContext
 }: RecipeListProps) {
     const [isMobile, setIsMobile] = useState(isMobileView())
-    const { alchemyMode, setAlchemyMode } = useAlchemyStore()
+    const { alchemyMode, setAlchemyMode, favoriteRecipes, toggleFavoriteRecipe } = useAlchemyStore()
+    const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
 
     useEffect(() => {
         const handleResize = () => {
@@ -110,16 +111,46 @@ export default function RecipeList({
                 justifyContent: 'space-between',
                 gap: '8px'
             }}>
-                <h3 style={{
-                    margin: 0,
-                    fontSize: isMobile ? '14px' : '16px',
-                    color: '#f0d090',
-                    fontWeight: 'bold',
-                    whiteSpace: 'nowrap'
-                }}>
-                    <img src="/assets/ui/recipe.png" alt="레시피" style={{ width: '36px', height: '36px', marginRight: '6px', verticalAlign: 'middle' }} />
-                    레시피
-                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h3 style={{
+                        margin: 0,
+                        fontSize: isMobile ? '14px' : '16px',
+                        color: '#f0d090',
+                        fontWeight: 'bold',
+                        whiteSpace: 'nowrap'
+                    }}>
+                        <img src="/assets/ui/recipe.png" alt="레시피" style={{ width: '36px', height: '36px', marginRight: '6px', verticalAlign: 'middle' }} />
+                        레시피
+                    </h3>
+
+                    {/* Favorites Filter */}
+                    <button
+                        onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                        style={{
+                            background: showOnlyFavorites ? '#334155' : 'transparent',
+                            border: '1px solid #4a3520',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s',
+                            padding: '2px 4px'
+                        }}
+                        title="즐겨찾기만 보기"
+                    >
+                        <img
+                            src="/assets/ui/gold_star.png"
+                            alt="Favorites"
+                            style={{
+                                width: '18px',
+                                height: '18px',
+                                opacity: showOnlyFavorites ? 1 : 0.4,
+                                filter: showOnlyFavorites ? 'none' : 'grayscale(1)'
+                            }}
+                        />
+                    </button>
+                </div>
 
                 {/* Mode Toggle */}
                 <div style={{
@@ -201,210 +232,244 @@ export default function RecipeList({
                         }
                     }
                 `}</style>
-                {visibleRecipes.map(recipe => {
-                    const isSelected = selectedRecipeId === recipe.id
-                    /*
-                    const hasAllMaterials = recipe.ingredients?.every(
-                        ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
-                    ) ?? true
-                    */
+                {visibleRecipes
+                    .filter(r => !showOnlyFavorites || favoriteRecipes.has(r.id))
+                    .map(recipe => {
+                        const isSelected = selectedRecipeId === recipe.id
+                        /*
+                        const hasAllMaterials = recipe.ingredients?.every(
+                            ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
+                        ) ?? true
+                        */
 
-                    const playerRecipe = playerRecipes[recipe.id]
-                    const isDiscovered = !recipe.is_hidden || (playerRecipe && playerRecipe.is_discovered)
-                    const discoveredIngredients = playerRecipe?.discovered_ingredients || []
+                        const playerRecipe = playerRecipes[recipe.id]
+                        const isDiscovered = !recipe.is_hidden || (playerRecipe && playerRecipe.is_discovered)
+                        const discoveredIngredients = playerRecipe?.discovered_ingredients || []
 
-                    // 이름 표시: 발견했거나, 힌트로 재료가 하나라도 밝혀졌으면 이름 공개
-                    const displayName = (isDiscovered || discoveredIngredients.length > 0)
-                        ? `${recipe.name} (${recipe.craft_time_sec}s)`
-                        : '???'
+                        // 이름 표시: 발견했거나, 힌트로 재료가 하나라도 밝혀졌으면 이름 공개
+                        const displayName = (isDiscovered || discoveredIngredients.length > 0)
+                            ? `${recipe.name} (${recipe.craft_time_sec}s)`
+                            : '???'
 
-                    // 히든 레시피 선택 조건: 이미 발견했거나, 모든 재료가 공개되었을 때
-                    const areAllIngredientsRevealed = recipe.ingredients?.every(
-                        ing => discoveredIngredients.includes(ing.material_id)
-                    ) ?? true
+                        // 히든 레시피 선택 조건: 이미 발견했거나, 모든 재료가 공개되었을 때
+                        const areAllIngredientsRevealed = recipe.ingredients?.every(
+                            ing => discoveredIngredients.includes(ing.material_id)
+                        ) ?? true
 
-                    const isSelectable = isDiscovered || areAllIngredientsRevealed
+                        const isSelectable = isDiscovered || areAllIngredientsRevealed
 
-                    // 재료 충족 여부 (미발견이어도 계산은 함 - 스타일은 다르게)
-                    const hasAllMaterials = recipe.ingredients?.every(
-                        ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
-                    ) ?? true
+                        // 재료 충족 여부 (미발견이어도 계산은 함 - 스타일은 다르게)
+                        const hasAllMaterials = recipe.ingredients?.every(
+                            ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
+                        ) ?? true
 
-                    // Condition validation
-                    const isValid = isRecipeValid(recipe, alchemyContext)
+                        // Condition validation
+                        const isValid = isRecipeValid(recipe, alchemyContext)
 
-                    const canInteract = !isBrewing && isSelectable && isValid && hasAllMaterials
+                        const canInteract = !isBrewing && isSelectable && isValid && hasAllMaterials
 
-                    // Visual states
-                    const opacity = canInteract ? 1 : 0.5
-                    const cursor = canInteract ? 'pointer' : 'not-allowed'
+                        // Visual states
+                        const opacity = canInteract ? 1 : 0.5
+                        const cursor = canInteract ? 'pointer' : 'not-allowed'
 
-                    // Border & Background logic
-                    let borderColor = '#4a3520' // default brown
-                    let backgroundColor = isSelected ? 'rgba(251, 191, 36, 0.1)' : 'rgba(0, 0, 0, 0.2)'
+                        // Border & Background logic
+                        let borderColor = '#4a3520' // default brown
+                        let backgroundColor = isSelected ? 'rgba(251, 191, 36, 0.1)' : 'rgba(0, 0, 0, 0.2)'
 
-                    if (isSelected) {
-                        borderColor = '#fbbf24' // active yellow
-                    } else if (!isValid) {
-                        borderColor = '#ef4444' // invalid red
-                        backgroundColor = 'rgba(239, 68, 68, 0.05)' // subtle red tint
-                    }
+                        if (isSelected) {
+                            borderColor = '#fbbf24' // active yellow
+                        } else if (!isValid) {
+                            borderColor = '#ef4444' // invalid red
+                            backgroundColor = 'rgba(239, 68, 68, 0.05)' // subtle red tint
+                        }
 
-                    return (
-                        <div
-                            key={recipe.id}
-                            onClick={() => handleRecipeClick(recipe)}
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                padding: '8px', // Slightly reduced padding
-                                background: backgroundColor,
-                                borderRadius: '8px',
-                                border: `1px solid ${borderColor}`,
-                                cursor: cursor,
-                                opacity: opacity,
-                                transition: 'all 0.2s',
-                                marginBottom: isMobile ? '0' : '8px', // Grid gap handles spacing on mobile
-                                height: isMobile ? '100%' : 'auto', // Ensure equal height in grid
-                            }}
-                        >
-                            {/* Top Row: Image, Name, Lock Icon */}
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                marginBottom: '6px',
-                                width: '100%'
-                            }}>
-                                {/* Monster/Item Image */}
+                        return (
+                            <div
+                                key={recipe.id}
+                                onClick={() => handleRecipeClick(recipe)}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    padding: '8px', // Slightly reduced padding
+                                    background: backgroundColor,
+                                    borderRadius: '8px',
+                                    border: `1px solid ${borderColor}`,
+                                    cursor: cursor,
+                                    opacity: opacity,
+                                    transition: 'all 0.2s',
+                                    marginBottom: isMobile ? '0' : '8px', // Grid gap handles spacing on mobile
+                                    height: isMobile ? '100%' : 'auto', // Ensure equal height in grid
+                                    position: 'relative'
+                                }}
+                            >
+                                {/* Favorite Toggle (Absolute Positioned) */}
+                                <div
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        toggleFavoriteRecipe(recipe.id)
+                                    }}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '4px',
+                                        right: '4px',
+                                        width: '24px',
+                                        height: '24px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        zIndex: 10
+                                    }}
+                                >
+                                    <img
+                                        src="/assets/ui/gold_star.png"
+                                        alt="Fav"
+                                        style={{
+                                            width: '14px',
+                                            height: '14px',
+                                            opacity: favoriteRecipes.has(recipe.id) ? 1 : 0.2,
+                                            filter: favoriteRecipes.has(recipe.id) ? 'none' : 'grayscale(1)',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    />
+                                </div>
+                                {/* Top Row: Image, Name, Lock Icon */}
                                 <div style={{
-                                    width: '32px',
-                                    height: '32px',
-                                    borderRadius: '4px',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    overflow: 'hidden',
-                                    flexShrink: 0
+                                    gap: '8px',
+                                    marginBottom: '6px',
+                                    width: '100%'
                                 }}>
-                                    {recipe.type === 'ITEM' && recipe.result_item_id ? (
-                                        // Item Icon
-                                        (() => {
-                                            const item = materials.find(m => m.id === recipe.result_item_id)
-                                            return item?.icon_url ? (
+                                    {/* Monster/Item Image */}
+                                    <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        overflow: 'hidden',
+                                        flexShrink: 0
+                                    }}>
+                                        {recipe.type === 'ITEM' && recipe.result_item_id ? (
+                                            // Item Icon
+                                            (() => {
+                                                const item = materials.find(m => m.id === recipe.result_item_id)
+                                                return item?.icon_url ? (
+                                                    <img
+                                                        src={item.icon_url}
+                                                        alt={recipe.result_item_id}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                    />
+                                                ) : (
+                                                    <span style={{ fontSize: '18px' }}>🧪</span>
+                                                )
+                                            })()
+                                        ) : (
+                                            // Monster Icon
+                                            (recipe.result_monster_id && MONSTER_DATA[recipe.result_monster_id]?.iconUrl) ? (
                                                 <img
-                                                    src={item.icon_url}
-                                                    alt={recipe.result_item_id}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                    src={MONSTER_DATA[recipe.result_monster_id].iconUrl}
+                                                    alt={recipe.result_monster_id}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'contain',
+                                                        filter: isDiscovered ? 'none' : 'brightness(0) contrast(100%)',
+                                                        opacity: isDiscovered ? 1 : 0.7
+                                                    }}
                                                 />
                                             ) : (
-                                                <span style={{ fontSize: '18px' }}>🧪</span>
+                                                <span style={{ fontSize: '18px' }}>
+                                                    {recipe.result_monster_id ? (MONSTER_DATA[recipe.result_monster_id]?.emoji || '❓') : '❓'}
+                                                </span>
                                             )
-                                        })()
-                                    ) : (
-                                        // Monster Icon
-                                        (recipe.result_monster_id && MONSTER_DATA[recipe.result_monster_id]?.iconUrl) ? (
-                                            <img
-                                                src={MONSTER_DATA[recipe.result_monster_id].iconUrl}
-                                                alt={recipe.result_monster_id}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'contain',
-                                                    filter: isDiscovered ? 'none' : 'brightness(0) contrast(100%)',
-                                                    opacity: isDiscovered ? 1 : 0.7
-                                                }}
-                                            />
-                                        ) : (
-                                            <span style={{ fontSize: '18px' }}>
-                                                {recipe.result_monster_id ? (MONSTER_DATA[recipe.result_monster_id]?.emoji || '❓') : '❓'}
-                                            </span>
-                                        )
+                                        )}
+                                    </div>
+
+                                    {/* Recipe Name Text */}
+                                    <div style={{
+                                        fontSize: isMobile ? '13px' : '14px',
+                                        fontWeight: 'bold',
+                                        color: isDiscovered ? '#f0d090' : '#aaa',
+                                        flex: 1 // Take remaining space
+                                    }}>
+                                        {displayName}
+                                    </div>
+
+                                    {/* Lock/Unlock Status (Aligned to right via flex) */}
+                                    {!isDiscovered && (
+                                        <div style={{
+                                            fontSize: '16px',
+                                            marginLeft: 'auto',
+                                            color: areAllIngredientsRevealed ? '#fbbf24' : '#64748b'
+                                        }}>
+                                            {areAllIngredientsRevealed ? '🔓' : '🔒'}
+                                        </div>
                                     )}
                                 </div>
 
-                                {/* Recipe Name Text */}
-                                <div style={{
-                                    fontSize: isMobile ? '13px' : '14px',
-                                    fontWeight: 'bold',
-                                    color: isDiscovered ? '#f0d090' : '#aaa',
-                                    flex: 1 // Take remaining space
-                                }}>
-                                    {displayName}
-                                </div>
+                                {/* Required Materials */}
+                                {recipe.ingredients && recipe.ingredients.length > 0 && (
+                                    <div style={{ paddingLeft: isMobile ? '0' : '40px', marginTop: isMobile ? '4px' : '0' }}> {/* Remove indent on mobile, move below */}
+                                        {recipe.ingredients.map((ing, idx) => {
+                                            const mat = materials.find(m => m.id === ing.material_id)
+                                            const owned = playerMaterials[ing.material_id] || 0
+                                            const hasEnough = owned >= ing.quantity
+                                            const isIngredientDiscovered = isDiscovered || discoveredIngredients.includes(ing.material_id)
+                                            const matName = isIngredientDiscovered ? (mat?.name || ing.material_id) : '???'
 
-                                {/* Lock/Unlock Status (Aligned to right via flex) */}
-                                {!isDiscovered && (
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    style={{
+                                                        fontSize: isMobile ? '10px' : '11px',
+                                                        color: isIngredientDiscovered ? (hasEnough ? '#aaa' : '#ff6666') : '#666',
+                                                        marginBottom: '2px',
+                                                        // display: 'flex', // Removed flex space-between
+                                                        // justifyContent: 'space-between'
+                                                    }}
+                                                >
+                                                    <span>{matName} </span>
+                                                    {isIngredientDiscovered && (
+                                                        <span style={{ color: hasEnough ? '#4ade80' : '#ff6666', marginLeft: '4px' }}>
+                                                            {ing.quantity} / {formatNumber(owned)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* 힌트 (미발견 시) */}
+                                {!isDiscovered && recipe.conditions && recipe.conditions.length > 0 && (
                                     <div style={{
-                                        fontSize: '16px',
-                                        marginLeft: 'auto',
-                                        color: areAllIngredientsRevealed ? '#fbbf24' : '#64748b'
+                                        fontSize: '10px',
+                                        color: '#88aaff',
+                                        marginTop: '4px',
+                                        paddingLeft: isMobile ? '0' : '40px',
+                                        fontStyle: 'italic'
                                     }}>
-                                        {areAllIngredientsRevealed ? '🔓' : '🔒'}
+                                        💡 {recipe.conditions[0].description || '특별한 조건 필요'}
+                                    </div>
+                                )}
+
+                                {/* Level Requirement */}
+                                {recipe.required_alchemy_level > 1 && (
+                                    <div style={{
+                                        fontSize: isMobile ? '9px' : '10px',
+                                        color: '#facc15',
+                                        marginTop: '4px',
+                                        paddingLeft: isMobile ? '0' : '40px'
+                                    }}>
+                                        ⚠️ Lv.{recipe.required_alchemy_level} 필요
                                     </div>
                                 )}
                             </div>
-
-                            {/* Required Materials */}
-                            {recipe.ingredients && recipe.ingredients.length > 0 && (
-                                <div style={{ paddingLeft: isMobile ? '0' : '40px', marginTop: isMobile ? '4px' : '0' }}> {/* Remove indent on mobile, move below */}
-                                    {recipe.ingredients.map((ing, idx) => {
-                                        const mat = materials.find(m => m.id === ing.material_id)
-                                        const owned = playerMaterials[ing.material_id] || 0
-                                        const hasEnough = owned >= ing.quantity
-                                        const isIngredientDiscovered = isDiscovered || discoveredIngredients.includes(ing.material_id)
-                                        const matName = isIngredientDiscovered ? (mat?.name || ing.material_id) : '???'
-
-                                        return (
-                                            <div
-                                                key={idx}
-                                                style={{
-                                                    fontSize: isMobile ? '10px' : '11px',
-                                                    color: isIngredientDiscovered ? (hasEnough ? '#aaa' : '#ff6666') : '#666',
-                                                    marginBottom: '2px',
-                                                    // display: 'flex', // Removed flex space-between
-                                                    // justifyContent: 'space-between'
-                                                }}
-                                            >
-                                                <span>{matName} </span>
-                                                {isIngredientDiscovered && (
-                                                    <span style={{ color: hasEnough ? '#4ade80' : '#ff6666', marginLeft: '4px' }}>
-                                                        {ing.quantity} / {formatNumber(owned)}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            )}
-
-                            {/* 힌트 (미발견 시) */}
-                            {!isDiscovered && recipe.conditions && recipe.conditions.length > 0 && (
-                                <div style={{
-                                    fontSize: '10px',
-                                    color: '#88aaff',
-                                    marginTop: '4px',
-                                    paddingLeft: isMobile ? '0' : '40px',
-                                    fontStyle: 'italic'
-                                }}>
-                                    💡 {recipe.conditions[0].description || '특별한 조건 필요'}
-                                </div>
-                            )}
-
-                            {/* Level Requirement */}
-                            {recipe.required_alchemy_level > 1 && (
-                                <div style={{
-                                    fontSize: isMobile ? '9px' : '10px',
-                                    color: '#facc15',
-                                    marginTop: '4px',
-                                    paddingLeft: isMobile ? '0' : '40px'
-                                }}>
-                                    ⚠️ Lv.{recipe.required_alchemy_level} 필요
-                                </div>
-                            )}
-                        </div>
-                    )
-                })}
+                        )
+                    })}
 
                 {visibleRecipes.length === 0 && (
                     <div style={{

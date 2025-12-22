@@ -7,12 +7,13 @@ import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 
 export const InventoryPanel: React.FC = () => {
   const [isMobile, setIsMobile] = useState(isMobileView())
-  const { allMaterials } = useAlchemyStore()
+  const { allMaterials, favoriteMaterials, toggleFavoriteMaterial } = useAlchemyStore()
 
   const { materialCounts: playerMaterials } = useUnifiedInventory()
 
   const [activeTab, setActiveTab] = useState<'materials' | 'consumables'>('materials')
   const [showOnlyOwned, setShowOnlyOwned] = useState(false)
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
 
   // 반응형 감지
   useEffect(() => {
@@ -32,6 +33,7 @@ export const InventoryPanel: React.FC = () => {
       return true
     })
     .filter(m => !showOnlyOwned || (playerMaterials[m.id] || 0) > 0)
+    .filter(m => !showOnlyFavorites || favoriteMaterials.has(m.id))
 
   return (
     <div style={{
@@ -115,6 +117,38 @@ export const InventoryPanel: React.FC = () => {
           background: '#334155',
           margin: '0 8px'
         }} />
+
+        {/* Favorites Filter */}
+        <button
+          onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+          style={{
+            width: '32px',
+            height: '32px',
+            background: showOnlyFavorites ? '#334155' : 'transparent',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s',
+            marginRight: '4px'
+          }}
+          title="즐겨찾기만 보기"
+        >
+          <img
+            src="/assets/ui/gold_star.png"
+            alt="Favorites"
+            style={{
+              width: '20px',
+              height: '20px',
+              opacity: showOnlyFavorites ? 1 : 0.4,
+              filter: showOnlyFavorites ? 'none' : 'grayscale(1)'
+            }}
+          />
+        </button>
+
+        {/* Owned Filter */}
         <button
           onClick={() => setShowOnlyOwned(!showOnlyOwned)}
           style={{
@@ -124,9 +158,6 @@ export const InventoryPanel: React.FC = () => {
             border: 'none',
             borderRadius: '4px',
             cursor: 'pointer',
-            color: showOnlyOwned ? '#facc15' : '#64748b',
-            fontSize: '14px',
-            fontWeight: 'bold',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -134,7 +165,16 @@ export const InventoryPanel: React.FC = () => {
           }}
           title="보유 재료만 보기"
         >
-          ★
+          <img
+            src="/assets/ui/suede_bag.png"
+            alt="Owned"
+            style={{
+              width: '20px',
+              height: '20px',
+              opacity: showOnlyOwned ? 1 : 0.4,
+              filter: showOnlyOwned ? 'none' : 'grayscale(1)'
+            }}
+          />
         </button>
       </div>
 
@@ -153,7 +193,12 @@ export const InventoryPanel: React.FC = () => {
               color: '#94a3b8',
               fontSize: '14px'
             }}>
-              {activeTab === 'materials' ? '보유한 재료가 없습니다.' : '보유한 소모품이 없습니다.'}
+              {showOnlyFavorites
+                ? '즐겨찾기한 아이템이 없습니다.'
+                : showOnlyOwned
+                  ? '보유 중인 아이템이 없습니다.'
+                  : (activeTab === 'materials' ? '보유한 재료가 없습니다.' : '보유한 소모품이 없습니다.')
+              }
             </div>
           ) : (
             // Grid View (Always)
@@ -164,6 +209,8 @@ export const InventoryPanel: React.FC = () => {
             }}>
               {filteredMaterials.map(material => {
                 const quantity = playerMaterials[material.id] || 0
+                const isFavorite = favoriteMaterials.has(material.id)
+
                 return (
                   <div
                     key={material.id}
@@ -182,6 +229,34 @@ export const InventoryPanel: React.FC = () => {
                       filter: quantity > 0 ? 'none' : 'grayscale(1)'
                     }}
                   >
+                    {/* Favorite Toggle (Top Left) */}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleFavoriteMaterial(material.id)
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        left: '4px',
+                        cursor: 'pointer',
+                        zIndex: 10,
+                        opacity: isFavorite ? 1 : 0.3, // Always visible if favorite, else dim
+                        transition: 'opacity 0.2s'
+                      }}
+                      title="즐겨찾기"
+                    >
+                      <img
+                        src="/assets/ui/gold_star.png"
+                        alt="Fav"
+                        style={{
+                          width: '14px',
+                          height: '14px',
+                          filter: isFavorite ? 'none' : 'grayscale(1) brightness(2)' // Bright gray when inactive
+                        }}
+                      />
+                    </div>
+
                     {/* Material Icon */}
                     <div style={{
                       width: '40px',

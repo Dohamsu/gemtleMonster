@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useGameStore } from '../store/useGameStore'
 import type { FacilityData } from '../types/idle'
 
 interface PlayerFacility {
@@ -92,6 +93,17 @@ export function useFacilities(userId: string | undefined) {
                 setProductionModes(productionModeMap)
                 setAssignedMonsters(assignmentMap)
                 setLastCollectedAt(lastCollectedMap)
+
+                // Sync to Global Store (CRITICAL for Offline Rewards)
+                const gameStore = useGameStore.getState()
+                gameStore.setFacilities(playerFacilityMap)
+                gameStore.setProductionModes(productionModeMap)
+
+                // setAssignedMonsters expects Record<string, (string|null)[]>
+                gameStore.setAssignedMonsters(assignmentMap)
+
+                // setLastCollectedAtBulk
+                gameStore.setLastCollectedAtBulk(lastCollectedMap)
             }
 
             setLoading(false)

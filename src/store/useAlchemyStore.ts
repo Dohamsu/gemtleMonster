@@ -64,6 +64,13 @@ interface AlchemyState {
   isLoading: boolean
   error: string | null
 
+  // Favorites
+  favoriteRecipes: Set<string>
+  favoriteMaterials: Set<string>
+  toggleFavoriteRecipe: (id: string) => void
+  toggleFavoriteMaterial: (id: string) => void
+  loadFavorites: () => void
+
   // Actions - 데이터 로딩
   loadAllData: (userId: string) => Promise<void>
   loadMaterials: () => Promise<void>
@@ -180,8 +187,48 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     userId: null,
     batchSyncCallback: null,
     forceSyncCallback: null,
-    alchemyContext: null
+    alchemyContext: null,
+    // Keep favorites on reset? Usually yes, as they are device preferences
   }),
+
+  // Favorites
+  favoriteRecipes: new Set(),
+  favoriteMaterials: new Set(),
+
+  toggleFavoriteRecipe: (id) => set(state => {
+    const newFavorites = new Set(state.favoriteRecipes)
+    if (newFavorites.has(id)) {
+      newFavorites.delete(id)
+    } else {
+      newFavorites.add(id)
+    }
+    localStorage.setItem('favoriteRecipes', JSON.stringify(Array.from(newFavorites)))
+    return { favoriteRecipes: newFavorites }
+  }),
+
+  toggleFavoriteMaterial: (id) => set(state => {
+    const newFavorites = new Set(state.favoriteMaterials)
+    if (newFavorites.has(id)) {
+      newFavorites.delete(id)
+    } else {
+      newFavorites.add(id)
+    }
+    localStorage.setItem('favoriteMaterials', JSON.stringify(Array.from(newFavorites)))
+    return { favoriteMaterials: newFavorites }
+  }),
+
+  loadFavorites: () => {
+    try {
+      const storedRecipes = localStorage.getItem('favoriteRecipes')
+      const storedMaterials = localStorage.getItem('favoriteMaterials')
+      set({
+        favoriteRecipes: storedRecipes ? new Set(JSON.parse(storedRecipes)) : new Set(),
+        favoriteMaterials: storedMaterials ? new Set(JSON.parse(storedMaterials)) : new Set()
+      })
+    } catch (e) {
+      console.error('Failed to load favorites', e)
+    }
+  },
 
   // ============================================
   // 데이터 로딩
@@ -195,8 +242,10 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         get().loadMaterials(),
         get().loadRecipes(),
         get().loadPlayerData(userId),
-        get().loadPlayerMonsters(userId)
+        get().loadPlayerMonsters(userId),
+        // Favorites are local, but good to init here
       ])
+      get().loadFavorites()
       // consoleLogNoop(`✅ [AlchemyStore] loadAllData 완료`)
       // consoleLogNoop(`📦 playerMaterials:`, get().playerMaterials)
     } catch (error) {

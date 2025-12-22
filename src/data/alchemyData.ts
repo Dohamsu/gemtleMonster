@@ -124,7 +124,7 @@ export const MATERIALS: Record<string, Material> = {
     // Beast Forest New Materials
     'shell_snail': { id: 'shell_snail', name: '달팽이 껍질', type: 'BEAST', description: '이끼가 낀 단단한 껍질.', rarity: 'N', iconUrl: '/assets/materials/stone.png' },
     'tusk_boar': { id: 'tusk_boar', name: '멧돼지 송곳니', type: 'BEAST', description: '거칠고 날카로운 송곳니.', rarity: 'N', iconUrl: '/assets/materials/beast_fang.png' },
-    'silk_spider': { id: 'silk_spider', name: '거미줄', type: 'BEAST', description: '질기고 끈적한 거미줄.', rarity: 'N', iconUrl: '/assets/materials/scrap_cloth.png' },
+    'silk_spider': { id: 'silk_spider', name: '거미줄', type: 'BEAST', description: '질기고 끈적한 거미줄.', rarity: 'N', iconUrl: '/assets/materials/web.png' },
     'acorn_magic': { id: 'acorn_magic', name: '마력 도토리', type: 'PLANT', description: '마력을 머금어 커진 도토리.', rarity: 'R', iconUrl: '/assets/materials/seed_ancient.png' },
     'leaf_life': { id: 'leaf_life', name: '생명의 나뭇잎', type: 'PLANT', description: '생명력이 넘치는 싱싱한 잎사귀.', rarity: 'R', iconUrl: '/assets/materials/herb_yggdrasil.png' },
     // Abyssal Materials

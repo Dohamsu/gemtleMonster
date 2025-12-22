@@ -62,10 +62,12 @@ interface GameState {
     // Production Mode (High Efficiency for Low Tier)
     productionModes: Record<string, number>
     setProductionMode: (facilityId: string, level: number) => void
+    setProductionModes: (modes: Record<string, number>) => void
 
     // Auto Collection
     lastCollectedAt: Record<string, number>
     setLastCollectedAt: (id: string, time: number) => void
+    setLastCollectedAtBulk: (times: Record<string, number>) => void
 
     // Sync Callbacks
     batchFacilitySyncCallback: ((id: string, level: number) => void) | null
@@ -156,6 +158,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             productionModes: { ...state.productionModes, [facilityId]: level }
         }
     }),
+    setProductionModes: (modes) => set({ productionModes: modes }),
 
     lastCollectedAt: {},
     setLastCollectedAt: (id, time) => set(state => {
@@ -166,6 +169,7 @@ export const useGameStore = create<GameState>((set, get) => ({
             lastCollectedAt: { ...state.lastCollectedAt, [id]: time }
         }
     }),
+    setLastCollectedAtBulk: (times) => set({ lastCollectedAt: times }),
     batchLastCollectedSyncCallback: null,
     setBatchLastCollectedSyncCallback: (callback) => set({ batchLastCollectedSyncCallback: callback }),
 
