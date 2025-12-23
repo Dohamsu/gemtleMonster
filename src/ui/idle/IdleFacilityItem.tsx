@@ -155,7 +155,8 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
 
     if (!levelData || !modeLevelData) return null
 
-    const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([res, costVal]) => (resources[res] || 0) >= costVal)
+    const nextLevelData = facility.levels.find(l => l.level === currentLevel + 1)
+    const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([res, costVal]) => (resources[res] || 0) >= (costVal as number))
 
     const handleUpgrade = () => {
         if (nextLevelData) {

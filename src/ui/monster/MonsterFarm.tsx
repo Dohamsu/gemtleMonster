@@ -644,7 +644,6 @@ export default function MonsterFarm() {
                 <MonsterDetailModal
                     monster={selectedMonsterForModal}
                     onClose={() => setSelectedMonsterForModal(null)}
-                    onToggleLock={handleLockToggleCore}
                 />
             )}
         </div>

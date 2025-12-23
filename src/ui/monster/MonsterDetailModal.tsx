@@ -72,7 +72,6 @@ export default function MonsterDetailModal({ monster, onClose }: MonsterDetailMo
                 return { bg: '#2c3e50', color: '#aab7b8', icon: '🛡️', iconUrl: '/assets/ui/tanker_icon.png' }
             case 'DPS':
             case 'DEALER' as RoleType:
-            case 'DPS' as RoleType:
                 return { bg: '#4a2323', color: '#e57373', icon: '⚔️', iconUrl: '/assets/ui/dealer_icon.png' }
             case 'SUPPORT':
             case 'HEALER' as RoleType:
@@ -365,8 +364,9 @@ export default function MonsterDetailModal({ monster, onClose }: MonsterDetailMo
             {/* Modals */}
             {showAwakeningModal && (
                 <AwakeningModal
-                    monster={liveMonster}
+                    targetMonster={liveMonster}
                     onClose={() => setShowAwakeningModal(false)}
+                    onSuccess={() => setShowAwakeningModal(false)}
                 />
             )}
 
