@@ -13,6 +13,63 @@ interface FacilityMobileViewProps {
     onBack: () => void
 }
 
+const FacilityMobileCardSkeleton = () => (
+    <div style={{
+        position: 'relative',
+        background: '#1e1912',
+        border: '1px solid #494122',
+        borderRadius: '12px',
+        padding: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: '84px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.2)'
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Icon */}
+            <div style={{
+                width: '40px', height: '40px',
+                background: '#2a2418',
+                borderRadius: '8px',
+                animation: 'skeleton-pulse 1.5s infinite ease-in-out'
+            }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {/* Title */}
+                <div style={{
+                    width: '80px', height: '16px',
+                    background: '#2a2418', borderRadius: '4px',
+                    animation: 'skeleton-pulse 1.5s infinite ease-in-out'
+                }} />
+                {/* Level Badge */}
+                <div style={{
+                    width: '40px', height: '12px',
+                    background: '#2a2418', borderRadius: '4px',
+                    animation: 'skeleton-pulse 1.5s infinite ease-in-out',
+                    animationDelay: '0.2s'
+                }} />
+            </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+            {/* Stats Badge */}
+            <div style={{
+                width: '100px', height: '24px',
+                background: '#2a2418', borderRadius: '12px',
+                animation: 'skeleton-pulse 1.5s infinite ease-in-out',
+                animationDelay: '0.4s'
+            }} />
+            {/* Progress Bar */}
+            <div style={{
+                width: '80px', height: '4px',
+                background: '#2a2418', borderRadius: '2px',
+                animation: 'skeleton-pulse 1.5s infinite ease-in-out',
+                animationDelay: '0.6s'
+            }} />
+        </div>
+    </div>
+)
+
 export default function FacilityMobileView({
     facilities,
     playerFacilities,
@@ -44,6 +101,15 @@ export default function FacilityMobileView({
             position: 'relative',
             touchAction: 'pan-y' // 부모에서 none으로 막았으므로 여기서는 세로 스크롤 허용
         }}>
+            <style>
+                {`
+                    @keyframes skeleton-pulse {
+                        0% { opacity: 0.3; }
+                        50% { opacity: 0.7; }
+                        100% { opacity: 0.3; }
+                    }
+                `}
+            </style>
             {/* Header - Shop Style Unification */}
             <header style={{
                 position: 'sticky',
@@ -163,7 +229,9 @@ export default function FacilityMobileView({
             {/* Facility List */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '40px', color: '#7a7a7a' }}>로딩 중...</div>
+                    Array.from({ length: 5 }).map((_, i) => (
+                        <FacilityMobileCardSkeleton key={i} />
+                    ))
                 ) : (
                     facilities.map(facility => (
                         <FacilityMobileCard

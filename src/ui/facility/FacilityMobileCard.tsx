@@ -5,6 +5,8 @@ import FacilityIcon from '../FacilityIcon'
 import { useCollectionProgress } from '../../hooks/useCollectionProgress'
 import { calculateFacilityBonus } from '../../utils/facilityUtils'
 
+import { useGameStore } from '../../store/useGameStore'
+
 interface FacilityMobileCardProps {
     facility: FacilityData
     level: number
@@ -22,7 +24,11 @@ export default function FacilityMobileCard({
     playerMonsters,
     onClick
 }: FacilityMobileCardProps) {
+    const { productionModes } = useGameStore()
     const levelData = facility.levels.find((l) => l.level === level)
+
+    const currentModeLevel = productionModes[facility.id] || level
+    const modeLevelData = facility.levels.find(l => l.level === currentModeLevel)
 
     // Calculate Bonuses from assigned monsters
     const currentAssignments = assignedMonsters[facility.id]
@@ -46,8 +52,12 @@ export default function FacilityMobileCard({
     if (bonusSpeed > 90) bonusSpeed = 90
 
     // Stats Calculation
+    // Interval depends on Facility Level (higher is faster)
     const intervalSeconds = (levelData?.stats?.intervalSeconds || 1) * (1 - bonusSpeed / 100)
-    const bundlesPerTick = levelData?.stats?.bundlesPerTick || 0
+
+    // Bundles/Drop depends on Production Mode (what we are making)
+    const bundlesPerTick = modeLevelData?.stats?.bundlesPerTick || levelData?.stats?.bundlesPerTick || 0
+
     const collectionKey = `${facility.id}-${level}`
     const lastCollected = lastCollectedAt[collectionKey] || 0
 

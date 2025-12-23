@@ -130,6 +130,8 @@ interface AlchemyState {
     error?: string
   }>
   toggleMonsterLock: (monsterId: string, isLocked: boolean) => Promise<void>
+  feedMonster: (monsterId: string, potionId: string, quantity: number) => Promise<{ success: boolean; message: string }>
+  feedMonsterBulk: (monsterId: string, potions: Record<string, number>) => Promise<{ success: boolean; message: string }>
 
   // Actions - Error Handling
   resetError: () => void
@@ -1264,5 +1266,91 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       console.error('몬스터 잠금 상태 변경 실패:', error)
       throw error
     }
+  },
+
+  feedMonster: async (monsterId, potionId, quantity) => {
+    // Wrapper for single potion usage
+    return get().feedMonsterBulk(monsterId, { [potionId]: quantity })
+  },
+
+  feedMonsterBulk: async (monsterId, potions) => {
+    const { userId, playerMaterials, playerMonsters } = get()
+    if (!userId) return { success: false, message: '로그인이 필요합니다.' }
+    if (Object.keys(potions).length === 0) return { success: false, message: '사용할 포션이 없습니다.' }
+
+    // 1. Validation & Calculation
+    let totalXp = 0
+    // Dynamic import to avoid circular dep if needed, though usually constants are safe
+    const { CONSUMABLE_EFFECTS } = await import('../data/alchemyData')
+
+    for (const [potionId, quantity] of Object.entries(potions)) {
+      if (quantity <= 0) continue
+
+      const currentPotion = playerMaterials[potionId] || 0
+      if (currentPotion < quantity) {
+        return { success: false, message: `포션이 부족합니다. (${potionId})` }
+      }
+
+      const effect = CONSUMABLE_EFFECTS[potionId]
+      if (!effect || effect.type !== 'GRANT_XP') {
+        return { success: false, message: '경험치 포션이 아닙니다.' }
+      }
+      totalXp += effect.value * quantity
+    }
+
+    const monster = playerMonsters.find(m => m.id === monsterId)
+    if (!monster) {
+      return { success: false, message: '몬스터를 찾을 수 없습니다.' }
+    }
+
+    // API 호출
+    try {
+      const result = await alchemyApi.feedMonster(userId, monsterId, potions, totalXp)
+
+      if (!result.success) {
+        return { success: false, message: result.error || '알 수 없는 오류' }
+      }
+
+      // 2. Update Local State
+      const newMaterials = { ...playerMaterials }
+
+      // Deduct materials
+      Object.entries(potions).forEach(([id, qty]) => {
+        newMaterials[id] = Math.max(0, (newMaterials[id] || 0) - qty)
+      })
+
+      // Update Monster
+      const newMonsters = playerMonsters.map(m => {
+        if (m.id === monsterId) {
+          return { ...m, level: result.newLevel, exp: result.newExp }
+        }
+        return m
+      })
+
+      // Sync with GameStore resources
+      const gameStore = useGameStore.getState()
+      const newGameResources = { ...gameStore.resources }
+      Object.entries(potions).forEach(([id, _qty]) => {
+        newGameResources[id] = newMaterials[id]
+      })
+      gameStore.setResources(newGameResources)
+
+      set({
+        playerMaterials: newMaterials,
+        playerMonsters: newMonsters
+      })
+
+      return {
+        success: true,
+        message: result.leveledUp
+          ? `성장 완료! 레벨이 ${result.newLevel}로 상승했습니다.`
+          : `경험치를 획득했습니다. (현재: ${result.newExp})`
+      }
+
+    } catch (e: any) {
+      console.error('Monster feeding failed:', e)
+      return { success: false, message: e.message }
+    }
   }
 }))
+

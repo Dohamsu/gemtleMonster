@@ -52,12 +52,16 @@ const getActionText = (facilityId: string) => {
 }
 
 export default function IdleFacilityItem({ facility, currentLevel, isHighestLevel, resources, onUpgrade, isPaused = false }: Props) {
-    const { lastCollectedAt, recentAdditions } = useGameStore()
+    const { lastCollectedAt, recentAdditions, productionModes } = useGameStore()
     const levelData = facility.levels.find(l => l.level === currentLevel)
-    const nextLevelData = facility.levels.find(l => l.level === currentLevel + 1)
+
+    // Production Mode Logic: displayed cost comes from production mode
+    const currentModeLevel = productionModes[facility.id] || currentLevel
+    const modeLevelData = facility.levels.find(l => l.level === currentModeLevel)
 
     // Check if production can continue (has enough resources if cost exists)
-    const cost = levelData?.stats.cost
+    // Use modeLevelData for cost check
+    const cost = modeLevelData?.stats.cost
     const hasEnoughResources = !cost || Object.entries(cost).every(([res, amount]) => (resources[res] || 0) >= amount)
 
     // Collection progress
@@ -149,7 +153,7 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
         )
     }
 
-    if (!levelData) return null
+    if (!levelData || !modeLevelData) return null
 
     const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([res, costVal]) => (resources[res] || 0) >= costVal)
 
@@ -209,19 +213,24 @@ export default function IdleFacilityItem({ facility, currentLevel, isHighestLeve
                 </div>
             )}
 
-            {levelData.stats.dropRates && (
+            {modeLevelData.stats.dropRates && (
                 <div style={{ fontSize: '0.9em', color: '#aaa', margin: '5px 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <span style={{ color: '#4ade80' }}>생산:</span>
-                    {Object.keys(levelData.stats.dropRates).map(key => (
+                    {Object.keys(modeLevelData.stats.dropRates).map(key => (
                         <ResourceIcon key={key} resourceId={key} size={18} />
                     ))}
+                    {currentModeLevel < currentLevel && (
+                        <span style={{ fontSize: '0.7em', color: '#fbbf24', marginLeft: 'auto' }}>
+                            (Lv.{currentModeLevel} 모드)
+                        </span>
+                    )}
                 </div>
             )}
 
-            {levelData.stats.cost && (
+            {modeLevelData.stats.cost && (
                 <div style={{ fontSize: '0.9em', color: '#ef4444', margin: '5px 0', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <span>소모:</span>
-                    {Object.entries(levelData.stats.cost).map(([key, amount]) => (
+                    {Object.entries(modeLevelData.stats.cost).map(([key, amount]) => (
                         <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '2px', background: 'rgba(239, 68, 68, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
                             <ResourceIcon resourceId={key} size={16} />
                             <span style={{ fontSize: '0.85em' }}>-{amount}</span>

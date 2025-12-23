@@ -382,7 +382,8 @@ export default function BattleView() {
                         color: '#94a3b8',
                         display: 'flex',
                         justifyContent: 'center',
-                        gap: '8px'
+                        gap: '8px',
+                        alignItems: 'center'
                     }}>
                         {(() => {
                             const effectiveAtk = calculateEffectiveStat(battleState.playerAtk, battleState.playerStatusEffects || [], 'ATK')
@@ -392,15 +393,17 @@ export default function BattleView() {
                                 <>
                                     <span style={{
                                         color: effectiveAtk > battleState.playerAtk ? '#4ade80' : effectiveAtk < battleState.playerAtk ? '#ef4444' : '#94a3b8',
-                                        transition: 'color 0.3s'
+                                        transition: 'color 0.3s',
+                                        display: 'flex', alignItems: 'center', gap: '2px'
                                     }}>
-                                        ⚔️ {effectiveAtk}
+                                        <img src="/assets/ui/dealer_icon.png" alt="ATK" style={{ width: '14px', height: '14px' }} /> {effectiveAtk}
                                     </span>
                                     <span style={{
                                         color: effectiveDef > battleState.playerDef ? '#4ade80' : effectiveDef < battleState.playerDef ? '#ef4444' : '#94a3b8',
-                                        transition: 'color 0.3s'
+                                        transition: 'color 0.3s',
+                                        display: 'flex', alignItems: 'center', gap: '2px'
                                     }}>
-                                        🛡️ {effectiveDef}
+                                        <img src="/assets/ui/tanker_icon.png" alt="DEF" style={{ width: '14px', height: '14px' }} /> {effectiveDef}
                                     </span>
                                 </>
                             )
@@ -416,18 +419,18 @@ export default function BattleView() {
                     {/* Status Effects */}
                     <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '4px', minHeight: '20px' }}>
                         {battleState.playerStatusEffects?.map((effect, idx) => {
-                            let icon = ''
+                            let icon: React.ReactNode = ''
                             let color = ''
                             switch (effect.type) {
                                 case 'BURN': icon = '🔥'; color = '#ef4444'; break;
                                 case 'POISON': icon = '☠️'; color = '#a855f7'; break;
-                                case 'REGEN': icon = '🌿'; color = '#22c55e'; break;
+                                case 'REGEN': icon = <img src="/assets/ui/healder_icon.png" alt="Regen" style={{ width: '14px', height: '14px' }} />; color = '#22c55e'; break;
                                 case 'STUN': icon = '💫'; color = '#eab308'; break;
-                                case 'ATK_BUFF': icon = '⚔️▲'; color = '#3b82f6'; break;
-                                case 'DEF_BUFF': icon = '🛡️▲'; color = '#6b7280'; break;
+                                case 'ATK_BUFF': icon = <><img src="/assets/ui/dealer_icon.png" alt="AtkBuff" style={{ width: '14px', height: '14px' }} />▲</>; color = '#3b82f6'; break;
+                                case 'DEF_BUFF': icon = <><img src="/assets/ui/tanker_icon.png" alt="DefBuff" style={{ width: '14px', height: '14px' }} />▲</>; color = '#6b7280'; break;
                             }
                             return (
-                                <span key={idx} title={`${effect.type} (${effect.duration} turns)`} style={{ color, fontSize: '14px' }}>
+                                <span key={idx} title={`${effect.type} (${effect.duration} turns)`} style={{ color, fontSize: '14px', display: 'flex', alignItems: 'center' }}>
                                     {icon}<sub style={{ fontSize: '10px' }}>{effect.duration}</sub>
                                 </span>
                             )
@@ -536,7 +539,8 @@ export default function BattleView() {
                         color: '#94a3b8',
                         display: 'flex',
                         justifyContent: 'center',
-                        gap: '8px'
+                        gap: '8px',
+                        alignItems: 'center'
                     }}>
                         {(() => {
                             const effectiveAtk = calculateEffectiveStat(battleState.enemyAtk, battleState.enemyStatusEffects || [], 'ATK')
@@ -546,15 +550,17 @@ export default function BattleView() {
                                 <>
                                     <span style={{
                                         color: effectiveAtk > battleState.enemyAtk ? '#4ade80' : effectiveAtk < battleState.enemyAtk ? '#ef4444' : '#94a3b8',
-                                        transition: 'color 0.3s'
+                                        transition: 'color 0.3s',
+                                        display: 'flex', alignItems: 'center', gap: '2px'
                                     }}>
-                                        ⚔️ {effectiveAtk}
+                                        <img src="/assets/ui/dealer_icon.png" alt="ATK" style={{ width: '14px', height: '14px' }} /> {effectiveAtk}
                                     </span>
                                     <span style={{
                                         color: effectiveDef > battleState.enemyDef ? '#4ade80' : effectiveDef < battleState.enemyDef ? '#ef4444' : '#94a3b8',
-                                        transition: 'color 0.3s'
+                                        transition: 'color 0.3s',
+                                        display: 'flex', alignItems: 'center', gap: '2px'
                                     }}>
-                                        🛡️ {effectiveDef}
+                                        <img src="/assets/ui/tanker_icon.png" alt="DEF" style={{ width: '14px', height: '14px' }} /> {effectiveDef}
                                     </span>
                                 </>
                             )
@@ -570,18 +576,18 @@ export default function BattleView() {
                     {/* Status Effects */}
                     <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '4px', minHeight: '20px' }}>
                         {battleState.enemyStatusEffects?.map((effect, idx) => {
-                            let icon = ''
+                            let icon: React.ReactNode = ''
                             let color = ''
                             switch (effect.type) {
                                 case 'BURN': icon = '🔥'; color = '#ef4444'; break;
                                 case 'POISON': icon = '☠️'; color = '#a855f7'; break;
-                                case 'REGEN': icon = '🌿'; color = '#22c55e'; break;
+                                case 'REGEN': icon = <img src="/assets/ui/healder_icon.png" alt="Regen" style={{ width: '14px', height: '14px' }} />; color = '#22c55e'; break;
                                 case 'STUN': icon = '💫'; color = '#eab308'; break;
-                                case 'ATK_BUFF': icon = '⚔️▲'; color = '#3b82f6'; break;
-                                case 'DEF_BUFF': icon = '🛡️▲'; color = '#6b7280'; break;
+                                case 'ATK_BUFF': icon = <><img src="/assets/ui/dealer_icon.png" alt="AtkBuff" style={{ width: '14px', height: '14px' }} />▲</>; color = '#3b82f6'; break;
+                                case 'DEF_BUFF': icon = <><img src="/assets/ui/tanker_icon.png" alt="DefBuff" style={{ width: '14px', height: '14px' }} />▲</>; color = '#6b7280'; break;
                             }
                             return (
-                                <span key={idx} title={`${effect.type} (${effect.duration} turns)`} style={{ color, fontSize: '14px' }}>
+                                <span key={idx} title={`${effect.type} (${effect.duration} turns)`} style={{ color, fontSize: '14px', display: 'flex', alignItems: 'center' }}>
                                     {icon}<sub style={{ fontSize: '10px' }}>{effect.duration}</sub>
                                 </span>
                             )

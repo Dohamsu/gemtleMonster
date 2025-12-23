@@ -240,7 +240,7 @@ export default function FacilityDetailModal({
                 )}
 
                 {/* Consumption Info (Costs) */}
-                {levelData?.stats?.cost && Object.keys(levelData.stats.cost).length > 0 && (
+                {modeLevelData?.stats?.cost && Object.keys(modeLevelData.stats.cost).length > 0 && (
                     <div style={{
                         background: 'rgba(42, 24, 16, 0.4)', borderRadius: '16px', border: '1px solid #494122',
                         padding: '16px', marginBottom: '20px', backdropFilter: 'blur(4px)'
@@ -250,7 +250,7 @@ export default function FacilityDetailModal({
                             소모 정보 (틱당 소모량)
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {Object.entries(levelData.stats.cost).map(([resId, amount]) => {
+                            {Object.entries(modeLevelData.stats.cost).map(([resId, amount]) => {
                                 const owned = (resources[resId] ?? playerMaterials[resId] ?? 0)
                                 const enough = owned >= (amount as number)
                                 return (

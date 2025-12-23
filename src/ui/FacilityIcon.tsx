@@ -79,11 +79,11 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
     }
 
     // Fallback to emoji if no image is available
-    const getIconContent = () => {
+    const getIconContent = (): { emoji: string; color: string; iconUrl?: string } => {
         if (id === 'herb_farm') {
             const colors = ['#4ade80', '#22c55e', '#16a34a', '#15803d', '#facc15']
             const color = colors[Math.min(level - 1, 4)]
-            return { emoji: '🌿', color }
+            return { emoji: '🌿', color, iconUrl: '/assets/ui/healder_icon.png' }
         }
         if (id === 'monster_farm') {
             const colors = ['#fca5a5', '#f87171', '#ef4444', '#dc2626', '#facc15']
@@ -118,7 +118,7 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
         if (id === 'dungeon_dispatch') {
             const colors = ['#f87171', '#ef4444', '#dc2626', '#b91c1c', '#facc15']
             const color = colors[Math.min(level - 1, 4)]
-            return { emoji: '⚔️', color }
+            return { emoji: '⚔️', color, iconUrl: '/assets/ui/dealer_icon.png' }
         }
         if (id === 'training_ground') {
             const colors = ['#fb923c', '#f97316', '#ea580c', '#c2410c', '#facc15']
@@ -133,15 +133,16 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
         return { emoji: '🏠', color: 'white' }
     }
 
-    const { emoji, color } = getIconContent()
+    const { emoji, color, iconUrl } = getIconContent()
 
     return (
         <span style={{
             fontSize: typeof size === 'string' ? size : `${size}px`,
             filter: `drop-shadow(0 0 5px ${color})`,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
             ...style
         }}>
-            {emoji}
+            {iconUrl ? <img src={iconUrl} alt={id} style={{ width: '1em', height: '1em', objectFit: 'contain' }} /> : emoji}
         </span>
     )
 }

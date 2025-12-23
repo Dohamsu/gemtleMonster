@@ -494,8 +494,8 @@
         },
         {
             "id": "training_ground",
-            "name": "훈련장",
-            "category": "unit_growth",
+            "name": "훈련소",
+            "category": "resource_production",
             "unlockConditions": [
                 {
                     "type": "playerLevel",
@@ -509,10 +509,16 @@
             "levels": [
                 {
                     "level": 1,
+                    "name": "기초 훈련소",
                     "stats": {
-                        "slotCount": 1,
                         "intervalSeconds": 60,
-                        "xpPerTick": 10,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "potion_xp_small": 1.0
+                        },
+                        "cost": {
+                            "potion_base": 1
+                        },
                         "trainingTokenDropRate": 0.0005
                     },
                     "upgradeCost": {
@@ -521,10 +527,16 @@
                 },
                 {
                     "level": 2,
+                    "name": "수습 훈련소",
                     "stats": {
-                        "slotCount": 1,
-                        "intervalSeconds": 60,
-                        "xpPerTick": 15,
+                        "intervalSeconds": 50,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "potion_xp_small": 1.0
+                        },
+                        "cost": {
+                            "potion_base": 1
+                        },
                         "trainingTokenDropRate": 0.0007
                     },
                     "upgradeCost": {
@@ -533,10 +545,16 @@
                 },
                 {
                     "level": 3,
+                    "name": "숙련된 조교의 방",
                     "stats": {
-                        "slotCount": 2,
                         "intervalSeconds": 45,
-                        "xpPerTick": 20,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "potion_xp_medium": 1.0
+                        },
+                        "cost": {
+                            "potion_base": 2
+                        },
                         "trainingTokenDropRate": 0.001
                     },
                     "upgradeCost": {
@@ -546,10 +564,16 @@
                 },
                 {
                     "level": 4,
+                    "name": "엘리트 양성소",
                     "stats": {
-                        "slotCount": 2,
                         "intervalSeconds": 40,
-                        "xpPerTick": 25,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "potion_xp_medium": 1.0
+                        },
+                        "cost": {
+                            "potion_base": 2
+                        },
                         "trainingTokenDropRate": 0.0015
                     },
                     "upgradeCost": {
@@ -560,10 +584,16 @@
                 },
                 {
                     "level": 5,
+                    "name": "영웅의 교관",
                     "stats": {
-                        "slotCount": 3,
                         "intervalSeconds": 30,
-                        "xpPerTick": 30,
+                        "bundlesPerTick": 1,
+                        "dropRates": {
+                            "potion_xp_large": 1.0
+                        },
+                        "cost": {
+                            "potion_base": 3
+                        },
                         "trainingTokenDropRate": 0.002
                     },
                     "upgradeCost": {

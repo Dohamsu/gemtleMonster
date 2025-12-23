@@ -9,7 +9,10 @@ export const CONSUMABLE_EFFECTS: Record<string, ConsumableEffect> = {
     'potion_stamina': { type: 'BUFF_ATK', value: 20, duration: 3 },
     'potion_ironskin': { type: 'BUFF_DEF', value: 30, duration: 3 },
     'potion_light': { type: 'CURE_STATUS', value: 0 },  // 상태이상 해제
-    'potion_base': { type: 'HEAL_HP', value: 5 } // 미미한 회복 효과 가진 베이스 포션
+    'potion_base': { type: 'HEAL_HP', value: 5 }, // 미미한 회복 효과 가진 베이스 포션
+    'potion_xp_small': { type: 'GRANT_XP', value: 100 },
+    'potion_xp_medium': { type: 'GRANT_XP', value: 500 },
+    'potion_xp_large': { type: 'GRANT_XP', value: 1500 }
 }
 export const MATERIALS: Record<string, Material> = {
     'herb_common': { id: 'herb_common', name: '일반 약초', type: 'PLANT', description: '흔하게 볼 수 있는 약초.', rarity: 'N', iconUrl: '/assets/materials/herb_common.png', sellPrice: 10 },
@@ -78,6 +81,9 @@ export const MATERIALS: Record<string, Material> = {
     'potion_ironskin': { id: 'potion_ironskin', name: '강철 피부 포션', type: 'CONSUMABLE', description: '피부를 단단하게 만들어주는 포션.', rarity: 'N', iconUrl: '/assets/useItem/potion_ironskin.png', sellPrice: 40 },
     'potion_light': { id: 'potion_light', name: '빛의 물약', type: 'CONSUMABLE', description: '어둠을 밝혀주는 빛나는 물약.', rarity: 'R', iconUrl: '/assets/useItem/potion_light.png', sellPrice: 60 },
     'potion_base': { id: 'potion_base', name: '베이스 포션', type: 'CONSUMABLE', description: '모든 연금술 포션의 기초가 되는 액체.', rarity: 'N', iconUrl: '/assets/useItem/basic_potion.png', sellPrice: 5 },
+    'potion_xp_small': { id: 'potion_xp_small', name: '소형 경험치 포션', type: 'CONSUMABLE', description: '몬스터에게 경험치를 100 부여합니다.', rarity: 'N', iconUrl: '/assets/useItem/xp_potion_1.png', sellPrice: 50 },
+    'potion_xp_medium': { id: 'potion_xp_medium', name: '중형 경험치 포션', type: 'CONSUMABLE', description: '몬스터에게 경험치를 500 부여합니다.', rarity: 'R', iconUrl: '/assets/useItem/xp_potion_2.png', sellPrice: 200 },
+    'potion_xp_large': { id: 'potion_xp_large', name: '대형 경험치 포션', type: 'CONSUMABLE', description: '몬스터에게 경험치를 1500 부여합니다.', rarity: 'SR', iconUrl: '/assets/useItem/xp_potion_3.png', sellPrice: 500 },
 
     // Mining Tiers
     'stone': { id: 'stone', name: '돌멩이', type: 'MINERAL', description: '흔히 볼 수 있는 돌멩이입니다. 단단해서 던지면 아픕니다.', rarity: 'N', iconUrl: '/assets/materials/stone.png', sellPrice: 1 },

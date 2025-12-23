@@ -354,8 +354,8 @@ export default function CodexPanel({
                                             <ul style={{ paddingLeft: '0', margin: 0, listStyle: 'none' }}>
                                                 {sources.map((source, idx) => (
                                                     <li key={idx} style={{ marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                        <span style={{ fontSize: '16px' }}>
-                                                            {source.type === 'facility' ? '🏭' : '⚔️'}
+                                                        <span style={{ fontSize: '16px', display: 'flex', alignItems: 'center' }}>
+                                                            {source.type === 'facility' ? '🏭' : <img src="/assets/ui/dealer_icon.png" alt="Battle" style={{ width: '16px', height: '16px' }} />}
                                                         </span>
                                                         <span>
                                                             <strong style={{ color: '#e2e8f0' }}>{source.name}</strong>

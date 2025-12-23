@@ -328,3 +328,61 @@ export async function awakenMonster(
   return { success: true, newAwakeningLevel }
 }
 
+
+/**
+ * 몬스터에게 경험치 포션 먹이기 (대량/다중 종류 지원)
+ * 
+ * @param userId - 사용자 ID
+ * @param monsterId - 몬스터 ID (UUID)
+ * @param materials - 소모할 재료 목록 (potionId -> quantity)
+ * @param totalXp - 획득할 총 경험치
+ */
+export async function feedMonster(
+  userId: string,
+  monsterId: string,
+  materials: Record<string, number>,
+  totalXp: number
+): Promise<{ success: boolean; newLevel: number; newExp: number; leveledUp: boolean; error?: string }> {
+  // 1. 재료(포션) 소모
+  const { error: consumeError } = await supabase.rpc('consume_materials', {
+    p_user_id: userId,
+    p_materials: materials
+  })
+
+  if (consumeError) {
+    console.error('포션 소모 실패:', consumeError)
+    return { success: false, newLevel: 0, newExp: 0, leveledUp: false, error: '포션 소모에 실패했습니다.' }
+  }
+
+  // 2. 몬스터 정보 조회
+  const { data: monster, error: fetchError } = await supabase
+    .from('player_monster')
+    .select('level, exp, monster_id, awakening_level')
+    .eq('id', monsterId)
+    .single()
+
+  if (fetchError || !monster) {
+    return { success: false, newLevel: 0, newExp: 0, leveledUp: false, error: '몬스터 정보를 찾을 수 없습니다.' }
+  }
+
+  // 3. 경험치 추가 및 레벨업
+  try {
+    const result = await updateMonsterExp(
+      userId,
+      monsterId,
+      monster.level,
+      monster.exp,
+      totalXp
+    )
+
+    return {
+      success: true,
+      newLevel: result.level,
+      newExp: result.exp,
+      leveledUp: result.leveledUp
+    }
+
+  } catch (e: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+    return { success: false, newLevel: 0, newExp: 0, leveledUp: false, error: e.message }
+  }
+}
