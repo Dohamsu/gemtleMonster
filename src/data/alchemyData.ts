@@ -290,6 +290,168 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
     },
 
     {
+        id: 'recipe_wood_golem',
+        resultMonsterId: 'wood_golem', // 🛡️ Tanker (N)
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 15,
+        costGold: 50,
+        requiredAlchemyLevel: 1,
+        expGain: 120,
+        isHidden: false,
+        priority: 90,
+        ingredients: [
+            { materialId: 'wood_branch', quantity: 5, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_acorn_squirrel',
+        resultMonsterId: 'acorn_squirrel', // ⚔️ Dealer (N)
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 80,
+        craftTimeSec: 10,
+        costGold: 40,
+        requiredAlchemyLevel: 1,
+        expGain: 100,
+        isHidden: false,
+        priority: 90,
+        ingredients: [
+            { materialId: 'wood_branch', quantity: 3, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_leaf_sprite',
+        resultMonsterId: 'leaf_sprite', // 🌿 Support (N)
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 12,
+        costGold: 30,
+        requiredAlchemyLevel: 1,
+        expGain: 110,
+        isHidden: false,
+        priority: 90,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_moss_golem',
+        resultMonsterId: 'moss_golem', // 🛡️ Tanker (N)
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 15,
+        costGold: 50,
+        requiredAlchemyLevel: 1,
+        expGain: 120,
+        isHidden: false,
+        priority: 90,
+        ingredients: [
+            { materialId: 'stone', quantity: 5, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_shadow_unicorn',
+        resultMonsterId: 'shadow_unicorn', // ⚔️ Dealer (R)
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 80,
+        craftTimeSec: 20,
+        costGold: 100,
+        requiredAlchemyLevel: 2,
+        expGain: 200,
+        isHidden: false,
+        priority: 85,
+        ingredients: [
+            { materialId: 'beast_fang', quantity: 5, isCatalyst: false },
+            { materialId: 'dark_crystal', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_mystic_fox',
+        resultMonsterId: 'mystic_fox', // 🌿 Support (R)
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 80,
+        craftTimeSec: 15,
+        costGold: 80,
+        requiredAlchemyLevel: 2,
+        expGain: 180,
+        isHidden: false,
+        priority: 88,
+        ingredients: [
+            { materialId: 'spirit_dust', quantity: 5, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_red_mane_wolf',
+        resultMonsterId: 'red_mane_wolf', // ⚔️ Dealer (N)
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 10,
+        costGold: 50,
+        requiredAlchemyLevel: 1,
+        expGain: 150,
+        isHidden: false,
+        priority: 88,
+        ingredients: [
+            { materialId: 'beast_fang', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_fire', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_iron_beetle',
+        resultMonsterId: 'iron_beetle', // 🛡️ Tank (N)
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 10,
+        costGold: 50,
+        requiredAlchemyLevel: 1,
+        expGain: 150,
+        isHidden: false,
+        priority: 88,
+        ingredients: [
+            { materialId: 'ore_iron', quantity: 5, isCatalyst: false },
+            { materialId: 'stone', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_wind_pixie',
+        resultMonsterId: 'wind_pixie', // 🌿 Support (N)
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 10,
+        costGold: 50,
+        requiredAlchemyLevel: 1,
+        expGain: 150,
+        isHidden: false,
+        priority: 88,
+        ingredients: [
+            { materialId: 'herb_common', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_wind', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+
+    {
         id: 'recipe_slime_basic',
         resultMonsterId: 'slime_basic',
         resultCount: 1,

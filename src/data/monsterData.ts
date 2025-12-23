@@ -98,6 +98,24 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
         element: 'dark',
         factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '그림자 추적', value: 12 }
     },
+    'wood_golem': {
+        name: '우드 골렘',
+        description: '숲의 나뭇가지를 엮어 만든 작은 골렘. 단단한 나무 껍질로 몸을 보호하며 숲의 입구를 지킵니다.',
+        role: '탱커',
+        hp: 180,
+        attack: 25,
+        defense: 40,
+        emoji: '🪵',
+        iconUrl: '/assets/monsters/woodGolem.png',
+        rarity: 'N',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'lumber_mill', effect: '생산량 증가', value: 10 },
+        drops: [
+            { materialId: 'wood_branch', chance: 100, min: 1, max: 3 },
+            { materialId: 'slime_fluid', chance: 40, min: 1, max: 1 }
+        ]
+    },
+
     'slime_king': {
         name: '왕슬라임',
         description: '모든 슬라임을 다스리는 점액의 군주. 둔중하지만 압도적인 체력과 방어력으로 전장을 지배합니다.',
@@ -601,38 +619,38 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'acorn_squirrel': {
         name: '도토리 다람쥐',
-        description: '마력을 머금은 거대한 도토리를 소중히 들고 다니는 다람쥐. 도토리를 던져 원거리에서 공격합니다.',
-        role: '서포터',
+        description: '도토리를 던지는 날렵한 다람쥐. 작지만 빠른 속도로 적을 교란하고 도망칩니다.',
+        role: '딜러',
         hp: 90,
-        attack: 30,
-        defense: 10,
+        attack: 50,
+        defense: 15,
         emoji: '🐿️',
         iconUrl: '/assets/monsters/monster_acorn_squirrel.png',
         rarity: 'N',
-        element: 'earth',
+        element: 'wind',
+        factoryTrait: { targetFacility: 'lumber_mill', effect: '채집 속도 증가', value: 5 },
         drops: [
-            { materialId: 'acorn_magic', chance: 80, min: 1, max: 1 },
-            { materialId: 'scrap_leather', chance: 40, min: 1, max: 1 }
-        ],
-        factoryTrait: { targetFacility: 'monster_farm', effect: '비축량 관리', value: 5 }
+            { materialId: 'wood_branch', chance: 60, min: 1, max: 2 },
+            { materialId: 'beast_fang', chance: 30, min: 1, max: 1 }
+        ]
     },
     'leaf_sprite': {
-        name: '나뭇잎 정령',
-        description: '숲의 생명력이 뭉쳐 태어난 작은 정령. 싱그러운 잎사귀를 흔들며 숲의 활력을 불어넣습니다.',
+        name: '잎사귀 요정',
+        description: '숲을 지키는 작은 요정. 아픈 동물을 치료해주며, 숲의 생명력을 다룹니다.',
         role: '서포터',
-        hp: 80,
+        hp: 110,
         attack: 15,
-        defense: 15,
+        defense: 20,
         emoji: '🌿',
         iconUrl: '/assets/monsters/monster_leaf_sprite.png',
-        rarity: 'R',
-        element: 'light',
+        rarity: 'N',
+        element: 'wind',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '생산량 증가', value: 8 },
         drops: [
-            { materialId: 'leaf_life', chance: 100, min: 1, max: 1 },
-            { materialId: 'spirit_dust', chance: 50, min: 1, max: 1 }
-        ],
-        factoryTrait: { targetFacility: 'herb_farm', effect: '나뭇잎 영양제', value: 10 }
+            { materialId: 'herb_common', chance: 80, min: 1, max: 3 }
+        ]
     },
+
     'penguin': {
         name: '아기 펭귄',
         description: '뒤뚱거리며 걷는 귀여운 펭귄. 차가운 물속을 자유롭게 헤엄치며, 보는 이의 마음을 녹입니다.',
@@ -1212,19 +1230,121 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
     },
     'kraken_hatchling': {
         name: '크라켄 새끼',
-        description: '전설적인 괴수 크라켄의 새끼. 작지만 무시무시한 잠재력을 가지고 있습니다.',
+        description: '심해의 지배자 크라켄의 새끼. 작지만 강력한 힘을 숨기고 있습니다.',
         role: '딜러',
-        hp: 300,
-        attack: 80,
-        defense: 40,
+        hp: 130,
+        attack: 40,
+        defense: 25,
         emoji: '🦑',
         iconUrl: '/assets/monsters/kraken_hatchling.png',
-        rarity: 'SR',
+        rarity: 'R',
         element: 'water',
-        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '먹물 연금술', value: 15 },
+        factoryTrait: { targetFacility: 'mine', effect: '심해 채굴', value: 15 },
         drops: [
-            { materialId: 'kraken_ink', chance: 100, min: 1, max: 2 },
-            { materialId: 'pearl_black', chance: 50, min: 1, max: 1 }
+            { materialId: 'kraken_leg', chance: 60, min: 1, max: 1 },
+            { materialId: 'essence', chance: 30, min: 1, max: 2 }
+        ]
+    },
+    'moss_golem': {
+        name: '이끼 골렘',
+        description: '오랜 세월 숲속에 방치되어 이끼가 뒤덮인 골렘. 자연과 하나가 되어 숲을 수호합니다.',
+        role: '탱커',
+        hp: 350,
+        attack: 30,
+        defense: 70,
+        emoji: '🗿',
+        iconUrl: '/assets/monsters/moss_monster.png',
+        rarity: 'N',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '자연의 품', value: 12 },
+        drops: [
+            { materialId: 'stone', chance: 100, min: 2, max: 4 },
+            { materialId: 'herb_common', chance: 50, min: 1, max: 2 }
+        ]
+    },
+    'shadow_unicorn': {
+        name: '그림자 유니콘',
+        description: '어둠 속을 달리는 신비한 유니콘. 그 뿔은 그림자를 찢고 빛을 삼킵니다.',
+        role: '딜러',
+        hp: 180,
+        attack: 65,
+        defense: 30,
+        emoji: '🦄',
+        iconUrl: '/assets/monsters/black_unicon.png',
+        rarity: 'R',
+        element: 'dark',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '어둠의 질주', value: 15 },
+        drops: [
+            { materialId: 'beast_fang', chance: 70, min: 1, max: 2 },
+            { materialId: 'dark_crystal', chance: 40, min: 1, max: 1 }
+        ]
+    },
+    'mystic_fox': {
+        name: '신비한 여우',
+        description: '신비로운 기운을 뿜어내는 붉은 여우. 영리하고 재빠르며, 주인을 위해 행운을 가져다줍니다.',
+        role: '서포터',
+        hp: 140,
+        attack: 45,
+        defense: 35,
+        emoji: '🦊',
+        iconUrl: '/assets/monsters/pink_fox.png',
+        rarity: 'R',
+        element: 'fire',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '여우불', value: 10 },
+        drops: [
+            { materialId: 'spirit_dust', chance: 60, min: 1, max: 3 },
+            { materialId: 'beast_fang', chance: 50, min: 1, max: 1 }
+        ]
+    },
+    'red_mane_wolf': {
+        name: '붉은 갈기 늑대',
+        description: '불타는 듯한 붉은 갈기를 가진 늑대. 용맹한 전사처럼 적을 향해 돌진합니다.',
+        role: '딜러',
+        hp: 110,
+        attack: 55,
+        defense: 20,
+        emoji: '🐕',
+        iconUrl: '/assets/monsters/hound_basic.png', // Placeholder
+        rarity: 'N',
+        element: 'fire',
+        factoryTrait: { targetFacility: 'training_ground', effect: '전투 본능 자극', value: 8 },
+        drops: [
+            { materialId: 'beast_fang', chance: 80, min: 1, max: 2 },
+            { materialId: 'shard_fire', chance: 30, min: 1, max: 1 }
+        ]
+    },
+    'iron_beetle': {
+        name: '강철 딱정벌레',
+        description: '강철처럼 단단한 등딱지를 가진 곤충. 웬만한 공격에는 끄떡도 하지 않습니다.',
+        role: '탱커',
+        hp: 150,
+        attack: 25,
+        defense: 60,
+        emoji: '🪲',
+        iconUrl: '/assets/monsters/gem_ant.png', // Placeholder
+        rarity: 'N',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'mine', effect: '단단한 지반 고정', value: 10 },
+        drops: [
+            { materialId: 'ore_iron', chance: 70, min: 1, max: 2 },
+            { materialId: 'stone', chance: 50, min: 2, max: 4 }
+        ]
+    },
+    'wind_pixie': {
+        name: '바람의 픽시',
+        description: '바람을 타고 다니는 장난꾸러기 픽시. 아군의 속도를 높여주고 분위기를 띄웁니다.',
+        role: '서포터',
+        hp: 80,
+        attack: 20,
+        defense: 15,
+        emoji: '🧚',
+        iconUrl: '/assets/monsters/fairySpirit.png', // Placeholder
+        rarity: 'N',
+        element: 'wind',
+        factoryTrait: { targetFacility: 'lumber_mill', effect: '바람의 속삭임', value: 8 },
+        drops: [
+            { materialId: 'herb_common', chance: 60, min: 1, max: 3 },
+            { materialId: 'shard_wind', chance: 30, min: 1, max: 1 }
         ]
     }
 }
