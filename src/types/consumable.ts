@@ -3,7 +3,7 @@
  */
 
 // 소모품 효과 타입
-export type ConsumableEffectType = 'HEAL_HP' | 'BUFF_ATK' | 'BUFF_DEF' | 'CURE_STATUS'
+export type ConsumableEffectType = 'HEAL_HP' | 'BUFF_ATK' | 'BUFF_DEF' | 'CURE_STATUS' | 'GRANT_XP'
 
 // 소모품 효과 정의
 export interface ConsumableEffect {
