@@ -123,7 +123,7 @@ export default function FacilityIcon({ id, level, size = 40, style }: Props) {
         if (id === 'training_ground') {
             const colors = ['#fb923c', '#f97316', '#ea580c', '#c2410c', '#facc15']
             const color = colors[Math.min(level - 1, 4)]
-            return { emoji: '🏋️', color }
+            return { emoji: '🏋️', color, iconUrl: '/assets/useItem/xp_potion_1.png' }
         }
         if (id === 'spirit_sanctum') {
             const colors = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#facc15']

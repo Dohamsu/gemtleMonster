@@ -14,6 +14,7 @@ interface ShopSellTabProps {
     onToggleSelection: (id: string) => void
     onToggleSelectAll: () => void
     onBulkSell: () => void
+    onSingleSell: (id: string, qty: number) => void
     onQuantityChange: (id: string, qty: number, max: number, mode: 'sell') => void
 }
 
@@ -32,18 +33,26 @@ const QuantityControl = ({
     isMobile?: boolean
 }) => {
 
-    // Hooks must be in a component!
-    const inc = useAcceleratingValue((step) => {
-        onChange(itemId, Math.min(qty + step, max), max, 'sell')
-    })
+    const changeBy = (amount: number) => {
+        onChange(itemId, Math.min(Math.max(qty + amount, 1), max), max, 'sell')
+    }
 
-    const dec = useAcceleratingValue((step) => {
-        onChange(itemId, Math.max(qty - step, 1), max, 'sell')
-    })
+    // Hooks must be in a component!
+    const inc = useAcceleratingValue((step) => changeBy(step))
+    const dec = useAcceleratingValue((step) => changeBy(-step))
 
     // Render
     return (
-        <div className="qty-input-container" style={{ width: isMobile ? '40%' : 'fit-content', minWidth: isMobile ? '100px' : 'auto', margin: isMobile ? 0 : '0 auto' }}>
+        <div className="qty-input-container" style={{
+            width: isMobile ? '70%' : 'fit-content',
+            minWidth: isMobile ? '160px' : 'auto',
+            margin: isMobile ? 0 : '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '2px'
+        }}>
+            <button className="qty-btn small" onClick={() => changeBy(-10)} style={{ fontSize: '10px', padding: '0 4px', width: '24px' }}>-10</button>
             <button
                 className="qty-btn"
                 onMouseDown={dec.start}
@@ -60,7 +69,8 @@ const QuantityControl = ({
                 min={1}
                 max={max}
                 style={{
-                    width: isMobile ? undefined : '48px', // Desktop fixed width
+                    width: isMobile ? '40px' : '48px', // Desktop fixed width
+                    textAlign: 'center'
                 }}
             />
             <button
@@ -71,6 +81,7 @@ const QuantityControl = ({
                 onTouchStart={inc.start}
                 onTouchEnd={inc.stop}
             >+</button>
+            <button className="qty-btn small" onClick={() => changeBy(10)} style={{ fontSize: '10px', padding: '0 4px', width: '24px' }}>+10</button>
         </div>
     )
 }
@@ -85,31 +96,15 @@ export function ShopSellTab({
     onToggleSelection,
     onToggleSelectAll,
     onBulkSell,
+    onSingleSell,
     onQuantityChange
 }: ShopSellTabProps) {
+    // console.log('ShopSellTab rendered', { onSingleSell: !!onSingleSell })
 
     if (isMobile) {
         // ======= 모바일: 카드 레이아웃 =======
         return (
-            <>
-                {/* Bulk Action Bar */}
-                <div className="sell-action-bar" style={{ width: '100%', marginBottom: '16px' }}>
-                    <div style={{ color: '#e5e7eb', fontWeight: 700, fontSize: '14px' }}>
-                        선택: <span style={{ color: 'white' }}>{selectedItems.size}</span>개
-                        <span style={{ margin: '0 8px', color: '#4b5563' }}>|</span>
-                        예상: <span style={{ color: '#e7b308' }}>{formatNumber(totalSelectedValue)}G</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <button
-                            className="sell-btn"
-                            onClick={onBulkSell}
-                            disabled={selectedItems.size === 0 || isBulkSelling}
-                            style={{ padding: '8px 16px', fontSize: '13px' }}
-                        >
-                            {isBulkSelling ? '판매 중...' : '판매'}
-                        </button>
-                    </div>
-                </div>
+            <div style={{ paddingBottom: '80px' }}> {/* Bottom padding for sticky bar */}
 
                 {/* Sell Items Grid (Mobile) */}
                 {sellItems.length === 0 ? (
@@ -158,7 +153,7 @@ export function ShopSellTab({
                                             </div>
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px', height: '36px' }} onClick={(e) => e.stopPropagation()}>
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px', height: '36px', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
                                         <QuantityControl
                                             itemId={item.id}
                                             qty={sellQuantity}
@@ -166,8 +161,32 @@ export function ShopSellTab({
                                             onChange={onQuantityChange}
                                             isMobile={true}
                                         />
-                                        <div style={{ flex: 1, background: '#171717', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#e7b308', border: '1px solid #444444', fontSize: '14px' }}>
-                                            {formatNumber(totalValue)}G
+                                        {/* Click to sell button */}
+                                        <div
+                                            onClick={() => {
+                                                if (onSingleSell) {
+                                                    onSingleSell(item.id, sellQuantity)
+                                                } else {
+                                                    console.error('onSingleSell is not defined')
+                                                }
+                                            }}
+                                            style={{
+                                                flex: 1,
+                                                background: '#3f6212', // Green background for sell action
+                                                borderRadius: '8px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontWeight: 700,
+                                                color: '#e7b308', // Gold text
+                                                border: '1px solid #4d7c0f',
+                                                fontSize: '14px',
+                                                height: '100%',
+                                                cursor: 'pointer',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                            }}
+                                        >
+                                            판매 {formatNumber(totalValue)}G
                                         </div>
                                     </div>
                                 </div>
@@ -175,7 +194,53 @@ export function ShopSellTab({
                         })}
                     </div>
                 )}
-            </>
+
+                {/* Sticky Bulk Action Bar (Bottom) */}
+                <div className="sell-action-bar-sticky" style={{
+                    position: 'fixed',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: '#1a1a1a',
+                    borderTop: '1px solid #333',
+                    padding: '16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    zIndex: 100,
+                    boxShadow: '0 -4px 12px rgba(0,0,0,0.5)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={onToggleSelectAll}>
+                        <div style={{
+                            width: '20px', height: '20px', borderRadius: '4px', border: '2px solid #555',
+                            background: sellItems.length > 0 && selectedItems.size === sellItems.length ? '#eab308' : 'transparent',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            {sellItems.length > 0 && selectedItems.size === sellItems.length && <span style={{ color: 'black', fontSize: '14px' }}>✓</span>}
+                        </div>
+                        <span style={{ color: '#e5e7eb', fontWeight: 700, fontSize: '14px' }}>
+                            {selectedItems.size}개 선택
+                        </span>
+                    </div>
+
+                    <button
+                        className="sell-btn"
+                        onClick={onBulkSell}
+                        disabled={selectedItems.size === 0 || isBulkSelling}
+                        style={{
+                            padding: '12px 24px',
+                            fontSize: '16px',
+                            background: selectedItems.size === 0 ? '#333' : '#ca8a04',
+                            color: selectedItems.size === 0 ? '#666' : 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        {isBulkSelling ? '...' : `총 ${formatNumber(totalSelectedValue)}G 판매`}
+                    </button>
+                </div>
+            </div>
         )
     }
 

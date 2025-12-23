@@ -1048,6 +1048,13 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       // consoleLogNoop(`[Store Debug] DB 업데이트 결과:`, success)
 
       if (success) {
+        // 골드 지급 (DB)
+        // 주의: sellMaterial은 현재 ShopPage에서 사용되지 않고 있음. ShopPage는 handleBulkSell 자체 로직 사용.
+        // 하지만 다른 곳에서 사용될 경우를 위해 골드 추가 로직이 필요하다면 가격 정보가 필요함.
+        // 일단은 로컬 업데이트만 유지하거나, 정확한 가격 산정 로직이 필요.
+        // 이번 요청에서는 ShopPage 수정이 주 목적이므로 여기서는 주석 처리 또는 안전한 기본값 처리.
+        // await alchemyApi.addGold(userId, totalGain) 
+
         // 로컬 상태 업데이트
         const newPlayerMaterials = {
           ...playerMaterials,

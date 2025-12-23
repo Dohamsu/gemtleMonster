@@ -121,6 +121,9 @@ const RESOURCE_ICONS: Record<string, string> = {
     potion_hp_small: '/assets/useItem/potion_hp_small.png',
     potion_mp_small: '/assets/useItem/potion_mp_small.png',
     potion_base: '/assets/useItem/basic_potion.png',
+    potion_xp_small: '/assets/useItem/xp_potion_1.png',
+    potion_xp_medium: '/assets/useItem/xp_potion_2.png',
+    potion_xp_large: '/assets/useItem/xp_potion_3.png',
 }
 
 export default function ResourceIcon({ resourceId, size = 20, iconUrl }: Props) {

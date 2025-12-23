@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useShopStore, type ShopSaleItem, BASE_SELL_PRICES } from '../../store/useShopStore'
+import { addGold } from '../../lib/alchemyApi'
 import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
 import { ShopHeader } from './component/ShopHeader'
 import { ShopTimer } from './component/ShopTimer'
@@ -30,7 +31,7 @@ export default function Shop({ onClose }: { onClose?: () => void }) {
     // useUnifiedInventory for reading material counts (Single Source of Truth)
     const { materialCounts } = useUnifiedInventory()
     // useAlchemyStore for actions
-    const { addMaterial, consumeMaterials } = useAlchemyStore()
+    const { addMaterial, consumeMaterials, userId } = useAlchemyStore()
     const { shopItems, nextRefreshTime, buyItem, checkRefresh } = useShopStore()
 
     const gold = resources['gold'] || 0
@@ -271,7 +272,12 @@ export default function Shop({ onClose }: { onClose?: () => void }) {
             // 1. Remove from Inventory
             await consumeMaterials(materialsToConsume)
 
-            // 2. Add Gold
+            // 2. Add Gold (DB Sync)
+            if (userId) {
+                await addGold(userId, totalGain)
+            }
+
+            // 3. Add Gold (Local UI)
             const newResources = { ...resources }
             newResources['gold'] = (newResources['gold'] || 0) + totalGain
             setResources(newResources)
@@ -282,6 +288,32 @@ export default function Shop({ onClose }: { onClose?: () => void }) {
         } catch (error) {
             console.error('Bulk sell failed:', error)
             showModal('error', '판매 실패', '아이템 판매 중 오류가 발생했습니다.')
+        } finally {
+            setIsBulkSelling(false)
+        }
+    }
+
+    const handleSingleSell = async (id: string, qty: number) => {
+        if (isBulkSelling) return
+        const item = sellItems.find(i => i.id === id)
+        if (!item) return
+
+        const totalGain = item.price * qty
+        setIsBulkSelling(true) // Reuse loading state
+        try {
+            await consumeMaterials({ [id]: qty })
+            if (userId) {
+                await addGold(userId, totalGain)
+            }
+            const newResources = { ...resources }
+            newResources['gold'] = (newResources['gold'] || 0) + totalGain
+            setResources(newResources)
+            showModal('success', '판매 완료', `${item.name} 판매: +${totalGain.toLocaleString()}G`)
+            // Reset quantity to 1
+            setSellQuantities(prev => ({ ...prev, [id]: 1 }))
+        } catch (error) {
+            console.error('Sell failed:', error)
+            showModal('error', '판매 실패', '판매 중 오류가 발생했습니다.')
         } finally {
             setIsBulkSelling(false)
         }
@@ -331,6 +363,7 @@ export default function Shop({ onClose }: { onClose?: () => void }) {
                         onToggleSelection={toggleSelection}
                         onToggleSelectAll={toggleSelectAll}
                         onBulkSell={handleBulkSell}
+                        onSingleSell={handleSingleSell}
                         onQuantityChange={handleQuantityChange}
                     />
                 )}

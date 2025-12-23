@@ -2,7 +2,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 import { describe, it, expect, vi } from 'vitest'
-import ShopPage from '../ui/shop/ShopPage'
+import Shop from '../ui/shop/Shop'
 
 // Hoist mocks to ensure they are available in vi.mock factory
 const { mockBuyItem, mockGameStoreState, mockAlchemyStoreState, mockShopStoreState, mockUnifiedInventoryState } = vi.hoisted(() => {
@@ -99,7 +99,7 @@ describe('Shop Feature', () => {
 
 
     it('buys an item successfully', async () => {
-        render(<ShopPage />)
+        render(<Shop />)
 
         // Verify "Buy" tab is active (default)
         // Check if an item exists (wait for useEffect)
@@ -122,7 +122,7 @@ describe('Shop Feature', () => {
     })
 
     it('sells an item successfully', async () => {
-        render(<ShopPage />)
+        render(<Shop />)
         // Switch to Sell tab
         // There should be a tab/button for 'Sell' or '판매'
         const sellTab = screen.getByText(/Sell|판매/i)

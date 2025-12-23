@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { getRequiredExp, getRarityColor, type RarityType } from '../../lib/monsterLevelUtils'
-import { getUnlockableSkills, getSkillTypeColor } from '../../data/monsterSkillData'
+import { getUnlockableSkills, getSkillTypeColor, getSkillIconUrl } from '../../data/monsterSkillData'
 import type { PlayerMonster } from '../../types/monster'
 import type { RoleType } from '../../types/alchemy'
 import AwakeningModal from './AwakeningModal'
@@ -320,9 +320,18 @@ export default function MonsterDetailModal({ monster, onClose }: MonsterDetailMo
                                         <div style={{
                                             width: '40px', height: '40px', borderRadius: '8px',
                                             background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontSize: '24px', flexShrink: 0
+                                            overflow: 'hidden', flexShrink: 0, border: `1px solid ${COLORS.border}`
                                         }}>
-                                            {skill.emoji}
+                                            <img
+                                                src={getSkillIconUrl(skill)}
+                                                alt={skill.name}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none'
+                                                    e.currentTarget.parentElement!.innerText = skill.emoji
+                                                    e.currentTarget.parentElement!.style.fontSize = '24px'
+                                                }}
+                                            />
                                         </div>
                                         <div style={{ flex: 1 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>

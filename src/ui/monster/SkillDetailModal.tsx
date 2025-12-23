@@ -1,5 +1,5 @@
 import React from 'react'
-import { getSkillTypeColor } from '../../data/monsterSkillData'
+import { getSkillTypeColor, getSkillIconUrl } from '../../data/monsterSkillData'
 import type { MonsterSkill } from '../../data/monsterSkillData'
 
 interface SkillDetailModalProps {
@@ -77,10 +77,19 @@ export default function SkillDetailModal({ skill, onClose }: SkillDetailModalPro
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        fontSize: '32px',
+                        overflow: 'hidden', // Ensure image stays within bounds
                         border: '1px solid #334155'
                     }}>
-                        {skill.emoji}
+                        <img
+                            src={getSkillIconUrl(skill)}
+                            alt={skill.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => {
+                                e.currentTarget.style.display = 'none'
+                                e.currentTarget.parentElement!.innerText = skill.emoji
+                                e.currentTarget.parentElement!.style.fontSize = '32px'
+                            }}
+                        />
                     </div>
                     <div style={{ flex: 1 }}>
                         <div style={{
