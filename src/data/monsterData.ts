@@ -1330,6 +1330,108 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'stone', chance: 50, min: 2, max: 4 }
         ]
     },
+    'ember_fox': {
+        name: '엠버 폭스',
+        description: '온몸이 불꽃으로 이루어진 여우. 지나간 자리는 검게 그을리며, 불꽃 꼬리로 적을 위협합니다.',
+        role: '딜러',
+        hp: 120,
+        attack: 65,
+        defense: 25,
+        emoji: '🦊',
+        iconUrl: '/assets/monsters/ember_fox.png',
+        rarity: 'R',
+        element: 'fire',
+        factoryTrait: { targetFacility: 'blacksmith', effect: '불꽃 제련', value: 10 },
+        drops: [
+            { materialId: 'beast_fang', chance: 80, min: 1, max: 2 },
+            { materialId: 'shard_fire', chance: 40, min: 1, max: 1 }
+        ]
+    },
+    'aqua_turtle': {
+        name: '아쿠아 터틀',
+        description: '등껍질이 물로 이루어진 거북이. 충격을 물결처럼 흡수하여 흘려보냅니다.',
+        role: '탱커',
+        hp: 160,
+        attack: 20,
+        defense: 50,
+        emoji: '🐢',
+        iconUrl: '/assets/monsters/aqua_turtle.png',
+        rarity: 'N',
+        element: 'water',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '수분 공급', value: 8 },
+        drops: [
+            { materialId: 'shell_snail', chance: 70, min: 1, max: 2 },
+            { materialId: 'shard_water', chance: 30, min: 1, max: 1 }
+        ]
+    },
+    'breeze_hawk': {
+        name: '브리즈 호크',
+        description: '바람을 다루는 매. 날개짓으로 돌풍을 일으켜 아군의 속도를 높여줍니다.',
+        role: '서포터',
+        hp: 90,
+        attack: 45,
+        defense: 20,
+        emoji: '🦅',
+        iconUrl: '/assets/monsters/breeze_hawk.png',
+        rarity: 'R',
+        element: 'wind',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '순풍 지원', value: 12 },
+        drops: [
+            { materialId: 'feather_common', chance: 80, min: 1, max: 3 },
+            { materialId: 'shard_wind', chance: 40, min: 1, max: 1 }
+        ]
+    },
+    'iron_hedgehog': {
+        name: '아이언 고슴도치',
+        description: '가시 대신 강철 바늘이 돋아난 고슴도치. 몸을 웅크리면 완벽한 철옹성이 됩니다.',
+        role: '탱커',
+        hp: 140,
+        attack: 30,
+        defense: 55,
+        emoji: '🦔',
+        iconUrl: '/assets/monsters/iron_hedgehog.png',
+        rarity: 'N',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'mine', effect: '철광맥 탐지', value: 8 },
+        drops: [
+            { materialId: 'ore_iron', chance: 60, min: 1, max: 2 },
+            { materialId: 'beast_fang', chance: 40, min: 1, max: 2 }
+        ]
+    },
+    'light_wisp': {
+        name: '라이트 위스프',
+        description: '어둠을 밝히는 작은 빛의 정령. 따뜻한 빛으로 아군의 기운을 북돋아 줍니다.',
+        role: '서포터',
+        hp: 70,
+        attack: 15,
+        defense: 15,
+        emoji: '💡',
+        iconUrl: '/assets/monsters/light_wisp.png',
+        rarity: 'N',
+        element: 'light',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '빛의 인도', value: 8 },
+        drops: [
+            { materialId: 'spirit_dust', chance: 60, min: 1, max: 2 },
+            { materialId: 'shard_light', chance: 30, min: 1, max: 1 }
+        ]
+    },
+    'shadow_bat': {
+        name: '섀도우 배트',
+        description: '그림자 속에 숨어 사는 박쥐. 소리 없이 다가가 날카로운 이빨로 적을 공격합니다.',
+        role: '딜러',
+        hp: 100,
+        attack: 50,
+        defense: 15,
+        emoji: '🦇',
+        iconUrl: '/assets/monsters/shadow_bat.png',
+        rarity: 'N',
+        element: 'dark',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '야간 비행', value: 10 },
+        drops: [
+            { materialId: 'scrap_leather', chance: 60, min: 1, max: 2 },
+            { materialId: 'shard_dark', chance: 30, min: 1, max: 1 }
+        ]
+    },
     'wind_pixie': {
         name: '바람의 픽시',
         description: '바람을 타고 다니는 장난꾸러기 픽시. 아군의 속도를 높여주고 분위기를 띄웁니다.',

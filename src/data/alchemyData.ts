@@ -1549,6 +1549,108 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
             { materialId: 'crystal_mana', quantity: 2, isCatalyst: false }
         ],
         conditions: []
+    },
+    {
+        id: 'recipe_ember_fox',
+        resultMonsterId: 'ember_fox',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 20,
+        costGold: 100,
+        requiredAlchemyLevel: 2,
+        expGain: 150,
+        isHidden: false,
+        priority: 70,
+        ingredients: [
+            { materialId: 'beast_fang', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_fire', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_aqua_turtle',
+        resultMonsterId: 'aqua_turtle',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 15,
+        costGold: 80,
+        requiredAlchemyLevel: 1,
+        expGain: 100,
+        isHidden: false,
+        priority: 71,
+        ingredients: [
+            { materialId: 'shell_snail', quantity: 3, isCatalyst: false },
+            { materialId: 'shard_water', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_breeze_hawk',
+        resultMonsterId: 'breeze_hawk',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 20,
+        costGold: 100,
+        requiredAlchemyLevel: 2,
+        expGain: 150,
+        isHidden: false,
+        priority: 72,
+        ingredients: [
+            { materialId: 'feather_common', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_wind', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_iron_hedgehog',
+        resultMonsterId: 'iron_hedgehog',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 15,
+        costGold: 80,
+        requiredAlchemyLevel: 1,
+        expGain: 100,
+        isHidden: false,
+        priority: 73,
+        ingredients: [
+            { materialId: 'ore_iron', quantity: 4, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 3, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_light_wisp',
+        resultMonsterId: 'light_wisp',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 15,
+        costGold: 80,
+        requiredAlchemyLevel: 1,
+        expGain: 100,
+        isHidden: false,
+        priority: 74,
+        ingredients: [
+            { materialId: 'spirit_dust', quantity: 3, isCatalyst: false },
+            { materialId: 'shard_light', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_shadow_bat',
+        resultMonsterId: 'shadow_bat',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 20,
+        costGold: 100,
+        requiredAlchemyLevel: 2,
+        expGain: 150,
+        isHidden: false,
+        priority: 75,
+        ingredients: [
+            { materialId: 'scrap_leather', quantity: 3, isCatalyst: false },
+            { materialId: 'shard_dark', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
     }
 ]
 
