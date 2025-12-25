@@ -798,6 +798,58 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'star_fragment', chance: 100, min: 1, max: 2 }
         ]
     },
+    // New Additions
+    'golem_gold': {
+        name: '황금 골렘',
+        description: '순금으로 만들어진 번쩍이는 골렘. 엄청난 방어력과 함께 부의 기운을 내뿜습니다.',
+        role: '탱커',
+        hp: 500,
+        attack: 40,
+        defense: 90,
+        emoji: '🧈',
+        iconUrl: '/assets/monsters/golem_gold.png',
+        rarity: 'SR',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'mine', effect: '황금 채굴량 증가', value: 20 },
+        drops: [
+            { materialId: 'ingot_gold', chance: 50, min: 1, max: 2 },
+            { materialId: 'ore_gold', chance: 100, min: 2, max: 4 }
+        ]
+    },
+    'phoenix_chick': {
+        name: '피닉스 병아리',
+        description: '전설의 불사조의 어린 모습. 작지만 꺼지지 않는 불꽃을 품고 있습니다.',
+        role: '딜러',
+        hp: 200,
+        attack: 80,
+        defense: 30,
+        emoji: '🐣',
+        iconUrl: '/assets/monsters/phoenix_chick.png',
+        rarity: 'SR',
+        element: 'fire',
+        factoryTrait: { targetFacility: 'blacksmith', effect: '성스러운 불꽃', value: 15 },
+        drops: [
+            { materialId: 'phoenix_feather', chance: 40, min: 1, max: 1 },
+            { materialId: 'feather_common', chance: 100, min: 2, max: 5 }
+        ]
+    },
+    'spirit_shadow': {
+        name: '그림자 정령',
+        description: '빛이 닿지 않는 곳에서 태어난 정령. 은밀하게 움직이며 적의 약점을 파고듭니다.',
+        role: '딜러',
+        hp: 150,
+        attack: 70,
+        defense: 25,
+        emoji: '👥',
+        iconUrl: '/assets/monsters/spirit_shadow.png',
+        rarity: 'R',
+        element: 'dark',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '그림자 은신', value: 15 },
+        drops: [
+            { materialId: 'shard_dark', chance: 80, min: 1, max: 2 },
+            { materialId: 'spirit_dust', chance: 50, min: 2, max: 3 }
+        ]
+    },
     'lava_turtle': {
         name: '용암 거북',
         description: '등껍질에서 용암이 흐르는 거북. 대장간의 온도를 높이는 데 탁월한 능력을 발휘합니다.',

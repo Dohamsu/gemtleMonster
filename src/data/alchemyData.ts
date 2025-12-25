@@ -805,6 +805,66 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         ],
         conditions: []
     },
+    // New Recipes
+    {
+        id: 'recipe_golem_gold',
+        resultMonsterId: 'golem_gold',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 30,
+        costGold: 500,
+        requiredAlchemyLevel: 5,
+        expGain: 600,
+        isHidden: false,
+        priority: 80,
+        ingredients: [
+            { materialId: 'ingot_gold', quantity: 3, isCatalyst: false },
+            { materialId: 'stone', quantity: 10, isCatalyst: false },
+            { materialId: 'shard_earth', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_phoenix_chick',
+        resultMonsterId: 'phoenix_chick',
+        resultCount: 1,
+        baseSuccessRate: 80,
+        craftTimeSec: 25,
+        costGold: 300,
+        requiredAlchemyLevel: 5,
+        expGain: 550,
+        isHidden: false,
+        priority: 81,
+        ingredients: [
+            { materialId: 'phoenix_feather', quantity: 1, isCatalyst: false },
+            { materialId: 'feather_common', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_fire', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_spirit_shadow',
+        resultMonsterId: 'spirit_shadow',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 15,
+        costGold: 100,
+        requiredAlchemyLevel: 3,
+        expGain: 250,
+        isHidden: false,
+        priority: 85,
+        ingredients: [
+            { materialId: 'spirit_dust', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_dark', quantity: 1, isCatalyst: false }
+        ],
+        conditions: [
+            {
+                conditionType: 'time_range',
+                timeStart: '18:00:00',
+                timeEnd: '06:00:00'
+            }
+        ]
+    },
     {
         id: 'recipe_snow_fairy',
         resultMonsterId: 'snow_fairy',
