@@ -1,4 +1,4 @@
-import { useGameStore } from '../../store/useGameStore'
+// import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import ResourceIcon from '../ResourceIcon'
 
@@ -7,10 +7,8 @@ interface FacilityHeaderProps {
 }
 
 export default function FacilityHeader({ onBack }: FacilityHeaderProps) {
-    const { resources } = useGameStore()
     const { playerMaterials } = useAlchemyStore()
-
-    const getRes = (id: string) => (resources[id] || playerMaterials[id] || 0)
+    const getRes = (id: string) => (playerMaterials[id] || 0)
     const formatRes = (val: number) => val.toLocaleString()
 
     return (

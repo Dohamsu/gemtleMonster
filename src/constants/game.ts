@@ -27,6 +27,7 @@ export const RARITY_EXP = {
   R: 20,
   SR: 30,
   SSR: 50,
+  UR: 100,
 } as const
 
 // Canvas Rendering Constants

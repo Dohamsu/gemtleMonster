@@ -167,6 +167,7 @@ export function ShopSellTab({
                                                 if (onSingleSell) {
                                                     onSingleSell(item.id, sellQuantity)
                                                 } else {
+                                                    // eslint-disable-next-line no-console
                                                     console.error('onSingleSell is not defined')
                                                 }
                                             }}

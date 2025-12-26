@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import type { FacilityData } from '../../types/idle'
 import type { MonsterFactoryTrait } from '../../types/monster'
-import { useGameStore } from '../../store/useGameStore'
+import { useFacilityStore } from '../../store/useFacilityStore'
+// import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { MATERIALS } from '../../data/alchemyData'
@@ -18,7 +19,7 @@ interface FacilityControlPanelProps {
 }
 
 export default function FacilityControlPanel({ facility, currentLevel, onUpgrade }: FacilityControlPanelProps) {
-    const { assignedMonsters, assignMonster, resources, lastCollectedAt, productionModes, setProductionMode } = useGameStore()
+    const { assignedMonsters, assignMonster, lastCollectedAt, productionModes, setProductionMode } = useFacilityStore()
     const { playerMonsters, playerMaterials } = useAlchemyStore()
     const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null)
     const [progress, setProgress] = useState(0)
@@ -99,7 +100,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
     })
 
     const canUpgrade = nextLevelData && Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => {
-        const owned = (resources[resId] ?? playerMaterials[resId] ?? 0)
+        const owned = (playerMaterials[resId] ?? 0)
         return owned >= amount
     })
 
@@ -228,7 +229,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                             </h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {Object.entries(levelData.stats.cost).map(([resId, amount]) => {
-                                    const owned = (resources[resId] ?? playerMaterials[resId] ?? 0)
+                                    const owned = (playerMaterials[resId] ?? 0)
                                     const enough = owned >= (amount as number)
                                     return (
                                         <div key={resId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.2)', padding: '6px 10px', borderRadius: '6px' }}>
@@ -334,7 +335,7 @@ export default function FacilityControlPanel({ facility, currentLevel, onUpgrade
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '15px' }}>
                             {Object.entries(nextLevelData.upgradeCost).map(([resId, amount]) => {
-                                const owned = (resources[resId] ?? playerMaterials[resId] ?? 0)
+                                const owned = (playerMaterials[resId] ?? 0)
                                 const enough = owned >= amount
                                 return (
                                     <div key={resId} style={{ background: '#1a0f0a', padding: '10px', borderRadius: '6px', border: `1px solid ${enough ? '#3d2b20' : '#ef4444'}`, display: 'flex', gap: '10px', alignItems: 'center' }}>

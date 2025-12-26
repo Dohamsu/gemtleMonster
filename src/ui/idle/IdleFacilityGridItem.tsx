@@ -1,6 +1,6 @@
 import React from 'react'
 import type { FacilityData } from '../../types/idle'
-import { useGameStore } from '../../store/useGameStore'
+import { useFacilityStore } from '../../store/useFacilityStore'
 import FacilityIcon from '../FacilityIcon'
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function IdleFacilityGridItem({ facility, level, onClick, isPaused = false }: Props) {
-    const { lastCollectedAt } = useGameStore()
+    const { lastCollectedAt } = useFacilityStore()
 
     // Calculate progress
     const levelData = facility.levels.find(l => l.level === level)

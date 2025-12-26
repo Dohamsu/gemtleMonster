@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useGameStore } from '../store/useGameStore'
 import { useAlchemyStore } from '../store/useAlchemyStore'
 import { useAuth } from '../hooks/useAuth'
+import { useFacilityStore } from '../store/useFacilityStore'
 
 import { useUnifiedInventory } from '../hooks/useUnifiedInventory'
 import { AlchemyResultModal } from '../ui/alchemy/AlchemyResultModal'
@@ -38,8 +39,8 @@ export default function GameCanvas(props: GameCanvasProps) {
     const {
         canvasView,
         setCanvasView,
-        facilities
     } = useGameStore()
+    const { facilities } = useFacilityStore()
     const {
         allRecipes,
         allMaterials,

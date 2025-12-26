@@ -1,6 +1,6 @@
 export type ElementType = 'FIRE' | 'WATER' | 'EARTH' | 'WIND' | 'LIGHT' | 'DARK' | 'CHAOS'
 export type RoleType = 'TANK' | 'DPS' | 'SUPPORT' | 'HYBRID' | 'PRODUCTION'
-export type RarityType = 'N' | 'R' | 'SR' | 'SSR'
+export type RarityType = 'N' | 'R' | 'SR' | 'SSR' | 'UR'
 
 export interface Material {
     id: string

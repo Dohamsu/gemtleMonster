@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { useState, useEffect } from 'react'
-import { useGameStore } from '../../store/useGameStore'
+import { useBattleStore } from '../../store/useBattleStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { DUNGEONS } from '../../data/dungeonData'
 import { GAME_MONSTERS as MONSTERS } from '../../data/monsterData'
@@ -13,7 +13,7 @@ interface DungeonModalProps {
 }
 
 export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
-    const { battleState, startBattle } = useGameStore()
+    const { battleState, startBattle } = useBattleStore()
     const { playerMonsters, loadPlayerMonsters, userId } = useAlchemyStore()
     const [selectedMonsterId, setSelectedMonsterId] = useState<string | null>(null)
     const [selectedDungeonId, setSelectedDungeonId] = useState<string | null>(null)

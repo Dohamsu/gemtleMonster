@@ -1,5 +1,6 @@
 import type { FacilityData } from '../../types/idle'
 import { useCollectionProgress } from '../../hooks/useCollectionProgress'
+import { useFacilityStore } from '../../store/useFacilityStore'
 import { useGameStore } from '../../store/useGameStore'
 import ResourceIcon from '../ResourceIcon'
 import CollectionAnimation from '../CollectionAnimation'
@@ -52,7 +53,8 @@ const getActionText = (facilityId: string) => {
 }
 
 export default function IdleFacilityItem({ facility, currentLevel, isHighestLevel, resources, onUpgrade, isPaused = false }: Props) {
-    const { lastCollectedAt, recentAdditions, productionModes } = useGameStore()
+    const { lastCollectedAt, productionModes } = useFacilityStore()
+    const { recentAdditions } = useGameStore()
     const levelData = facility.levels.find(l => l.level === currentLevel)
 
     // Production Mode Logic: displayed cost comes from production mode

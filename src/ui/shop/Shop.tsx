@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { useEffect, useMemo, useState } from 'react'
+// import { useAuth } from '../../hooks/useAuth'
 import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useShopStore, type ShopSaleItem, BASE_SELL_PRICES } from '../../store/useShopStore'
@@ -27,14 +28,17 @@ const SHOP_ITEMS = [
 
 export default function Shop({ onClose }: { onClose?: () => void }) {
     // Stores
-    const { resources, setResources, setCanvasView } = useGameStore()
+    const { setCanvasView } = useGameStore()
     // useUnifiedInventory for reading material counts (Single Source of Truth)
     const { materialCounts } = useUnifiedInventory()
     // useAlchemyStore for actions
-    const { addMaterial, consumeMaterials, userId } = useAlchemyStore()
-    const { shopItems, nextRefreshTime, buyItem, checkRefresh } = useShopStore()
+    // useAlchemyStore for actions
+    const { playerMaterials, consumeMaterials, userId } = useAlchemyStore()
+    const shopStore = useShopStore()
+    const { shopItems, nextRefreshTime, buyItem, checkRefresh } = shopStore
 
-    const gold = resources['gold'] || 0
+    // Resources from AlchemyStore
+    const gold = playerMaterials['gold'] || 0
 
     // State
     const [timerComponents, setTimerComponents] = useState({ hours: '00', minutes: '00', seconds: '00' })
@@ -196,14 +200,9 @@ export default function Shop({ onClose }: { onClose?: () => void }) {
         setIsBuying(true)
         try {
             // 1. Remove Gold (Local UI update + Store update)
-            const newResources = { ...resources }
-            newResources['gold'] = (newResources['gold'] || 0) - totalPrice
-            setResources(newResources)
+            // AlchemyStore handles sync automatically
 
-            // 2. Add Item to Inventory
-            await addMaterial(item.id, qty)
-
-            // 3. Update Shop Stock
+            // 2. Add Item to Inventory & Update Shop Stock (Handled by buyItem)
             await buyItem(item.id, qty)
 
             showModal('success', '구매 완료', `${item.name} ${qty}개를 구매했습니다.`)
@@ -278,9 +277,12 @@ export default function Shop({ onClose }: { onClose?: () => void }) {
             }
 
             // 3. Add Gold (Local UI)
-            const newResources = { ...resources }
-            newResources['gold'] = (newResources['gold'] || 0) + totalGain
-            setResources(newResources)
+            useAlchemyStore.setState((state) => ({
+                playerMaterials: {
+                    ...state.playerMaterials,
+                    gold: (state.playerMaterials['gold'] || 0) + totalGain
+                }
+            }))
 
             showModal('success', '판매 완료', `아이템 ${soldCount}종을 판매하여 ${totalGain.toLocaleString()}G를 획득했습니다.`)
             setSelectedItems(new Set())
@@ -305,9 +307,16 @@ export default function Shop({ onClose }: { onClose?: () => void }) {
             if (userId) {
                 await addGold(userId, totalGain)
             }
-            const newResources = { ...resources }
-            newResources['gold'] = (newResources['gold'] || 0) + totalGain
-            setResources(newResources)
+
+            // Add Gold (Local UI)
+            useAlchemyStore.setState((state) => ({
+                playerMaterials: {
+                    ...state.playerMaterials,
+                    gold: (state.playerMaterials['gold'] || 0) + totalGain
+                }
+            }))
+
+            // AlchemyStore handles sync automatically
             showModal('success', '판매 완료', `${item.name} 판매: +${totalGain.toLocaleString()}G`)
             // Reset quantity to 1
             setSellQuantities(prev => ({ ...prev, [id]: 1 }))

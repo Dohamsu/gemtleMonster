@@ -4,7 +4,7 @@
 
 export type ElementType = 'FIRE' | 'WATER' | 'EARTH' | 'WIND' | 'LIGHT' | 'DARK' | 'CHAOS'
 export type RoleType = 'TANK' | 'DPS' | 'SUPPORT' | 'HYBRID' | 'PRODUCTION'
-export type MonsterRarity = 'N' | 'R' | 'SR' | 'SSR'
+export type MonsterRarity = 'N' | 'R' | 'SR' | 'SSR' | 'UR'
 
 export interface MonsterStats {
   hp: number
@@ -38,4 +38,5 @@ export interface PlayerMonster {
   created_at: string
   is_locked: boolean
   awakening_level: number
+  unlocked_skills?: string[]
 }

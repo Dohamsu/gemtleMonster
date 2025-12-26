@@ -11,7 +11,6 @@ import type {
 import * as alchemyApi from '../lib/alchemyApi'
 import type { AlchemyResult } from '../lib/alchemyApi'
 import { isRecipeValid, findMatchingRecipe } from '../lib/alchemyLogic'
-import { useGameStore } from './useGameStore'
 import { supabase } from '../lib/supabase'
 import { getMonsterName } from '../data/monsterData'
 
@@ -112,6 +111,7 @@ interface AlchemyState {
 
   // Actions - 시설 생산
   addMaterial: (materialId: string, quantity: number) => Promise<void>
+  addMaterials: (materials: Record<string, number>) => Promise<void> // Bulk add
   consumeMaterials: (materials: Record<string, number>) => Promise<boolean>
   batchSyncCallback: ((materialId: string, quantity: number) => void) | null
   forceSyncCallback: (() => Promise<void>) | null
@@ -132,6 +132,8 @@ interface AlchemyState {
   toggleMonsterLock: (monsterId: string, isLocked: boolean) => Promise<void>
   feedMonster: (monsterId: string, potionId: string, quantity: number) => Promise<{ success: boolean; message: string }>
   feedMonsterBulk: (monsterId: string, potions: Record<string, number>) => Promise<{ success: boolean; message: string }>
+  updatePlayerMonster: (monsterId: string, updates: Partial<PlayerMonster>) => void
+
 
   // Actions - Error Handling
   resetError: () => void
@@ -329,11 +331,10 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         playerAlchemy: alchemyInfo
       })
 
-      // 7. gameStore.resources 동기화 (UI용)
-      const gameStore = useGameStore.getState()
-      const currentResources = gameStore.resources
-      // 기존 리소스에 materialsMap(0 포함)을 덮어씌움으로써 없는 재료는 0이 됨
-      gameStore.setResources({ ...currentResources, ...materialsMap })
+      // 7. gameStore.resources 동기화 (UI용) - REMOVED during unification
+      // const gameStore = useGameStore.getState()
+      // const currentResources = gameStore.resources
+      // gameStore.setResources({ ...currentResources, ...materialsMap })
       // consoleLogNoop(`✅ [AlchemyStore] resources 캐시 동기화 완료`)
 
     } catch (error) {
@@ -378,13 +379,9 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   addIngredient: (materialId, quantity) => {
     const { selectedIngredients, playerMaterials } = get()
-    const gameStore = useGameStore.getState()
-
-    // 두 스토어의 재료 병합 (gameStore.resources + alchemyStore.playerMaterials)
-    const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
 
     const currentAmount = selectedIngredients[materialId] || 0
-    const availableAmount = mergedMaterials[materialId] || 0
+    const availableAmount = playerMaterials[materialId] || 0
     const newAmount = Math.min(currentAmount + quantity, availableAmount)
 
     // consoleLogNoop(`🔵 재료 추가: ${materialId}, 보유: ${availableAmount}, 현재: ${currentAmount}, 새로운: ${newAmount}`)
@@ -428,8 +425,6 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   autoFillIngredients: (recipeId) => {
     const { allRecipes, playerMaterials } = get()
-    const gameStore = useGameStore.getState()
-    const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
 
     consoleLogNoop('🔄 [autoFillIngredients] 시작:', recipeId)
     consoleLogNoop('📦 [autoFillIngredients] 전체 레시피 수:', allRecipes.length)
@@ -448,12 +443,12 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       return false
     }
 
-    consoleLogNoop('📦 [autoFillIngredients] 현재 보유 재료:', mergedMaterials)
+    consoleLogNoop('📦 [autoFillIngredients] 현재 보유 재료:', playerMaterials)
 
     const newIngredients: Record<string, number> = {}
 
     for (const ing of recipe.ingredients) {
-      const available = mergedMaterials[ing.material_id] || 0
+      const available = playerMaterials[ing.material_id] || 0
       consoleLogNoop(`  - ${ing.material_id}: 보유 ${available} / 필요 ${ing.quantity}`)
       if (available < ing.quantity) {
         // 재료 부족
@@ -507,8 +502,6 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   canCraftWithMaterials: (recipeId) => {
     const { allRecipes, playerMaterials, playerAlchemy } = get()
-    const gameStore = useGameStore.getState()
-    const mergedMaterials = { ...playerMaterials, ...gameStore.resources }
 
     const recipe = allRecipes.find(r => r.id === recipeId)
 
@@ -522,7 +515,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     // 보유 재료가 충분한지 체크
     if (recipe.ingredients) {
       for (const ing of recipe.ingredients) {
-        const available = mergedMaterials[ing.material_id] || 0
+        const available = playerMaterials[ing.material_id] || 0
         if (available < ing.quantity) {
           return false
         }
@@ -787,7 +780,6 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
   completeBrewing: async (result, matchedRecipe) => {
     const { userId, selectedRecipeId, allRecipes, selectedIngredients, playerMaterials, playerAlchemy, allMaterials, playerRecipes } = get()
-    const gameStore = useGameStore.getState()
 
     if (!userId) return
 
@@ -800,12 +792,11 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
     // 여기서는 selectedIngredients만큼 차감 (서버 로직과 동일하다고 가정)
 
     const newPlayerMaterials = { ...playerMaterials }
-    const newGameResources = { ...gameStore.resources }
     const materialsUsed: Record<string, number> = {}
 
     for (const [materialId, count] of Object.entries(selectedIngredients)) {
       newPlayerMaterials[materialId] = Math.max(0, (newPlayerMaterials[materialId] || 0) - count)
-      newGameResources[materialId] = Math.max(0, (newGameResources[materialId] || 0) - count)
+
       materialsUsed[materialId] = count
     }
 
@@ -966,8 +957,8 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       } : null
     })
 
-    // gameStore 동기화
-    gameStore.setResources(newGameResources)
+    // gameStore 동기화 (REMOVED)
+    // gameStore.setResources(newGameResources)
 
     // 4. 데이터 리로드 (결과 반영 보장을 위해)
     if (result.success) {
@@ -1064,12 +1055,12 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         set({ playerMaterials: newPlayerMaterials })
 
         // gameStore.resources를 읽기 전용 캐시로 동기화 (UI 애니메이션용)
-        const gameStore = useGameStore.getState()
-        const currentResources = gameStore.resources
-        gameStore.setResources({
-          ...currentResources,
-          [materialId]: Math.max(0, (currentResources[materialId] || 0) - quantity)
-        })
+        // 3. UI 동기화 (REMOVED)
+        // const gameStore = useGameStore.getState()
+        // gameStore.setResources({
+        //     ...gameStore.resources,
+        //     [materialId]: (gameStore.resources[materialId] || 0) + quantity
+        // })
 
         // consoleLogNoop(`[Store Debug] 로컬 상태 업데이트 완료`)
         return true
@@ -1100,13 +1091,13 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     set({ playerMaterials: newPlayerMaterials })
 
-    // gameStore.resources를 읽기 전용 캐시로 동기화 (UI 애니메이션용)
-    const gameStore = useGameStore.getState()
-    const currentResources = gameStore.resources
-    gameStore.setResources({
-      ...currentResources,
-      [materialId]: (currentResources[materialId] || 0) + quantity
-    })
+    // gameStore.resources를 읽기 전용 캐시로 동기화 (REMOVED - UI 애니메이션용은 recentAdditions만 사용)
+    // const gameStore = useGameStore.getState()
+    // const currentResources = gameStore.resources
+    // gameStore.setResources({
+    //   ...currentResources,
+    //   [materialId]: (currentResources[materialId] || 0) + quantity
+    // })
 
     // consoleLogNoop(`✅ 재료 추가 완료 (로컬): ${materialId} +${quantity}`)
 
@@ -1121,6 +1112,32 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       } catch (error) {
         console.error(`❌ 재료 DB 저장 실패 (로컬은 유지):`, materialId, error)
       }
+    }
+  },
+
+  addMaterials: async (materials) => {
+    const { playerMaterials, batchSyncCallback, forceSyncCallback } = get()
+
+    // 1. Optimistic Update
+    const newMaterials = { ...playerMaterials }
+    Object.entries(materials).forEach(([id, qty]) => {
+      if (qty === 0) return
+      newMaterials[id] = (newMaterials[id] || 0) + qty
+
+      // Call batch sync for each (or we could optimize this later to a bulk sync callback)
+      if (batchSyncCallback) {
+        batchSyncCallback(id, qty)
+      }
+    })
+
+    set({ playerMaterials: newMaterials })
+
+    // 2. Server Sync (using existing batch mechanism or force sync if needed)
+    // For now, relying on the existing batchSyncCallback which queues updates is correct.
+    // If urgent save is needed (forceSync), it should be called by the caller or configured.
+    if (forceSyncCallback) {
+      // Optional: Auto-trigger force sync for large batches? 
+      // For now, let's stick to the queue pattern unless specified.
     }
   },
 
@@ -1151,17 +1168,17 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
 
     // 로컬 상태 업데이트
     const newPlayerMaterials = { ...playerMaterials }
-    const gameStore = useGameStore.getState()
-    const newGameResources = { ...gameStore.resources }
+    // const gameStore = useGameStore.getState() // REMOVED
+    // const newGameResources = { ...gameStore.resources } // REMOVED
 
     Object.entries(materials).forEach(([id, amount]) => {
       const after = Math.max(0, (newPlayerMaterials[id] || 0) - amount)
       newPlayerMaterials[id] = after
-      newGameResources[id] = after
+      // newGameResources[id] = after // REMOVED
     })
 
     set({ playerMaterials: newPlayerMaterials })
-    gameStore.setResources(newGameResources)
+    // gameStore.setResources(newGameResources) // REMOVED
 
     // 배치 콜백이 있으면 음수 수량으로 처리
     if (batchSyncCallback) {
@@ -1237,10 +1254,13 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         set({ playerMaterials: updatedMaterials })
 
         // Sync to gameStore resources
-        const gameStore = useGameStore.getState()
-        const currentResources = gameStore.resources
-        gameStore.setResources({ ...currentResources, ...updatedMaterials })
+        // 3. UI 동기화 (REMOVED: gameStore.setResources)
+        // useGameStore.getState().setResources({
+        //   ...useGameStore.getState().resources,
+        //   gold: newGold
+        // })
 
+        // consoleLogNoop(`✅ [addGold] ${quantity} 골드 지급 완료 (현재: ${newGold})`)
         consoleLogNoop(`✅ 몬스터 분해 완료: ${result.deleted_count}마리`)
       }
 
@@ -1250,6 +1270,12 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       return { success: false, deleted_count: 0, rewards: {}, error: error.message || 'Unknown error' }
     }
   },
+
+  updatePlayerMonster: (monsterId, updates) => set(state => ({
+    playerMonsters: state.playerMonsters.map(m =>
+      m.id === monsterId ? { ...m, ...updates } : m
+    )
+  })),
 
   toggleMonsterLock: async (monsterId, isLocked) => {
     const { userId } = get()
@@ -1318,6 +1344,7 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
         return { success: false, message: result.error || '알 수 없는 오류' }
       }
 
+      // 2. gameStore.resources 동기화 (REMOVED)
       // 2. Update Local State
       const newMaterials = { ...playerMaterials }
 
@@ -1335,12 +1362,12 @@ export const useAlchemyStore = create<AlchemyState>((set, get) => ({
       })
 
       // Sync with GameStore resources
-      const gameStore = useGameStore.getState()
-      const newGameResources = { ...gameStore.resources }
-      Object.entries(potions).forEach(([id, _qty]) => {
-        newGameResources[id] = newMaterials[id]
-      })
-      gameStore.setResources(newGameResources)
+      // const gameStore = useGameStore.getState() // REMOVED
+      // const newGameResources = { ...gameStore.resources } // REMOVED
+      // Object.entries(potions).forEach(([id, _qty]) => { // REMOVED
+      //   newGameResources[id] = newMaterials[id] // REMOVED
+      // }) // REMOVED
+      // gameStore.setResources(newGameResources) // REMOVED
 
       set({
         playerMaterials: newMaterials,

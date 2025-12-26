@@ -103,8 +103,21 @@ export function useBatchSync(
 
     try {
       if (Object.keys(updatesSnapshot).length > 0) {
+        // Gold check
+        const goldUpdate = updatesSnapshot['gold']
+        if (goldUpdate !== undefined && goldUpdate !== 0) {
+          try {
+            const { addGold } = await import('../lib/alchemyApi')
+            await addGold(userId, goldUpdate)
+            console.log(`✅ [BatchSync] 골드 동기화 완료: ${goldUpdate}`)
+          } catch (e) {
+            console.error(`❌ [BatchSync] 골드 동기화 실패:`, e)
+            throw e
+          }
+        }
+
         const filteredUpdates = Object.entries(updatesSnapshot).reduce((acc, [k, v]) => {
-          if (k !== 'empty' && v !== 0) {
+          if (k !== 'empty' && k !== 'gold' && v !== 0) {
             acc[k] = v
           }
           return acc
@@ -123,11 +136,11 @@ export function useBatchSync(
         console.log('📡 [BatchSync] 시설 업데이트 전송 시작:', facilitySnapshot)
 
         // 최신 정보를 가져오기 위해 store 직접 참조
-        const { useGameStore } = await import('../store/useGameStore')
-        const state = useGameStore.getState()
-        const currentFacilities = state.facilities
-        const currentAssignments = state.assignedMonsters
-        const currentModes = state.productionModes
+        const { useFacilityStore } = await import('../store/useFacilityStore')
+        const facilityState = useFacilityStore.getState()
+        const currentFacilities = facilityState.facilities
+        const currentAssignments = facilityState.assignedMonsters
+        const currentModes = facilityState.productionModes
 
         const facilityRecords = Object.entries(facilitySnapshot).map(([facilityId, update]) => {
           const record: {
@@ -190,7 +203,7 @@ export function useBatchSync(
           // last_collected_at은 nullable이고, 보통 수집 시점에 업데이트되므로, 다른 시설이 수집될 때 내 시설의 수집 시간이 null이 되면 안됩니다.
           // 따라서 store의 lastCollectedAt도 가져와서 넣어줍니다.
           if (update.lastCollectedAt === undefined) {
-            const lastTime = state.lastCollectedAt[`${facilityId}-${record.current_level}`]
+            const lastTime = facilityState.lastCollectedAt[`${facilityId}-${record.current_level}`]
             if (lastTime) {
               record.last_collected_at = new Date(lastTime).toISOString()
             }

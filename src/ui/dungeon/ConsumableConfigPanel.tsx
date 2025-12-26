@@ -1,4 +1,4 @@
-import { useGameStore } from '../../store/useGameStore'
+import { useBattleStore } from '../../store/useBattleStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
 
@@ -8,7 +8,7 @@ interface ConsumableConfigPanelProps {
 }
 
 export default function ConsumableConfigPanel({ isOpen, onClose }: ConsumableConfigPanelProps) {
-    const { consumableSlots, updateConsumableSlot } = useGameStore()
+    const { consumableSlots, updateConsumableSlot } = useBattleStore()
     const { allMaterials } = useAlchemyStore()
     const { materialCounts } = useUnifiedInventory()
 

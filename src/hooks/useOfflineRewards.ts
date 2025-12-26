@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import * as alchemyApi from '../lib/alchemyApi'
 import { useAlchemyStore } from '../store/useAlchemyStore'
+import { useFacilityStore } from '../store/useFacilityStore'
 import { useGameStore } from '../store/useGameStore'
 import { MONSTER_DATA } from '../data/monsterData'
 
@@ -33,7 +34,7 @@ export function useOfflineRewards(
   const [elapsedTime, setElapsedTime] = useState(0)
 
   // Store access for Monster Traits & Production Modes
-  const { assignedMonsters, productionModes } = useGameStore()
+  const { assignedMonsters, productionModes } = useFacilityStore()
   const { playerMonsters, isLoading: isAlchemyLoading } = useAlchemyStore()
 
   const isCalculatingRef = useRef(false)
@@ -101,10 +102,10 @@ export function useOfflineRewards(
           await alchemyApi.updateLastCollectedAt(userId, now)
 
           // Sync local lastCollectedAt to avoid double counting
-          const gameStore = useGameStore.getState()
+          const facilityStore = useFacilityStore.getState()
           const nowTime = now.getTime()
           Object.entries(facilities).forEach(([fid, level]) => {
-            if (level > 0) gameStore.setLastCollectedAt(`${fid}-${level}`, nowTime)
+            if (level > 0) facilityStore.setLastCollectedAt(`${fid}-${level}`, nowTime)
           })
 
           setClaimed(true)
@@ -260,14 +261,9 @@ export function useOfflineRewards(
 
           // Local Store Update
           const alchemyStore = useAlchemyStore.getState()
-          const gameStore = useGameStore.getState()
 
-          // Update Resources in GameStore (Visual)
-          const newResources = { ...gameStore.resources }
-          for (const [mid, qty] of Object.entries(totalRewards)) {
-            newResources[mid] = (newResources[mid] || 0) + qty
-          }
-          gameStore.setResources(newResources)
+          // Update Resources in GameStore (Visual) - REMOVED (Legacy)
+          // gameStore.setResources(...)
 
           // Reload Player Data to ensure sync
           await alchemyStore.loadPlayerData(userId)
@@ -277,10 +273,10 @@ export function useOfflineRewards(
         await alchemyApi.updateLastCollectedAt(userId, now)
 
         // Update Last Collected (Local)
-        const gameStore = useGameStore.getState()
+        const facilityStore = useFacilityStore.getState()
         const nowTime = now.getTime()
         Object.entries(facilities).forEach(([fid, level]) => {
-          if (level > 0) gameStore.setLastCollectedAt(`${fid}-${level}`, nowTime)
+          if (level > 0) facilityStore.setLastCollectedAt(`${fid}-${level}`, nowTime)
         })
 
         setRewards(totalRewards)

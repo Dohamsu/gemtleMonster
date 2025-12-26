@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useGameStore } from '../../store/useGameStore'
+import { useFacilityStore } from '../../store/useFacilityStore'
+// import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { MATERIALS } from '../../data/alchemyData'
@@ -25,7 +26,7 @@ export default function FacilityDetailModal({
     onClose,
     onUpgrade
 }: FacilityDetailModalProps) {
-    const { assignedMonsters, assignMonster, resources, lastCollectedAt, productionModes, setProductionMode } = useGameStore()
+    const { assignedMonsters, assignMonster, lastCollectedAt, productionModes, setProductionMode } = useFacilityStore()
     const { playerMonsters, playerMaterials } = useAlchemyStore()
     const [activeSlotIndex, setActiveSlotIndex] = useState<number | null>(null)
 
@@ -251,7 +252,7 @@ export default function FacilityDetailModal({
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {Object.entries(modeLevelData.stats.cost).map(([resId, amount]) => {
-                                const owned = (resources[resId] ?? playerMaterials[resId] ?? 0)
+                                const owned = (playerMaterials[resId] ?? 0)
                                 const enough = owned >= (amount as number)
                                 return (
                                     <div key={resId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#231f10', padding: '8px 12px', borderRadius: '8px', border: '1px solid rgba(73, 65, 34, 0.3)' }}>
@@ -366,7 +367,7 @@ export default function FacilityDetailModal({
                         <>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
                                 {Object.entries(nextLevelData.upgradeCost).map(([resId, amount]) => {
-                                    const owned = (resources[resId] ?? playerMaterials[resId] ?? 0)
+                                    const owned = (playerMaterials[resId] ?? 0)
                                     const enough = owned >= (amount as number)
                                     return (
                                         <div key={resId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -383,13 +384,14 @@ export default function FacilityDetailModal({
                             </div>
                             <button
                                 onClick={() => onUpgrade(facility.id, nextLevelData.upgradeCost)}
-                                disabled={!Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => (resources[resId] ?? playerMaterials[resId] ?? 0) >= (amount as number))}
+                                disabled={!Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => (playerMaterials[resId] ?? 0) >= (amount as number))}
                                 style={{
+                                    marginTop: '20px',
                                     width: '100%', height: '48px', borderRadius: '8px',
-                                    background: Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => (resources[resId] ?? playerMaterials[resId] ?? 0) >= (amount as number)) ? '#f7ca18' : '#231f10',
-                                    color: Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => (resources[resId] ?? playerMaterials[resId] ?? 0) >= (amount as number)) ? '#2a1810' : '#7a7a7a',
-                                    border: 'none', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                    opacity: Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => (resources[resId] ?? playerMaterials[resId] ?? 0) >= (amount as number)) ? 1 : 0.7
+                                    background: Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => (playerMaterials[resId] ?? 0) >= (amount as number)) ? '#f7ca18' : '#231f10',
+                                    color: Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => (playerMaterials[resId] ?? 0) >= (amount as number)) ? '#2a1810' : '#7a7a7a',
+                                    border: '1px solid #5a4030', fontWeight: 'bold', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                    opacity: Object.entries(nextLevelData.upgradeCost).every(([resId, amount]) => (playerMaterials[resId] ?? 0) >= (amount as number)) ? 1 : 0.7
                                 }}
                             >
                                 <span className="material-symbols-outlined">arrow_upward</span>

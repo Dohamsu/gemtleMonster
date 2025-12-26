@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useFacilityStore } from '../../store/useFacilityStore'
 import { useGameStore } from '../../store/useGameStore'
 import { useFacilities } from '../../hooks/useFacilities'
 import { useAuth } from '../../hooks/useAuth'
@@ -11,7 +12,8 @@ import FacilityMobileView from './FacilityMobileView'
 
 export default function FacilityPage() {
     const { user } = useAuth()
-    const { canvasView, setCanvasView, facilities, upgradeFacility: storeUpgrade } = useGameStore()
+    const { canvasView, setCanvasView } = useGameStore()
+    const { facilities, upgradeFacility: storeUpgrade } = useFacilityStore()
     const { facilities: masterFacilities, loading } = useFacilities(user?.id)
     const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null)
     const [isMobile, setIsMobile] = useState(isMobileView())

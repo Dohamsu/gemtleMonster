@@ -45,6 +45,13 @@ export interface BattleState {
   // Visual Queues
   floatingTexts: FloatingText[]
 
+  // Synergy System
+  synergyBonuses?: {
+    atkPercent: number
+    defPercent: number
+    hpPercent: number
+  }
+
   // Skill System
   playerSkills?: BattleSkill[]
   skillCooldowns?: Record<string, number> // skillId -> remaining turns

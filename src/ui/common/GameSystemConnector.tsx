@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
+import { useFacilityStore } from '../../store/useFacilityStore'
 import { useGameStore } from '../../store/useGameStore'
 import { useBatchSync } from '../../hooks/useBatchSync'
 import { useEventBasedSync } from '../../hooks/useEventBasedSync'
@@ -88,20 +89,20 @@ export default function GameSystemConnector() {
 
             useAlchemyStore.getState().setBatchSyncCallback((id: string, qty: number) => queueUpdateRef.current(id, qty))
             useAlchemyStore.getState().setForceSyncCallback(async () => await forceSyncNowRef.current())
-            useGameStore.getState().setBatchFacilitySyncCallback((id: string, lv: number) => queueFacilityUpdateRef.current(id, lv))
-            useGameStore.getState().setBatchAssignmentSyncCallback((fId: string, mIds: (string | null)[]) => queueAssignmentUpdateRef.current(fId, mIds))
-            useGameStore.getState().setBatchProductionModeSyncCallback((id: string, mode: number) => queueProductionModeUpdateRef.current(id, mode))
-            useGameStore.getState().setBatchLastCollectedSyncCallback((id: string, time: number) => queueLastCollectedUpdateRef.current(id, time))
+            useFacilityStore.getState().setBatchFacilitySyncCallback((id: string, lv: number) => queueFacilityUpdateRef.current(id, lv))
+            useFacilityStore.getState().setBatchAssignmentSyncCallback((fId: string, mIds: (string | null)[]) => queueAssignmentUpdateRef.current(fId, mIds))
+            useFacilityStore.getState().setBatchProductionModeSyncCallback((id: string, mode: number) => queueProductionModeUpdateRef.current(id, mode))
+            useFacilityStore.getState().setBatchLastCollectedSyncCallback((id: string, time: number) => queueLastCollectedUpdateRef.current(id, time))
             // 즉시 동기화 콜백 등록
             useGameStore.getState().setForceSyncCallback(async () => await forceSyncNowRef.current())
         }
         return () => {
             useAlchemyStore.getState().setBatchSyncCallback(null)
             useAlchemyStore.getState().setForceSyncCallback(null)
-            useGameStore.getState().setBatchFacilitySyncCallback(null)
-            useGameStore.getState().setBatchAssignmentSyncCallback(null)
-            useGameStore.getState().setBatchProductionModeSyncCallback(null)
-            useGameStore.getState().setBatchLastCollectedSyncCallback(null)
+            useFacilityStore.getState().setBatchFacilitySyncCallback(null)
+            useFacilityStore.getState().setBatchAssignmentSyncCallback(null)
+            useFacilityStore.getState().setBatchProductionModeSyncCallback(null)
+            useFacilityStore.getState().setBatchLastCollectedSyncCallback(null)
             useGameStore.getState().setForceSyncCallback(null)
         }
     }, [user?.id, loadAllData])

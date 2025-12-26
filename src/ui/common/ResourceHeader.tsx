@@ -1,4 +1,3 @@
-import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import ResourceIcon from '../ResourceIcon'
 
@@ -7,10 +6,8 @@ interface ResourceHeaderProps {
 }
 
 export default function ResourceHeader({ onBack }: ResourceHeaderProps) {
-    const { resources } = useGameStore()
     const { playerMaterials } = useAlchemyStore()
-
-    const getRes = (id: string) => (resources[id] || playerMaterials[id] || 0).toLocaleString()
+    const getRes = (id: string) => (playerMaterials[id] || 0).toLocaleString()
 
     return (
         <div style={{

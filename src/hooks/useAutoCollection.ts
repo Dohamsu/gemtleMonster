@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useFacilityStore } from '../store/useFacilityStore'
 import { useGameStore } from '../store/useGameStore'
 import { supabase } from '../lib/supabase'
 import { useAlchemyStore } from '../store/useAlchemyStore'
@@ -17,7 +18,8 @@ interface FacilityLevelStats {
 type FacilityStatsMap = Record<string, Record<number, FacilityLevelStats>>
 
 export function useAutoCollection(userId: string | undefined) {
-    const { facilities, assignedMonsters, lastCollectedAt, addResources, setLastCollectedAt, canvasView, isOfflineProcessing, productionModes } = useGameStore()
+    const { facilities, assignedMonsters, lastCollectedAt, setLastCollectedAt, productionModes } = useFacilityStore()
+    const { addResources, canvasView, isOfflineProcessing } = useGameStore()
     const { playerMonsters } = useAlchemyStore()
     const statsRef = useRef<FacilityStatsMap>({})
     const processingRef = useRef<Set<string>>(new Set())
@@ -58,11 +60,11 @@ export function useAutoCollection(userId: string | undefined) {
                 if (stats.cost) {
                     const alchemyStore = useAlchemyStore.getState()
                     const playerMaterials = alchemyStore.playerMaterials
-                    const gameResources = useGameStore.getState().resources
+                    // const gameResources = useGameStore.getState().resources // REMOVED
 
                     let maxPossible = count
                     for (const [resId, amount] of Object.entries(stats.cost)) {
-                        const owned = (playerMaterials[resId] ?? gameResources[resId] ?? 0)
+                        const owned = (playerMaterials[resId] ?? 0)
                         maxPossible = Math.min(maxPossible, Math.floor(owned / amount))
                     }
 

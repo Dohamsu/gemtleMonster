@@ -5,7 +5,7 @@ import FacilityIcon from '../FacilityIcon'
 import { useCollectionProgress } from '../../hooks/useCollectionProgress'
 import { calculateFacilityBonus } from '../../utils/facilityUtils'
 
-import { useGameStore } from '../../store/useGameStore'
+import { useFacilityStore } from '../../store/useFacilityStore'
 
 interface FacilityMobileCardProps {
     facility: FacilityData
@@ -24,7 +24,7 @@ export default function FacilityMobileCard({
     playerMonsters,
     onClick
 }: FacilityMobileCardProps) {
-    const { productionModes } = useGameStore()
+    const { productionModes } = useFacilityStore()
     const levelData = facility.levels.find((l) => l.level === level)
 
     const currentModeLevel = productionModes[facility.id] || level

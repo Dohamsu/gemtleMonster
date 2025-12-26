@@ -5,7 +5,7 @@
 
 /* eslint-disable no-console */
 import { supabase } from './supabase'
-import type { PlayerMonster } from '../types'
+import type { PlayerMonster, MonsterRarity } from '../types'
 
 /**
  * 몬스터를 플레이어 인벤토리에 추가
@@ -155,7 +155,7 @@ export async function updateMonsterExp(
   currentLevel: number,
   currentExp: number,
   addedExp: number,
-  rarity: 'N' | 'R' | 'SR' | 'SSR' = 'N',
+  rarity: MonsterRarity = 'N',
   monsterTypeId?: string,
   role?: 'TANK' | 'DPS' | 'SUPPORT' | 'HYBRID' | 'PRODUCTION'
 ): Promise<{

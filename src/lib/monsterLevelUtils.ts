@@ -7,7 +7,7 @@
 // Types
 // ==========================================
 
-export type RarityType = 'N' | 'R' | 'SR' | 'SSR'
+export type RarityType = 'N' | 'R' | 'SR' | 'SSR' | 'UR'
 export type RoleType = 'TANK' | 'DPS' | 'SUPPORT' | 'HYBRID' | 'PRODUCTION'
 
 export interface MonsterStats {
@@ -36,7 +36,8 @@ export const RARITY_CONFIG: Record<RarityType, RarityConfig> = {
     N: { maxLevel: 30, growthRate: 1.0, expMultiplier: 1.0 },
     R: { maxLevel: 50, growthRate: 1.15, expMultiplier: 1.2 },
     SR: { maxLevel: 70, growthRate: 1.3, expMultiplier: 1.5 },
-    SSR: { maxLevel: 99, growthRate: 1.5, expMultiplier: 2.0 }
+    SSR: { maxLevel: 99, growthRate: 1.5, expMultiplier: 2.0 },
+    UR: { maxLevel: 120, growthRate: 2.0, expMultiplier: 3.0 }
 }
 
 /**
@@ -182,6 +183,7 @@ export function getRarityColor(rarity: RarityType): string {
         case 'R': return '#22c55e'    // Green
         case 'SR': return '#3b82f6'   // Blue
         case 'SSR': return '#f59e0b'  // Amber/Gold
+        case 'UR': return '#ef4444'   // Red (or Purple #a855f7) - Let's use Red for UR/Legendary feel or Purple. Let's go with Purple for "Ultra". Actually Red is often "Ancient/UR". Let's stick to Purple #d946ef (Fuchsia) or #9333ea. Let's use #a855f7 (Purple-500). Wait, UR usually implies something superior. Let's use a rainbow or distinct color. Let's use #ef4444 (Red-500) for now as it distinct from others.
         default: return '#9ca3af'
     }
 }
@@ -195,6 +197,7 @@ export function getRarityGradient(rarity: RarityType): string {
         case 'R': return 'linear-gradient(135deg, #166534, #14532d)'
         case 'SR': return 'linear-gradient(135deg, #1e40af, #1e3a8a)'
         case 'SSR': return 'linear-gradient(135deg, #d97706, #b45309)'
+        case 'UR': return 'linear-gradient(135deg, #991b1b, #7f1d1d)' // Red gradient
         default: return 'linear-gradient(135deg, #4b5563, #374151)'
     }
 }

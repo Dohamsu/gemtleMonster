@@ -3,7 +3,6 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { MATERIALS } from '../data/alchemyData'
 import { useAlchemyStore } from './useAlchemyStore'
-import { useGameStore } from './useGameStore'
 import * as alchemyApi from '../lib/alchemyApi'
 
 export interface ShopSaleItem {
@@ -153,11 +152,9 @@ export const useShopStore = create<ShopState>()(
                         }
                     })
 
-                    // 3. UI 동기화 (레거시 호환)
-                    useGameStore.getState().setResources({
-                        ...useGameStore.getState().resources,
-                        gold: newGold
-                    })
+                    // 3. UI 동기화 (레거시 호환 제거 - useAlchemyStore가 source of truth)
+                    // useGameStore.getState().setResources({ ... }) 
+                    // No action needed as UI listens to useAlchemyStore now.
 
                     return true
                 } catch (e) {

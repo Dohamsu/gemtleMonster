@@ -5,13 +5,13 @@ import { useAuth } from './hooks/useAuth'
 import { useAutoCollection } from './hooks/useAutoCollection'
 import { initializePlayer } from './lib/initializePlayer'
 import { useGameStore } from './store/useGameStore'
-import { useResources } from './hooks/useResources'
 import { useFacilities } from './hooks/useFacilities'
 import InstallPrompt from './ui/common/InstallPrompt'
 import LottieLoader from './ui/common/LottieLoader'
 import loadingAnimation from './assets/lottie/loading.json'
 import offlineLoadingAnimation from './assets/lottie/offline_loading.json'
 import { useOfflineRewards } from './hooks/useOfflineRewards'
+import { useFacilityStore } from './store/useFacilityStore'
 
 // 동적 import로 초기 번들 크기 감소 (30-40% 개선)
 const GameCanvas = lazy(() => import('./game/GameCanvas'))
@@ -19,41 +19,32 @@ import GameSystemConnector from './ui/common/GameSystemConnector'
 
 function App() {
     const { user, loading: authLoading, signIn, signUp, signInAsGuest } = useAuth()
-    const { setResources, setFacilities } = useGameStore()
-
     /**
      * 레거시 시스템: player_resource 테이블에서 데이터 로드
      * 주의: 실제 데이터는 useAlchemyStore.loadPlayerData()에서 player_material 테이블로 로드됨
-     * TODO: 레거시 시스템 제거 시 이 부분도 제거 필요
+     * TODO: 레거시 시스템 완전 제거 시 useResources 훅 자체도 제거 가능
      */
-    const { resources: dbResources } = useResources(user?.id)
     const { playerFacilities: dbFacilities, productionModes: dbProductionModes, assignedMonsters: dbAssignments, lastCollectedAt: dbLastCollected, loading: facilitiesLoading } = useFacilities(user?.id)
 
-    // Sync DB data to local store when loaded (레거시 호환성)
     useEffect(() => {
-        if (Object.keys(dbResources).length > 0) {
-            setResources(dbResources)
-        }
-    }, [dbResources, setResources])
-
-    useEffect(() => {
+        const facilityStore = useFacilityStore.getState()
         if (Object.keys(dbFacilities).length > 0) {
-            setFacilities(dbFacilities)
+            facilityStore.setFacilities(dbFacilities)
         }
         if (dbAssignments && Object.keys(dbAssignments).length > 0) {
-            useGameStore.getState().setAssignedMonsters(dbAssignments)
+            facilityStore.setAssignedMonsters(dbAssignments)
         }
         if (Object.keys(dbProductionModes).length > 0) {
             Object.entries(dbProductionModes).forEach(([key, value]) => {
-                useGameStore.getState().setProductionMode(key, value)
+                facilityStore.setProductionMode(key, value)
             })
         }
         if (dbLastCollected && Object.keys(dbLastCollected).length > 0) {
             Object.entries(dbLastCollected).forEach(([key, value]) => {
-                useGameStore.getState().setLastCollectedAt(key, value)
+                facilityStore.setLastCollectedAt(key, value)
             })
         }
-    }, [dbFacilities, dbAssignments, dbProductionModes, dbLastCollected, setFacilities])
+    }, [dbFacilities, dbAssignments, dbProductionModes, dbLastCollected])
 
     // Auto-collect resources from facilities (updates local store)
     useAutoCollection(user?.id)

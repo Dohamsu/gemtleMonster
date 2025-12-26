@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from 'react'
-import { useGameStore } from '../../store/useGameStore'
+import { useBattleStore } from '../../store/useBattleStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { DUNGEONS } from '../../data/dungeonData'
 import { MATERIALS } from '../../data/alchemyData'
@@ -8,7 +8,17 @@ import { MONSTER_DATA } from '../../data/monsterData'
 import { calculateEffectiveStat } from '../../lib/battleUtils'
 
 export default function BattleView() {
-    const { battleState, processTurn, endBattle, activeDungeon, consumeFloatingTexts, battleSpeed, setBattleSpeed } = useGameStore()
+    const {
+        battleState,
+        processTurn,
+        endBattle,
+        activeDungeon,
+        consumeFloatingTexts,
+        battleSpeed,
+        setBattleSpeed,
+        isAutoBattle,
+        toggleAutoBattle
+    } = useBattleStore()
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
     const [animatingTexts, setAnimatingTexts] = useState<any[]>([])
 
@@ -151,13 +161,13 @@ export default function BattleView() {
 
     // Auto-battle loop
     useEffect(() => {
-        if (!battleState || battleState.result) return
+        if (!battleState || battleState.result || !isAutoBattle) return
 
         let timerId: ReturnType<typeof setTimeout> | undefined
         let isMounted = true
 
         const runTurn = async () => {
-            if (!isMounted) return
+            if (!isMounted || !isAutoBattle) return
 
             // 1. Check Lock: If a turn is already processing (e.g. from previous effect), wait and retry.
             if (isProcessingRef.current) {
@@ -174,8 +184,8 @@ export default function BattleView() {
                 isProcessingRef.current = false
             }
 
-            // 4. Schedule next turn if still mounted
-            if (isMounted) {
+            // 4. Schedule next turn if still mounted and auto-battle is on
+            if (isMounted && isAutoBattle) {
                 timerId = setTimeout(runTurn, 1000 / battleSpeed)
             }
         }
@@ -186,7 +196,7 @@ export default function BattleView() {
             isMounted = false
             if (timerId) clearTimeout(timerId)
         }
-    }, [battleState?.isBattling, battleState?.result, processTurn, battleSpeed]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [battleState?.isBattling, battleState?.result, processTurn, battleSpeed, isAutoBattle]) // eslint-disable-line react-hooks/exhaustive-deps
 
     if (!battleState) return null
 
@@ -215,39 +225,80 @@ export default function BattleView() {
                 marginBottom: '15px',
                 minHeight: '30px'
             }}>
-                {/* Speed Control (New Location) */}
-                <div style={{
-                    display: 'flex',
-                    gap: '2px',
-                    background: 'rgba(0,0,0,0.5)',
-                    padding: '3px',
-                    borderRadius: '15px',
-                    border: '1px solid rgba(251, 191, 36, 0.3)',
-                }}>
-                    {[1, 2, 3].map(speed => (
+                {/* Speed Control & Auto Toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{
+                        display: 'flex',
+                        gap: '2px',
+                        background: 'rgba(0,0,0,0.5)',
+                        padding: '3px',
+                        borderRadius: '15px',
+                        border: '1px solid rgba(251, 191, 36, 0.3)',
+                    }}>
+                        {[1, 2, 3].map(speed => (
+                            <button
+                                key={speed}
+                                onClick={() => setBattleSpeed(speed)}
+                                style={{
+                                    width: isMobile ? '32px' : '38px',
+                                    height: '22px',
+                                    border: 'none',
+                                    borderRadius: '11px',
+                                    background: battleSpeed === speed ? '#fbbf24' : 'transparent',
+                                    color: battleSpeed === speed ? '#000' : '#fbbf24',
+                                    fontSize: '10px',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: 0
+                                }}
+                            >
+                                {speed === 1 ? '▶' : speed === 2 ? '▶▶' : '▶▶▶'}
+                            </button>
+                        ))}
+                    </div>
+
+                    <button
+                        onClick={toggleAutoBattle}
+                        style={{
+                            background: isAutoBattle ? 'rgba(163, 230, 53, 0.2)' : 'rgba(148, 163, 184, 0.2)',
+                            border: `1px solid ${isAutoBattle ? '#a3e635' : '#94a3b8'}`,
+                            color: isAutoBattle ? '#a3e635' : '#94a3b8',
+                            padding: '4px 8px',
+                            borderRadius: '15px',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                        }}
+                    >
+                        <span>{isAutoBattle ? 'AUTO ON' : 'AUTO OFF'}</span>
+                    </button>
+
+                    {!isAutoBattle && !battleState.result && (
                         <button
-                            key={speed}
-                            onClick={() => setBattleSpeed(speed)}
+                            onClick={() => processTurn()}
                             style={{
-                                width: isMobile ? '32px' : '38px',
-                                height: '22px',
-                                border: 'none',
-                                borderRadius: '11px',
-                                background: battleSpeed === speed ? '#fbbf24' : 'transparent',
-                                color: battleSpeed === speed ? '#000' : '#fbbf24',
+                                background: 'rgba(59, 130, 246, 0.2)',
+                                border: '1px solid #3b82f6',
+                                color: '#60a5fa',
+                                padding: '4px 10px',
+                                borderRadius: '15px',
+                                cursor: 'pointer',
                                 fontSize: '10px',
                                 fontWeight: 'bold',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: 0
+                                transition: 'all 0.2s'
                             }}
                         >
-                            {speed === 1 ? '▶' : speed === 2 ? '▶▶' : '▶▶▶'}
+                            공격
                         </button>
-                    ))}
+                    )}
                 </div>
 
                 {!battleState.result && (
@@ -468,6 +519,29 @@ export default function BattleView() {
                                     </>
                                 )
                             })()}
+                        </div>
+                    )}
+
+                    {/* Synergy Bonuses */}
+                    {battleState.synergyBonuses && (battleState.synergyBonuses.atkPercent > 0 || battleState.synergyBonuses.defPercent > 0 || battleState.synergyBonuses.hpPercent > 0) && (
+                        <div style={{
+                            marginTop: '8px',
+                            fontSize: '10px',
+                            color: '#a3e635',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '2px',
+                            background: 'rgba(163, 230, 53, 0.1)',
+                            padding: '4px',
+                            borderRadius: '4px',
+                            border: '1px solid rgba(163, 230, 53, 0.3)'
+                        }}>
+                            <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>✨ 시너지 보너스 ✨</div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '5px' }}>
+                                {battleState.synergyBonuses.atkPercent > 0 && <span>공격 +{battleState.synergyBonuses.atkPercent}%</span>}
+                                {battleState.synergyBonuses.defPercent > 0 && <span>방어 +{battleState.synergyBonuses.defPercent}%</span>}
+                                {battleState.synergyBonuses.hpPercent > 0 && <span>체력 +{battleState.synergyBonuses.hpPercent}%</span>}
+                            </div>
                         </div>
                     )}
                 </div>

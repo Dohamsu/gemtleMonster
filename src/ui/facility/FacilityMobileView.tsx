@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useGameStore } from '../../store/useGameStore'
+import { useFacilityStore } from '../../store/useFacilityStore'
+// import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import type { FacilityData } from '../../types/facility'
 import FacilityMobileCard from './FacilityMobileCard'
@@ -77,11 +78,13 @@ export default function FacilityMobileView({
     upgradeFacility,
     onBack
 }: FacilityMobileViewProps) {
-    const { resources, assignedMonsters } = useGameStore()
+    const { assignedMonsters } = useFacilityStore()
+    // const { resources } = useGameStore() // Removed as per instruction
     const { playerMaterials, playerMonsters } = useAlchemyStore()
     const [selectedFacilityId, setSelectedFacilityId] = useState<string | null>(null)
 
-    const getRes = (id: string) => (resources[id] || playerMaterials[id] || 0)
+    // Resources helper
+    const getRes = (id: string) => (playerMaterials[id] || 0)
     const formatRes = (val: number) => val.toLocaleString()
 
     const assignedCount = Object.values(assignedMonsters).length
@@ -238,7 +241,7 @@ export default function FacilityMobileView({
                             key={facility.id}
                             facility={facility}
                             level={playerFacilities[facility.id] || 0}
-                            lastCollectedAt={useGameStore.getState().lastCollectedAt}
+                            lastCollectedAt={useFacilityStore.getState().lastCollectedAt}
                             assignedMonsters={assignedMonsters}
                             playerMonsters={playerMonsters}
                             onClick={() => setSelectedFacilityId(facility.id)}

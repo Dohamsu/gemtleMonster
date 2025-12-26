@@ -28,7 +28,7 @@ const { mockBuyItem, mockGameStoreState, mockAlchemyStoreState, mockShopStoreSta
         addMaterial: vi.fn(),
         consumeMaterials: vi.fn(),
         materialCounts: { 'herb_common': 5 },
-        playerMaterials: { 'herb_common': 5 }
+        playerMaterials: { 'herb_common': 5, 'gold': 1000 }
     }
 
     const mockShopStoreState = {

@@ -1,13 +1,14 @@
 /* eslint-disable no-console */
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { useGameStore } from '../store/useGameStore'
+// import { useGameStore } from '../store/useGameStore'
+import { useFacilityStore } from '../store/useFacilityStore'
 import { useAuth } from './useAuth'
 import { useUnifiedInventory } from './useUnifiedInventory'
 
 export function useSaveGame() {
     const { user } = useAuth()
-    const { facilities } = useGameStore()
+    const { facilities } = useFacilityStore()
     const { materialCounts } = useUnifiedInventory()
     const [saving, setSaving] = useState(false)
     const [lastSaved, setLastSaved] = useState<Date | null>(null)

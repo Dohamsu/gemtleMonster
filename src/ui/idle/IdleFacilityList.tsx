@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import IdleFacilityItem from './IdleFacilityItem'
 import IdleFacilityGridItem from './IdleFacilityGridItem'
 import { useFacilities } from '../../hooks/useFacilities'
+import { useFacilityStore } from '../../store/useFacilityStore'
 import { useGameStore } from '../../store/useGameStore'
 import { useAuth } from '../../hooks/useAuth'
 import { useUnifiedInventory } from '../../hooks/useUnifiedInventory'
@@ -11,7 +12,8 @@ import { isMobileView } from '../../utils/responsiveUtils'
 export default function IdleFacilityList() {
     const { user } = useAuth();
     const { facilities, loading: facilitiesLoading } = useFacilities(user?.id);
-    const { facilities: playerFacilities, upgradeFacility, canvasView } = useGameStore();
+    const { facilities: playerFacilities, upgradeFacility } = useFacilityStore();
+    const { canvasView } = useGameStore();
     const { materialCounts } = useUnifiedInventory();
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const [allCollapsed, setAllCollapsed] = useState(false);
