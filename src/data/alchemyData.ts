@@ -198,8 +198,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 100,
         ingredients: [
-            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
-            { materialId: 'herb_common', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 3, isCatalyst: false },
             { materialId: 'slime_fluid', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -219,8 +218,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false, // Initially visible
         priority: 99,
         ingredients: [
-            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
-            { materialId: 'herb_common', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 3, isCatalyst: false },
             { materialId: 'crystal_mana', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -240,8 +238,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 98,
         ingredients: [
-            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
-            { materialId: 'herb_common', quantity: 2, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 4, isCatalyst: false },
             { materialId: 'stone', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -261,8 +258,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 97,
         ingredients: [
-            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
-            { materialId: 'herb_common', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 3, isCatalyst: false },
             { materialId: 'ore_iron', quantity: 1, isCatalyst: false }
         ],
         conditions: []
@@ -282,8 +278,7 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         isHidden: false,
         priority: 96,
         ingredients: [
-            { materialId: 'potion_base', quantity: 1, isCatalyst: false },
-            { materialId: 'herb_common', quantity: 1, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 3, isCatalyst: false },
             { materialId: 'spirit_dust', quantity: 1, isCatalyst: false }
         ],
         conditions: []

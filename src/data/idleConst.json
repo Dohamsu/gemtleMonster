@@ -331,76 +331,6 @@
             ]
         },
         {
-            "id": "alchemy_workshop",
-            "name": "연금술 공방",
-            "category": "resource_production",
-            "unlockConditions": [
-                {
-                    "type": "facilityLevel",
-                    "facilityId": "herb_farm",
-                    "min": 2
-                }
-            ],
-            "levels": [
-                {
-                    "level": 1,
-                    "name": "허름한 공방",
-                    "stats": {
-                        "intervalSeconds": 30,
-                        "bundlesPerTick": 1,
-                        "dropRates": {
-                            "potion_base": 1.0
-                        },
-                        "cost": {
-                            "herb_common": 2
-                        }
-                    },
-                    "upgradeCost": {
-                        "gold": 500,
-                        "wood_branch": 20
-                    }
-                },
-                {
-                    "level": 2,
-                    "name": "견습 연금술사의 방",
-                    "stats": {
-                        "intervalSeconds": 25,
-                        "bundlesPerTick": 1,
-                        "dropRates": {
-                            "potion_base": 1.0
-                        },
-                        "cost": {
-                            "herb_common": 4
-                        }
-                    },
-                    "upgradeCost": {
-                        "gold": 1500,
-                        "stone": 50,
-                        "herb_common": 50
-                    }
-                },
-                {
-                    "level": 3,
-                    "name": "전문가의 실험실",
-                    "stats": {
-                        "intervalSeconds": 20,
-                        "bundlesPerTick": 2,
-                        "dropRates": {
-                            "potion_base": 1.0
-                        },
-                        "cost": {
-                            "herb_rare": 1
-                        }
-                    },
-                    "upgradeCost": {
-                        "gold": 5000,
-                        "iron_ingot": 20,
-                        "herb_rare": 20
-                    }
-                }
-            ]
-        },
-        {
             "id": "dungeon_dispatch",
             "name": "자동 던전 파견소",
             "category": "combat_auto",
@@ -412,11 +342,6 @@
                 {
                     "type": "questComplete",
                     "questId": "FIRST_DUNGEON_CLEAR"
-                },
-                {
-                    "type": "facilityLevel",
-                    "facilityId": "alchemy_workshop",
-                    "min": 1
                 }
             ],
             "levels": [
@@ -517,7 +442,7 @@
                             "potion_xp_small": 1.0
                         },
                         "cost": {
-                            "potion_base": 1
+                            "herb_common": 1
                         },
                         "trainingTokenDropRate": 0.0005
                     },
@@ -535,7 +460,7 @@
                             "potion_xp_small": 1.0
                         },
                         "cost": {
-                            "potion_base": 1
+                            "herb_common": 1
                         },
                         "trainingTokenDropRate": 0.0007
                     },
@@ -553,7 +478,7 @@
                             "potion_xp_medium": 1.0
                         },
                         "cost": {
-                            "potion_base": 2
+                            "herb_common": 2
                         },
                         "trainingTokenDropRate": 0.001
                     },
@@ -572,7 +497,7 @@
                             "potion_xp_medium": 1.0
                         },
                         "cost": {
-                            "potion_base": 2
+                            "herb_common": 2
                         },
                         "trainingTokenDropRate": 0.0015
                     },
@@ -592,7 +517,7 @@
                             "potion_xp_large": 1.0
                         },
                         "cost": {
-                            "potion_base": 3
+                            "herb_common": 3
                         },
                         "trainingTokenDropRate": 0.002
                     },
@@ -659,11 +584,6 @@
                 {
                     "type": "playerLevel",
                     "min": 5
-                },
-                {
-                    "type": "facilityLevel",
-                    "facilityId": "alchemy_workshop",
-                    "min": 2
                 }
             ],
             "levels": [
@@ -789,11 +709,6 @@
                 {
                     "type": "playerLevel",
                     "min": 5
-                },
-                {
-                    "type": "facilityLevel",
-                    "facilityId": "alchemy_workshop",
-                    "min": 2
                 }
             ],
             "levels": [
