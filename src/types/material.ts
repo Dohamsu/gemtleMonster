@@ -2,22 +2,22 @@
  * Material (재료) 관련 타입 정의
  */
 
-export type MaterialFamily = 'PLANT' | 'MINERAL' | 'BEAST' | 'SLIME' | 'SPIRIT' | 'CONSUMABLE'
-export type MaterialRarity = 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
+export type MaterialType = 'PLANT' | 'MINERAL' | 'BEAST' | 'SLIME' | 'SPIRIT' | 'SPECIAL' | 'CONSUMABLE'
+export type MaterialRarity = 'COMMON' | 'UNCOMMON' | 'RARE' | 'EPIC' | 'LEGENDARY' | 'N' | 'R' | 'SR' | 'SSR' | 'UR'
 
 export interface Material {
   id: string
   name: string
-  description?: string
-  family: MaterialFamily
+  description: string
+  type: MaterialType
   rarity: MaterialRarity
-  icon_url?: string
-  source_info?: unknown
-  is_special: boolean
-  sell_price: number
+  iconUrl?: string
+  sourceInfo?: unknown
+  isSpecial: boolean
+  sellPrice?: number
 }
 
 export interface PlayerMaterial {
-  material_id: string
+  materialId: string
   quantity: number
 }

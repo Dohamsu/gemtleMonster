@@ -47,10 +47,10 @@ export default function RecipeList({
         if (isBrewing) return
 
         // 1. Check if recipe is discoverable/selectable
-        const isDiscovered = (!recipe.is_hidden) || (playerRecipes[recipe.id]?.is_discovered)
+        const isDiscovered = (!recipe.isHidden) || (playerRecipes[recipe.id]?.is_discovered)
         const areAllIngredientsRevealed = recipe.ingredients?.every(ing => {
             const discovered = playerRecipes[recipe.id]?.discovered_ingredients || []
-            return discovered.includes(ing.material_id)
+            return discovered.includes(ing.materialId)
         }) ?? false
 
         if (!isDiscovered && !areAllIngredientsRevealed) {
@@ -66,7 +66,7 @@ export default function RecipeList({
 
         // 3. Check materials
         const hasAllMaterials = recipe.ingredients?.every(
-            ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
+            ing => (playerMaterials[ing.materialId] || 0) >= ing.quantity
         ) ?? true
 
         if (!hasAllMaterials) {
@@ -238,29 +238,29 @@ export default function RecipeList({
                         const isSelected = selectedRecipeId === recipe.id
                         /*
                         const hasAllMaterials = recipe.ingredients?.every(
-                            ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
+                            ing => (playerMaterials[ing.materialId] || 0) >= ing.quantity
                         ) ?? true
                         */
 
                         const playerRecipe = playerRecipes[recipe.id]
-                        const isDiscovered = !recipe.is_hidden || (playerRecipe && playerRecipe.is_discovered)
+                        const isDiscovered = !recipe.isHidden || (playerRecipe && playerRecipe.is_discovered)
                         const discoveredIngredients = playerRecipe?.discovered_ingredients || []
 
                         // 이름 표시: 발견했거나, 힌트로 재료가 하나라도 밝혀졌으면 이름 공개
                         const displayName = (isDiscovered || discoveredIngredients.length > 0)
-                            ? `${recipe.name} (${recipe.craft_time_sec}s)`
+                            ? `${recipe.name} (${recipe.craftTimeSec}s)`
                             : '???'
 
                         // 히든 레시피 선택 조건: 이미 발견했거나, 모든 재료가 공개되었을 때
                         const areAllIngredientsRevealed = recipe.ingredients?.every(
-                            ing => discoveredIngredients.includes(ing.material_id)
+                            ing => discoveredIngredients.includes(ing.materialId)
                         ) ?? true
 
                         const isSelectable = isDiscovered || areAllIngredientsRevealed
 
                         // 재료 충족 여부 (미발견이어도 계산은 함 - 스타일은 다르게)
                         const hasAllMaterials = recipe.ingredients?.every(
-                            ing => (playerMaterials[ing.material_id] || 0) >= ing.quantity
+                            ing => (playerMaterials[ing.materialId] || 0) >= ing.quantity
                         ) ?? true
 
                         // Condition validation
@@ -352,14 +352,14 @@ export default function RecipeList({
                                         overflow: 'hidden',
                                         flexShrink: 0
                                     }}>
-                                        {recipe.type === 'ITEM' && recipe.result_item_id ? (
+                                        {recipe.type === 'ITEM' && recipe.resultItemId ? (
                                             // Item Icon
                                             (() => {
-                                                const item = materials.find(m => m.id === recipe.result_item_id)
-                                                return item?.icon_url ? (
+                                                const item = materials.find(m => m.id === recipe.resultItemId)
+                                                return item?.iconUrl ? (
                                                     <img
-                                                        src={item.icon_url}
-                                                        alt={recipe.result_item_id}
+                                                        src={item.iconUrl}
+                                                        alt={recipe.resultItemId}
                                                         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                                                     />
                                                 ) : (
@@ -368,10 +368,10 @@ export default function RecipeList({
                                             })()
                                         ) : (
                                             // Monster Icon
-                                            (recipe.result_monster_id && MONSTER_DATA[recipe.result_monster_id]?.iconUrl) ? (
+                                            (recipe.resultMonsterId && MONSTER_DATA[recipe.resultMonsterId]?.iconUrl) ? (
                                                 <img
-                                                    src={MONSTER_DATA[recipe.result_monster_id].iconUrl}
-                                                    alt={recipe.result_monster_id}
+                                                    src={MONSTER_DATA[recipe.resultMonsterId].iconUrl}
+                                                    alt={recipe.resultMonsterId}
                                                     style={{
                                                         width: '100%',
                                                         height: '100%',
@@ -382,7 +382,7 @@ export default function RecipeList({
                                                 />
                                             ) : (
                                                 <span style={{ fontSize: '18px' }}>
-                                                    {recipe.result_monster_id ? (MONSTER_DATA[recipe.result_monster_id]?.emoji || '❓') : '❓'}
+                                                    {recipe.resultMonsterId ? (MONSTER_DATA[recipe.resultMonsterId]?.emoji || '❓') : '❓'}
                                                 </span>
                                             )
                                         )}
@@ -414,11 +414,11 @@ export default function RecipeList({
                                 {recipe.ingredients && recipe.ingredients.length > 0 && (
                                     <div style={{ paddingLeft: isMobile ? '0' : '40px', marginTop: isMobile ? '4px' : '0' }}> {/* Remove indent on mobile, move below */}
                                         {recipe.ingredients.map((ing, idx) => {
-                                            const mat = materials.find(m => m.id === ing.material_id)
-                                            const owned = playerMaterials[ing.material_id] || 0
+                                            const mat = materials.find(m => m.id === ing.materialId)
+                                            const owned = playerMaterials[ing.materialId] || 0
                                             const hasEnough = owned >= ing.quantity
-                                            const isIngredientDiscovered = isDiscovered || discoveredIngredients.includes(ing.material_id)
-                                            const matName = isIngredientDiscovered ? (mat?.name || ing.material_id) : '???'
+                                            const isIngredientDiscovered = isDiscovered || discoveredIngredients.includes(ing.materialId)
+                                            const matName = isIngredientDiscovered ? (mat?.name || ing.materialId) : '???'
 
                                             return (
                                                 <div
@@ -457,14 +457,14 @@ export default function RecipeList({
                                 )}
 
                                 {/* Level Requirement */}
-                                {recipe.required_alchemy_level > 1 && (
+                                {recipe.requiredAlchemyLevel > 1 && (
                                     <div style={{
                                         fontSize: isMobile ? '9px' : '10px',
                                         color: '#facc15',
                                         marginTop: '4px',
                                         paddingLeft: isMobile ? '0' : '40px'
                                     }}>
-                                        ⚠️ Lv.{recipe.required_alchemy_level} 필요
+                                        ⚠️ Lv.{recipe.requiredAlchemyLevel} 필요
                                     </div>
                                 )}
                             </div>

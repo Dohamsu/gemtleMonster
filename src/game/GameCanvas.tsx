@@ -13,9 +13,8 @@ import { useCanvasImages } from '../hooks/useCanvasImages'
 import { useCanvasClickHandler } from '../hooks/useCanvasClickHandler'
 import { useAlchemyContext } from '../hooks/useAlchemyContext'
 import { renderMapView } from './renderers/mapRenderer'
-import { renderAlchemyWorkshop } from './renderers/alchemyRenderer'
 import { renderShopView } from './renderers/shopRenderer'
-import { UI, LAYOUT } from '../constants/game'
+import { UI } from '../constants/game'
 import DungeonModal from '../ui/dungeon/DungeonModal'
 import { MATERIALS } from '../data/alchemyData'
 import { isMobileView } from '../utils/responsiveUtils'
@@ -126,33 +125,10 @@ export default function GameCanvas(props: GameCanvasProps) {
         onOpenMyPage: () => setShowMyPageModal(true)
     })
 
-    // 모바일 탭 클릭 처리를 위한 래퍼
     const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
-        const canvas = event.currentTarget
-        const rect = canvas.getBoundingClientRect()
-        const scaleX = canvas.width / rect.width
-        const scaleY = canvas.height / rect.height
-        const x = (event.clientX - rect.left) * scaleX
-        const y = (event.clientY - rect.top) * scaleY
 
-        // 연금술 화면이고 모바일 레이아웃일 때 탭 클릭 처리
-        if (canvasView === 'alchemy_workshop' && canvas.width <= 768) {
-            // LAYOUT 상수에서 탭 위치 가져오기 (중앙 집중식 관리)
-            const tabY = LAYOUT.MOBILE_TAB_Y
-            const tabHeight = LAYOUT.MOBILE_TAB_HEIGHT
-            const tabW = canvas.width / 3 // 3 tabs now
 
-            if (y >= tabY && y <= tabY + tabHeight) {
-                if (x < tabW) {
-                    setMobileTab('recipes')
-                } else if (x < tabW * 2) {
-                    setMobileTab('materials')
-                } else {
-                    setMobileTab('codex')
-                }
-                return
-            }
-        }
+
 
         // 기존 클릭 핸들러 호출
         baseClickHandler(event)
@@ -233,25 +209,6 @@ export default function GameCanvas(props: GameCanvasProps) {
         // Render based on view
         if (canvasView === 'map') {
             renderMapView({ ctx, canvas, images, facilities })
-        } else if (canvasView === 'alchemy_workshop') {
-            renderAlchemyWorkshop({
-                ctx,
-                canvas,
-                images,
-                allRecipes,
-                allMaterials,
-                playerMaterials: materialCounts, // useUnifiedInventory의 materialCounts 사용
-                selectedRecipeId,
-                selectedIngredients,
-                isBrewing,
-                brewStartTime,
-                brewProgress,
-                playerAlchemy,
-                materialScrollOffset,
-                MATERIAL_CELL_SIZE: UI.MATERIAL_CELL_SIZE,
-                MATERIAL_GRID_PADDING: UI.MATERIAL_GRID_PADDING,
-                mobileTab // 모바일 탭 상태 전달
-            })
         } else if (canvasView === 'shop') {
             renderShopView({ ctx, canvas, images })
         }

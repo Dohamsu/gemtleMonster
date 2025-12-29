@@ -174,7 +174,7 @@ export default function MaterialGrid({
                                         width: isMobile ? '40px' : '36px',
                                         height: isMobile ? '40px' : '36px',
                                         borderRadius: '50%',
-                                        background: getFamilyColor(material.family),
+                                        background: getFamilyColor(material.type),
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -183,7 +183,7 @@ export default function MaterialGrid({
                                         <ResourceIcon
                                             resourceId={material.id}
                                             size={isMobile ? 32 : 28}
-                                            iconUrl={material.icon_url}
+                                            iconUrl={material.iconUrl}
                                         />
                                     </div>
 
@@ -229,7 +229,7 @@ export default function MaterialGrid({
                                     )}
 
                                     {/* Special indicator */}
-                                    {material.is_special && (
+                                    {material.isSpecial && (
                                         <div style={{
                                             position: 'absolute',
                                             bottom: '4px',

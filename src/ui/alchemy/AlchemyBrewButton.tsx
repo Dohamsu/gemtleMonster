@@ -44,9 +44,9 @@ export default function AlchemyBrewButton({
 
     if (selectedRecipe && selectedRecipe.ingredients) {
         hasMaterials = selectedRecipe.ingredients.every((ing) =>
-            (selectedIngredients[ing.material_id] || 0) >= ing.quantity
+            (selectedIngredients[ing.materialId] || 0) >= ing.quantity
         )
-        hasLevel = (playerAlchemy?.level || 1) >= selectedRecipe.required_alchemy_level
+        hasLevel = (playerAlchemy?.level || 1) >= (selectedRecipe.requiredAlchemyLevel || 1)
     }
 
     const isEnabled = (selectedRecipe && hasMaterials && hasLevel) || (!selectedRecipe && hasIngredients)
@@ -54,7 +54,7 @@ export default function AlchemyBrewButton({
     // 버튼 텍스트 결정
     const isItemRecipe = selectedRecipe?.type === 'ITEM'
     let btnText = '🧪 연금술 시작'
-    if (selectedRecipe && !hasLevel) btnText = `Lv.${selectedRecipe.required_alchemy_level} 필요`
+    if (selectedRecipe && !hasLevel) btnText = `Lv.${selectedRecipe.requiredAlchemyLevel} 필요`
     else if (selectedRecipe && !hasMaterials) btnText = '재료 부족'
     else if (!selectedRecipe && !hasIngredients) btnText = '재료를 추가하세요'
     else if (isItemRecipe && craftQuantity > 1) btnText = `🧪 제작 x${craftQuantity}`

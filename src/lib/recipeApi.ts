@@ -25,7 +25,36 @@ export async function getAllRecipes(): Promise<Recipe[]> {
     throw error
   }
 
-  return data || []
+  // Transform snake_case to camelCase
+  return (data || []).map((r: any) => ({
+    ...r,
+    resultMonsterId: r.result_monster_id,
+    resultItemId: r.result_item_id,
+    resultCount: r.result_count,
+    baseSuccessRate: r.base_success_rate,
+    craftTimeSec: r.craft_time_sec,
+    costGold: r.cost_gold,
+    requiredAlchemyLevel: r.required_alchemy_level,
+    expGain: r.exp_gain,
+    isHidden: r.is_hidden,
+
+    ingredients: r.ingredients?.map((i: any) => ({
+      materialId: i.material_id,
+      quantity: i.quantity,
+      isCatalyst: i.is_catalyst
+    })),
+    conditions: r.conditions?.map((c: any) => ({
+      ...c,
+      recipeId: c.recipe_id,
+      conditionType: c.condition_type,
+      valueInt: c.value_int,
+      valueFloat: c.value_float,
+      valueText: c.value_text,
+      valueJson: c.value_json,
+      valueBool: c.value_bool,
+      createdAt: c.created_at
+    }))
+  }))
 }
 
 /**
@@ -50,7 +79,39 @@ export async function getRecipeById(recipeId: string): Promise<Recipe | null> {
     return null
   }
 
-  return data
+  if (!data) return null
+
+  // Transform snake_case to camelCase
+  const r = data as any
+  return {
+    ...r,
+    resultMonsterId: r.result_monster_id,
+    resultItemId: r.result_item_id,
+    resultCount: r.result_count,
+    baseSuccessRate: r.base_success_rate,
+    craftTimeSec: r.craft_time_sec,
+    costGold: r.cost_gold,
+    requiredAlchemyLevel: r.required_alchemy_level,
+    expGain: r.exp_gain,
+    isHidden: r.is_hidden,
+
+    ingredients: r.ingredients?.map((i: any) => ({
+      materialId: i.material_id,
+      quantity: i.quantity,
+      isCatalyst: i.is_catalyst
+    })),
+    conditions: r.conditions?.map((c: any) => ({
+      ...c,
+      recipeId: c.recipe_id,
+      conditionType: c.condition_type,
+      valueInt: c.value_int,
+      valueFloat: c.value_float,
+      valueText: c.value_text,
+      valueJson: c.value_json,
+      valueBool: c.value_bool,
+      createdAt: c.created_at
+    }))
+  }
 }
 
 /**

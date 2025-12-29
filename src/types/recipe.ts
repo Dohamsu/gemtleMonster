@@ -10,22 +10,22 @@ export type RecipeConditionType =
   | 'EVENT_FLAG' | 'CATALYST' | 'ALCHEMY_LEVEL'
 
 export interface RecipeIngredient {
-  material_id: string
+  materialId: string
   quantity: number
-  is_catalyst: boolean
+  isCatalyst: boolean
 }
 
 export interface RecipeCondition {
   id?: number
-  recipe_id?: string
-  condition_type: string
-  value_int?: number
-  value_float?: number
-  value_text?: string
-  value_json?: unknown
-  value_bool?: boolean
+  recipeId?: string
+  conditionType: string
+  valueInt?: number
+  valueFloat?: number
+  valueText?: string
+  valueJson?: unknown
+  valueBool?: boolean
   description?: string
-  created_at?: string
+  createdAt?: string
 }
 
 export interface Recipe {
@@ -33,15 +33,15 @@ export interface Recipe {
   name: string
   description?: string
   type?: 'MONSTER' | 'ITEM' // Default 'MONSTER'
-  result_monster_id?: string // Optional
-  result_item_id?: string // New
-  result_count: number
-  base_success_rate: number
-  craft_time_sec: number
-  cost_gold: number
-  required_alchemy_level: number
-  exp_gain: number
-  is_hidden: boolean
+  resultMonsterId?: string // Optional
+  resultItemId?: string // New
+  resultCount: number
+  baseSuccessRate: number
+  craftTimeSec: number
+  costGold: number
+  requiredAlchemyLevel: number
+  expGain: number
+  isHidden: boolean
   priority: number
   ingredients?: RecipeIngredient[]
   conditions?: RecipeCondition[]

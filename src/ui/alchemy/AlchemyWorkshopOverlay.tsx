@@ -10,10 +10,12 @@ import { useGameStore } from '../../store/useGameStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import CodexPanel from './CodexPanel'
 
+import CauldronArea from './CauldronArea'
+
 // 컴포넌트 외부로 이동하여 매 렌더링마다 재생성 방지
 const getRecipeType = (r: Recipe): 'MONSTER' | 'ITEM' => {
     if (r.type) return r.type
-    if (r.result_item_id) return 'ITEM'
+    if (r.resultItemId) return 'ITEM'
     return 'MONSTER'
 }
 
@@ -57,7 +59,7 @@ function AlchemyWorkshopOverlay({
     const [showCodex, setShowCodex] = useState(false)
     const setCanvasView = useGameStore((state) => state.setCanvasView)
     const alchemyStore = useAlchemyStore()
-    const { alchemyMode, error: alchemyError, resetError } = alchemyStore
+    const { alchemyMode, error: alchemyError, resetError, removeIngredient } = alchemyStore
 
     // Filter recipes based on mode (메모이제이션으로 불필요한 재계산 방지)
     const filteredRecipes = useMemo(
@@ -91,9 +93,10 @@ function AlchemyWorkshopOverlay({
                 left: 0,
                 width: '100%',
                 height: '100%',
-                pointerEvents: 'none',
+                pointerEvents: 'auto',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                background: '#2a1810'
             }}>
                 <AlchemyBackButton onBack={handleBack} />
 
@@ -195,12 +198,31 @@ function AlchemyWorkshopOverlay({
 
                 {/* Main Content Area (Tabs) - Hide if Codex is open? Or keep visible underneath? */}
                 {/* Keeping it underneath but functional. Codex overlay covers it. */}
+                {/* Cauldron Area (Mobile) */}
                 <div style={{
-                    position: 'absolute',
-                    bottom: '140px', // Adjusted since 'codex' tab logic is removed
-                    left: 0,
+                    marginTop: '60px', // Header space
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    pointerEvents: 'auto'
+                }}>
+                    <CauldronArea
+                        allRecipes={recipes}
+                        allMaterials={materials}
+                        selectedRecipeId={selectedRecipeId}
+                        selectedIngredients={selectedIngredients}
+                        isBrewing={isBrewing}
+                        onRemoveIngredient={(id) => removeIngredient(id, 1)}
+                    />
+                </div>
+
+                <div style={{
+                    // position: 'absolute', // Removed absolute to stack naturally below Cauldron
+                    // bottom: '140px', 
+                    // left: 0,
                     width: '100%',
-                    height: 'calc(50% - 20px)',
+                    flex: 1, // Fill remaining space
+                    // height: 'calc(50% - 20px)',
                     zIndex: 'auto',
                     pointerEvents: 'auto',
                     background: 'transparent',
@@ -208,6 +230,7 @@ function AlchemyWorkshopOverlay({
                     flexDirection: 'column',
                     padding: '10px',
                     gap: '10px',
+                    overflow: 'hidden', // Prevent scroll here, let grid scroll
                     transition: 'all 0.3s ease-in-out',
                     opacity: showCodex ? 0.3 : 1 // Dim when codex open
                 }}>
@@ -301,7 +324,8 @@ function AlchemyWorkshopOverlay({
                     justifyContent: 'center',
                     alignItems: 'center',
                     zIndex: 10,
-                    opacity: showCodex ? 0 : 1 // Hide visually
+                    opacity: showCodex ? 0 : 1, // Hide visually
+                    background: 'linear-gradient(to top, #1a1410 0%, transparent 100%)' // Ensure visibility over content
                 }}>
                     <AlchemyBrewButton
                         selectedRecipeId={selectedRecipeId}
@@ -325,11 +349,12 @@ function AlchemyWorkshopOverlay({
             left: 0,
             width: '100%',
             height: '100%',
-            pointerEvents: 'none',
+            pointerEvents: 'auto',
             display: 'flex',
             justifyContent: 'space-between',
             padding: '20px',
-            gap: '20px'
+            gap: '20px',
+            background: '#2a1810'
         }}>
             <AlchemyBackButton onBack={handleBack} />
 
@@ -443,7 +468,6 @@ function AlchemyWorkshopOverlay({
                 />
             </div>
 
-            {/* Right Panel - Material Grid */}
             <div style={{
                 pointerEvents: 'auto',
                 height: 'calc(100% - 150px)',
@@ -457,6 +481,25 @@ function AlchemyWorkshopOverlay({
                     selectedIngredients={selectedIngredients}
                     isBrewing={isBrewing}
                     onAddIngredient={onAddIngredient}
+                />
+            </div>
+
+            {/* Center Area - Cauldron (Desktop) */}
+            <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -60%)', // Shift up slightly to leave room for button/xp
+                pointerEvents: 'auto',
+                opacity: showCodex ? 0.3 : 1
+            }}>
+                <CauldronArea
+                    allRecipes={recipes}
+                    allMaterials={materials}
+                    selectedRecipeId={selectedRecipeId}
+                    selectedIngredients={selectedIngredients}
+                    isBrewing={isBrewing}
+                    onRemoveIngredient={(id) => removeIngredient(id, 1)}
                 />
             </div>
 

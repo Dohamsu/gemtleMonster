@@ -66,7 +66,7 @@ vi.mock('../store/useGameStore', () => ({
 describe('Alchemy Feature', () => {
     it('selects a recipe and attempts to craft', () => {
         const dummyProps: any = {
-            recipes: [{ id: 'recipe_potion_red', result_item_id: 'potion_red', ingredients: [], type: 'ITEM', required_alchemy_level: 1 }],
+            recipes: [{ id: 'recipe_potion_red', resultItemId: 'potion_red', ingredients: [], type: 'ITEM', requiredAlchemyLevel: 1 }],
             materials: [],
             playerMaterials: {},
             playerRecipes: {},

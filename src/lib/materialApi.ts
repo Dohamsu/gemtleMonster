@@ -21,7 +21,13 @@ export async function getAllMaterials(): Promise<Material[]> {
     throw error
   }
 
-  return data || []
+  // Transform snake_case to camelCase
+  return (data || []).map((item: any) => ({
+    ...item,
+    iconUrl: item.icon_url,
+    isSpecial: item.is_special,
+    sellPrice: item.sell_price
+  }))
 }
 
 /**
@@ -39,7 +45,13 @@ export async function getMaterialsByFamily(family: string): Promise<Material[]> 
     throw error
   }
 
-  return data || []
+  // Transform snake_case to camelCase
+  return (data || []).map((item: any) => ({
+    ...item,
+    iconUrl: item.icon_url,
+    isSpecial: item.is_special,
+    sellPrice: item.sell_price
+  }))
 }
 
 /**
@@ -57,7 +69,11 @@ export async function getPlayerMaterials(userId: string): Promise<PlayerMaterial
     throw error
   }
 
-  return data || []
+  // Transform snake_case to camelCase
+  return (data || []).map((item: any) => ({
+    materialId: item.material_id, // Map material_id -> materialId
+    quantity: item.quantity
+  }))
 }
 
 /**
