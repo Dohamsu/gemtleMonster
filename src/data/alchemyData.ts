@@ -800,6 +800,209 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         ],
         conditions: []
     },
+
+    // ==========================================
+    // 10 New Recipes (Diverse Ingredients)
+    {
+        id: 'recipe_thunder_griffin',
+        resultMonsterId: 'thunder_griffin',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 20,
+        costGold: 250,
+        requiredAlchemyLevel: 6,
+        expGain: 400,
+        isHidden: false,
+        priority: 70,
+        ingredients: [
+            { materialId: 'feather_common', quantity: 10, isCatalyst: false },
+            { materialId: 'shard_wind', quantity: 5, isCatalyst: false },
+            { materialId: 'ore_gold', quantity: 2, isCatalyst: false },
+            { materialId: 'claw_sharp', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_abyssal_mermaid',
+        resultMonsterId: 'abyssal_mermaid',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 20,
+        costGold: 280,
+        requiredAlchemyLevel: 6,
+        expGain: 420,
+        isHidden: false,
+        priority: 69,
+        ingredients: [
+            { materialId: 'scale_serpent', quantity: 5, isCatalyst: false },
+            { materialId: 'coral_fragment', quantity: 10, isCatalyst: false },
+            { materialId: 'pearl_black', quantity: 1, isCatalyst: true },
+            { materialId: 'jelly_biolum', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_iron_scarecrow',
+        resultMonsterId: 'iron_scarecrow',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 10,
+        costGold: 80,
+        requiredAlchemyLevel: 2,
+        expGain: 180,
+        isHidden: false,
+        priority: 85,
+        ingredients: [
+            { materialId: 'scrap_cloth', quantity: 10, isCatalyst: false },
+            { materialId: 'ingot_iron', quantity: 5, isCatalyst: false },
+            { materialId: 'wood_branch', quantity: 5, isCatalyst: false },
+            { materialId: 'herb_common', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_cactus_lizard',
+        resultMonsterId: 'cactus_lizard',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 12,
+        costGold: 90,
+        requiredAlchemyLevel: 3,
+        expGain: 200,
+        isHidden: false,
+        priority: 84,
+        ingredients: [
+            { materialId: 'cactus_flower', quantity: 5, isCatalyst: false },
+            { materialId: 'sand_dust', quantity: 10, isCatalyst: false },
+            { materialId: 'beast_fang', quantity: 3, isCatalyst: false },
+            { materialId: 'leather_beast', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_mummy_cat',
+        resultMonsterId: 'mummy_cat',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 18,
+        costGold: 220,
+        requiredAlchemyLevel: 5,
+        expGain: 380,
+        isHidden: false,
+        priority: 72,
+        ingredients: [
+            { materialId: 'ancient_bandage', quantity: 5, isCatalyst: false },
+            { materialId: 'golden_scarab', quantity: 1, isCatalyst: true },
+            { materialId: 'bone_fragment', quantity: 5, isCatalyst: false },
+            { materialId: 'sand_dust', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_puffer_bomb',
+        resultMonsterId: 'puffer_bomb',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 15,
+        costGold: 120,
+        requiredAlchemyLevel: 4,
+        expGain: 250,
+        isHidden: false,
+        priority: 80,
+        ingredients: [
+            { materialId: 'starfish_skin', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_fire', quantity: 2, isCatalyst: false },
+            { materialId: 'shard_water', quantity: 2, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_treasure_mimic',
+        resultMonsterId: 'treasure_mimic',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 15,
+        costGold: 150,
+        requiredAlchemyLevel: 4,
+        expGain: 300,
+        isHidden: false,
+        priority: 78,
+        ingredients: [
+            { materialId: 'wood_branch', quantity: 10, isCatalyst: false },
+            { materialId: 'ingot_gold', quantity: 1, isCatalyst: false },
+            { materialId: 'ingot_iron', quantity: 2, isCatalyst: false },
+            { materialId: 'scrap_leather', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_living_grimoire',
+        resultMonsterId: 'living_grimoire',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 20,
+        costGold: 260,
+        requiredAlchemyLevel: 6,
+        expGain: 410,
+        isHidden: false,
+        priority: 71,
+        ingredients: [
+            { materialId: 'scrap_cloth', quantity: 10, isCatalyst: false },
+            { materialId: 'ancient_relic_fragment', quantity: 2, isCatalyst: false },
+            { materialId: 'shard_dark', quantity: 3, isCatalyst: false },
+            { materialId: 'feather_common', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_crystal_butterfly',
+        resultMonsterId: 'crystal_butterfly',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 12,
+        costGold: 100,
+        requiredAlchemyLevel: 3,
+        expGain: 220,
+        isHidden: false,
+        priority: 82,
+        ingredients: [
+            { materialId: 'gem_fragment', quantity: 5, isCatalyst: false },
+            { materialId: 'fairy_wing', quantity: 2, isCatalyst: false },
+            { materialId: 'flower_moonlight', quantity: 1, isCatalyst: false },
+            { materialId: 'ore_magic', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_walking_mandrake',
+        resultMonsterId: 'walking_mandrake',
+        type: 'MONSTER',
+        resultCount: 1,
+        baseSuccessRate: 95,
+        craftTimeSec: 5,
+        costGold: 40,
+        requiredAlchemyLevel: 1,
+        expGain: 100,
+        isHidden: false,
+        priority: 95,
+        ingredients: [
+            { materialId: 'herb_roots', quantity: 10, isCatalyst: false },
+            { materialId: 'herb_mystic', quantity: 2, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 5, isCatalyst: false },
+            { materialId: 'stone', quantity: 3, isCatalyst: false }
+        ],
+        conditions: []
+    },
     // New Recipes
     {
         id: 'recipe_golem_gold',
@@ -1704,6 +1907,100 @@ const DB_RECIPES_SEED: DBRecipeSeed[] = [
         ingredients: [
             { materialId: 'scrap_leather', quantity: 3, isCatalyst: false },
             { materialId: 'shard_dark', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+
+    // ==========================================
+    // Batch 2 New Recipes
+    // ==========================================
+    {
+        id: 'recipe_cloud_storm',
+        resultMonsterId: 'cloud_storm',
+        resultCount: 1,
+        baseSuccessRate: 75,
+        craftTimeSec: 30,
+        costGold: 400,
+        requiredAlchemyLevel: 5,
+        expGain: 800,
+        isHidden: false,
+        priority: 75,
+        ingredients: [
+            { materialId: 'slime_fluid', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_wind', quantity: 3, isCatalyst: false },
+            { materialId: 'ore_gold', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_phoenix_ice',
+        resultMonsterId: 'phoenix_ice',
+        resultCount: 1,
+        baseSuccessRate: 75,
+        craftTimeSec: 30,
+        costGold: 450,
+        requiredAlchemyLevel: 6,
+        expGain: 850,
+        isHidden: false,
+        priority: 70,
+        ingredients: [
+            { materialId: 'feather_common', quantity: 5, isCatalyst: false },
+            { materialId: 'shard_water', quantity: 3, isCatalyst: false },
+            { materialId: 'ice_shard', quantity: 5, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_obsidian_beetle',
+        resultMonsterId: 'obsidian_beetle',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 20,
+        costGold: 200,
+        requiredAlchemyLevel: 4,
+        expGain: 400,
+        isHidden: false,
+        priority: 80,
+        ingredients: [
+            { materialId: 'obsidian', quantity: 3, isCatalyst: false },
+            { materialId: 'ore_iron', quantity: 5, isCatalyst: false },
+            { materialId: 'scrap_leather', quantity: 2, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_pumpkin_ghost',
+        resultMonsterId: 'pumpkin_ghost',
+        resultCount: 1,
+        baseSuccessRate: 85,
+        craftTimeSec: 25,
+        costGold: 250,
+        requiredAlchemyLevel: 4,
+        expGain: 500,
+        isHidden: false,
+        priority: 78,
+        ingredients: [
+            { materialId: 'wood_branch', quantity: 5, isCatalyst: false },
+            { materialId: 'spirit_dust', quantity: 3, isCatalyst: false },
+            { materialId: 'shard_fire', quantity: 1, isCatalyst: false }
+        ],
+        conditions: []
+    },
+    {
+        id: 'recipe_sand_castle',
+        resultMonsterId: 'sand_castle',
+        resultCount: 1,
+        baseSuccessRate: 90,
+        craftTimeSec: 15,
+        costGold: 60,
+        requiredAlchemyLevel: 2,
+        expGain: 180,
+        isHidden: false,
+        priority: 88,
+        ingredients: [
+            { materialId: 'sand_dust', quantity: 10, isCatalyst: false },
+            { materialId: 'shell_snail', quantity: 2, isCatalyst: false },
+            { materialId: 'slime_fluid', quantity: 2, isCatalyst: false }
         ],
         conditions: []
     }

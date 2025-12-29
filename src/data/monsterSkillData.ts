@@ -576,6 +576,80 @@ export const MONSTER_UNIQUE_SKILLS: Record<string, MonsterSkill[]> = {
     // Turtle
     'turtle_weekend': [
         { id: 'skill_turtle_shell', name: '등껍질 숨기', description: '등껍질 속으로 들어가 방어력을 대폭 높입니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'BUFF', value: 50, target: 'SELF', duration: 2 }, cooldown: 6, emoji: '🛡️' }
+    ],
+
+    // ==========================================
+    // 10 New Monsters Unique Skills
+    // ==========================================
+    // Thunder Griffin
+    'thunder_griffin': [
+        { id: 'skill_griffin_bolt', name: '폭풍의 일격', description: '번개를 동반한 돌진으로 적에게 큰 피해를 줍니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 160, target: 'ENEMY' }, cooldown: 4, emoji: '⚡' },
+        { id: 'skill_griffin_wind', name: '순풍', description: '바람을 타서 회피율이 증가합니다.', unlockLevel: 25, type: 'PASSIVE', effect: { type: 'BUFF', value: 15, target: 'SELF' }, emoji: '🍃' }
+    ],
+    // Abyssal Mermaid
+    'abyssal_mermaid': [
+        { id: 'skill_mermaid_song', name: '심해의 노래', description: '아름다운 노래로 아군 전체를 치유합니다.', unlockLevel: 15, type: 'ACTIVE', effect: { type: 'HEAL', value: 30, target: 'ALL_ALLIES' }, cooldown: 5, emoji: '🎵' },
+        { id: 'skill_mermaid_charm', name: '매혹', description: '적의 공격력을 감소시킵니다.', unlockLevel: 35, type: 'PASSIVE', effect: { type: 'DEBUFF', value: 20, target: 'ENEMY' }, emoji: '💖' }
+    ],
+    // Iron Scarecrow
+    'iron_scarecrow': [
+        { id: 'skill_scarecrow_stand', name: '강철 버티기', description: '절대 넘어지지 않는 자세로 방어력을 높입니다.', unlockLevel: 10, type: 'PASSIVE', effect: { type: 'BUFF', value: 25, target: 'SELF' }, emoji: '🤖' }
+    ],
+    // Cactus Lizard
+    'cactus_lizard': [
+        { id: 'skill_lizard_spike', name: '가시 피부', description: '가시를 세워 공격한 적에게 반사 피해를 줍니다.', unlockLevel: 10, type: 'PASSIVE', effect: { type: 'SPECIAL', value: 15, target: 'SELF' }, emoji: '🌵' }
+    ],
+    // Mummy Cat
+    'mummy_cat': [
+        { id: 'skill_mummy_curse', name: '고대의 저주', description: '적에게 저주를 걸어 지속 피해를 입힙니다.', unlockLevel: 15, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 50, target: 'ENEMY', duration: 3 }, cooldown: 4, emoji: '🤕' },
+        { id: 'skill_mummy_luck', name: '왕실의 가호', description: '아군 전체의 치명타 확률을 높여줍니다.', unlockLevel: 30, type: 'PASSIVE', effect: { type: 'BUFF', value: 10, target: 'ALL_ALLIES' }, emoji: '🧿' }
+    ],
+    // Puffer Bomb
+    'puffer_bomb': [
+        { id: 'skill_puffer_boom', name: '슈퍼 물폭탄', description: '몸을 부풀려 터뜨리며 강력한 물폭탄을 날립니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 180, target: 'ENEMY' }, cooldown: 3, emoji: '💣' }
+    ],
+    // Treasure Mimic
+    'treasure_mimic': [
+        { id: 'skill_mimic_bite', name: '기습 물기', description: '방심한 적을 날카로운 이빨로 세게 물어뜯습니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 140, target: 'ENEMY' }, cooldown: 3, emoji: '🦷' }
+    ],
+    // Living Grimoire
+    'living_grimoire': [
+        { id: 'skill_book_wisdom', name: '고대의 주문', description: '고대 주문을 외워 적 전체의 방어력을 깎습니다.', unlockLevel: 15, type: 'ACTIVE', effect: { type: 'DEBUFF', value: 25, target: 'ALL_ENEMIES', duration: 2 }, cooldown: 5, emoji: '📖' },
+        { id: 'skill_book_mana', name: '마력 공명', description: '아군의 스킬 위력을 강화합니다.', unlockLevel: 35, type: 'PASSIVE', effect: { type: 'BUFF', value: 10, target: 'ALL_ALLIES' }, emoji: '✨' }
+    ],
+    // Crystal Butterfly
+    'crystal_butterfly': [
+        { id: 'skill_crystal_heal', name: '수정 가루', description: '반짝이는 가루를 뿌려 아군을 치유합니다.', unlockLevel: 10, type: 'ACTIVE', effect: { type: 'HEAL', value: 35, target: 'ALL_ALLIES' }, cooldown: 4, emoji: '🦋' }
+    ],
+    // Walking Mandrake
+    'walking_mandrake': [
+        { id: 'skill_mandrake_scream', name: '비명', description: '귀를 찢는 비명으로 적 전체의 공격력을 감소시킵니다.', unlockLevel: 5, type: 'ACTIVE', effect: { type: 'DEBUFF', value: 15, target: 'ALL_ENEMIES' }, cooldown: 6, emoji: '📢' }
+    ],
+
+    // ==========================================
+    // Batch 2 New Monster Skills
+    // ==========================================
+    // Storm Cloud
+    'cloud_storm': [
+        { id: 'skill_storm_bolt', name: '뇌전', description: '강력한 번개를 내려꽂아 적을 감전시킵니다.', unlockLevel: 5, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 120, target: 'ENEMY' }, cooldown: 4, emoji: '⚡' },
+        { id: 'skill_storm_static', name: '정전기', description: '몸 주위에 정전기를 일으켜 공격한 적에게 피해를 줍니다.', unlockLevel: 15, type: 'PASSIVE', effect: { type: 'BUFF', value: 10, target: 'SELF' }, emoji: '🌩️' }
+    ],
+    // Ice Phoenix
+    'phoenix_ice': [
+        { id: 'skill_ice_breath', name: '냉기 브레스', description: '차가운 숨결로 적 전체를 얼려버립니다.', unlockLevel: 5, type: 'ACTIVE', effect: { type: 'DAMAGE', value: 80, target: 'ALL_ENEMIES' }, cooldown: 5, emoji: '❄️' },
+        { id: 'skill_ice_aura', name: '한기', description: '주변의 온도를 낮춰 적의 공격 속도를 늦춥니다.', unlockLevel: 15, type: 'PASSIVE', effect: { type: 'DEBUFF', value: 10, target: 'ALL_ENEMIES' }, emoji: '☃️' }
+    ],
+    // Obsidian Beetle
+    'obsidian_beetle': [
+        { id: 'skill_obsidian_harden', name: '흑요석 강화', description: '자신의 껍질을 흑요석처럼 단단하게 만듭니다.', unlockLevel: 5, type: 'ACTIVE', effect: { type: 'BUFF', value: 30, target: 'SELF' }, cooldown: 6, emoji: '🪨' }
+    ],
+    // Pumpkin Ghost
+    'pumpkin_ghost': [
+        { id: 'skill_pumpkin_surprise', name: '깜짝 상자', description: '호박 안에서 무엇이 나올지 모릅니다. 적에게 무작위 효과를 줍니다.', unlockLevel: 5, type: 'ACTIVE', effect: { type: 'DEBUFF', value: 20, target: 'ENEMY' }, cooldown: 4, emoji: '🎃' }
+    ],
+    // Sand Castle
+    'sand_castle': [
+        { id: 'skill_sand_wall', name: '모래 벽', description: '모래로 벽을 쌓아 아군을 보호합니다.', unlockLevel: 5, type: 'ACTIVE', effect: { type: 'BUFF', value: 20, target: 'ALL_ALLIES' }, cooldown: 6, emoji: '🏰' }
     ]
 }
 

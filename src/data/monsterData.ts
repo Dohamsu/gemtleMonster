@@ -798,6 +798,139 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'star_fragment', chance: 100, min: 1, max: 2 }
         ]
     },
+
+    // ==========================================
+    // 10 New Monsters (Diverse Recipes Update)
+    'thunder_griffin': {
+        name: '썬더 그리핀',
+        description: '번개 구름을 뚫고 날아오르는 전설의수입니다. 날갯짓 한 번에 폭풍을 일으키며 적을 감전시킵니다.',
+        role: '딜러',
+        hp: 450,
+        attack: 85,
+        defense: 40,
+        emoji: '🦅',
+        iconUrl: '/assets/monsters/thunder_griffin.png',
+        rarity: 'SR',
+        element: 'wind',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '폭풍의 진군', value: 20 }
+    },
+    'abyssal_mermaid': {
+        name: '심해 인어',
+        description: '빛이 닿지 않는 깊은 바다에 사는 신비로운 인어. 매혹적인 노래로 아군을 치유하고 적의 전의를 상실시킵니다.',
+        role: '서포터',
+        hp: 300,
+        attack: 40,
+        defense: 35,
+        emoji: '🧜‍♀️',
+        iconUrl: '/assets/monsters/abyssal_mermaid.png',
+        rarity: 'SR',
+        element: 'water',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '심해의 평온', value: 18 }
+    },
+    'iron_scarecrow': {
+        name: '강철 허수아비',
+        description: '마법으로 움직이는 강철 허수아비. 고통을 느끼지 않으며 묵묵히 아군을 대신해 공격을 받아냅니다.',
+        role: '탱커',
+        hp: 300,
+        attack: 30,
+        defense: 60,
+        emoji: '🤖',
+        iconUrl: '/assets/monsters/iron_scarecrow.png',
+        rarity: 'R',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '조류 퇴치', value: 15 }
+    },
+    'cactus_lizard': {
+        name: '선인장 도마뱀',
+        description: '사막의 가시 선인장과 공생하는 도마뱀. 온몸에 돋아난 가시로 적의 근접 공격을 반사합니다.',
+        role: '탱커',
+        hp: 250,
+        attack: 35,
+        defense: 50,
+        emoji: '🦎',
+        iconUrl: '/assets/monsters/cactus_lizard.png',
+        rarity: 'R',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'monster_farm', effect: '일광욕 파트너', value: 10 }
+    },
+    'mummy_cat': {
+        name: '미라 고양이',
+        description: '고대 왕실의 묘를 지키던 고양이. 붕대 사이로 신비한 기운을 내뿜으며 불행을 막아줍니다.',
+        role: '서포터',
+        hp: 220,
+        attack: 45,
+        defense: 30,
+        emoji: '🐱',
+        iconUrl: '/assets/monsters/mummy_cat.png',
+        rarity: 'SR',
+        element: 'dark',
+        factoryTrait: { targetFacility: 'alchemy_workshop', effect: '고대의 지혜', value: 15 }
+    },
+    'puffer_bomb': {
+        name: '폭탄 복어',
+        description: '위협을 느끼면 몸을 크게 부풀리는 복어. 체내에 화약 성분을 품고 있어 자폭 공격에 능합니다.',
+        role: '딜러',
+        hp: 180,
+        attack: 70,
+        defense: 25,
+        emoji: '🐡',
+        iconUrl: '/assets/monsters/puffer_bomb.png',
+        rarity: 'R',
+        element: 'water',
+        factoryTrait: { targetFacility: 'mine', effect: '발파 작업 보조', value: 12 }
+    },
+    'treasure_mimic': {
+        name: '미믹',
+        description: '보물 상자로 완벽하게 위장한 몬스터. 탐욕스러운 모험가가 다가오면 날카로운 이빨을 드러냅니다.',
+        role: '탱커',
+        hp: 350,
+        attack: 50,
+        defense: 55,
+        emoji: '📦',
+        iconUrl: '/assets/monsters/treasure_mimic.png',
+        rarity: 'R',
+        element: 'dark',
+        factoryTrait: { targetFacility: 'dungeon_dispatch', effect: '보물 탐지', value: 15 }
+    },
+    'living_grimoire': {
+        name: '마법서',
+        description: '강력한 마법사의 영혼이 깃든 책. 스스로 공중에 떠다니며 페이지에 적힌 주문을 외웁니다.',
+        role: '서포터',
+        hp: 200,
+        attack: 60,
+        defense: 20,
+        emoji: '📖',
+        iconUrl: '/assets/monsters/living_grimoire.png',
+        rarity: 'SR',
+        element: 'dark',
+        factoryTrait: { targetFacility: 'magic_tower', effect: '마법 지식 공유', value: 20 }
+    },
+    'crystal_butterfly': {
+        name: '크리스탈 나비',
+        description: '날개가 투명한 수정으로 이루어진 아름다운 나비. 날개짓을 할 때마다 치유의 가루가 떨어집니다.',
+        role: '서포터',
+        hp: 150,
+        attack: 25,
+        defense: 25,
+        emoji: '🦋',
+        iconUrl: '/assets/monsters/crystal_butterfly.png',
+        rarity: 'R',
+        element: 'light',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '수정 가루 살포', value: 12 }
+    },
+    'walking_mandrake': {
+        name: '맨드레이크',
+        description: '땅에서 뽑히면 비명을 지르는 식물. 그 비명소리는 적을 혼란에 빠뜨리지만, 뿌리는 만병통치약입니다.',
+        role: '서포터',
+        hp: 100,
+        attack: 15,
+        defense: 15,
+        emoji: '🌱',
+        iconUrl: '/assets/monsters/walking_mandrake.png',
+        rarity: 'N',
+        element: 'earth',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '뿌리 영양 공급', value: 8 }
+    },
     // New Additions
     'golem_gold': {
         name: '황금 골렘',
@@ -1500,6 +1633,50 @@ export const MONSTER_DATA: Record<string, MonsterData> = {
             { materialId: 'herb_common', chance: 60, min: 1, max: 3 },
             { materialId: 'shard_wind', chance: 30, min: 1, max: 1 }
         ]
+    },
+
+    // ==========================================
+    // Batch 2 New Monsters
+    // ==========================================
+    'cloud_storm': {
+        name: '폭풍 구름',
+        description: '전기를 머금고 있는 위협적인 먹구름.',
+        role: '딜러', hp: 400, attack: 95, defense: 40, emoji: '🌩️',
+        iconUrl: '/assets/monsters/cloud_storm.png', rarity: 'SR', element: 'wind',
+        factoryTrait: { targetFacility: 'spirit_sanctum', effect: '생산량 증가', value: 15 },
+        drops: [{ materialId: 'shard_wind', chance: 60, min: 1, max: 2 }]
+    },
+    'phoenix_ice': {
+        name: '얼음 불사조',
+        description: '모든 것을 얼려버리는 차가운 불사조.',
+        role: '딜러', hp: 450, attack: 100, defense: 50, emoji: '❄️',
+        iconUrl: '/assets/monsters/phoenix_ice.png', rarity: 'SR', element: 'water',
+        factoryTrait: { targetFacility: 'training_ground', effect: '훈련 효율 증가', value: 20 },
+        drops: [{ materialId: 'ice_shard', chance: 60, min: 1, max: 3 }]
+    },
+    'obsidian_beetle': {
+        name: '흑요석 딱정벌레',
+        description: '용암이 굳어 만들어진 흑요석처럼 단단한 딱정벌레.',
+        role: '탱커', hp: 350, attack: 60, defense: 90, emoji: '🪲',
+        iconUrl: '/assets/monsters/obsidian_beetle.png', rarity: 'R', element: 'earth',
+        factoryTrait: { targetFacility: 'mine', effect: '생산량 증가', value: 12 },
+        drops: [{ materialId: 'obsidian', chance: 50, min: 1, max: 2 }]
+    },
+    'pumpkin_ghost': {
+        name: '호박 유령',
+        description: '할로윈 호박을 뒤집어쓴 장난꾸러기 유령.',
+        role: '서포터', hp: 280, attack: 50, defense: 40, emoji: '🎃',
+        iconUrl: '/assets/monsters/pumpkin_ghost.png', rarity: 'R', element: 'dark',
+        factoryTrait: { targetFacility: 'herb_farm', effect: '생산량 증가', value: 10 },
+        drops: [{ materialId: 'spirit_dust', chance: 50, min: 1, max: 2 }]
+    },
+    'sand_castle': {
+        name: '모래성',
+        description: '마법으로 움직이는 살아있는 모래성.',
+        role: '탱커', hp: 200, attack: 30, defense: 60, emoji: '🏰',
+        iconUrl: '/assets/monsters/sand_castle.png', rarity: 'N', element: 'earth',
+        factoryTrait: { targetFacility: 'mine', effect: '생산량 증가', value: 5 },
+        drops: [{ materialId: 'sand_dust', chance: 80, min: 2, max: 4 }]
     }
 }
 
