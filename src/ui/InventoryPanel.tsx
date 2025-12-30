@@ -27,7 +27,7 @@ export const InventoryPanel: React.FC = () => {
   // Filter materials based on tab and ownership
   const filteredMaterials = allMaterials
     .filter(m => {
-      const isConsumable = m.family === 'CONSUMABLE'
+      const isConsumable = m.type === 'CONSUMABLE'
       if (activeTab === 'materials' && isConsumable) return false
       if (activeTab === 'consumables' && !isConsumable) return false
       return true
@@ -262,13 +262,13 @@ export const InventoryPanel: React.FC = () => {
                       width: '40px',
                       height: '40px',
                       borderRadius: '50%',
-                      background: getFamilyColor(material.family),
+                      background: getFamilyColor(material.type),
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       overflow: 'hidden'
                     }}>
-                      <ResourceIcon resourceId={material.id} size={32} iconUrl={material.icon_url} />
+                      <ResourceIcon resourceId={material.id} size={32} iconUrl={material.iconUrl} />
                     </div>
                     <div style={{
                       fontSize: '11px',
@@ -288,7 +288,7 @@ export const InventoryPanel: React.FC = () => {
                     }}>
                       ×{quantity}
                     </div>
-                    {material.is_special && (
+                    {material.isSpecial && (
                       <div style={{
                         position: 'absolute',
                         top: '4px',

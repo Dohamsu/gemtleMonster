@@ -3,7 +3,7 @@
  * 레시피 관련 데이터베이스 작업
  */
 
-/* eslint-disable no-console */
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import { supabase } from './supabase'
 import type { Recipe, PlayerRecipe } from '../types'
 

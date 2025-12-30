@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 /**
  * Alchemy API
  * 연금술 관련 데이터베이스 작업 및 통합 API
@@ -260,13 +260,13 @@ export async function resetConsecutiveFailures(userId: string): Promise<void> {
 
 export interface AlchemyResult {
   success: boolean
-  exp_gain: number
-  new_level: number
-  new_total_exp: number
-  result_monster_id: string | null
-  result_item_id?: string | null // 추가
-  fail_count: number
-  quantity?: number // 대용량 제작 수량
+  expGain: number
+  newLevel: number
+  newTotalExp: number
+  resultMonsterId: string | null
+  resultItemId?: string | null
+  failCount: number
+  quantity?: number
   error?: string
 }
 
@@ -299,15 +299,26 @@ export async function performAlchemy(
     console.error('Failed to perform alchemy:', error)
     return {
       success: false,
-      exp_gain: 0,
-      new_level: 0,
-      new_total_exp: 0,
-      result_monster_id: null,
-      fail_count: 0,
+      expGain: 0,
+      newLevel: 0,
+      newTotalExp: 0,
+      resultMonsterId: null,
+      failCount: 0,
       quantity: 1,
       error: error.message
     }
   }
 
-  return data as AlchemyResult
+  const rawData = data as any
+  return {
+    success: rawData.success,
+    expGain: rawData.exp_gain,
+    newLevel: rawData.new_level,
+    newTotalExp: rawData.new_total_exp,
+    resultMonsterId: rawData.result_monster_id,
+    resultItemId: rawData.result_item_id,
+    failCount: rawData.fail_count,
+    quantity: rawData.quantity,
+    error: rawData.error
+  }
 }

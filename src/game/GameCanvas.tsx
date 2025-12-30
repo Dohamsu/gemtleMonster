@@ -14,7 +14,7 @@ import { useCanvasClickHandler } from '../hooks/useCanvasClickHandler'
 import { useAlchemyContext } from '../hooks/useAlchemyContext'
 import { renderMapView } from './renderers/mapRenderer'
 import { renderShopView } from './renderers/shopRenderer'
-import { UI } from '../constants/game'
+
 import DungeonModal from '../ui/dungeon/DungeonModal'
 import { MATERIALS } from '../data/alchemyData'
 import { isMobileView } from '../utils/responsiveUtils'
@@ -46,8 +46,6 @@ export default function GameCanvas(props: GameCanvasProps) {
         selectedRecipeId,
         selectedIngredients,
         isBrewing,
-        brewStartTime,
-        brewProgress,
         selectRecipe,
         addIngredient,
         removeIngredient,
@@ -91,7 +89,6 @@ export default function GameCanvas(props: GameCanvasProps) {
     }>({
         success: false
     })
-    const [materialScrollOffset, setMaterialScrollOffset] = useState(0)
     const [mobileTab, setMobileTab] = useState<'recipes' | 'materials' | 'codex'>('recipes') // 모바일 탭 상태
     const [isMobile, setIsMobile] = useState(isMobileView())
 
@@ -132,7 +129,7 @@ export default function GameCanvas(props: GameCanvasProps) {
 
         // 기존 클릭 핸들러 호출
         baseClickHandler(event)
-    }, [canvasView, baseClickHandler, setMobileTab])
+    }, [baseClickHandler])
 
     // Show modal when brewing completes
     useEffect(() => {
@@ -163,31 +160,7 @@ export default function GameCanvas(props: GameCanvasProps) {
         }
     }, [user, loadAllData])
 
-    // Handle wheel scroll for material grid
-    useEffect(() => {
-        const canvas = canvasRef.current
-        if (!canvas) return
 
-        const handleWheel = (event: WheelEvent) => {
-            if (canvasView !== 'alchemy_workshop') return
-
-            const rect = canvas.getBoundingClientRect()
-            const scaleX = canvas.width / rect.width
-            const x = (event.clientX - rect.left) * scaleX
-
-            // Check if mouse is over material grid area
-            const gridX = canvas.width - 260
-            const gridW = 220
-
-            if (x >= gridX && x <= gridX + gridW) {
-                event.preventDefault()
-                setMaterialScrollOffset((prev) => Math.max(0, prev + event.deltaY * UI.SCROLL_SENSITIVITY))
-            }
-        }
-
-        canvas.addEventListener('wheel', handleWheel, { passive: false })
-        return () => canvas.removeEventListener('wheel', handleWheel)
-    }, [canvasView])
 
     // Main rendering loop - optimized with useCallback
     const render = useCallback(() => {
@@ -215,18 +188,7 @@ export default function GameCanvas(props: GameCanvasProps) {
     }, [
         canvasView,
         images,
-        facilities,
-        allRecipes,
-        allMaterials,
-        materialCounts, // playerMaterials 대신 materialCounts 사용
-        selectedRecipeId,
-        selectedIngredients,
-        isBrewing,
-        brewStartTime,
-        brewProgress,
-        playerAlchemy,
-        materialScrollOffset,
-        mobileTab
+        facilities
     ])
 
     // Animation frame loop

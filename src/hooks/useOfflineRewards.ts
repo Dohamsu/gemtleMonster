@@ -133,7 +133,7 @@ export function useOfflineRewards(
         const playerMaterials = await alchemyApi.getPlayerMaterials(userId)
         const currentMaterials: Record<string, number> = {}
         playerMaterials.forEach(m => {
-          currentMaterials[m.material_id] = m.quantity
+          currentMaterials[m.materialId] = m.quantity
         })
 
         // --- Step 4: Calculate Per Facility ---

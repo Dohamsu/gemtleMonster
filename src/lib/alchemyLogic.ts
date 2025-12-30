@@ -20,7 +20,7 @@ export function generateMaterialKey(materials: string[]): string {
 // ==========================================
 
 export function checkCondition(condition: RecipeCondition, context: AlchemyContext): boolean {
-    const rawType = condition.condition_type ?? (condition as any).type ?? (condition as any).conditionType
+    const rawType = condition.conditionType ?? (condition as any).type ?? (condition as any).conditionType
     const typeKey = typeof rawType === 'string' ? rawType.toUpperCase() : undefined
 
     if (!typeKey) return false
@@ -28,8 +28,8 @@ export function checkCondition(condition: RecipeCondition, context: AlchemyConte
     switch (typeKey) {
         // 1. Game World Conditions
         case 'TIME_RANGE': {
-            // value_json: [startHour, endHour] e.g., [22, 4] for 22:00 ~ 04:00
-            const range = condition.value_json as [number, number]
+            // valueJson: [startHour, endHour] e.g., [22, 4] for 22:00 ~ 04:00
+            const range = condition.valueJson as [number, number]
             if (!range) return false
             const [start, end] = range
             const current = context.time.gameTime
@@ -43,7 +43,7 @@ export function checkCondition(condition: RecipeCondition, context: AlchemyConte
 
         // 2. Real World Time Conditions
         case 'REAL_TIME_RANGE': {
-            const range = condition.value_json as [number, number]
+            const range = condition.valueJson as [number, number]
             if (!range) return false
             const [start, end] = range
             const current = context.time.realTime
@@ -54,33 +54,33 @@ export function checkCondition(condition: RecipeCondition, context: AlchemyConte
             }
         }
         case 'REAL_DATE': {
-            // value_text: "12-25"
-            return context.time.realDateStr === condition.value_text
+            // valueText: "12-25"
+            return context.time.realDateStr === condition.valueText
         }
         case 'WEEKDAY': {
-            // value_json: [0, 6] (Sunday, Saturday)
-            const days = condition.value_json as number[]
+            // valueJson: [0, 6] (Sunday, Saturday)
+            const days = condition.valueJson as number[]
             if (!days) return false
             return days.includes(context.time.realDayOfWeek)
         }
 
         // 3. Environment Conditions
         case 'REAL_WEATHER': {
-            // value_json: ['RAIN', 'STORM']
-            const weathers = condition.value_json as string[]
+            // valueJson: ['RAIN', 'STORM']
+            const weathers = condition.valueJson as string[]
             if (!weathers) return false
             return weathers.includes(context.env.weather)
         }
         case 'LANGUAGE': {
-            // value_json: ['ko', 'en'], value_text: 'ko'
-            const languageList = (condition.value_json as string[]) || (condition.value_text ? [condition.value_text] : [])
+            // valueJson: ['ko', 'en'], valueText: 'ko'
+            const languageList = (condition.valueJson as string[]) || (condition.valueText ? [condition.valueText] : [])
             if (!languageList.length) return false
             const userLanguage = (context.env.language || '').toLowerCase()
             return languageList.some(lang => userLanguage.startsWith(lang.toLowerCase()))
         }
         case 'REAL_TEMPERATURE': {
-            // value_json: { min: 30 } or { max: 0 }
-            const tempCondition = condition.value_json as { min?: number, max?: number }
+            // valueJson: { min: 30 } or { max: 0 }
+            const tempCondition = condition.valueJson as { min?: number, max?: number }
             if (!tempCondition) return false
             const { min, max } = tempCondition
             if (min !== undefined && context.env.temperature < min) return false
@@ -88,54 +88,54 @@ export function checkCondition(condition: RecipeCondition, context: AlchemyConte
             return true
         }
         case 'GEO_COUNTRY': {
-            // value_json: ['KR', 'JP']
-            const countries = condition.value_json as string[]
+            // valueJson: ['KR', 'JP']
+            const countries = condition.valueJson as string[]
             if (!countries) return false
             return countries.includes(context.env.country)
         }
 
         // 4. Device/Platform Conditions
         case 'DEVICE_TYPE': {
-            return context.device.type === condition.value_text
+            return context.device.type === condition.valueText
         }
         case 'PLATFORM': {
-            // value_text: 'MacIntel' or check substring
-            return condition.value_text ? context.device.os.includes(condition.value_text) : false
+            // valueText: 'MacIntel' or check substring
+            return condition.valueText ? context.device.os.includes(condition.valueText) : false
         }
         case 'UI_PREFERENCE': {
-            // value_text: 'DARK_MODE'
-            if (condition.value_text === 'DARK_MODE') return context.device.isDarkMode
+            // valueText: 'DARK_MODE'
+            if (condition.valueText === 'DARK_MODE') return context.device.isDarkMode
             return false
         }
 
         // 5. Session Conditions
         case 'TAB_IDLE': {
-            // value_int: 300 (seconds)
-            return condition.value_int ? context.session.idleTimeSec >= condition.value_int : false
+            // valueInt: 300 (seconds)
+            return condition.valueInt ? context.session.idleTimeSec >= condition.valueInt : false
         }
         case 'LOGIN_STREAK': {
-            return condition.value_int ? context.session.loginStreak >= condition.value_int : false
+            return condition.valueInt ? context.session.loginStreak >= condition.valueInt : false
         }
         case 'DAILY_PLAYTIME': {
-            return condition.value_int ? context.session.dailyPlayTimeMin >= condition.value_int : false
+            return condition.valueInt ? context.session.dailyPlayTimeMin >= condition.valueInt : false
         }
         case 'RECENT_FAIL_COUNT': {
-            return condition.value_int ? context.session.recentFailCount >= condition.value_int : false
+            return condition.valueInt ? context.session.recentFailCount >= condition.valueInt : false
         }
         case 'EVENT_FLAG': {
-            const flags = (condition.value_json as string[]) || (condition.value_text ? [condition.value_text] : [])
+            const flags = (condition.valueJson as string[]) || (condition.valueText ? [condition.valueText] : [])
             if (!flags.length) return false
             const activeFlags = context.player?.eventFlags || []
             return flags.some(flag => activeFlags.includes(flag))
         }
         case 'CATALYST': {
-            const requiredCatalysts = (condition.value_json as string[]) || (condition.value_text ? [condition.value_text] : [])
+            const requiredCatalysts = (condition.valueJson as string[]) || (condition.valueText ? [condition.valueText] : [])
             if (!requiredCatalysts.length) return false
             const ownedCatalysts = context.player?.catalysts || []
             return requiredCatalysts.some(id => ownedCatalysts.includes(id))
         }
         case 'ALCHEMY_LEVEL': {
-            const requiredLevel = condition.value_int ?? (typeof condition.value_json === 'number' ? condition.value_json : undefined)
+            const requiredLevel = condition.valueInt ?? (typeof condition.valueJson === 'number' ? condition.valueJson : undefined)
             const currentLevel = context.player?.alchemyLevel
             if (requiredLevel === undefined || currentLevel === undefined) return false
             return currentLevel >= requiredLevel
@@ -177,7 +177,7 @@ export function findMatchingRecipes(
 
         // Check if every ingredient in the recipe is present in sufficient quantity
         const hasAllIngredients = recipe.ingredients.every(ing => {
-            const currentQty = ingredientCounts[ing.material_id] || 0
+            const currentQty = ingredientCounts[ing.materialId] || 0
             return currentQty >= ing.quantity
         })
 
@@ -188,7 +188,7 @@ export function findMatchingRecipes(
     return candidates.filter(recipe => {
         // Level check
         if (context && context.player?.alchemyLevel !== undefined) {
-            if (context.player.alchemyLevel < recipe.required_alchemy_level) {
+            if (context.player.alchemyLevel < recipe.requiredAlchemyLevel) {
                 return false
             }
         }

@@ -22,7 +22,7 @@ export const RecipePanel: React.FC = () => {
     if (selectedTab === 'recipes') {
       // 발견된 레시피 또는 숨겨지지 않은 레시피
       return allRecipes.filter(r =>
-        !r.is_hidden || playerRecipes[r.id]?.is_discovered
+        !r.isHidden || playerRecipes[r.id]?.is_discovered
       )
     } else if (selectedTab === 'codex') {
       // 발견한 레시피만
@@ -180,7 +180,7 @@ export const RecipePanel: React.FC = () => {
                     borderRadius: '4px',
                     color: '#94a3b8'
                   }}>
-                    Lv.{recipe.required_alchemy_level}
+                    Lv.{recipe.requiredAlchemyLevel}
                   </div>
                 </div>
 
@@ -191,7 +191,7 @@ export const RecipePanel: React.FC = () => {
                   marginBottom: '8px'
                 }}>
                   {recipe.ingredients && recipe.ingredients.slice(0, 3).map((ing, idx) => {
-                    const available = playerMaterials[ing.material_id] || 0
+                    const available = playerMaterials[ing.materialId] || 0
                     const isEnough = available >= ing.quantity
                     return (
                       <div key={idx} style={{
@@ -199,7 +199,7 @@ export const RecipePanel: React.FC = () => {
                         justifyContent: 'space-between',
                         color: isEnough ? '#94a3b8' : '#ef4444'
                       }}>
-                        <span>{getMaterialName(ing.material_id)}</span>
+                        <span>{getMaterialName(ing.materialId)}</span>
                         <span>{available} / {ing.quantity}</span>
                       </div>
                     )
@@ -213,7 +213,7 @@ export const RecipePanel: React.FC = () => {
                   fontSize: '11px',
                   color: '#64748b'
                 }}>
-                  <span>성공률: {recipe.base_success_rate}%</span>
+                  <span>성공률: {recipe.baseSuccessRate}%</span>
                   {playerRecipe && (
                     <span>제작: {playerRecipe.craft_count}회</span>
                   )}

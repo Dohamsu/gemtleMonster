@@ -35,7 +35,10 @@ export default function CodexPanel({
     // Filter and Sort Materials
     const sortedMaterials = useMemo(() => {
         // Sort by Rarity (Common -> Legendary) then by ID
-        const rarityOrder = { 'COMMON': 1, 'UNCOMMON': 2, 'RARE': 3, 'EPIC': 4, 'LEGENDARY': 5 }
+        const rarityOrder: Record<string, number> = {
+            'N': 1, 'R': 2, 'SR': 3, 'SSR': 4, 'UR': 5,
+            'COMMON': 1, 'UNCOMMON': 2, 'RARE': 3, 'EPIC': 4, 'LEGENDARY': 5
+        }
         return [...materials].sort((a, b) => {
             const rarityDiff = (rarityOrder[a.rarity] || 0) - (rarityOrder[b.rarity] || 0)
             if (rarityDiff !== 0) return rarityDiff
@@ -175,8 +178,8 @@ export default function CodexPanel({
                                     alignItems: 'center',
                                     justifyContent: 'center'
                                 }}>
-                                    {mat.icon_url ? (
-                                        <img src={mat.icon_url} alt={mat.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    {mat.iconUrl ? (
+                                        <img src={mat.iconUrl} alt={mat.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                     ) : (
                                         <span>📦</span>
                                     )}
@@ -191,7 +194,7 @@ export default function CodexPanel({
                     {activeTab === 'recipes' && recipes.map(recipe => {
                         const playerRecipe = playerRecipes[recipe.id]
                         const isDiscovered = playerRecipe?.is_discovered || false
-                        const monster = recipe.result_monster_id ? MONSTER_DATA[recipe.result_monster_id] : undefined
+                        const monster = recipe.resultMonsterId ? MONSTER_DATA[recipe.resultMonsterId] : undefined
 
                         return (
                             <button
@@ -291,8 +294,8 @@ export default function CodexPanel({
                                 justifyContent: 'center',
                                 overflow: 'hidden'
                             }}>
-                                {selectedMaterial.icon_url ? (
-                                    <img src={selectedMaterial.icon_url} alt={selectedMaterial.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                {selectedMaterial.iconUrl ? (
+                                    <img src={selectedMaterial.iconUrl} alt={selectedMaterial.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                 ) : (
                                     <span style={{ fontSize: '32px' }}>📦</span>
                                 )}
@@ -302,7 +305,7 @@ export default function CodexPanel({
                                     {selectedMaterial.name}
                                 </div>
                                 <div style={{ fontSize: '14px', color: '#a0aec0' }}>
-                                    {selectedMaterial.family}
+                                    {selectedMaterial.type}
                                 </div>
                             </div>
                         </div>
@@ -325,7 +328,7 @@ export default function CodexPanel({
                             <div style={{ textAlign: 'center' }}>
                                 <div style={{ color: '#a0aec0', marginBottom: '4px' }}>판매가</div>
                                 <div style={{ color: '#fbbf24', fontWeight: 'bold' }}>
-                                    {selectedMaterial.sell_price} G
+                                    {selectedMaterial.sellPrice} G
                                 </div>
                             </div>
                         </div>
@@ -423,7 +426,7 @@ export default function CodexPanel({
                         )}
 
                         {(() => {
-                            const monster = selectedRecipe.result_monster_id ? MONSTER_DATA[selectedRecipe.result_monster_id] : undefined
+                            const monster = selectedRecipe.resultMonsterId ? MONSTER_DATA[selectedRecipe.resultMonsterId] : undefined
                             return (
                                 <>
                                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -469,14 +472,14 @@ export default function CodexPanel({
                                             gap: '8px'
                                         }}>
                                             {selectedRecipe.ingredients?.map((ing, idx) => {
-                                                const material = materials.find(m => m.id === ing.material_id)
+                                                const material = materials.find(m => m.id === ing.materialId)
                                                 return (
                                                     <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         <div style={{ width: '24px', height: '24px', background: '#4a5568', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                            {material?.icon_url ? <img src={material.icon_url} style={{ width: '100%' }} /> : '📦'}
+                                                            {material?.iconUrl ? <img src={material.iconUrl} style={{ width: '100%' }} /> : '📦'}
                                                         </div>
                                                         <span style={{ fontSize: '14px', color: '#cbd5e0', flex: 1 }}>
-                                                            {material?.name || ing.material_id}
+                                                            {material?.name || ing.materialId}
                                                         </span>
                                                         <span style={{ fontSize: '14px', color: '#fbbf24', fontWeight: 'bold' }}>
                                                             x {ing.quantity}
@@ -498,14 +501,14 @@ export default function CodexPanel({
                                         <div style={{ textAlign: 'center' }}>
                                             <div style={{ color: '#a0aec0', marginBottom: '4px' }}>제작 시간</div>
                                             <div style={{ color: 'white', fontWeight: 'bold' }}>
-                                                {selectedRecipe.craft_time_sec}초
+                                                {selectedRecipe.craftTimeSec}초
                                             </div>
                                         </div>
                                         <div style={{ width: '1px', background: '#4a5568' }} />
                                         <div style={{ textAlign: 'center' }}>
                                             <div style={{ color: '#a0aec0', marginBottom: '4px' }}>획득 경험치</div>
                                             <div style={{ color: '#9f7aea', fontWeight: 'bold' }}>
-                                                {selectedRecipe.exp_gain} XP
+                                                {selectedRecipe.expGain} XP
                                             </div>
                                         </div>
                                     </div>

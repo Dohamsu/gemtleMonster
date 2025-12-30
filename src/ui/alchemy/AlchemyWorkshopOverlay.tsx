@@ -315,7 +315,7 @@ function AlchemyWorkshopOverlay({
                 {/* Always show unless hidden by some other logic? Logic was: !codex. Now if showCodex is true, we might want to hide it or let overlay cover it. Overlay zIndex 40, this is 10. */}
                 <div style={{
                     position: 'absolute',
-                    bottom: '80px',
+                    bottom: '0px',
                     left: 0,
                     width: '100%',
                     height: '60px',
