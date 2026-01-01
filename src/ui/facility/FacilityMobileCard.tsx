@@ -64,9 +64,13 @@ export default function FacilityMobileCard({
     // Progress
     const progress = useCollectionProgress(facility.id, intervalSeconds, lastCollected)
 
-    const prodRate = bundlesPerTick > 0
-        ? `${bundlesPerTick}개 / ${intervalSeconds.toFixed(1)}초`
-        : 'Inactive'
+    const isDispatch = facility.id === 'dungeon_dispatch'
+
+    const prodRate = isDispatch
+        ? '파견 관리'
+        : (bundlesPerTick > 0
+            ? `${bundlesPerTick}개 / ${intervalSeconds.toFixed(1)}초`
+            : 'Inactive')
 
     return (
         <div
@@ -126,14 +130,16 @@ export default function FacilityMobileCard({
                                 </span>
                                 {prodRate}
                             </div>
-                            {/* Standalone Progress Bar */}
-                            <div style={{ width: '80%', height: '4px', background: '#1a1612', borderRadius: '2px', overflow: 'hidden', border: '1px solid rgba(73, 65, 34, 0.5)' }}>
-                                <div style={{
-                                    height: '100%', width: `${progress}%`,
-                                    background: 'linear-gradient(90deg, #facc15, #eab308)',
-                                    transition: 'width 0.1s linear'
-                                }} />
-                            </div>
+                            {/* Standalone Progress Bar - Hide for Dispatch */}
+                            {!isDispatch && (
+                                <div style={{ width: '80%', height: '4px', background: '#1a1612', borderRadius: '2px', overflow: 'hidden', border: '1px solid rgba(73, 65, 34, 0.5)' }}>
+                                    <div style={{
+                                        height: '100%', width: `${progress}%`,
+                                        background: 'linear-gradient(90deg, #facc15, #eab308)',
+                                        transition: 'width 0.1s linear'
+                                    }} />
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div style={{

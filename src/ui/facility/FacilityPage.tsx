@@ -9,6 +9,7 @@ import FacilityHeader from './FacilityHeader'
 import FacilitySidebar from './FacilitySidebar'
 import FacilityControlPanel from './FacilityControlPanel'
 import FacilityMobileView from './FacilityMobileView'
+import DispatchManager from '../dispatch/DispatchManager'
 
 export default function FacilityPage() {
     const { user } = useAuth()
@@ -75,11 +76,26 @@ export default function FacilityPage() {
                     로딩 중...
                 </div>
             ) : selectedFacility ? (
-                <FacilityControlPanel
-                    facility={selectedFacility}
-                    currentLevel={currentLevel}
-                    onUpgrade={storeUpgrade}
-                />
+                selectedFacility.id === 'dungeon_dispatch' ? (
+                    <div style={{ maxWidth: '900px', margin: '0 auto', height: '100%' }}>
+                        <div style={{
+                            background: '#2a1810', border: '2px solid #5a4030', borderRadius: '12px', padding: '25px',
+                            boxShadow: '0 8px 16px rgba(0,0,0,0.4)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '15px'
+                        }}>
+                            <span style={{ fontSize: '32px' }}>🗺️</span>
+                            <h2 style={{ margin: 0, fontSize: '2em', color: '#facc15' }}>자동 던전 파견소</h2>
+                        </div>
+                        <div style={{ background: '#1a1612', border: '1px solid #494122', borderRadius: '12px', height: 'calc(100% - 120px)', minHeight: '500px' }}>
+                            <DispatchManager />
+                        </div>
+                    </div>
+                ) : (
+                    <FacilityControlPanel
+                        facility={selectedFacility}
+                        currentLevel={currentLevel}
+                        onUpgrade={storeUpgrade}
+                    />
+                )
             ) : (
                 <div style={{ textAlign: 'center', marginTop: '100px', opacity: 0.5 }}>
                     시설을 선택해주세요

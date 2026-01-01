@@ -74,6 +74,16 @@ body {
   }
 }
 
+@keyframes dispatch-walk {
+  0% {
+    transform: translateX(-20px);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes shake-light {
   0% {
     transform: translate(1px, 0px);

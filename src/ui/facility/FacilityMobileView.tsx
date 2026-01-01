@@ -5,6 +5,7 @@ import { useAlchemyStore } from '../../store/useAlchemyStore'
 import type { FacilityData } from '../../types/facility'
 import FacilityMobileCard from './FacilityMobileCard'
 import FacilityDetailModal from './FacilityDetailModal'
+import DispatchMainModal from '../dispatch/DispatchMainModal'
 
 interface FacilityMobileViewProps {
     facilities: FacilityData[]
@@ -252,12 +253,18 @@ export default function FacilityMobileView({
 
             {/* Detail Modal */}
             {selectedFacility && (
-                <FacilityDetailModal
-                    facility={selectedFacility}
-                    currentLevel={currentLevel}
-                    onClose={() => setSelectedFacilityId(null)}
-                    onUpgrade={upgradeFacility}
-                />
+                selectedFacility.id === 'dungeon_dispatch' ? (
+                    <DispatchMainModal
+                        onClose={() => setSelectedFacilityId(null)}
+                    />
+                ) : (
+                    <FacilityDetailModal
+                        facility={selectedFacility}
+                        currentLevel={currentLevel}
+                        onClose={() => setSelectedFacilityId(null)}
+                        onUpgrade={upgradeFacility}
+                    />
+                )
             )}
         </div>
     )
