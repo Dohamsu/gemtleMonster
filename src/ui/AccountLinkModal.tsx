@@ -77,7 +77,7 @@ export default function AccountLinkModal({ onLink, onClose }: AccountLinkModalPr
     }
 
     return (
-        <div style={{
+        <div className="animate-fade-in" style={{
             position: 'fixed',
             top: 0,
             left: 0,
@@ -92,6 +92,7 @@ export default function AccountLinkModal({ onLink, onClose }: AccountLinkModalPr
         }}>
             <div
                 ref={modalRef}
+                className="animate-slide-up"
                 style={{
                     width: '100%',
                     maxWidth: '400px',

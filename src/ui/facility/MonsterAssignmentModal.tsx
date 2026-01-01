@@ -51,7 +51,7 @@ export default function MonsterAssignmentModal({ facilityId, currentAssignments,
     const targetFacilityName = FACILITY_NAMES[facilityId] || '시설'
 
     return (
-        <div style={{
+        <div className="animate-fade-in" style={{
             position: 'fixed',
             top: 0,
             left: 0,
@@ -64,7 +64,7 @@ export default function MonsterAssignmentModal({ facilityId, currentAssignments,
             alignItems: 'center',
             zIndex: 3000
         }}>
-            <div style={{
+            <div className="animate-slide-up" style={{
                 width: '100%',
                 maxWidth: '500px',
                 maxHeight: '85vh',

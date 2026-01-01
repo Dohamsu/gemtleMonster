@@ -64,7 +64,7 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
     const selectedDungeon = DUNGEONS.find(d => d.id === selectedDungeonId)
 
     return (
-        <div style={{
+        <div className="animate-fade-in" style={{
             position: 'fixed',
             top: 0,
             left: 0,
@@ -77,7 +77,7 @@ export default function DungeonModal({ isOpen, onClose }: DungeonModalProps) {
             zIndex: 2000,
             padding: '0px'
         }}>
-            <div style={{
+            <div className="animate-slide-up" style={{
                 width: isMobile ? '100%' : '90%',
                 height: isMobile ? '100%' : 'auto',
                 maxWidth: '800px',

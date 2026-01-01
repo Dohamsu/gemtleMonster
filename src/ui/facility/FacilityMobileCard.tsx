@@ -71,6 +71,7 @@ export default function FacilityMobileCard({
     return (
         <div
             onClick={onClick}
+            className="animate-scale-press"
             style={{
                 position: 'relative',
                 background: level > 0 ? '#1e1912' : 'rgba(30, 25, 18, 0.7)',

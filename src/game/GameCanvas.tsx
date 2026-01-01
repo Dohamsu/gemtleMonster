@@ -219,7 +219,7 @@ export default function GameCanvas(props: GameCanvasProps) {
 
             {/* Shop UI Overlay */}
             {canvasView === 'shop' && (
-                <div style={{
+                <div key="shop-view" className="page-transition" style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
@@ -235,7 +235,7 @@ export default function GameCanvas(props: GameCanvasProps) {
 
             {/* Monster Farm UI Overlay */}
             {canvasView === 'monster_farm' && (
-                <div style={{
+                <div key="monster-farm-view" className="page-transition" style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
@@ -251,7 +251,7 @@ export default function GameCanvas(props: GameCanvasProps) {
 
             {/* Facility UI Overlay */}
             {canvasView === 'facility' && (
-                <div style={{
+                <div key="facility-view" className="page-transition" style={{
                     position: 'absolute',
                     top: 0,
                     left: 0,
@@ -268,29 +268,40 @@ export default function GameCanvas(props: GameCanvasProps) {
 
             {/* Alchemy Workshop UI Overlay */}
             {canvasView === 'alchemy_workshop' && (
-                <AlchemyWorkshopOverlay
-                    recipes={allRecipes}
-                    materials={allMaterials}
-                    playerMaterials={materialCounts}
-                    selectedRecipeId={selectedRecipeId}
-                    selectedIngredients={selectedIngredients}
-                    isBrewing={isBrewing}
-                    onSelectRecipe={(recipeId) => {
-                        selectRecipe(recipeId)
-                        // 레시피 선택 시 자동으로 재료 배치
-                        if (recipeId) {
-                            autoFillIngredients(recipeId)
-                        }
-                    }}
-                    onAddIngredient={addIngredient}
-                    playerAlchemy={playerAlchemy}
-                    playerRecipes={playerRecipes}
-                    onStartBrewing={startBrewing}
-                    onStartFreeFormBrewing={startFreeFormBrewing}
-                    mobileTab={mobileTab}
-                    onMobileTabChange={setMobileTab}
-                    alchemyContext={alchemyContext}
-                />
+                <div key="alchemy-view" className="page-transition" style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none'
+                }}>
+                    <div style={{ pointerEvents: 'auto', width: '100%', height: '100%' }}>
+                        <AlchemyWorkshopOverlay
+                            recipes={allRecipes}
+                            materials={allMaterials}
+                            playerMaterials={materialCounts}
+                            selectedRecipeId={selectedRecipeId}
+                            selectedIngredients={selectedIngredients}
+                            isBrewing={isBrewing}
+                            onSelectRecipe={(recipeId) => {
+                                selectRecipe(recipeId)
+                                // 레시피 선택 시 자동으로 재료 배치
+                                if (recipeId) {
+                                    autoFillIngredients(recipeId)
+                                }
+                            }}
+                            onAddIngredient={addIngredient}
+                            playerAlchemy={playerAlchemy}
+                            playerRecipes={playerRecipes}
+                            onStartBrewing={startBrewing}
+                            onStartFreeFormBrewing={startFreeFormBrewing}
+                            mobileTab={mobileTab}
+                            onMobileTabChange={setMobileTab}
+                            alchemyContext={alchemyContext}
+                        />
+                    </div>
+                </div>
             )}
 
             <AlchemyResultModal

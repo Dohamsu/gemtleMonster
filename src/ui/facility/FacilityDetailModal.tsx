@@ -90,7 +90,7 @@ export default function FacilityDetailModal({
     })
 
     return (
-        <div style={{
+        <div className="animate-fade-in" style={{
             position: 'fixed',
             inset: 0,
             zIndex: 100,
@@ -99,7 +99,7 @@ export default function FacilityDetailModal({
             background: 'rgba(0,0,0,0.8)',
             backdropFilter: 'blur(4px)'
         }}>
-            <div style={{
+            <div className="animate-slide-up" style={{
                 width: '100%',
                 maxHeight: '90vh',
                 background: '#1a1612',
