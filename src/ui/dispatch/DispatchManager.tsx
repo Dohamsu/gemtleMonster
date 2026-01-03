@@ -4,9 +4,6 @@ import { DISPATCH_REGIONS } from '../../data/dispatchData'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { getLocalizedError } from '../../utils/errorUtils'
-
-// interface DispatchManagerProps removed as props are currently unused
-
 import DispatchRewardModal from './DispatchRewardModal'
 
 export default function DispatchManager() {
@@ -15,7 +12,8 @@ export default function DispatchManager() {
         startDispatch,
         claimDispatchRewards,
         checkDispatches,
-        isMonsterDispatched
+        isMonsterDispatched,
+        maxDispatchSlots
     } = useDispatchStore()
 
     useEffect(() => {
@@ -28,7 +26,7 @@ export default function DispatchManager() {
     const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null)
     const [selectedMonsterIds, setSelectedMonsterIds] = useState<string[]>([])
     const [selectedDuration, setSelectedDuration] = useState<number>(0)
-    const [rewardData, setRewardData] = useState<Record<string, number> | null>(null)
+    const [rewardData, setRewardData] = useState<{ rewards: Record<string, number>; isGreatSuccess?: boolean } | null>(null)
 
     const { playerMonsters } = useAlchemyStore()
 
@@ -47,7 +45,7 @@ export default function DispatchManager() {
     const handleClaim = async (dispatchId: string) => {
         const result = await claimDispatchRewards(dispatchId)
         if (result.success && result.rewards) {
-            setRewardData(result.rewards)
+            setRewardData({ rewards: result.rewards, isGreatSuccess: result.isGreatSuccess })
         }
     }
 
@@ -55,7 +53,8 @@ export default function DispatchManager() {
         <>
             {rewardData && (
                 <DispatchRewardModal
-                    rewards={rewardData}
+                    rewards={rewardData.rewards}
+                    isGreatSuccess={rewardData.isGreatSuccess}
                     onClose={() => setRewardData(null)}
                 />
             )}
@@ -91,7 +90,6 @@ export default function DispatchManager() {
                                         overflow: 'hidden',
                                         minHeight: '140px'
                                     }}>
-                                        {/* Background Image */}
                                         {region?.imageUrl && (
                                             <>
                                                 <div style={{
@@ -101,7 +99,6 @@ export default function DispatchManager() {
                                                     backgroundPosition: 'center',
                                                     filter: 'brightness(0.5)'
                                                 }} />
-                                                {/* Walking Monsters Animation */}
                                                 {!isCompleted && (
                                                     <div style={{
                                                         position: 'absolute', bottom: '40px', left: 0, width: '100%', height: '60px',
@@ -177,7 +174,6 @@ export default function DispatchManager() {
                                 )
                             })
                         )}
-
                         <button
                             onClick={() => setView('new')}
                             style={{
@@ -189,6 +185,29 @@ export default function DispatchManager() {
                             }}
                         >
                             + 새 파견 보내기
+                        </button>
+                        <button
+                            onClick={() => {
+                                if (activeDispatches.length >= maxDispatchSlots) {
+                                    alert(`파견 슬롯이 가득 찼습니다. (${activeDispatches.length}/${maxDispatchSlots})`)
+                                    return
+                                }
+                                setView('new')
+                            }}
+                            style={{
+                                width: '100%', padding: '16px', marginTop: '10px',
+                                background: activeDispatches.length >= maxDispatchSlots
+                                    ? '#334155'
+                                    : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                                border: 'none', borderRadius: '12px',
+                                color: activeDispatches.length >= maxDispatchSlots ? '#94a3b8' : 'white',
+                                fontSize: '16px', fontWeight: 'bold', cursor: 'pointer',
+                                boxShadow: activeDispatches.length >= maxDispatchSlots ? 'none' : '0 4px 6px rgba(37, 99, 235, 0.3)'
+                            }}
+                        >
+                            {activeDispatches.length >= maxDispatchSlots
+                                ? `슬롯 가득 참 (${activeDispatches.length}/${maxDispatchSlots})`
+                                : `+ 새 파견 보내기 (${activeDispatches.length}/${maxDispatchSlots})`}
                         </button>
                     </div>
                 )}
@@ -255,6 +274,25 @@ export default function DispatchManager() {
                                                 ✓
                                             </div>
                                         )}
+                                        {selectedRegionId === region.id && region.element && (
+                                            <div style={{
+                                                position: 'absolute', right: '60px', top: '50%', transform: 'translateY(-50%)',
+                                                display: 'flex', alignItems: 'center', gap: '6px'
+                                            }}>
+                                                <span style={{
+                                                    color: '#fff',
+                                                    background: region.element === 'FIRE' ? '#ef4444' :
+                                                        region.element === 'WATER' ? '#3b82f6' :
+                                                            region.element === 'EARTH' ? '#10b981' :
+                                                                region.element === 'WIND' ? '#8b5cf6' :
+                                                                    region.element === 'LIGHT' ? '#f59e0b' :
+                                                                        region.element === 'DARK' ? '#6366f1' : '#ccc',
+                                                    padding: '2px 6px', borderRadius: '4px', fontSize: '11px'
+                                                }}>
+                                                    {region.element}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -287,10 +325,20 @@ export default function DispatchManager() {
                                 <h3 style={{ color: '#ccc', fontSize: '14px', marginBottom: '8px' }}>
                                     동료 선택 ({selectedMonsterIds.length}명)
                                 </h3>
-                                <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <div style={{
+                                    flex: 1,
+                                    overflowY: 'auto',
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
+                                    gap: '12px',
+                                    padding: '4px' // Padding for outline/shadow visibility
+                                }}>
                                     {playerMonsters.map(monster => {
                                         const isDispatched = isMonsterDispatched(monster.id)
                                         const isSelected = selectedMonsterIds.includes(monster.id)
+                                        const region = selectedRegionId ? DISPATCH_REGIONS.find(r => r.id === selectedRegionId) : null
+                                        const mData = MONSTER_DATA[monster.monster_id]
+                                        const isElementMatch = region && mData?.element === region.element
 
                                         return (
                                             <div
@@ -301,38 +349,89 @@ export default function DispatchManager() {
                                                     else setSelectedMonsterIds(prev => [...prev, monster.id])
                                                 }}
                                                 style={{
-                                                    padding: '10px',
-                                                    background: isSelected ? '#3b82f620' : '#2a2218',
-                                                    border: isSelected ? '1px solid #3b82f6' : '1px solid #3d2b20',
-                                                    borderRadius: '8px',
-                                                    opacity: isDispatched ? 0.5 : 1,
+                                                    position: 'relative',
+                                                    aspectRatio: '1/1',
+                                                    background: isSelected ? '#3b82f640' : '#2a2218',
+                                                    border: isSelected ? '2px solid #3b82f6' : '1px solid #3d2b20',
+                                                    borderRadius: '12px',
                                                     cursor: isDispatched ? 'not-allowed' : 'pointer',
-                                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                                                    display: 'flex', flexDirection: 'column',
+                                                    alignItems: 'center', justifyContent: 'center',
+                                                    transition: 'all 0.1s ease',
+                                                    transform: isSelected ? 'scale(0.95)' : 'scale(1)',
+                                                    opacity: isDispatched ? 0.5 : 1
                                                 }}
                                             >
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <div style={{ width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                                        {MONSTER_DATA[monster.monster_id]?.iconUrl ? (
-                                                            <img
-                                                                src={MONSTER_DATA[monster.monster_id].iconUrl}
-                                                                alt={MONSTER_DATA[monster.monster_id].name}
-                                                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                            />
-                                                        ) : (
-                                                            <span style={{ fontSize: '24px' }}>
-                                                                {MONSTER_DATA[monster.monster_id]?.emoji || '👾'}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <div style={{ color: '#e2e8f0', fontSize: '14px' }}>
-                                                            {MONSTER_DATA[monster.monster_id]?.name}
-                                                        </div>
-                                                        <div style={{ color: '#888', fontSize: '11px' }}>Lv.{monster.level}</div>
-                                                    </div>
+                                                {/* Icon */}
+                                                <div style={{ width: '60%', height: '60%', position: 'relative' }}>
+                                                    {mData?.iconUrl ? (
+                                                        <img
+                                                            src={mData.iconUrl}
+                                                            alt={mData.name}
+                                                            style={{
+                                                                width: '100%', height: '100%',
+                                                                objectFit: 'contain',
+                                                                filter: isDispatched ? 'grayscale(100%)' : 'none'
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <span style={{ fontSize: '32px' }}>{mData?.emoji || '👾'}</span>
+                                                    )}
                                                 </div>
-                                                {isDispatched && <span style={{ fontSize: '11px', color: '#f59e0b' }}>파견중</span>}
-                                                {isSelected && <span style={{ fontSize: '16px', color: '#3b82f6' }}>✓</span>}
+
+                                                {/* Name (Optional, small) */}
+                                                <div style={{
+                                                    fontSize: '10px', color: '#ccc',
+                                                    marginTop: '4px', textAlign: 'center',
+                                                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                                    width: '90%'
+                                                }}>
+                                                    {mData?.name}
+                                                </div>
+
+                                                {/* Level Badge */}
+                                                <div style={{
+                                                    position: 'absolute', bottom: '4px', right: '4px',
+                                                    background: 'rgba(0,0,0,0.7)', color: '#fff',
+                                                    fontSize: '10px', padding: '1px 4px', borderRadius: '4px'
+                                                }}>
+                                                    Lv.{monster.level}
+                                                </div>
+
+                                                {/* Element Match Star */}
+                                                {isElementMatch && (
+                                                    <div style={{
+                                                        position: 'absolute', top: '4px', right: '4px',
+                                                        fontSize: '14px', filter: 'drop-shadow(0 0 2px gold)'
+                                                    }}>
+                                                        🌟
+                                                    </div>
+                                                )}
+
+                                                {/* Checkmark */}
+                                                {isSelected && (
+                                                    <div style={{
+                                                        position: 'absolute', top: '4px', left: '4px',
+                                                        background: '#3b82f6', color: 'white',
+                                                        borderRadius: '50%', width: '16px', height: '16px',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        fontSize: '10px'
+                                                    }}>
+                                                        ✓
+                                                    </div>
+                                                )}
+
+                                                {/* Dispatched Text */}
+                                                {isDispatched && (
+                                                    <div style={{
+                                                        position: 'absolute', inset: 0,
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        background: 'rgba(0,0,0,0.3)', borderRadius: '10px',
+                                                        color: '#facc15', fontSize: '12px', fontWeight: 'bold'
+                                                    }}>
+                                                        파견중
+                                                    </div>
+                                                )}
                                             </div>
                                         )
                                     })}

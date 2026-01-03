@@ -1,9 +1,12 @@
+import type { ElementType } from '../types/alchemy'
+
 export interface DispatchRegion {
     id: string
     name: string
     description: string
     recommendedLevel: number
     imageUrl: string
+    element?: ElementType
     requiredAttributes?: string[]
     durationOptions: number[] // Seconds
     rewards: {
@@ -24,6 +27,7 @@ export const DISPATCH_REGIONS: DispatchRegion[] = [
         description: '약초와 나뭇가지를 쉽게 구할 수 있는 숲 가장자리입니다.',
         recommendedLevel: 1,
         imageUrl: '/assets/dungeons/slime_forest.png',
+        element: 'EARTH',
         durationOptions: [300, 1800, 3600], // 5min, 30min, 1h
         rewards: [
             { materialId: 'herb_common', min: 2, max: 5, chance: 1 },
@@ -38,6 +42,7 @@ export const DISPATCH_REGIONS: DispatchRegion[] = [
         description: '돌과 광석이 발견되는 얕은 동굴입니다.',
         recommendedLevel: 5,
         imageUrl: '/assets/dungeons/crystal_cave.png',
+        element: 'EARTH',
         durationOptions: [600, 3600, 7200], // 10min, 1h, 2h
         rewards: [
             { materialId: 'stone', min: 3, max: 6, chance: 1 },
@@ -52,6 +57,7 @@ export const DISPATCH_REGIONS: DispatchRegion[] = [
         description: '신비한 기운이 감도는 유적지입니다. 희귀한 재료가 발견됩니다.',
         recommendedLevel: 15,
         imageUrl: '/assets/dungeons/desert_ruins.png',
+        element: 'LIGHT',
         durationOptions: [3600, 14400, 28800], // 1h, 4h, 8h (Sleep)
         rewards: [
             { materialId: 'stone', min: 5, max: 10, chance: 1 },
@@ -70,6 +76,7 @@ export const DISPATCH_REGIONS: DispatchRegion[] = [
         description: '빛이 닿지 않는 깊은 바다입니다. 수중 생물들의 서식지입니다.',
         recommendedLevel: 25,
         imageUrl: '/assets/dungeons/lake.png',
+        element: 'WATER',
         requiredAttributes: ['swimming'], // Future attribute check?
         durationOptions: [7200, 21600], // 2h, 6h
         rewards: [

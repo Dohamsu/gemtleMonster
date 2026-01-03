@@ -113,4 +113,48 @@ describe('useDispatchStore', () => {
         expect(useDispatchStore.getState().isMonsterDispatched('m1')).toBe(true)
         expect(useDispatchStore.getState().isMonsterDispatched('m2')).toBe(false)
     })
+
+
+
+    it('should enforce dispatch slot limit', () => {
+        const { startDispatch } = useDispatchStore.getState()
+        const regionId = DISPATCH_REGIONS[0].id
+
+        // Dispatch 1
+        expect(startDispatch(regionId, ['m1'], 300).success).toBe(true)
+
+        // Dispatch 2
+        expect(startDispatch(regionId, ['m2'], 300).success).toBe(true)
+
+        // Dispatch 3 - Should fail
+        useAlchemyStore.setState(state => ({
+            playerMonsters: [...state.playerMonsters, { id: 'm3', monster_id: 'slime', level: 1, exp: 0, created_at: '', is_locked: false, awakening_level: 0 }]
+        }))
+
+        const result = startDispatch(regionId, ['m3'], 300)
+        expect(result.success).toBe(false)
+        expect(result.error).toContain('파견 슬롯이 부족합니다')
+    })
+
+    it('should apply Great Success multiplier', async () => {
+        const { startDispatch, checkDispatches, claimDispatchRewards } = useDispatchStore.getState()
+        const regionId = DISPATCH_REGIONS[0].id
+
+        startDispatch(regionId, ['m1'], 300)
+        const dispatchId = useDispatchStore.getState().activeDispatches[0].id
+
+        vi.advanceTimersByTime(300 * 1000 + 100)
+        checkDispatches()
+
+        // Mock Math.random to return low value for Great Success check
+        const randomSpy = vi.spyOn(Math, 'random')
+        randomSpy.mockReturnValue(0.01)
+
+        const result = await claimDispatchRewards(dispatchId)
+
+        expect(result.success).toBe(true)
+        expect(result.isGreatSuccess).toBe(true)
+
+        randomSpy.mockRestore()
+    })
 })

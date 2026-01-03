@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { DISPATCH_REGIONS } from '../data/dispatchData'
+import { MONSTER_DATA } from '../data/monsterData'
 import { useAlchemyStore } from './useAlchemyStore'
 
 export interface DispatchMission {
@@ -18,11 +19,12 @@ export interface DispatchMission {
 interface DispatchState {
     activeDispatches: DispatchMission[]
     completedDispatches: DispatchMission[] // History? Or just keep in active until claimed
+    maxDispatchSlots: number
 
     // Actions
     startDispatch: (regionId: string, monsterIds: string[], duration: number) => { success: boolean; error?: string }
     checkDispatches: () => void // Called periodically to update status
-    claimDispatchRewards: (dispatchId: string) => Promise<{ success: boolean; rewards?: Record<string, number> }>
+    claimDispatchRewards: (dispatchId: string) => Promise<{ success: boolean; rewards?: Record<string, number>; isGreatSuccess?: boolean }>
     cancelDispatch: (dispatchId: string) => void
 
     // Helpers
@@ -35,8 +37,14 @@ export const useDispatchStore = create<DispatchState>()(
         (set, get) => ({
             activeDispatches: [],
             completedDispatches: [],
+            maxDispatchSlots: 2,
 
             startDispatch: (regionId, monsterIds, duration) => {
+                const { activeDispatches, maxDispatchSlots } = get()
+                if (activeDispatches.length >= maxDispatchSlots) {
+                    return { success: false, error: `파견 슬롯이 부족합니다. (${activeDispatches.length}/${maxDispatchSlots})` }
+                }
+
                 const region = DISPATCH_REGIONS.find(r => r.id === regionId)
                 if (!region) return { success: false, error: '존재하지 않는 지역입니다.' }
 
@@ -106,22 +114,68 @@ export const useDispatchStore = create<DispatchState>()(
                 const { playerMonsters } = useAlchemyStore.getState()
                 const dispatchedMonsters = playerMonsters.filter(pm => dispatch.monsterIds.includes(pm.id))
 
-                // Total Level Bonus
+                // Great Success Logic is calculated below
+
+
+                // ... Implementation detail: will add import at top later via separate chunk or rely on existing import if any (none yet).
+                // Let's assume we will add import.
+
+                /* 
+                   We need to refactor this block carefully. 
+                   I will insert the MONSTER_DATA import in a separate tool call or a separate chunk if possible? 
+                   MultiReplace supports multiple chunks.
+                */
+
+                // Let's put the logic here assuming MONSTER_DATA will be available.
+
+                // (This validation is tricky without MONSTER_DATA import. I should have added it. 
+                // I will add it in the next step or try to add it now if I can verify it exists.)
+                // I see I only read lines 1-177. No MONSTER_DATA import.
+
+                // Okay, I'll add the logic but comment out the MONSTER_DATA part or better, 
+                // I will use a simple heuristic or I MUST import it.
+                // I will check `monsterData.ts` path: `../data/monsterData`.
+
+                // Let's continue with logic assuming I will add the import in the 3rd chunk.
+
+                // Logic using imported MONSTER_DATA
+
+
                 const totalLevel = dispatchedMonsters.reduce((sum, m) => sum + m.level, 0)
-                const luckFactor = 1 + (totalLevel * 0.01) // 1% bonus per level total
+                const luckFactor = 1 + (totalLevel * 0.01)
 
                 const acquiredItems: Record<string, number> = {}
 
+                let isGreatSuccess = false
+                let greatSuccessChance = 0.05
+                const regionElement = region.element
+
+                if (regionElement) {
+                    const hasElementMatch = dispatchedMonsters.some(pm => {
+                        const mData = MONSTER_DATA[pm.monster_id]
+                        return mData?.element?.toUpperCase() === regionElement.toUpperCase()
+                    })
+                    if (hasElementMatch) greatSuccessChance += 0.10
+                }
+
+                if (Math.random() < greatSuccessChance) {
+                    isGreatSuccess = true
+                }
+
                 region.rewards.forEach(rewardTable => {
                     if (Math.random() <= rewardTable.chance * luckFactor) {
-                        const amount = Math.floor(Math.random() * (rewardTable.max - rewardTable.min + 1)) + rewardTable.min
+                        let amount = Math.floor(Math.random() * (rewardTable.max - rewardTable.min + 1)) + rewardTable.min
+                        if (isGreatSuccess) {
+                            amount = Math.floor(amount * 1.5)
+                            if (amount < 1) amount = 1
+                        }
+
                         if (amount > 0) {
                             acquiredItems[rewardTable.materialId] = (acquiredItems[rewardTable.materialId] || 0) + amount
                         }
                     }
                 })
 
-                // Add to inventory
                 // Add to inventory
                 const { addMaterials } = useAlchemyStore.getState()
 
@@ -144,7 +198,7 @@ export const useDispatchStore = create<DispatchState>()(
                     completedDispatches: [...state.completedDispatches, { ...dispatch, status: 'claimed' }]
                 }))
 
-                return { success: true, rewards: acquiredItems }
+                return { success: true, rewards: acquiredItems, isGreatSuccess }
             },
 
             cancelDispatch: (dispatchId) => {
@@ -169,6 +223,7 @@ export const useDispatchStore = create<DispatchState>()(
             name: 'dispatch-storage',
             partialize: (state) => ({
                 activeDispatches: state.activeDispatches,
+                maxDispatchSlots: state.maxDispatchSlots,
                 // Do not persist completed history indefinitely to save space
             })
         }

@@ -4,9 +4,10 @@ import ResourceIcon from '../ResourceIcon'
 interface DispatchRewardModalProps {
     rewards: Record<string, number>
     onClose: () => void
+    isGreatSuccess?: boolean
 }
 
-export default function DispatchRewardModal({ rewards, onClose }: DispatchRewardModalProps) {
+export default function DispatchRewardModal({ rewards, onClose, isGreatSuccess }: DispatchRewardModalProps) {
     return (
         <div style={{
             position: 'fixed', inset: 0, zIndex: 4000,
@@ -15,15 +16,32 @@ export default function DispatchRewardModal({ rewards, onClose }: DispatchReward
         }}>
             <div style={{
                 width: '90%', maxWidth: '400px',
-                background: '#1a1612', border: '2px solid #facc15', borderRadius: '16px',
+                background: '#1a1612', border: isGreatSuccess ? '3px solid #facc15' : '2px solid #555', borderRadius: '16px',
                 padding: '24px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px',
-                boxShadow: '0 0 50px rgba(250, 204, 21, 0.2)'
+                boxShadow: isGreatSuccess ? '0 0 80px rgba(250, 204, 21, 0.4)' : '0 0 50px rgba(0,0,0,0.3)',
+                animation: isGreatSuccess ? 'pulse 2s infinite' : 'none'
             }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '40px', marginBottom: '10px' }}>🎁</div>
-                    <h2 style={{ margin: 0, color: '#facc15', fontSize: '24px' }}>파견 완료!</h2>
-                    <p style={{ margin: '8px 0 0 0', color: '#b0a090' }}>고생한 동료들이 전리품을 가져왔습니다.</p>
+                    <div style={{ fontSize: '40px', marginBottom: '10px' }}>
+                        {isGreatSuccess ? '🌟' : '🎁'}
+                    </div>
+                    {isGreatSuccess ? (
+                        <h2 style={{
+                            margin: 0, color: '#facc15', fontSize: '28px',
+                            textShadow: '0 0 10px #facc15'
+                        }}>
+                            대성공!
+                        </h2>
+                    ) : (
+                        <h2 style={{ margin: 0, color: '#facc15', fontSize: '24px' }}>파견 완료!</h2>
+                    )}
+
+                    <p style={{ margin: '8px 0 0 0', color: '#b0a090' }}>
+                        {isGreatSuccess
+                            ? '동료들이 엄청난 성과를 거두었습니다!'
+                            : '고생한 동료들이 전리품을 가져왔습니다.'}
+                    </p>
                 </div>
 
                 <div style={{
