@@ -20,6 +20,9 @@ import { MATERIALS } from '../data/alchemyData'
 import { isMobileView } from '../utils/responsiveUtils'
 import FacilityPage from '../ui/facility/FacilityPage'
 import MyPageModal from '../ui/MyPageModal'
+import { useMerchantStore } from '../store/useMerchantStore'
+import WanderingMerchantIcon from '../ui/merchant/WanderingMerchantIcon'
+import WanderingMerchantModal from '../ui/merchant/WanderingMerchantModal'
 
 /**
  * Optimized GameCanvas Component
@@ -109,6 +112,9 @@ export default function GameCanvas(props: GameCanvasProps) {
 
     const [showDungeonModal, setShowDungeonModal] = useState(false)
     const [showMyPageModal, setShowMyPageModal] = useState(false)
+
+    // Merchant Store
+    const { isVisible: isMerchantVisible } = useMerchantStore()
 
     // Optimized click handler
     const baseClickHandler = useCanvasClickHandler({
@@ -323,6 +329,17 @@ export default function GameCanvas(props: GameCanvasProps) {
             {showMyPageModal && (
                 <MyPageModal onClose={() => setShowMyPageModal(false)} />
             )}
+
+            {showMyPageModal && (
+                <MyPageModal onClose={() => setShowMyPageModal(false)} />
+            )}
+
+            {/* Wandering Merchant UI */}
+            {canvasView === 'map' && isMerchantVisible && (
+                <WanderingMerchantIcon />
+            )}
+
+            <WanderingMerchantModal />
 
             {/* Offline Rewards Modal */}
             {showOfflineRewardModal && (

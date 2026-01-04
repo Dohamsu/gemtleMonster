@@ -115,6 +115,35 @@ export default function GameSystemConnector() {
         return () => window.removeEventListener('show-account-link-modal', handleShowModal)
     }, [])
 
+    // Wandering Merchant Logic
+    useEffect(() => {
+        // Dynamic import to avoid circular dependencies if any, though likely safe to import directly
+        const startMerchantLoop = async () => {
+            const { useMerchantStore } = await import('../../store/useMerchantStore')
+
+            // Initial check
+            useMerchantStore.getState().checkExpiry()
+
+            const intervalId = setInterval(() => {
+                const store = useMerchantStore.getState()
+                store.checkExpiry()
+
+                // Only try to spawn if not already visible
+                if (!store.isVisible) {
+                    store.trySpawn()
+                }
+            }, 60000) // Check every minute
+
+            return () => clearInterval(intervalId)
+        }
+
+        const cleanupPromise = startMerchantLoop()
+
+        return () => {
+            cleanupPromise.then(cleanup => cleanup())
+        }
+    }, [])
+
     return (
         <>
             {showAccountLinkModal && (
