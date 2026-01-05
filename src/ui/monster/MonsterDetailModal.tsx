@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MONSTER_DATA } from '../../data/monsterData'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { getRequiredExp, getRarityColor, type RarityType } from '../../lib/monsterLevelUtils'
@@ -7,6 +7,11 @@ import type { PlayerMonster } from '../../types/monster'
 import type { RoleType } from '../../types/alchemy'
 import AwakeningModal from './AwakeningModal'
 import MonsterGrowthModal from './MonsterGrowthModal'
+import EquipmentSlot from './EquipmentSlot'
+import EquipmentSelectionModal from './EquipmentSelectionModal'
+import { useEquipmentStore } from '../../store/useEquipmentStore'
+import type { EquipmentSlot as EquipmentSlotType } from '../../types/equipment'
+
 
 const COLORS = {
     primary: "#f7ca18", // Light Gold
@@ -35,6 +40,26 @@ export default function MonsterDetailModal({ monster, onClose }: MonsterDetailMo
 
     // Subscribe to the specific monster's updates
     const liveMonster = playerMonsters.find(m => m.id === monster.id) || monster
+
+    // Equipment Store
+    const { playerEquipment, allEquipment, loadPlayerEquipment, userId } = useEquipmentStore()
+    const [selectedSlot, setSelectedSlot] = useState<EquipmentSlotType | null>(null)
+
+    // Load equipment if needed (ensure we have latest state)
+    // In a real app, this might be done centrally, but safe to call here
+    useEffect(() => {
+        if (userId) loadPlayerEquipment(userId)
+    }, [userId])
+
+    // Get equipped items
+    const equippedItems = playerEquipment.filter(pe => pe.equippedMonsterId === liveMonster.id)
+    const getEquippedItem = (slot: EquipmentSlotType) => {
+        return equippedItems.find(pe => {
+            const data = allEquipment.find(e => e.id === pe.equipmentId)
+            return data?.slot === slot
+        })
+    }
+
 
     const [showAwakeningModal, setShowAwakeningModal] = useState(false)
     const [showGrowthModal, setShowGrowthModal] = useState(false)
@@ -89,10 +114,25 @@ export default function MonsterDetailModal({ monster, onClose }: MonsterDetailMo
     const baseHp = data.hp || 100
     const baseDef = data.defense || 5
 
-    // Simple stat scaling formula (visual only)
-    const atk = Math.floor(baseAtk * (1 + (level - 1) * 0.1))
-    const hp = Math.floor(baseHp * (1 + (level - 1) * 0.1))
-    const def = Math.floor(baseDef * (1 + (level - 1) * 0.05))
+    // Base stats from level
+    const levelAtk = Math.floor(baseAtk * (1 + (level - 1) * 0.1))
+    const levelHp = Math.floor(baseHp * (1 + (level - 1) * 0.1))
+    const levelDef = Math.floor(baseDef * (1 + (level - 1) * 0.05))
+
+    // Equipment bonuses
+    const equipmentStats = equippedItems.reduce((acc, item) => {
+        const data = allEquipment.find(e => e.id === item.equipmentId)
+        if (data && data.stats) {
+            acc.attack += (data.stats.attack || 0)
+            acc.hp += (data.stats.hp || 0)
+            acc.defense += (data.stats.defense || 0)
+        }
+        return acc
+    }, { attack: 0, hp: 0, defense: 0 })
+
+    const atk = levelAtk + equipmentStats.attack
+    const hp = levelHp + equipmentStats.hp
+    const def = levelDef + equipmentStats.defense
 
     return (
         <div style={{
@@ -368,7 +408,31 @@ export default function MonsterDetailModal({ monster, onClose }: MonsterDetailMo
                         &quot;{data.description || '이 몬스터에 대한 알려진 정보가 없습니다.'}&quot;
                     </div>
                 </div>
+
+                {/* Equipment Section */}
+                <div style={{ padding: '0 24px 24px 24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
+                        {(['WEAPON', 'ARMOR', 'ACCESSORY'] as EquipmentSlotType[]).map(slot => (
+                            <EquipmentSlot
+                                key={slot}
+                                slot={slot}
+                                equippedItem={getEquippedItem(slot)}
+                                onClick={() => setSelectedSlot(slot)}
+                            />
+                        ))}
+                    </div>
+                </div>
             </div>
+
+            {/* Equipment Selection Modal */}
+            {selectedSlot && (
+                <EquipmentSelectionModal
+                    slot={selectedSlot}
+                    monsterId={liveMonster.id}
+                    currentEquippedItem={getEquippedItem(selectedSlot)}
+                    onClose={() => setSelectedSlot(null)}
+                />
+            )}
 
             {/* Modals */}
             {showAwakeningModal && (
