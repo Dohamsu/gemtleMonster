@@ -30,6 +30,7 @@ export interface BattleState {
   logs: string[]
   result: 'victory' | 'defeat' | null
   rewards: Record<string, number>
+  equipmentRewards?: string[]
   selectedMonsterId: string | null
   selectedMonsterType: string | null
   playerAtk: number

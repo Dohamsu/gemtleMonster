@@ -43,8 +43,8 @@ export const useEquipmentStore = create<EquipmentState>((set, get) => ({
                 get().loadEquipment(),
                 get().loadPlayerEquipment(userId)
             ])
-        } catch (error: any) {
-            set({ error: error.message || 'Failed to load equipment data' })
+        } catch (error) {
+            set({ error: (error as Error).message || 'Failed to load equipment data' })
         } finally {
             set({ isLoading: false })
         }
@@ -55,6 +55,7 @@ export const useEquipmentStore = create<EquipmentState>((set, get) => ({
             const equipment = await equipmentApi.getAllEquipment()
             set({ allEquipment: equipment })
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Failed to load equipment master data', error)
         }
     },
@@ -64,22 +65,22 @@ export const useEquipmentStore = create<EquipmentState>((set, get) => ({
             const playerEquipment = await equipmentApi.getPlayerEquipment(userId)
             set({ playerEquipment })
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Failed to load player equipment', error)
         }
     },
 
     equipItem: async (playerEquipmentId: string, playerMonsterId: string) => {
         try {
-            const result = await equipmentApi.equipItem(playerEquipmentId, playerMonsterId)
-            console.log('Equip result:', result)
+            await equipmentApi.equipItem(playerEquipmentId, playerMonsterId)
 
             // Reload player equipment to reflect changes (optimistic update could be better, but simple for now)
             const { userId } = get()
             if (userId) {
                 await get().loadPlayerEquipment(userId)
             }
-        } catch (error: any) {
-            set({ error: error.message || 'Equip failed' })
+        } catch (error) {
+            set({ error: (error as Error).message || 'Equip failed' })
         }
     },
 
@@ -91,8 +92,8 @@ export const useEquipmentStore = create<EquipmentState>((set, get) => ({
             if (userId) {
                 await get().loadPlayerEquipment(userId)
             }
-        } catch (error: any) {
-            set({ error: error.message || 'Unequip failed' })
+        } catch (error) {
+            set({ error: (error as Error).message || 'Unequip failed' })
         }
     },
 
@@ -104,8 +105,8 @@ export const useEquipmentStore = create<EquipmentState>((set, get) => ({
             await equipmentApi.addTestEquipment(userId)
             await get().loadPlayerEquipment(userId)
             alert('테스트용 장비가 지급되었습니다!')
-        } catch (error: any) {
-            set({ error: error.message || 'Debug add equipment failed' })
+        } catch (error) {
+            set({ error: (error as Error).message || 'Debug add equipment failed' })
         }
     },
 

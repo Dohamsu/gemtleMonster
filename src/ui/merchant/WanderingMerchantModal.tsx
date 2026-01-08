@@ -1,6 +1,7 @@
 import { useMerchantStore } from '../../store/useMerchantStore'
 import { useAlchemyStore } from '../../store/useAlchemyStore'
 import { useEffect, useState } from 'react'
+import { type MerchantItem } from '../../data/merchantData'
 
 export default function WanderingMerchantModal() {
     const { isModalOpen, inventory, expiryTime, buyItem, closeModal } = useMerchantStore()
@@ -23,7 +24,7 @@ export default function WanderingMerchantModal() {
         return () => clearInterval(timer)
     }, [expiryTime, closeModal])
 
-    const handleBuy = async (item: any) => {
+    const handleBuy = async (item: MerchantItem) => {
         const success = await buyItem(item)
         if (success) {
             // Optional: Show toast

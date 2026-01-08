@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useMerchantStore } from '../store/useMerchantStore'
 import { act } from '@testing-library/react'
 import * as alchemyApi from '../lib/alchemyApi'
-import { useAlchemyStore } from '../store/useAlchemyStore'
 
 // Mock alchemyApi
 vi.mock('../lib/alchemyApi', () => ({
@@ -17,7 +16,7 @@ const mockGetState = vi.fn()
 vi.mock('../store/useAlchemyStore', () => ({
     useAlchemyStore: {
         getState: () => mockGetState(),
-        setState: (args: any) => mockSetState(args)
+        setState: (args: unknown) => mockSetState(args)
     }
 }))
 
@@ -98,8 +97,8 @@ describe('useMerchantStore', () => {
 
     it('buyItem should succeed when player has enough gold', async () => {
         // Setup successful API calls
-        (alchemyApi.addGold as any).mockResolvedValue({ error: null });
-        (alchemyApi.addMaterialToPlayer as any).mockResolvedValue({ error: null });
+        (alchemyApi.addGold as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ error: null });
+        (alchemyApi.addMaterialToPlayer as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({ error: null });
 
         // Spawn merchant
         const spyRandom = vi.spyOn(Math, 'random').mockReturnValue(0.01)

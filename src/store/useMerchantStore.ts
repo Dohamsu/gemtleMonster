@@ -108,6 +108,7 @@ export const useMerchantStore = create<MerchantState>()(
 
                     return true
                 } catch (e) {
+                    // eslint-disable-next-line no-console
                     console.error('Merchant purchase failed:', e)
                     return false
                 }

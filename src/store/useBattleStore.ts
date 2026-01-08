@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { addPlayerEquipment } from '../lib/equipmentApi'
 import { DUNGEONS } from '../data/dungeonData'
 import { GAME_MONSTERS as MONSTERS } from '../data/monsterData'
 import { CONSUMABLE_EFFECTS } from '../data/alchemyData'
@@ -153,6 +154,7 @@ export const useBattleStore = create<BattleStoreState>((set, get) => ({
                 logs: [`전투 시작! ${enemy.name}이(가) 나타났다!`],
                 result: null,
                 rewards: {},
+                equipmentRewards: [],
                 selectedMonsterId: playerMonsterId,
                 selectedMonsterType: playerMonster.monster_id,
                 enemyAtk: enemy.attack,
@@ -325,6 +327,7 @@ export const useBattleStore = create<BattleStoreState>((set, get) => ({
         // 5. Check Battle End
         let result: 'victory' | 'defeat' | null = null
         const rewards: Record<string, number> = {}
+        const equipmentRewards: string[] = []
 
         if (enemyHp <= 0) {
             result = 'victory'
@@ -336,9 +339,14 @@ export const useBattleStore = create<BattleStoreState>((set, get) => ({
                 if (enemy.drops) {
                     for (const drop of enemy.drops) {
                         if (Math.random() <= drop.chance) {
-                            const amount = Math.floor(Math.random() * (drop.maxQuantity - drop.minQuantity + 1)) + drop.minQuantity
-                            if (amount > 0) {
-                                rewards[drop.materialId] = (rewards[drop.materialId] || 0) + amount
+                            if (drop.type === 'EQUIPMENT') {
+                                equipmentRewards.push(drop.materialId)
+                                newLogs.push(`장비 획득! ${drop.materialId}`) // TODO: Get name
+                            } else {
+                                const amount = Math.floor(Math.random() * (drop.maxQuantity - drop.minQuantity + 1)) + drop.minQuantity
+                                if (amount > 0) {
+                                    rewards[drop.materialId] = (rewards[drop.materialId] || 0) + amount
+                                }
                             }
                         }
                     }
@@ -363,6 +371,12 @@ export const useBattleStore = create<BattleStoreState>((set, get) => ({
                 await Promise.all(rewardEntries.map(([id, amt]) => {
                     return addMaterial(id, amt)
                 }))
+
+                // 1.5 Equipment Sync
+                if (equipmentRewards.length > 0) {
+                    await Promise.all(equipmentRewards.map(eqId => addPlayerEquipment(userId, eqId)))
+                    newLogs.push(`${equipmentRewards.length}개의 장비를 획득했습니다!`)
+                }
 
                 // 2. XP Sync
                 const dungeon = DUNGEONS.find(d => d.id === state.activeDungeon)
@@ -440,6 +454,7 @@ export const useBattleStore = create<BattleStoreState>((set, get) => ({
                 turn: turn + 1,
                 result,
                 rewards,
+                equipmentRewards,
                 floatingTexts: [...floatingTexts, ...newFloatingTexts]
             }
         })

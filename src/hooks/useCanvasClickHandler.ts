@@ -78,79 +78,80 @@ function handleMapClick(
     setDungeonModalOpen: (isOpen: boolean) => void,
     onOpenMyPage: () => void
 ) {
-    // 0. My Home (Top Center)
-    const homeX = canvas.width * 0.5 - 48
-    const homeY = canvas.height * 0.25 - 48
-    if (x >= homeX && x <= homeX + 96 && y >= homeY && y <= homeY + 96) {
+    const checkClick = (cxRatio: number, cyRatio: number, scale: number = 1.0) => {
+        const cx = canvas.width * cxRatio
+        const cy = canvas.height * cyRatio
+        const halfSize = (128 * scale) / 2
+        return x >= cx - halfSize && x <= cx + halfSize && y >= cy - halfSize && y <= cy + halfSize
+    }
+
+    // --- Hub Area ---
+
+    // 0. My Home (Center Top) - 0.5, 0.20, scale 0.8
+    if (checkClick(0.5, 0.20, 0.8)) {
         onOpenMyPage()
         return
     }
 
-    // 1. Alchemy Workshop (Central Bottom)
-    const workshopX = canvas.width * 0.5 - 64
-    const workshopY = canvas.height * 0.7 - 64
-
-    if (x >= workshopX && x <= workshopX + 128 && y >= workshopY && y <= workshopY + 128) {
-        setCanvasView('alchemy_workshop')
-        return
-    }
-
-    // 2. Shop (Right Bottom)
-    const shopX = canvas.width * 0.8 - 64
-    const shopY = canvas.height * 0.7 - 64
-
-    if (x >= shopX && x <= shopX + 128 && y >= shopY && y <= shopY + 128) {
-        setCanvasView('shop')
-        return
-    }
-
-    // 3. Slime Dungeon (Left Bottom)
-    const dungeonX = canvas.width * 0.15 - 64
-    const dungeonY = canvas.height * 0.7 - 64
-
-    if (x >= dungeonX && x <= dungeonX + 128 && y >= dungeonY && y <= dungeonY + 128) {
-        setDungeonModalOpen(true)
-        return
-    }
-
-    // 4. Monster Farm (Central Middle) - 몬스터 농장 전용 뷰로 이동
-    const farmX = canvas.width * 0.5 - 64
-    const farmY = canvas.height * 0.4 - 64
-
-    if (x >= farmX && x <= farmX + 128 && y >= farmY && y <= farmY + 128) {
+    // 1. Monster Farm (Center Middle) - 0.5, 0.45
+    if (checkClick(0.5, 0.45)) {
         setCanvasView('monster_farm')
         return
     }
 
-    // 5. Facilities (Managed via FacilityPage)
-    // Herb Farm (Left Middle)
-    const herbX = canvas.width * 0.3 - 64
-    const herbY = canvas.height * 0.4 - 64
-    if (x >= herbX && x <= herbX + 128 && y >= herbY && y <= herbY + 128) {
+    // 2. Alchemy Workshop (Center Bottom Left) - 0.38, 0.75
+    if (checkClick(0.38, 0.75)) {
+        setCanvasView('alchemy_workshop')
+        return
+    }
+
+    // 3. Shop (Center Bottom Right) - 0.62, 0.75
+    if (checkClick(0.62, 0.75)) {
+        setCanvasView('shop')
+        return
+    }
+
+    // --- Adventure / Nature ---
+
+    // 4. Dungeon Entrance (Far Left Bottom) - 0.15, 0.75
+    if (checkClick(0.15, 0.75)) {
+        setDungeonModalOpen(true)
+        return
+    }
+
+    // 5. Dungeon Dispatch (Left Bottom) - 0.25, 0.60
+    if (checkClick(0.25, 0.60)) {
+        // Dispatch uses generic facility view or specific modal?
+        // Using 'facility' view for now, similar to other facilities.
+        // Or if it needs a modal, we might need a new state.
+        // Assuming it's a facility page for upgrades/management.
+        // Note: idleConst.json category is 'combat_auto' but treated as facility.
         setCanvasView('facility')
         return
     }
 
-    // Mine (Right Middle)
-    const mineX = canvas.width * 0.7 - 64
-    const mineY = canvas.height * 0.4 - 64
-    if (x >= mineX && x <= mineX + 128 && y >= mineY && y <= mineY + 128) {
+    // 6. Herb Farm (Left Middle) - 0.20, 0.40
+    if (checkClick(0.20, 0.40)) {
         setCanvasView('facility')
         return
     }
 
-    // Blacksmith (Right Top)
-    const blacksmithX = canvas.width * 0.8 - 64
-    const blacksmithY = canvas.height * 0.25 - 64
-    if (x >= blacksmithX && x <= blacksmithX + 128 && y >= blacksmithY && y <= blacksmithY + 128) {
+    // 7. Spirit Sanctum (Left Top) - 0.20, 0.20
+    if (checkClick(0.20, 0.20)) {
         setCanvasView('facility')
         return
     }
 
-    // Spirit Sanctum (Left Top)
-    const sanctumX = canvas.width * 0.2 - 64
-    const sanctumY = canvas.height * 0.2 - 64
-    if (x >= sanctumX && x <= sanctumX + 128 && y >= sanctumY && y <= sanctumY + 128) {
+    // --- Industry ---
+
+    // 8. Mine (Right Middle) - 0.80, 0.45
+    if (checkClick(0.80, 0.45)) {
+        setCanvasView('facility')
+        return
+    }
+
+    // 9. Blacksmith (Right Top) - 0.80, 0.25
+    if (checkClick(0.80, 0.25)) {
         setCanvasView('facility')
         return
     }

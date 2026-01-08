@@ -11,8 +11,10 @@ export interface CanvasImages {
     shop_interior: HTMLImageElement | null
     cauldron_pixel: HTMLImageElement | null
     dungeon_forest: HTMLImageElement | null
+    dungeon_dispatch: HTMLImageElement | null
     spirit_sanctum: HTMLImageElement | null
     my_home: HTMLImageElement | null
+    monster_farm: HTMLImageElement | null
     blacksmith: Record<number, HTMLImageElement>
     materials: Record<string, HTMLImageElement>
 }
@@ -31,8 +33,10 @@ export function useCanvasImages() {
         shop_interior: null,
         cauldron_pixel: null,
         dungeon_forest: null,
+        dungeon_dispatch: null,
         spirit_sanctum: null,
         my_home: null,
+        monster_farm: null,
         blacksmith: {},
         materials: {}
     })
@@ -74,6 +78,8 @@ export function useCanvasImages() {
             loadImage('/assets/dungeon_entrance.png'),
             loadImage('/assets/facility/spirit_santuary.png'),
             loadImage('/assets/structures/my_home.png'),
+            loadImage('/assets/monster_farm.png'),
+            loadImage('/assets/facility/dungeon_dispatch.png'),
             loadMaterialImages(),
             // Load Blacksmith images for levels 1-5
             Promise.all([
@@ -90,7 +96,22 @@ export function useCanvasImages() {
                 5: lv5
             }))
         ])
-            .then(([bg, herbFarm, mine, alchemyWorkshop, shopBuilding, shopInterior, cauldronPixel, dungeonForest, spiritSanctum, myHome, materials, blacksmithImages]) => {
+            .then(([
+                bg,
+                herbFarm,
+                mine,
+                alchemyWorkshop,
+                shopBuilding,
+                shopInterior,
+                cauldronPixel,
+                dungeonForest,
+                spiritSanctum,
+                myHome,
+                monsterFarm,
+                dungeonDispatch,
+                materials,
+                blacksmithImages
+            ]) => {
                 setImages({
                     background: bg as HTMLImageElement,
                     herb_farm: herbFarm as HTMLImageElement,
@@ -100,10 +121,12 @@ export function useCanvasImages() {
                     shop_interior: shopInterior as HTMLImageElement,
                     cauldron_pixel: cauldronPixel as HTMLImageElement,
                     dungeon_forest: dungeonForest as HTMLImageElement,
+                    dungeon_dispatch: dungeonDispatch as HTMLImageElement,
                     spirit_sanctum: spiritSanctum as HTMLImageElement,
                     blacksmith: blacksmithImages as Record<number, HTMLImageElement>,
                     materials: materials as Record<string, HTMLImageElement>,
-                    my_home: myHome as HTMLImageElement
+                    my_home: myHome as HTMLImageElement,
+                    monster_farm: monsterFarm as HTMLImageElement
                 })
             })
             .catch((err) => console.error('Failed to load images:', err))

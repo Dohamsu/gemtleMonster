@@ -1,9 +1,20 @@
 import { supabase } from './supabase'
-import type { Equipment, PlayerEquipment } from '../types/equipment'
+import type { Equipment, PlayerEquipment, EquipmentSlot, EquipmentRarity } from '../types/equipment'
 
 // ==========================================
 // Master Data
 // ==========================================
+
+interface DBEquipment {
+    id: string
+    name: string
+    description: string
+    slot: string
+    rarity: string
+    icon_url: string
+    stats: Record<string, number>
+    is_special: boolean
+}
 
 export async function getAllEquipment(): Promise<Equipment[]> {
     const { data, error } = await supabase
@@ -13,17 +24,12 @@ export async function getAllEquipment(): Promise<Equipment[]> {
 
     if (error) throw error
 
-    // Map snake_case keys to camelCase if needed, but TypeScript interface expects camelCase
-    // Supabase returns keys as in DB (snake_case).
-    // I should probably ensure the TypeScript interface matches generic DB or map it.
-    // Let's assume we map it here.
-
-    return data.map((item: any) => ({
+    return (data as DBEquipment[]).map((item) => ({
         id: item.id,
         name: item.name,
         description: item.description,
-        slot: item.slot,
-        rarity: item.rarity,
+        slot: item.slot as EquipmentSlot,
+        rarity: item.rarity as EquipmentRarity,
         iconUrl: item.icon_url,
         stats: item.stats,
         isSpecial: item.is_special
@@ -34,6 +40,16 @@ export async function getAllEquipment(): Promise<Equipment[]> {
 // Player Data
 // ==========================================
 
+interface DBPlayerEquipment {
+    id: string
+    user_id: string
+    equipment_id: string
+    is_equipped: boolean
+    equipped_monster_id: string | null
+    created_at: string
+    updated_at: string
+}
+
 export async function getPlayerEquipment(userId: string): Promise<PlayerEquipment[]> {
     const { data, error } = await supabase
         .from('player_equipment')
@@ -43,12 +59,12 @@ export async function getPlayerEquipment(userId: string): Promise<PlayerEquipmen
 
     if (error) throw error
 
-    return data.map((item: any) => ({
+    return (data as DBPlayerEquipment[]).map((item) => ({
         id: item.id,
         userId: item.user_id,
         equipmentId: item.equipment_id,
         isEquipped: item.is_equipped,
-        equippedMonsterId: item.equipped_monster_id,
+        equippedMonsterId: item.equipped_monster_id || undefined,
         createdAt: item.created_at,
         updatedAt: item.updated_at
     }))
@@ -66,6 +82,7 @@ export async function equipItem(playerEquipmentId: string, playerMonsterId: stri
         })
 
     if (error) {
+        // eslint-disable-next-line no-console
         console.error('Equip Error:', error)
         throw error
     }
@@ -80,6 +97,7 @@ export async function unequipItem(playerEquipmentId: string): Promise<{ success:
         })
 
     if (error) {
+        // eslint-disable-next-line no-console
         console.error('Unequip Error:', error)
         throw error
     }
@@ -106,4 +124,20 @@ export async function addTestEquipment(userId: string): Promise<void> {
         .insert(payloads)
 
     if (error) throw error
+}
+
+export async function addPlayerEquipment(userId: string, equipmentId: string): Promise<void> {
+    const { error } = await supabase
+        .from('player_equipment')
+        .insert({
+            user_id: userId,
+            equipment_id: equipmentId,
+            is_equipped: false
+        })
+
+    if (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to add player equipment:', error)
+        throw error
+    }
 }

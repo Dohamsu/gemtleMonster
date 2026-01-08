@@ -49,7 +49,7 @@ export default function MonsterDetailModal({ monster, onClose }: MonsterDetailMo
     // In a real app, this might be done centrally, but safe to call here
     useEffect(() => {
         if (userId) loadPlayerEquipment(userId)
-    }, [userId])
+    }, [userId, loadPlayerEquipment])
 
     // Get equipped items
     const equippedItems = playerEquipment.filter(pe => pe.equippedMonsterId === liveMonster.id)

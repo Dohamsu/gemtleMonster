@@ -2,6 +2,7 @@ import type { ElementType } from '../types/alchemy'
 
 export interface DungeonDrop {
     materialId: string
+    type?: 'MATERIAL' | 'EQUIPMENT'
     chance: number // 0-100
     minQuantity: number
     maxQuantity: number
@@ -78,7 +79,8 @@ export const SLIME_DUNGEON: Dungeon = {
             drops: [
                 { materialId: 'slime_core', chance: 100, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'gem_fragment', chance: 50, minQuantity: 1, maxQuantity: 1 },
-                { materialId: 'crown_fragment', chance: 10, minQuantity: 1, maxQuantity: 1 } // Rare drop
+                { materialId: 'crown_fragment', chance: 10, minQuantity: 1, maxQuantity: 1 }, // Rare drop
+                { materialId: 'sword_iron', type: 'EQUIPMENT', chance: 5, minQuantity: 1, maxQuantity: 1 }
             ]
         }
     ]
@@ -133,7 +135,8 @@ export const LAKE_DUNGEON: Dungeon = {
                 { materialId: 'shard_water', chance: 100, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'gem_fragment', chance: 40, minQuantity: 1, maxQuantity: 1 },
                 { materialId: 'slime_fluid', chance: 80, minQuantity: 3, maxQuantity: 5 },
-                { materialId: 'frost_essence', chance: 30, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'frost_essence', chance: 30, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'staff_magic', type: 'EQUIPMENT', chance: 5, minQuantity: 1, maxQuantity: 1 }
             ]
         }
     ]
@@ -184,7 +187,8 @@ export const CRYSTAL_DUNGEON: Dungeon = {
             drops: [
                 { materialId: 'crystal_mana', chance: 100, minQuantity: 2, maxQuantity: 4 },
                 { materialId: 'gem_fragment', chance: 60, minQuantity: 1, maxQuantity: 2 },
-                { materialId: 'ore_magic', chance: 50, minQuantity: 1, maxQuantity: 2 }
+                { materialId: 'ore_magic', chance: 50, minQuantity: 1, maxQuantity: 2 },
+                { materialId: 'armor_plate', type: 'EQUIPMENT', chance: 5, minQuantity: 1, maxQuantity: 1 }
             ]
         }
     ]
@@ -265,7 +269,8 @@ export const CHRISTMAS_DUNGEON: Dungeon = {
                 { materialId: 'frost_essence', chance: 100, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'frozen_dew', chance: 80, minQuantity: 2, maxQuantity: 3 },
                 { materialId: 'snowflake', chance: 100, minQuantity: 3, maxQuantity: 5 },
-                { materialId: 'gem_fragment', chance: 30, minQuantity: 1, maxQuantity: 1 }
+                { materialId: 'gem_fragment', chance: 30, minQuantity: 1, maxQuantity: 1 },
+                { materialId: 'robe_magic', type: 'EQUIPMENT', chance: 5, minQuantity: 1, maxQuantity: 1 }
             ]
         }
     ]
@@ -319,7 +324,8 @@ export const VOLCANO_DUNGEON: Dungeon = {
                 { materialId: 'dragon_scale', chance: 100, minQuantity: 1, maxQuantity: 2 },
                 { materialId: 'dragon_horn', chance: 50, minQuantity: 1, maxQuantity: 1 },
                 { materialId: 'fire_core', chance: 40, minQuantity: 1, maxQuantity: 1 },
-                { materialId: 'gem_fragment', chance: 50, minQuantity: 2, maxQuantity: 3 }
+                { materialId: 'gem_fragment', chance: 50, minQuantity: 2, maxQuantity: 3 },
+                { materialId: 'necklace_gold', type: 'EQUIPMENT', chance: 3, minQuantity: 1, maxQuantity: 1 }
             ]
         }
     ]
